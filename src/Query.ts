@@ -1,87 +1,35 @@
-import { RawSQL } from "./Raw";
-import { ConditionClause, operation } from "./ConditionClause";
-import { Postgresql } from "./databases/postgresql";
-import { SelectQueryBuilder } from "./SelectQueryBuilder";
-import { InsertQueryBuilder } from "./InsertQueryBuilder";
-import { UpdateQueryBuilder } from "./UpdateQueryBuilder";
-import { DeleteQueryBuilder } from "./DeleteQueryBuilder";
-import { TestDB } from "./databases/TestDB";
-import { mysql } from "./databases/mysql";
-import { Sqlite } from "./databases/sqlite";
-
-type node = {
-  select: any[];
-  table: any[];
-  joins: any[];
-  where: ConditionClause;
-  group_by: any[];
-  having: any[];
-  limit: any[];
-  offset: any[];
-  order_by: any[];
-};
+import { Grammar } from './Grammar';
+import { Connection, JoinCondition, Parameter, selectType, whereType } from './types';
 
 export class Query {
-  client;
-  nodes: node = {
-    select: [],
-    table: [],
-    joins: [],
-    where: new ConditionClause({}),
-    group_by: [],
-    having: [],
-    limit: [],
-    offset: [],
-    order_by: [],
-  };
+  allowedOperations: string[] = ['=','>','<','!=', 'like','ilike'];
 
-  constructor(options:any) {
-    if (options.client === "postgresql") {
-      this.client = new Postgresql(options.connection);
-    } else if (options.client === "mysql") {
-      this.client = new mysql(options.connection);
-    } else if (options.client === "sqlite") {
-      this.client = new Sqlite(options.connection);
-    } else if (options.client === "test") {
-      this.client = new TestDB(options.connection);
-    } else {
-      throw Error("no client is implemented for " + options.client);
-    }
+  _select: selectType[] = ['*'];
+  _table: string = '';
+  _where: whereType[] = [];
 
-    this.nodes.where = new ConditionClause(this.client);
+  constructor(private readonly connection: Connection, private readonly grammar: Grammar) {  
   }
 
-  public select(selects: string | any[] | RawSQL) {
-    const rc = new SelectQueryBuilder(this.client);
-    return rc.select(selects);
+  table(tableName: string) {
+    this._table = tableName;
+  }
+  
+  whereOp(column: string, operation: typeof this.allowedOperations[number], value: Parameter, joinCondition: JoinCondition = 'and', negateCondition: boolean = false) {
+    this._where.push({type: 'operation', column, operation, value, joinCondition, negateCondition});
+    return this;
   }
 
-  public insert(table: string) {
-    const rc = new InsertQueryBuilder(this.client);
-    rc.table(table);
-    return rc;
+  whereNull(column: string, joinCondition: JoinCondition = 'and', negateCondition: boolean = false) {
+    this._where.push({type: 'null', column, joinCondition, negateCondition});
+    return this;
   }
 
-  public update(table: string) {
-    const rc = new UpdateQueryBuilder(this.client);
-    rc.table(table);
-    return rc;
+  select(selects: selectType[]) {
+    this._select = [...selects];
   }
 
-  public delete(table: string) {
-    const rc = new DeleteQueryBuilder(this.client);
-    rc.table(table);
-    return rc;
-  }
-
-  public raw(sql: string, bindings = {}) {
-    const rc = new RawSQL(this.client);
-    rc.set(sql, bindings);
-    return rc;
-  }
-
-  public conditionClause(): ConditionClause {
-    const rc = new ConditionClause(this.client);
-    return rc;
+  toSql() {
+    return this.grammar.toSql(this);
   }
 }
