@@ -5,5 +5,5 @@ export type whereNull = { type: 'null', column: string};
 export type whereType = whereBasic & (whereOp | whereNull);
 
 export type Parameter = string | number | null;
-export type Connection = any;
 export type JoinCondition = 'and' | 'or';
+export type CompiledSql = { sql: string, bindings: Parameter[] };

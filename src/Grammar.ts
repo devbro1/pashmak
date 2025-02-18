@@ -1,6 +1,6 @@
 import { table } from "console";
 import { Query } from "./Query";
-import { Parameter, selectType, whereOp, whereType } from "./types";
+import { Parameter, CompiledSql, selectType, whereNull, whereOp, whereType } from "./types";
 
 function toUpperFirst(str: string) {
     return str.substring(0,1).toUpperCase() + str.substring(1);
@@ -8,10 +8,9 @@ function toUpperFirst(str: string) {
 export class Grammar {
     sqlParts: string[] = ['select', 'table','where'];
     
-    toSql(query: Query) {
+    toSql(query: Query): CompiledSql {
         let sql = '';
         let bindings : Parameter[] = [];
-        let sqlParts: string[] = [];
 
         for(const part of this.sqlParts) {
             // @ts-ignore
@@ -29,7 +28,7 @@ export class Grammar {
         return { sql, bindings };
     }
 
-    compileSelect(selects: selectType[]) {
+    compileSelect(selects: selectType[]): CompiledSql {
         let rc = selects.map(v => {
             return v;
         }).join(', ');
@@ -37,7 +36,7 @@ export class Grammar {
         return {sql: 'select ' + rc, bindings: []};
     }
 
-    compileTable(tableName: string) {
+    compileTable(tableName: string): CompiledSql {
         let rc = '';
         if(tableName.length) {
             rc = 'from ' + tableName;
@@ -46,7 +45,7 @@ export class Grammar {
         return { sql: rc, bindings: [] };
     }
 
-    compileWhere(wheres: whereType[]) {
+    compileWhere(wheres: whereType[]): CompiledSql {
         let sql = '';
         let bindings: Parameter[] = [];
 
@@ -70,10 +69,17 @@ export class Grammar {
         return { sql, bindings};
     }
 
-    compileWhereOperation(w: whereOp) {
+    compileWhereOperation(w: whereOp): CompiledSql {
         return {
             sql: `${w.column} ${w.operation} ?`,
             bindings: [ w.value ],
+        }
+    }
+
+    compileWhereNull(w: whereNull): CompiledSql {
+        return {
+            sql: `${w.column} is null`,
+            bindings: [],
         }
     }
 }

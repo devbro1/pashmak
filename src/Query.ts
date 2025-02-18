@@ -1,5 +1,6 @@
+import { Connection } from './Connection';
 import { Grammar } from './Grammar';
-import { Connection, JoinCondition, Parameter, selectType, whereType } from './types';
+import { JoinCondition, Parameter, selectType, whereType } from './types';
 
 export class Query {
   allowedOperations: string[] = ['=','>','<','!=', 'like','ilike'];
@@ -8,7 +9,7 @@ export class Query {
   _table: string = '';
   _where: whereType[] = [];
 
-  constructor(private readonly connection: Connection, private readonly grammar: Grammar) {  
+  constructor(private readonly connection: Connection | null, private readonly grammar: Grammar) {  
   }
 
   table(tableName: string) {
@@ -31,5 +32,9 @@ export class Query {
 
   toSql() {
     return this.grammar.toSql(this);
+  }
+
+  async get() {
+    return this.connection?.runQuery(this.toSql());
   }
 }

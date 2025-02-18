@@ -3393,6 +3393,11 @@ pg-pool@^3.6.1:
   resolved "https://registry.npmjs.org/pg-pool/-/pg-pool-3.6.1.tgz"
   integrity sha512-jizsIzhkIitxCGfPRzJn1ZdcosIt3pz9Sh3V01fm1vZnbnCMgmGl5wvGGdNN2EL9Rmb0EcFoCkixH4Pu+sP9Og==
 
+pg-pool@^3.7.1:
+  version "3.7.1"
+  resolved "https://registry.yarnpkg.com/pg-pool/-/pg-pool-3.7.1.tgz#d1aaf618618d8f878acf185e86084928b8cd5b3c"
+  integrity sha512-xIOsFoh7Vdhojas6q3596mXFsR8nwBQBXX5JiV7p9buEVAGqYL4yFzclON5P9vFrpu1u7Zwl2oriyDa89n0wbw==
+
 pg-protocol@*, pg-protocol@^1.6.0:
   version "1.6.0"
   resolved "https://registry.npmjs.org/pg-protocol/-/pg-protocol-1.6.0.tgz"
