@@ -84,4 +84,21 @@ export abstract class QueryGrammar {
             bindings: [],
         }
     }
+
+    compileInsert(query: Query, data: Record<string, Parameter>): CompiledSql {
+        let sql = 'insert into ' + query._table + ' (';
+        const columns : string[] = [];
+        const bindings: Parameter[] = [];
+        const values: string[] = [];
+
+        for(const [k,v] of Object.entries(data)) {
+            columns.push(k);
+            bindings.push(v);
+            values.push(this.getVariablePlaceholder());
+        }
+
+        sql += columns.join(', ') + ') values (' + values + ')';
+
+        return { sql, bindings };
+    }
 }
