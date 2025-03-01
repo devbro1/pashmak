@@ -5,7 +5,7 @@ import { Parameter, CompiledSql, selectType, whereNull, whereOp, whereType } fro
 function toUpperFirst(str: string) {
     return str.substring(0,1).toUpperCase() + str.substring(1);
 }
-export class Grammar {
+export class QueryGrammar {
     sqlParts: string[] = ['select', 'table','where'];
     
     toSql(query: Query): CompiledSql {

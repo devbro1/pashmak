@@ -1,5 +1,5 @@
 import { Connection } from './Connection';
-import { Grammar } from './Grammar';
+import { QueryGrammar } from './QueryGrammar';
 import { JoinCondition, Parameter, selectType, whereType } from './types';
 
 export class Query {
@@ -9,7 +9,7 @@ export class Query {
   _table: string = '';
   _where: whereType[] = [];
 
-  constructor(private readonly connection: Connection | null, private readonly grammar: Grammar) {  
+  constructor(private readonly connection: Connection | null, private readonly grammar: QueryGrammar) {  
   }
 
   table(tableName: string) {

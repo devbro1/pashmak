@@ -1,6 +1,6 @@
 import { describe, expect, test } from "@jest/globals";
 import { Query } from "../src/Query";
-import { Grammar } from "../src/Grammar";
+import { QueryGrammar } from "../src/QueryGrammar";
 import { PostgresqlConnection } from "../src/databases/postgresql/PostgresqlConnection";
 import { Connection } from "../src/Connection";
 import { execSync } from "child_process";
@@ -31,7 +31,7 @@ describe("raw queries", () => {
   })
 
   test("basic select all", () => {
-    const query = new Query( null, new Grammar());
+    const query = new Query( null, new QueryGrammar());
     query.table('countries');
     let r = query.toSql();
 
@@ -55,7 +55,7 @@ describe("raw queries", () => {
   });
 
   test("basic connection functionality", async () => {
-    const query = new Query( conn, new Grammar());
+    const query = new Query( conn, new QueryGrammar());
     query.table('countries');
     const r = query.toSql();
 
@@ -74,7 +74,7 @@ describe("raw queries", () => {
   });
 
   test("basic connection functionality v2", async () => {
-    const query = new Query( conn, new Grammar());
+    const query = new Query( conn, new QueryGrammar());
     query.table('jobs');
     const r = query.toSql();
 
