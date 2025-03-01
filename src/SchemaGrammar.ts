@@ -51,7 +51,6 @@ export class SchemaGrammar {
             rc.push('unique');
         }
 
-        console.log(column.properties.default);
         if(column.properties.default !== null) {
             rc.push('default ' + this.escape(column.properties.default));
         }

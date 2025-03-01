@@ -5,7 +5,7 @@ import { Parameter, CompiledSql, selectType, whereNull, whereOp, whereType } fro
 function toUpperFirst(str: string) {
     return str.substring(0,1).toUpperCase() + str.substring(1);
 }
-export class QueryGrammar {
+export abstract class QueryGrammar {
     sqlParts: string[] = ['select', 'table','where'];
     
     toSql(query: Query): CompiledSql {
@@ -71,10 +71,12 @@ export class QueryGrammar {
 
     compileWhereOperation(w: whereOp): CompiledSql {
         return {
-            sql: `${w.column} ${w.operation} ?`,
+            sql: `${w.column} ${w.operation} ${this.getVariablePlaceholder()}`,
             bindings: [ w.value ],
         }
     }
+
+    abstract getVariablePlaceholder(): string;
 
     compileWhereNull(w: whereNull): CompiledSql {
         return {

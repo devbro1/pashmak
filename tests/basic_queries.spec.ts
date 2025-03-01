@@ -4,6 +4,7 @@ import { QueryGrammar } from "../src/QueryGrammar";
 import { PostgresqlConnection } from "../src/databases/postgresql/PostgresqlConnection";
 import { Connection } from "../src/Connection";
 import { execSync } from "child_process";
+import { PostgresqlQueryGrammar } from "../src/databases/postgresql/PostgresqlQueryGrammar";
 describe("raw queries", () => {
   let conn: Connection | null;
 
@@ -31,7 +32,7 @@ describe("raw queries", () => {
   })
 
   test("basic select all", () => {
-    const query = new Query( null, new QueryGrammar());
+    const query = new Query( null, new PostgresqlQueryGrammar());
     query.table('countries');
     let r = query.toSql();
 
@@ -42,7 +43,7 @@ describe("raw queries", () => {
 
     r = query.toSql();
 
-    expect(r.sql).toBe("select * from countries where region_id = ?");
+    expect(r.sql).toBe("select * from countries where region_id = $1");
     expect(r.bindings).toStrictEqual([2]);
 
 
@@ -50,12 +51,12 @@ describe("raw queries", () => {
 
     r = query.toSql();
 
-    expect(r.sql).toBe("select * from countries where region_id = ? or not country_id = ?");
+    expect(r.sql).toBe("select * from countries where region_id = $1 or not country_id = $2");
     expect(r.bindings).toStrictEqual([2,'BE']);
   });
 
   test("basic connection functionality", async () => {
-    const query = new Query( conn, new QueryGrammar());
+    const query = new Query( conn, new PostgresqlQueryGrammar());
     query.table('countries');
     const r = query.toSql();
 
@@ -74,7 +75,7 @@ describe("raw queries", () => {
   });
 
   test("basic connection functionality v2", async () => {
-    const query = new Query( conn, new QueryGrammar());
+    const query = new Query( conn, new PostgresqlQueryGrammar());
     query.table('jobs');
     const r = query.toSql();
 
@@ -85,6 +86,9 @@ describe("raw queries", () => {
     expect(result1.length).toBe(19);
 
     query.whereOp('job_title','ilike','P%');
+
+    expect(query.toSql().sql).toBe("select * from jobs where job_title ilike $1");
+    expect(query.toSql().bindings).toStrictEqual(['P%']);
 
     const result2 = await query.get();
     expect(result2.length).toBe(6);

@@ -25,8 +25,7 @@ export class PostgresqlConnection extends ConnectionAbs {
         return true;
     }
     async runQuery(sql: CompiledSql) {
-        let counter=0;
-        let result = await this.connection?.query(sql.sql.replace(/\?/g, () => `$${++counter}`),sql.bindings);
+        const result = await this.connection?.query(sql.sql,sql.bindings);
 
         return result?.rows;
     }

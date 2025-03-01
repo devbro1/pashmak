@@ -6,9 +6,9 @@ order: 1
 
 under the hood, different libraries are used for connecting to each database:
 
+Currently the only supported database is Postgresql, but the library is designed to be easily extended to support other databases.
 
 ### Postgresql
-postgresql uses `pg` library:
 
 ```javascript
 import { Query } from "@devbro1/sql-generator";
@@ -26,37 +26,13 @@ query = new Query({
 ```
 
 ### Mysql
-mysql uses `mysql` and `nodejs-mysql` libraries:
-
-```javascript
-import { Query } from "@devbro1/sql-generator";
-query = new Query({
-  client: "mysql",
-  connection: {
-    host: "localhost",
-    user: "me",
-    password: "secret",
-    database: "my_db",
-  },
-});
-```
+support coming soon
 
 ### Sqlite
-```javascript
-import { Query } from "@devbro1/sql-generator";
-query = new Query({
-  client: "sqlite",
-  connection: "/tmp/database.db",
-});
-
-query = new Query({
-  client: "sqlite",
-  connection: ":memory:",
-});
-```
+support coming soon
 
 ### Mssql
-Not implemented yet
+support coming soon
 
 ### Oracle
-Not implemented yet
+support coming soon
