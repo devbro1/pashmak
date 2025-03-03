@@ -74,7 +74,7 @@ describe("raw queries", () => {
     expect(result[0].country_name).toBe('Canada');
   });
 
-  test("basic connection functionality v2", async () => {
+  test.only("basic connection functionality v2", async () => {
     const query = new Query( conn, new PostgresqlQueryGrammar());
     query.table('jobs');
     const r = query.toSql();
@@ -92,5 +92,26 @@ describe("raw queries", () => {
 
     const result2 = await query.get();
     expect(result2.length).toBe(6);
+
+    query.orderBy('job_title','desc');
+    expect(query.toSql().sql).toBe("select * from jobs where job_title ilike $1 order by job_title desc");
+
+    const result3 = await query.get();
+    expect(result3[0].job_id).toBe(14);
+    expect(result3[1].job_id).toBe(13);
+    expect(result3[2].job_id).toBe(12);
+    expect(result3[3].job_id).toBe(1);
+    expect(result3[4].job_id).toBe(9);
+    expect(result3[5].job_id).toBe(4);
+
+    query.limit(3);
+    query.offset(2);
+    expect(query.toSql().sql).toBe("select * from jobs where job_title ilike $1 order by job_title desc limit 3 offset 2");
+
+    const result4 = await query.get();
+    expect(result4.length).toBe(3);
+    expect(result4[0].job_id).toBe(12);
+    expect(result4[1].job_id).toBe(1);
+    expect(result4[2].job_id).toBe(9);
   });
 });

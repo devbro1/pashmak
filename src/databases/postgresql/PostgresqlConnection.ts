@@ -26,7 +26,6 @@ export class PostgresqlConnection extends ConnectionAbs {
     }
     async runQuery(sql: CompiledSql) {
         const result = await this.connection?.query(sql.sql,sql.bindings);
-
         return result?.rows;
     }
     disconnect(): boolean {

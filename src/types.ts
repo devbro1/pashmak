@@ -4,6 +4,6 @@ export type whereOp = { type: 'operation', column: string, operation: string, va
 export type whereNull = { type: 'null', column: string};
 export type whereType = whereBasic & (whereOp | whereNull);
 
-export type Parameter = string | number | null;
+export type Parameter = string | number | Date | null;
 export type JoinCondition = 'and' | 'or';
 export type CompiledSql = { sql: string, bindings: Parameter[] };
