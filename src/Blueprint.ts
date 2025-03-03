@@ -1,9 +1,11 @@
+import { Parameter } from "./types";
+
 export type ColumnPropertiesType = {
     type: 'string' | 'integer' | 'float' | 'double' | 'boolean' | 'char' | 'text' | 'date' | 'timestamp' | 'serial',
     length: number,
     nullable: boolean,
     unique: boolean,
-    default: string | number | null,
+    default: Parameter,
 }
 export class Column {
     columnName: string = '';

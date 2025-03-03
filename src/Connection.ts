@@ -5,5 +5,5 @@ export abstract class Connection {
 
     abstract runQuery(sql: CompiledSql): Promise<any>;
 
-    abstract disconnect(): boolean;
+    abstract disconnect(): Promise<boolean>;
 }

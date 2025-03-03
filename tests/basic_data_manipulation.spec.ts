@@ -10,34 +10,35 @@ import { PostgresqlQueryGrammar } from "../src/databases/postgresql/PostgresqlQu
 import { Query } from "../src/Query";
 
 let conn: Connection | null;
+const randName = Math.random().toString(36).substring(7);
+const db_config = {
+    host: process.env.DB_HOST,
+    database: (process.env.DB_NAME || 'test_db') + `_${randName}`,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    port: parseInt(process.env.DB_PORT || '5432'),
+};
 describe("data manipulations", () => {
   beforeAll(async () => {
-    const randName = Math.random().toString(36).substring(7);
-    const db_config = {
-        host: process.env.DB_HOST,
-        database: (process.env.DB_NAME || 'test_db') + `_${randName}`,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        port: parseInt(process.env.DB_PORT || '5432'),
-    };
-
     console.log("creating test database", db_config.database);
     execSync(`psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} postgres -c "CREATE DATABASE ${db_config.database}"`);
 
     conn = new PostgresqlConnection(db_config);
     await conn.connect();
 
-    new Schema(conn, new SchemaGrammar()).createTable('posts', (table: Blueprint) => {
+    await (new Schema(conn, new SchemaGrammar())).createTable('posts', (table: Blueprint) => {
         table.id();
         table.timestamps();
         table.string('title');
         table.text('body');
-        table.integer('priority').default(0);
+        table.float('priority').default(0);
     });
   });
 
   afterAll(async () => {
     await conn?.disconnect();
+    await PostgresqlConnection.pool.end();
+    execSync(`psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} postgres -c "DROP DATABASE ${db_config.database}"`);
   });
 
   test("general data mod data", async () => {

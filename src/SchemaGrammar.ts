@@ -1,4 +1,5 @@
 import { Blueprint, Column } from "./Blueprint";
+import { Parameter } from "./types";
 
 export class SchemaGrammar {
     toSql(blueprint: Blueprint): string {
@@ -37,7 +38,7 @@ export class SchemaGrammar {
             rc.push('serial');
         }
         else if(column.properties.type === 'float') {
-            rc.push('decimal');
+            rc.push('float');
         }
 
         if(column.properties.nullable) {
@@ -58,13 +59,21 @@ export class SchemaGrammar {
         return rc.join(' ');
     }
 
-    escape(value: string | number | null): string {
+    escape(value: Parameter): string {
         if(value === null) {
             return 'null';
         }
 
         if(typeof value === 'number') {
             return value.toString();
+        }
+
+        if(typeof value === 'boolean') {
+            return value ? 'true' : 'false';
+        }
+
+        if(value instanceof Date) {
+            return "'" + value.toISOString() + "'";
         }
 
         return "'" + value.replace("'","\\'") + "'";

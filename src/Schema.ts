@@ -6,13 +6,13 @@ export class Schema {
     constructor(private readonly connection: Connection | null, private readonly grammar: SchemaGrammar) {  
     }
 
-    createTable(tableName: string, structMethod: (blueprint: Blueprint) => void) {
+    async createTable(tableName: string, structMethod: (blueprint: Blueprint) => void) {
         const blueprint = new Blueprint();
         blueprint.setTableName(tableName,false);
         structMethod(blueprint);
         
-        let grammar = new SchemaGrammar();
-        let sql = grammar.toSql(blueprint);
-        this.connection?.runQuery({sql, bindings: []});
+        const grammar = new SchemaGrammar();
+        const sql = grammar.toSql(blueprint);
+        await this.connection?.runQuery({sql, bindings: []});
     }
 }

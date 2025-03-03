@@ -24,20 +24,23 @@ describe("raw schemas", () => {
             sql = sql2;
             return Promise.resolve([]);
         },
-        disconnect: function (): boolean
+        disconnect: async function (): Promise<boolean>
         {
             return true;
         }
     };
-    new Schema(fakeConnection, new SchemaGrammar()).createTable('users', (table: Blueprint) => {
+    await(new Schema(fakeConnection, new SchemaGrammar())).createTable('users', (table: Blueprint) => {
         table.id();
         table.timestamps();
         table.string('email',250).unique();
         table.string('first_name').default('');
         table.string('last_name').nullable(true);
         table.float('balance').default(0);
+        table.Boolean('active').default(true);
+        table.integer('age');
+        table.double('height');
     });
 
-    expect(sql.sql).toBe("create table users (id serial not null, created_at timestamp not null, updated_at timestamp not null, email varchar(250) not null unique, first_name varchar(255) not null default '', last_name varchar(255) null, balance decimal not null default 0,primary key (id))");
+    expect(sql.sql).toBe("create table users (id serial not null, created_at timestamp not null, updated_at timestamp not null, email varchar(250) not null unique, first_name varchar(255) not null default '', last_name varchar(255) null, balance float not null default 0,primary key (id))");
   });
 });

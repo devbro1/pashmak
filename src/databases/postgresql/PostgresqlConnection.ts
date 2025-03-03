@@ -28,8 +28,8 @@ export class PostgresqlConnection extends ConnectionAbs {
         const result = await this.connection?.query(sql.sql,sql.bindings);
         return result?.rows;
     }
-    disconnect(): boolean {
-        this.connection?.release();
+    async disconnect(): Promise<boolean> {
+        await this.connection?.release();
         return true;
     }
 }

@@ -53,6 +53,12 @@ describe("raw queries", () => {
 
     expect(r.sql).toBe("select * from countries where region_id = $1 or not country_id = $2");
     expect(r.bindings).toStrictEqual([2,'BE']);
+
+    query.select(['country_id','country_name']);
+    query.whereNull('country_name');
+    r = query.toSql();
+
+    expect(r.sql).toBe("select country_id, country_name from countries where region_id = $1 or not country_id = $2 and country_name is null");
   });
 
   test("basic connection functionality", async () => {
@@ -74,7 +80,7 @@ describe("raw queries", () => {
     expect(result[0].country_name).toBe('Canada');
   });
 
-  test.only("basic connection functionality v2", async () => {
+  test("basic connection functionality v2", async () => {
     const query = new Query( conn, new PostgresqlQueryGrammar());
     query.table('jobs');
     const r = query.toSql();
