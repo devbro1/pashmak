@@ -114,7 +114,7 @@ export abstract class QueryGrammar {
     }
 
     compileInsert(query: Query, data: Record<string, Parameter>): CompiledSql {
-        let sql = 'insert into ' + query._table + ' (';
+        let sql = 'insert into ' + query.parts.table + ' (';
         const columns : string[] = [];
         const bindings: Parameter[] = [];
         const values: string[] = [];
@@ -131,7 +131,7 @@ export abstract class QueryGrammar {
     }
 
     compileUpdate(query: Query, data: Record<string, Parameter>): CompiledSql {
-        let sql = 'update ' + query._table + ' set ';
+        let sql = 'update ' + query.parts.table + ' set ';
         const bindings: Parameter[] = [];
 
         const setParts = [];
@@ -142,7 +142,7 @@ export abstract class QueryGrammar {
 
         sql += setParts.join(', ');
 
-        const where_csql = this.compileWhere(query._where);
+        const where_csql = this.compileWhere(query.parts.where);
         sql += ' ' + where_csql.sql;
         bindings.push(...where_csql.bindings);
 
@@ -150,14 +150,14 @@ export abstract class QueryGrammar {
     }
 
     compileDelete(query: Query): CompiledSql {
-        let sql = 'delete from ' + query._table;
-        const where_csql = this.compileWhere(query._where);
+        let sql = 'delete from ' + query.parts.table;
+        const where_csql = this.compileWhere(query.parts.where);
         sql += ' ' + where_csql.sql;
         return { sql, bindings: where_csql.bindings };
     }
 
     compileUpsert(query: Query, data: Record<string, Parameter>,conflictFields: string[], updateFields: string[]): CompiledSql {
-        let sql = 'insert into ' + query._table + ' (';
+        let sql = 'insert into ' + query.parts.table + ' (';
         const columns : string[] = [];
         const bindings: Parameter[] = [];
         const values: string[] = [];
@@ -177,7 +177,7 @@ export abstract class QueryGrammar {
         }
         sql += setParts.join(', ');
 
-        const where_csql = this.compileWhere(query._where);
+        const where_csql = this.compileWhere(query.parts.where);
         sql += ' ' + where_csql.sql;
         bindings.push(...where_csql.bindings);
 

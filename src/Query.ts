@@ -3,17 +3,20 @@ import { QueryGrammar } from './QueryGrammar';
 import { CompiledSql, JoinCondition, Parameter, selectType, whereType } from './types';
 
 export type QueryParts = {
+  select: selectType[],
   orderBy: string[],
   limit: number | null,
   offset: number | null,
+  table: string,
+  where: whereType[],
 }
 
 export class Query {
   allowedOperations: string[] = ['=','>','<','!=', 'like','ilike'];
-  _select: selectType[] = ['*'];
-  _table: string = '';
-  _where: whereType[] = [];
   parts: QueryParts = {
+    select: ['*'],
+    table: '',
+    where: [],
     orderBy: [],
     limit: null,
     offset: null,
@@ -23,22 +26,27 @@ export class Query {
   }
 
   table(tableName: string): this {
-    this._table = tableName;
+    this.parts.table = tableName;
     return this;
   }
   
   whereOp(column: string, operation: typeof this.allowedOperations[number], value: Parameter, joinCondition: JoinCondition = 'and', negateCondition: boolean = false): this {
-    this._where.push({type: 'operation', column, operation, value, joinCondition, negateCondition});
+    this.parts.where.push({type: 'operation', column, operation, value, joinCondition, negateCondition});
     return this;
   }
 
   whereNull(column: string, joinCondition: JoinCondition = 'and', negateCondition: boolean = false): this {
-    this._where.push({type: 'null', column, joinCondition, negateCondition});
+    this.parts.where.push({type: 'null', column, joinCondition, negateCondition});
+    return this;
+  }
+
+  clearWhere(): this {
+    this.parts.where = [];
     return this;
   }
 
   select(selects: selectType[]): this {
-    this._select = [...selects];
+    this.parts.select = [...selects];
     return this;
   }
 
@@ -72,6 +80,16 @@ export class Query {
 
   async update(data: Record<string, Parameter>) {
     const csql: CompiledSql = this.grammar.compileUpdate(this,data);
+    return await this.connection?.runQuery(csql);
+  }
+
+  async upsert(data: Record<string, Parameter>, uniqueColumns: string[], updateColumns: string[]) {
+    const csql: CompiledSql = this.grammar.compileUpsert(this,data,uniqueColumns,updateColumns);
+    return await this.connection?.runQuery(csql);
+  }
+
+  async delete() {
+    const csql: CompiledSql = this.grammar.compileDelete(this);
     return await this.connection?.runQuery(csql);
   }
 }

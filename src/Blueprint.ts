@@ -39,6 +39,7 @@ export class Column {
 
     default(value: ColumnPropertiesType['default']) {
         this.properties.default = value;
+        return this;
     }
 }
 export class Blueprint {
