@@ -41,6 +41,6 @@ describe("raw schemas", () => {
         table.double('height');
     });
 
-    expect(sql.sql).toBe("create table users (id serial not null, created_at timestamp not null, updated_at timestamp not null, email varchar(250) not null unique, first_name varchar(255) not null default '', last_name varchar(255) null, balance float not null default 0,primary key (id))");
+    expect(sql.sql).toBe("create table users (id serial not null, created_at timestamp not null, updated_at timestamp not null, email varchar(250) not null unique, first_name varchar(255) not null default '', last_name varchar(255) null, balance float not null default 0, active boolean not null default true, age integer not null, height not null,primary key (id))");
   });
 });
