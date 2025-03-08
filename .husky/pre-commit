@@ -1,0 +1,3 @@
+git diff --cached --name-only --diff-filter=ACMR | xargs npx prettier --write --ignore-unknown
+
+yarn test
