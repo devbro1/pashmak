@@ -7,6 +7,23 @@ on:
 jobs:
   test-repo:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_DB: testdb
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpassword
+    env:
+      DATABASE_URL: postgres://testuser:testpassword@localhost:5432/testdb
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USER: testuser
+      DB_PASSWORD: testpassword
+      DB_NAME: testdb
+      NODE_ENV: test
     steps:
       - uses: actions/checkout@v4
       # Setup .npmrc file to publish to npm
