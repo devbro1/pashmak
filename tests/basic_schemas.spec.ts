@@ -29,7 +29,9 @@ describe("raw schemas", () => {
             return true;
         }
     };
-    await(new Schema(fakeConnection, new SchemaGrammar())).createTable('users', (table: Blueprint) => {
+
+    const schema = new Schema(fakeConnection, new SchemaGrammar());
+    await schema.createTable('users', (table: Blueprint) => {
         table.id();
         table.timestamps();
         table.string('email',250).unique();
@@ -45,7 +47,7 @@ describe("raw schemas", () => {
 
     expect(sql.sql).toBe("create table users (id serial not null, created_at timestamp not null, updated_at timestamp not null, email varchar(250) not null unique, first_name varchar(255) not null default '', last_name varchar(255) null, balance float not null default 0, active boolean not null default true, age integer not null, height double precision not null, blood_type char not null, date_of_birth date not null,primary key (id))");
 
-    await(new Schema(fakeConnection, new SchemaGrammar())).createTable('users', (table: Blueprint) => {
+    await schema.createTable('users', (table: Blueprint) => {
         table.string('email').nullable();
         table.primary(['email']);
     });
