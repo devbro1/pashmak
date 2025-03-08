@@ -9,25 +9,21 @@ order: 1
 different ways of using select field:
 
 ```javascript
-query.select("*").from("table");
-query.select("column1 as name").select("column2 as email").from("table");
-query.select(["name", "email", "age"]).from("table");
-query.select(query.raw("count(*) as count")).from("table");
+query.select('*').from('table');
+query.select('column1 as name').select('column2 as email').from('table');
+query.select(['name', 'email', 'age']).from('table');
+query.select(query.raw('count(*) as count')).from('table');
 query
-  .select([
-    "name",
-    query.raw("max(*) as maximum"),
-    query.raw("min(*) as minimum"),
-  ])
-  .from("table");
+  .select(['name', query.raw('max(*) as maximum'), query.raw('min(*) as minimum')])
+  .from('table');
 ```
 
 ## From
 
 ```javascript
-query.select("*").from("table");
-query.select("*").from("table t1");
-query.select("*").from(query.raw("(select * from table1) t1"));
+query.select('*').from('table');
+query.select('*').from('table t1');
+query.select('*').from(query.raw('(select * from table1) t1'));
 ```
 
 ## Join Clause
@@ -128,25 +124,19 @@ query
 ```
 
 ```javascript
-query.select("*").from("table").where("col1", "=", "value");
+query.select('*').from('table').where('col1', '=', 'value');
 
 query
-  .select("*")
-  .from("table")
+  .select('*')
+  .from('table')
   .where([
-    ["status", "=", "1"],
-    ["subscribed", "<>", "1"],
+    ['status', '=', '1'],
+    ['subscribed', '<>', '1'],
   ]);
 
-query
-  .select("*")
-  .from("table")
-  .where("col1", "=", "value")
-  .where("col2", "=", "value2");
+query.select('*').from('table').where('col1', '=', 'value').where('col2', '=', 'value2');
 
-query.select("*").from("table").where(query.raw("col2 < col1 + 100"));
-
-
+query.select('*').from('table').where(query.raw('col2 < col1 + 100'));
 ```
 
 possible values for operation are: =, <, >, !=, <=, >=, ILIKE, LIKE
@@ -154,11 +144,7 @@ possible values for operation are: =, <, >, !=, <=, >=, ILIKE, LIKE
 ## orWhere
 
 ```javascript
-query
-  .select("*")
-  .from("table")
-  .where("col1", "=", "value")
-  .orWhere("col2", "=", "value2");
+query.select('*').from('table').where('col1', '=', 'value').orWhere('col2', '=', 'value2');
 ```
 
 Note if you place `orWhere()` first it will act as if it is `where()`.
@@ -183,13 +169,13 @@ query.select("*").from("table")
 # WhereBetween
 
 ```javascript
-query.select("*").from("table").whereBetween("col1", [111, 222]);
+query.select('*').from('table').whereBetween('col1', [111, 222]);
 ```
 
 # whereIn
 
 ```javascript
-query.select("*").from("table").whereIn("col1", [1, 2, 3, 4]);
+query.select('*').from('table').whereIn('col1', [1, 2, 3, 4]);
 ```
 
 # nested condtions
@@ -200,22 +186,24 @@ it is possible to created complex nested where clauses. make sure to get your Co
 const cc1 = query.conditionClause();
 const cc2 = query.conditionClause();
 
-cc1.and("sound","=","meow");
-cc1.and("sound","=","rawr");
+cc1.and('sound', '=', 'meow');
+cc1.and('sound', '=', 'rawr');
 
-cc2.and("price",">",1000);
-cc2.and("price","<",10);
+cc2.and('price', '>', 1000);
+cc2.and('price', '<', 10);
 
 const qb = query
-    .select("*")
-    .from("table")
-    .where("col1", "=", "value")
-    .conditionClauseWhere(cc1)
-    .orConditionClauseWhere(cc2);
+  .select('*')
+  .from('table')
+  .where('col1', '=', 'value')
+  .conditionClauseWhere(cc1)
+  .orConditionClauseWhere(cc2);
 ```
 
 ## other where clauses
+
 all where clauses come in optional or and not mode. They will follow original where clause parameters.
+
 ```javascript
 whereBetween();
 orWhereBetween();
@@ -224,6 +212,7 @@ orWhereBetweenNot();
 ```
 
 other where clause methods available are:
+
 ```javascript
 whereDate(column_name,operation,string_date or new Date("date_string")); // where created_at > '2024-09-12'
 whereExists(RawSQL);// where EXISTS ( RawSQL )
@@ -236,10 +225,10 @@ to group rows, `groupBy` and `having` can be used:
 
 ```javascript
 query
-  .select(["product_id", query.raw("SUM(quantity) AS total_quantity")])
-  .from("sales")
-  .groupBy(query.raw("product_id"))
-  .having(query.raw("SUM(quantity) > 100"));
+  .select(['product_id', query.raw('SUM(quantity) AS total_quantity')])
+  .from('sales')
+  .groupBy(query.raw('product_id'))
+  .having(query.raw('SUM(quantity) > 100'));
 ```
 
 ## limiting output
@@ -247,7 +236,7 @@ query
 `limit` and `offset`:
 
 ```javascript
-query.select("*").from("table").limit(20).offset(5000);
+query.select('*').from('table').limit(20).offset(5000);
 ```
 
 ## Using RawSQL
@@ -255,9 +244,11 @@ query.select("*").from("table").limit(20).offset(5000);
 you can use `query.raw()` as an alternative sql code in various places. You can pass one different type of values as second argument for creating dynamic queries.
 
 ```javascript
-query.raw("col1 > col2").toFullSql();
+query.raw('col1 > col2').toFullSql();
 // col1 > col2
-query.raw("col1 > ::col2: and col3 != :val1:", {col2: "column2", val1: "val's first value"}).toFullSQL();
+query
+  .raw('col1 > ::col2: and col3 != :val1:', { col2: 'column2', val1: "val's first value" })
+  .toFullSQL();
 // col1 > column2 and col3 != 'val\' first value'
 ```
 

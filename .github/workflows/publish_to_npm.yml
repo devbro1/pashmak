@@ -8,7 +8,7 @@ jobs:
     uses: ./.github/workflows/test.yml
 
   build:
-    needs: [ run-tests ]
+    needs: [run-tests]
     runs-on: ubuntu-latest
     env:
       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -1,87 +1,114 @@
-import { RawSQL } from "./Raw";
-import { ConditionClause, operation } from "./ConditionClause";
-import { Postgresql } from "./databases/postgresql";
-import { SelectQueryBuilder } from "./SelectQueryBuilder";
-import { InsertQueryBuilder } from "./InsertQueryBuilder";
-import { UpdateQueryBuilder } from "./UpdateQueryBuilder";
-import { DeleteQueryBuilder } from "./DeleteQueryBuilder";
-import { TestDB } from "./databases/TestDB";
-import { mysql } from "./databases/mysql";
-import { Sqlite } from "./databases/sqlite";
+import { Connection } from './Connection';
+import { QueryGrammar } from './QueryGrammar';
+import { CompiledSql, JoinCondition, Parameter, selectType, whereType } from './types';
 
-type node = {
-  select: any[];
-  table: any[];
-  joins: any[];
-  where: ConditionClause;
-  group_by: any[];
-  having: any[];
-  limit: any[];
-  offset: any[];
-  order_by: any[];
+export type QueryParts = {
+  select: selectType[];
+  orderBy: string[];
+  limit: number | null;
+  offset: number | null;
+  table: string;
+  where: whereType[];
 };
 
 export class Query {
-  client;
-  nodes: node = {
-    select: [],
-    table: [],
-    joins: [],
-    where: new ConditionClause({}),
-    group_by: [],
-    having: [],
-    limit: [],
-    offset: [],
-    order_by: [],
+  allowedOperations: string[] = ['=', '>', '<', '!=', 'like', 'ilike'];
+  parts: QueryParts = {
+    select: ['*'],
+    table: '',
+    where: [],
+    orderBy: [],
+    limit: null,
+    offset: null,
   };
 
-  constructor(options:any) {
-    if (options.client === "postgresql") {
-      this.client = new Postgresql(options.connection);
-    } else if (options.client === "mysql") {
-      this.client = new mysql(options.connection);
-    } else if (options.client === "sqlite") {
-      this.client = new Sqlite(options.connection);
-    } else if (options.client === "test") {
-      this.client = new TestDB(options.connection);
-    } else {
-      throw Error("no client is implemented for " + options.client);
-    }
+  constructor(
+    private readonly connection: Connection | null,
+    private readonly grammar: QueryGrammar
+  ) {}
 
-    this.nodes.where = new ConditionClause(this.client);
+  table(tableName: string): this {
+    this.parts.table = tableName;
+    return this;
   }
 
-  public select(selects: string | any[] | RawSQL) {
-    const rc = new SelectQueryBuilder(this.client);
-    return rc.select(selects);
+  whereOp(
+    column: string,
+    operation: (typeof this.allowedOperations)[number],
+    value: Parameter,
+    joinCondition: JoinCondition = 'and',
+    negateCondition: boolean = false
+  ): this {
+    this.parts.where.push({
+      type: 'operation',
+      column,
+      operation,
+      value,
+      joinCondition,
+      negateCondition,
+    });
+    return this;
   }
 
-  public insert(table: string) {
-    const rc = new InsertQueryBuilder(this.client);
-    rc.table(table);
-    return rc;
+  whereNull(
+    column: string,
+    joinCondition: JoinCondition = 'and',
+    negateCondition: boolean = false
+  ): this {
+    this.parts.where.push({ type: 'null', column, joinCondition, negateCondition });
+    return this;
   }
 
-  public update(table: string) {
-    const rc = new UpdateQueryBuilder(this.client);
-    rc.table(table);
-    return rc;
+  clearWhere(): this {
+    this.parts.where = [];
+    return this;
   }
 
-  public delete(table: string) {
-    const rc = new DeleteQueryBuilder(this.client);
-    rc.table(table);
-    return rc;
+  select(selects: selectType[]): this {
+    this.parts.select = [...selects];
+    return this;
   }
 
-  public raw(sql: string, bindings = {}) {
-    const rc = new RawSQL(this.client);
-    rc.set(sql, bindings);
-    return rc;
+  orderBy(column: string, direction: 'asc' | 'desc' = 'asc'): this {
+    this.parts.orderBy.push(`${column} ${direction}`);
+    return this;
   }
 
-  public conditionClause(): ConditionClause {
-    const rc = new ConditionClause(this.client);
-    return rc;
+  limit(limit: number): this {
+    this.parts.limit = limit;
+    return this;
+  }
+
+  offset(offset: number): this {
+    this.parts.offset = offset;
+    return this;
+  }
+
+  toSql(): CompiledSql {
+    return this.grammar.toSql(this);
+  }
+
+  async get() {
+    return await this.connection?.runQuery(this.toSql());
+  }
+
+  async insert(data: Record<string, Parameter>) {
+    const csql: CompiledSql = this.grammar.compileInsert(this, data);
+    return await this.connection?.runQuery(csql);
+  }
+
+  async update(data: Record<string, Parameter>) {
+    const csql: CompiledSql = this.grammar.compileUpdate(this, data);
+    return await this.connection?.runQuery(csql);
+  }
+
+  async upsert(data: Record<string, Parameter>, uniqueColumns: string[], updateColumns: string[]) {
+    const csql: CompiledSql = this.grammar.compileUpsert(this, data, uniqueColumns, updateColumns);
+    return await this.connection?.runQuery(csql);
+  }
+
+  async delete() {
+    const csql: CompiledSql = this.grammar.compileDelete(this);
+    return await this.connection?.runQuery(csql);
   }
 }
