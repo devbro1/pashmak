@@ -1,9 +1,9 @@
-import { CompiledSql } from "./types";
+import { CompiledSql } from './types';
 
 export abstract class Connection {
-    abstract connect(): Promise<boolean>;
+  abstract connect(): Promise<boolean>;
 
-    abstract runQuery(sql: CompiledSql): Promise<any>;
+  abstract runQuery(sql: CompiledSql): Promise<any>;
 
-    abstract disconnect(): Promise<boolean>;
+  abstract disconnect(): Promise<boolean>;
 }

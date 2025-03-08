@@ -1,4 +1,3 @@
-import { SchemaGrammar } from "../../SchemaGrammar";
+import { SchemaGrammar } from '../../SchemaGrammar';
 
-export class PostgresqlSchemaGrammar extends SchemaGrammar {
-}
+export class PostgresqlSchemaGrammar extends SchemaGrammar {}

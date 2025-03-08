@@ -2,7 +2,7 @@
 # Site
 
 title: Devbro's SQL-Generator
-url: "https://github.com/devbro1/sql-generator/"
+url: 'https://github.com/devbro1/sql-generator/'
 baseurl:
 google_analytics_key:
 show_full_navigation: true
@@ -49,12 +49,12 @@ collections:
 
 defaults:
   - scope:
-      path: ""
+      path: ''
     values:
       layout: default
   - scope:
-      path: ""
-      type: "docs"
+      path: ''
+      type: 'docs'
     values:
       seo:
         type: Article
@@ -66,8 +66,8 @@ defaults:
           width: 800
           height: 2000
   - scope:
-      path: ""
-      type: "posts"
+      path: ''
+      type: 'posts'
     values:
       _comments:
         type: Marks the impact of this release
