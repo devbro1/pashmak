@@ -40,6 +40,15 @@ export class SchemaGrammar {
         else if(column.properties.type === 'float') {
             rc.push('float');
         }
+        else if(column.properties.type === 'double') {
+            rc.push('double precision');
+        }
+        else if(column.properties.type === 'date') {
+            rc.push('date');
+        }
+        else {
+            throw new Error('Unknown column type: ' + column.properties.type);
+        }
 
         if(column.properties.nullable) {
             rc.push('null');
