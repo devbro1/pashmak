@@ -3,16 +3,16 @@ import { QueryGrammar } from './QueryGrammar';
 import { CompiledSql, JoinCondition, Parameter, selectType, whereType } from './types';
 
 export type QueryParts = {
-  select: selectType[],
-  orderBy: string[],
-  limit: number | null,
-  offset: number | null,
-  table: string,
-  where: whereType[],
-}
+  select: selectType[];
+  orderBy: string[];
+  limit: number | null;
+  offset: number | null;
+  table: string;
+  where: whereType[];
+};
 
 export class Query {
-  allowedOperations: string[] = ['=','>','<','!=', 'like','ilike'];
+  allowedOperations: string[] = ['=', '>', '<', '!=', 'like', 'ilike'];
   parts: QueryParts = {
     select: ['*'],
     table: '',
@@ -20,23 +20,42 @@ export class Query {
     orderBy: [],
     limit: null,
     offset: null,
-  }
+  };
 
-  constructor(private readonly connection: Connection | null, private readonly grammar: QueryGrammar) {  
-  }
+  constructor(
+    private readonly connection: Connection | null,
+    private readonly grammar: QueryGrammar
+  ) {}
 
   table(tableName: string): this {
     this.parts.table = tableName;
     return this;
   }
-  
-  whereOp(column: string, operation: typeof this.allowedOperations[number], value: Parameter, joinCondition: JoinCondition = 'and', negateCondition: boolean = false): this {
-    this.parts.where.push({type: 'operation', column, operation, value, joinCondition, negateCondition});
+
+  whereOp(
+    column: string,
+    operation: (typeof this.allowedOperations)[number],
+    value: Parameter,
+    joinCondition: JoinCondition = 'and',
+    negateCondition: boolean = false
+  ): this {
+    this.parts.where.push({
+      type: 'operation',
+      column,
+      operation,
+      value,
+      joinCondition,
+      negateCondition,
+    });
     return this;
   }
 
-  whereNull(column: string, joinCondition: JoinCondition = 'and', negateCondition: boolean = false): this {
-    this.parts.where.push({type: 'null', column, joinCondition, negateCondition});
+  whereNull(
+    column: string,
+    joinCondition: JoinCondition = 'and',
+    negateCondition: boolean = false
+  ): this {
+    this.parts.where.push({ type: 'null', column, joinCondition, negateCondition });
     return this;
   }
 
@@ -74,17 +93,17 @@ export class Query {
   }
 
   async insert(data: Record<string, Parameter>) {
-    const csql: CompiledSql = this.grammar.compileInsert(this,data);
+    const csql: CompiledSql = this.grammar.compileInsert(this, data);
     return await this.connection?.runQuery(csql);
   }
 
   async update(data: Record<string, Parameter>) {
-    const csql: CompiledSql = this.grammar.compileUpdate(this,data);
+    const csql: CompiledSql = this.grammar.compileUpdate(this, data);
     return await this.connection?.runQuery(csql);
   }
 
   async upsert(data: Record<string, Parameter>, uniqueColumns: string[], updateColumns: string[]) {
-    const csql: CompiledSql = this.grammar.compileUpsert(this,data,uniqueColumns,updateColumns);
+    const csql: CompiledSql = this.grammar.compileUpsert(this, data, uniqueColumns, updateColumns);
     return await this.connection?.runQuery(csql);
   }
 

@@ -9,10 +9,7 @@ order: 1
 full example of insert:
 
 ```javascript
-query
-  .insert("table1")
-  .values({ col1: "val1", col2: "val2", col3: 333 })
-  .returning("id");
+query.insert('table1').values({ col1: 'val1', col2: 'val2', col3: 333 }).returning('id');
 ```
 
 values need to be an object of all possible values. key needs to match table column.

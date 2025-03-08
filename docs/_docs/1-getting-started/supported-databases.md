@@ -11,28 +11,32 @@ Currently the only supported database is Postgresql, but the library is designed
 ### Postgresql
 
 ```javascript
-import { Query } from "@devbro1/sql-generator";
+import { Query } from '@devbro1/sql-generator';
 
 query = new Query({
-  client: "postgresql",
+  client: 'postgresql',
   connection: {
-    host: "my.database-server.com",
+    host: 'my.database-server.com',
     port: 5432,
-    database: "database-name",
-    user: "database-user",
-    password: "secretpassword!!",
+    database: 'database-name',
+    user: 'database-user',
+    password: 'secretpassword!!',
   },
 });
 ```
 
 ### Mysql
+
 support coming soon
 
 ### Sqlite
+
 support coming soon
 
 ### Mssql
+
 support coming soon
 
 ### Oracle
+
 support coming soon
