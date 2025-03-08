@@ -48,10 +48,10 @@ describe("raw schemas", () => {
     expect(sql.sql).toBe("create table users (id serial not null, created_at timestamp not null, updated_at timestamp not null, email varchar(250) not null unique, first_name varchar(255) not null default '', last_name varchar(255) null, balance float not null default 0, active boolean not null default true, age integer not null, height double precision not null, blood_type char not null, date_of_birth date not null,primary key (id))");
 
     await schema.createTable('users', (table: Blueprint) => {
-        table.string('email').nullable();
+        table.string('email').nullable().default("ABC");
         table.primary(['email']);
     });
 
-    expect(sql.sql).toBe("create table users (email varchar(255) not null,primary key (email))");
+    expect(sql.sql).toBe("create table users (email varchar(255) null default 'ABC',primary key (email))");
   });
 });
