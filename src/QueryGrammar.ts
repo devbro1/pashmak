@@ -214,7 +214,7 @@ export abstract class QueryGrammar {
     return { sql: rc, bindings: [] };
   }
 
-  compileHaving(having: whereType[]): CompiledSql {
+  compileHaving(having: havingType[]): CompiledSql {
     let sql = '';
     let bindings: Parameter[] = [];
 
