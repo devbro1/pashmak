@@ -1,12 +1,30 @@
 import { table } from 'console';
 import { Query } from './Query';
-import { Parameter, CompiledSql, selectType, whereNull, whereOp, whereType } from './types';
+import {
+  Parameter,
+  CompiledSql,
+  selectType,
+  whereNull,
+  whereOp,
+  whereType,
+  whereRaw,
+  havingType,
+} from './types';
 
 function toUpperFirst(str: string) {
   return str.substring(0, 1).toUpperCase() + str.substring(1);
 }
 export abstract class QueryGrammar {
-  sqlParts: string[] = ['select', 'table', 'where', 'orderBy', 'limit', 'offset'];
+  sqlParts: string[] = [
+    'select',
+    'table',
+    'where',
+    'groupBy',
+    'having',
+    'orderBy',
+    'limit',
+    'offset',
+  ];
 
   toSql(query: Query): CompiledSql {
     let sql = '';
@@ -16,7 +34,7 @@ export abstract class QueryGrammar {
       // @ts-ignore
       const funcName: keyof this = 'compile' + toUpperFirst(part);
       // @ts-ignore
-      const r = this[funcName](query['_' + part] || query.parts[part]);
+      const r = this[funcName](query.parts[part]);
       if (!sql) {
         sql = r.sql;
       } else if (r.sql) {
@@ -186,5 +204,51 @@ export abstract class QueryGrammar {
     bindings.push(...where_csql.bindings);
 
     return { sql, bindings };
+  }
+
+  compileGroupBy(groupBy: string[]): CompiledSql {
+    let rc = '';
+    if (groupBy.length) {
+      rc = 'group by ' + groupBy.join(', ');
+    }
+
+    return { sql: rc, bindings: [] };
+  }
+
+  compileHaving(having: havingType[]): CompiledSql {
+    let sql = '';
+    let bindings: Parameter[] = [];
+
+    for (const w of having) {
+      sql += ' ' + w.joinCondition + ' ';
+      if (w.negateCondition) {
+        sql += 'not ';
+      }
+      const funcName = 'compileHaving' + toUpperFirst(w.type);
+      // @ts-ignore
+      const wh = this[funcName](w);
+      sql += wh.sql;
+      bindings = [...bindings, ...wh.bindings];
+    }
+    if (sql.startsWith(' and ')) {
+      sql = 'having ' + sql.substring(' and '.length);
+    } else if (sql.startsWith(' or ')) {
+      sql = 'having ' + sql.substring(' or '.length);
+    }
+    return { sql, bindings };
+  }
+
+  compileHavingOperation(w: whereOp): CompiledSql {
+    return {
+      sql: `${w.column} ${w.operation} ${this.getVariablePlaceholder()}`,
+      bindings: [w.value],
+    };
+  }
+
+  compileHavingRaw(w: whereRaw): CompiledSql {
+    return {
+      sql: w.sql,
+      bindings: w.bindings,
+    };
   }
 }

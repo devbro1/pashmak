@@ -1,14 +1,16 @@
 import { Connection } from './Connection';
 import { QueryGrammar } from './QueryGrammar';
-import { CompiledSql, JoinCondition, Parameter, selectType, whereType } from './types';
+import { CompiledSql, JoinCondition, Parameter, selectType, whereType, havingType } from './types';
 
 export type QueryParts = {
   select: selectType[];
+  table: string;
+  where: whereType[];
+  groupBy: string[];
+  having: havingType[];
   orderBy: string[];
   limit: number | null;
   offset: number | null;
-  table: string;
-  where: whereType[];
 };
 
 export class Query {
@@ -17,6 +19,8 @@ export class Query {
     select: ['*'],
     table: '',
     where: [],
+    groupBy: [],
+    having: [],
     orderBy: [],
     limit: null,
     offset: null,
@@ -66,6 +70,39 @@ export class Query {
 
   select(selects: selectType[]): this {
     this.parts.select = [...selects];
+    return this;
+  }
+
+  groupBy(columns: string[]): this {
+    this.parts.groupBy = [...columns];
+    return this;
+  }
+
+  havingOp(
+    column: string,
+    operation: (typeof this.allowedOperations)[number],
+    value: Parameter,
+    joinCondition: JoinCondition = 'and',
+    negateCondition: boolean = false
+  ): this {
+    this.parts.having.push({
+      type: 'operation',
+      column,
+      operation,
+      value,
+      joinCondition,
+      negateCondition,
+    });
+    return this;
+  }
+
+  havingRaw(
+    sql: string,
+    bindings: Parameter[],
+    joinCondition: JoinCondition = 'and',
+    negateCondition: boolean = false
+  ): this {
+    this.parts.having.push({ type: 'raw', sql, bindings, joinCondition, negateCondition });
     return this;
   }
 
