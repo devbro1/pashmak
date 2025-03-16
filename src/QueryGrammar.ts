@@ -1,12 +1,29 @@
 import { table } from 'console';
 import { Query } from './Query';
-import { Parameter, CompiledSql, selectType, whereNull, whereOp, whereType, whereRaw } from './types';
+import {
+  Parameter,
+  CompiledSql,
+  selectType,
+  whereNull,
+  whereOp,
+  whereType,
+  whereRaw,
+} from './types';
 
 function toUpperFirst(str: string) {
   return str.substring(0, 1).toUpperCase() + str.substring(1);
 }
 export abstract class QueryGrammar {
-  sqlParts: string[] = ['select', 'table', 'where', 'groupBy', 'having', 'orderBy', 'limit', 'offset'];
+  sqlParts: string[] = [
+    'select',
+    'table',
+    'where',
+    'groupBy',
+    'having',
+    'orderBy',
+    'limit',
+    'offset',
+  ];
 
   toSql(query: Query): CompiledSql {
     let sql = '';

@@ -11,8 +11,6 @@ export type QueryParts = {
   orderBy: string[];
   limit: number | null;
   offset: number | null;
-  
-  
 };
 
 export class Query {
@@ -98,7 +96,12 @@ export class Query {
     return this;
   }
 
-  havingRaw(sql: string, bindings: Parameter[], joinCondition: JoinCondition = 'and', negateCondition: boolean = false): this {
+  havingRaw(
+    sql: string,
+    bindings: Parameter[],
+    joinCondition: JoinCondition = 'and',
+    negateCondition: boolean = false
+  ): this {
     this.parts.having.push({ type: 'raw', sql, bindings, joinCondition, negateCondition });
     return this;
   }
