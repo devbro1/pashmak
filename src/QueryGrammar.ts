@@ -8,7 +8,7 @@ import {
   whereOp,
   whereType,
   whereRaw,
-  havingType
+  havingType,
 } from './types';
 
 function toUpperFirst(str: string) {
