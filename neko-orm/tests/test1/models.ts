@@ -1,3 +1,4 @@
+import { Connection } from 'neko-sql/src/Connection';
 import pluralize from 'pluralize';
 
 export class BaseModel {
@@ -5,6 +6,7 @@ export class BaseModel {
   static fillable: string[] = [];
   static primaryKey: string[] = ['id'];
   public id: number | undefined;
+  static connection: Connection | (() => Connection) | (() => Promise<Connection>) | undefined;
   protected exists: boolean = false;
 
   constructor(initialData: any = {}) {
@@ -33,7 +35,27 @@ export class BaseModel {
     // implementation logic here
     // @ts-ignore
     console.log(this.constructor.primaryKey);
+
     return {};
+  }
+
+  public static setConnection(conn: Connection) {
+    BaseModel.connection = conn;
+  }
+
+  public static async getConnection(): Promise<Connection> {
+    if(typeof BaseModel.connection === 'undefined') {
+      throw new Error('Connection is not defined');
+    }
+    else if (typeof BaseModel.connection === 'function') {
+      return await BaseModel.connection();
+    }
+    return BaseModel.connection;
+  }
+
+  public static async getQuery(): Promise<any> {
+    const conn = await BaseModel.getConnection();
+    return conn.;
   }
 }
 

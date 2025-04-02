@@ -1,38 +1,40 @@
 import { describe, expect, test } from '@jest/globals';
-// import { PostgresqlConnection } from 'neko-sql/PostgresqlConnection';
-// import { Connection } from 'neko-sql/Connection';
-// import { execSync } from 'child_process';
+import { PostgresqlConnection } from 'neko-sql/src/databases/postgresql/PostgresqlConnection';
+import { Connection } from 'neko-sql/src/Connection';
+import { execSync } from 'child_process';
 import { BaseModel, Country, Region } from './models';
 
 describe('raw queries', () => {
-  // let conn: Connection | null;
+  let conn: Connection;
 
   beforeAll(async () => {
-    // const randName = Math.random().toString(36).substring(7);
-    // const db_config = {
-    //   host: process.env.DB_HOST,
-    //   database: (process.env.DB_NAME || 'test_db') + `_${randName}`,
-    //   user: process.env.DB_USER,
-    //   password: process.env.DB_PASSWORD,
-    //   port: parseInt(process.env.DB_PORT || '5432'),
-    // };
-    // console.log('creating test database', db_config.database);
-    // execSync(
-    //   `psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} postgres -c "CREATE DATABASE ${db_config.database}"`
-    // );
-    // console.log('load database schema and data');
-    // execSync(
-    //   `psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} -f ./tests/fixtures/load_hr_db_pg.sql ${db_config.database}`
-    // );
-    // conn = new PostgresqlConnection(db_config);
-    // await conn.connect();
+    const randName = Math.random().toString(36).substring(7);
+    const db_config = {
+      host: process.env.DB_HOST,
+      database: (process.env.DB_NAME || 'test_db') + `_${randName}`,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      port: parseInt(process.env.DB_PORT || '5432'),
+    };
+    console.log('creating test database', db_config.database);
+    execSync(
+      `psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} postgres -c "CREATE DATABASE ${db_config.database}"`
+    );
+    console.log('load database schema and data');
+    execSync(
+      `psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} -f ./tests/fixtures/load_hr_db_pg.sql ${db_config.database}`
+    );
+    conn = new PostgresqlConnection(db_config);
+    await conn.connect();
   });
 
   afterAll(async () => {
-    // await conn?.disconnect();
+    await conn?.disconnect();
   });
 
-  test('basic select all', () => {
+  test('basic select all', async () => {
+
+    BaseModel.setConnection(conn);
     class Region2 extends BaseModel {
       protected tableName: string = 'RRRRRRR';
 

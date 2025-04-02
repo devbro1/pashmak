@@ -36,7 +36,7 @@
     "@types/pluralize": "^0.0.33",
     "@types/sqlstring": "^2.3.2",
     "luxon": "^3.4.4",
-    "neko-sql": "^0.x",
+    "neko-sql": "0.1.7",
     "pluralize": "^8.0.0",
     "sqlstring": "^2.3.3",
     "sync-threads": "^1.0.1",
