@@ -52,6 +52,6 @@ describe('raw queries', () => {
     expect(country2.country_name).toBe('Indonesia');
     expect(country2.region_id).toBe(1);
 
-    console.log(country2.findByPrimaryKey({ country_id: 1 }));
+    console.log(await Country.findByPrimaryKey({ country_id: 'AR' }));
   });
 });

@@ -4,6 +4,8 @@ import { Schema } from '../src/Schema';
 import { CompiledSql } from '../src/types';
 import { Blueprint } from '../src/Blueprint';
 import { SchemaGrammar } from '../src/SchemaGrammar';
+import { Query } from '../src/Query';
+import { PostgresqlQueryGrammar } from '../src/databases/postgresql/PostgresqlQueryGrammar';
 
 describe('raw schemas', () => {
   beforeAll(async () => {});
@@ -22,6 +24,9 @@ describe('raw schemas', () => {
       },
       disconnect: async function (): Promise<boolean> {
         return true;
+      },
+      getQuery() {
+        return new Query(null, new PostgresqlQueryGrammar());
       },
     };
 

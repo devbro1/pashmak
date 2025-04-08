@@ -1,3 +1,4 @@
+import { Query } from './Query';
 import { CompiledSql } from './types';
 
 export abstract class Connection {
@@ -6,4 +7,6 @@ export abstract class Connection {
   abstract runQuery(sql: CompiledSql): Promise<any>;
 
   abstract disconnect(): Promise<boolean>;
+
+  abstract getQuery(): Query;
 }

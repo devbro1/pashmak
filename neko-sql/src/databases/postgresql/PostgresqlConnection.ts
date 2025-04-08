@@ -2,6 +2,8 @@ import { Connection as ConnectionAbs } from '../../Connection';
 import { Connection, PoolClient, PoolConfig } from 'pg';
 import { Pool } from 'pg';
 import { CompiledSql } from '../../types';
+import { Query } from '../../Query';
+import { PostgresqlQueryGrammar } from './PostgresqlQueryGrammar';
 export class PostgresqlConnection extends ConnectionAbs {
   connection: PoolClient | undefined;
   static pool: Pool;
@@ -31,5 +33,9 @@ export class PostgresqlConnection extends ConnectionAbs {
   async disconnect(): Promise<boolean> {
     await this.connection?.release();
     return true;
+  }
+
+  getQuery(): Query {
+    return new Query(this, new PostgresqlQueryGrammar());
   }
 }

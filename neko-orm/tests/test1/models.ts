@@ -1,4 +1,5 @@
 import { Connection } from 'neko-sql/src/Connection';
+import { Query } from 'neko-sql/src/Query';
 import pluralize from 'pluralize';
 
 export class BaseModel {
@@ -28,15 +29,34 @@ export class BaseModel {
     return this.tableName;
   }
 
-  public findByPrimaryKey<T extends typeof BaseModel>(
-    this: InstanceType<T>,
+  public static async findByPrimaryKey<T extends typeof BaseModel>(
     keys: { [K in T['primaryKey'][number]]: string | number }
-  ): any {
-    // implementation logic here
-    // @ts-ignore
-    console.log(this.constructor.primaryKey);
+  ): Promise<any> {
+    let self = new this();
+    let q: Query = await self.getQuery();
 
-    return {};
+    // @ts-ignore
+    q.select([...(self.constructor as typeof BaseModel).primaryKey, ...(self.constructor as typeof BaseModel).fillable]);
+    for(const key of (self.constructor as typeof BaseModel).primaryKey) {
+      // @ts-ignore
+      q.whereOp(key,'=',keys[key]);
+    }
+    q.limit(1);
+
+    let r = await q.get();
+
+    if(r.length === 0) {
+      return undefined;
+    }
+
+    for(const k in r[0]) {
+      // @ts-ignore
+      self[k] = r[0][k];
+    }
+
+    self.exists = true;
+
+    return self;
   }
 
   public static setConnection(conn: Connection) {
@@ -53,9 +73,11 @@ export class BaseModel {
     return BaseModel.connection;
   }
 
-  public static async getQuery(): Promise<any> {
+  public async getQuery(): Promise<any> {
     const conn = await BaseModel.getConnection();
-    return conn.;
+    let rc = conn.getQuery();
+    rc.table(this.tableName);
+    return rc;
   }
 }
 
