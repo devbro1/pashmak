@@ -12,7 +12,6 @@ export class BaseModel {
   protected exists: boolean = false;
   protected guarded: string[] = [];
 
-
   constructor(initialData: any = {}) {
     this.tableName = pluralize(this.constructor.name.toLowerCase());
     this.fillable = this.constructor.prototype.fillable ?? [];
@@ -157,7 +156,7 @@ export class BaseModel {
   public toJson() {
     const data: Record<string, Parameter> = {};
     for (const key of [...this.primaryKey, ...this.fillable]) {
-      if(this.guarded.includes(key)) {
+      if (this.guarded.includes(key)) {
         continue;
       }
 
