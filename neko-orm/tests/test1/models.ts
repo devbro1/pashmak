@@ -33,45 +33,50 @@ export class BaseModel {
   public async save() {
     const q: Query = await this.getQuery();
     const params: Record<string, Parameter> = {};
-    for( const key of [...(this.constructor as typeof BaseModel).primaryKey, ...(this.constructor as typeof BaseModel).fillable]) {
+    for (const key of [
+      ...(this.constructor as typeof BaseModel).primaryKey,
+      ...(this.constructor as typeof BaseModel).fillable,
+    ]) {
       // @ts-ignore
       params[key] = this[key];
     }
 
-    if(this.exists) {
-      for( const pkey of (this.constructor as typeof BaseModel).primaryKey) {
+    if (this.exists) {
+      for (const pkey of (this.constructor as typeof BaseModel).primaryKey) {
         // @ts-ignore
-        q.whereOp(pkey,'=',this[pkey]);
+        q.whereOp(pkey, '=', this[pkey]);
       }
       await q.update(params);
-    }
-    else {
+    } else {
       await q.insert(params);
       this.exists = true;
     }
   }
 
-  public static async findByPrimaryKey<T extends typeof BaseModel>(
-    keys: { [K in T['primaryKey'][number]]: string | number }
-  ): Promise<any> {
+  public static async findByPrimaryKey<T extends typeof BaseModel>(keys: {
+    [K in T['primaryKey'][number]]: string | number;
+  }): Promise<any> {
     let self = new this();
     let q: Query = await self.getQuery();
 
     // @ts-ignore
-    q.select([...(self.constructor as typeof BaseModel).primaryKey, ...(self.constructor as typeof BaseModel).fillable]);
-    for(const key of (self.constructor as typeof BaseModel).primaryKey) {
+    q.select([
+      ...(self.constructor as typeof BaseModel).primaryKey,
+      ...(self.constructor as typeof BaseModel).fillable,
+    ]);
+    for (const key of (self.constructor as typeof BaseModel).primaryKey) {
       // @ts-ignore
-      q.whereOp(key,'=',keys[key]);
+      q.whereOp(key, '=', keys[key]);
     }
     q.limit(1);
 
     let r = await q.get();
 
-    if(r.length === 0) {
+    if (r.length === 0) {
       return undefined;
     }
 
-    for(const k in r[0]) {
+    for (const k in r[0]) {
       // @ts-ignore
       self[k] = r[0][k];
     }
@@ -86,10 +91,9 @@ export class BaseModel {
   }
 
   public static async getConnection(): Promise<Connection> {
-    if(typeof BaseModel.connection === 'undefined') {
+    if (typeof BaseModel.connection === 'undefined') {
       throw new Error('Connection is not defined');
-    }
-    else if (typeof BaseModel.connection === 'function') {
+    } else if (typeof BaseModel.connection === 'function') {
       return await BaseModel.connection();
     }
     return BaseModel.connection;

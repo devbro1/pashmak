@@ -33,7 +33,6 @@ describe('raw queries', () => {
   });
 
   test('basic select all', async () => {
-
     BaseModel.setConnection(conn);
     class Region2 extends BaseModel {
       protected tableName: string = 'RRRRRRR';
@@ -56,7 +55,7 @@ describe('raw queries', () => {
     expect(c4.country_id).toBe('AR');
     expect(c4.country_name).toBe('Argentina');
 
-    const country3 = new Country({ country_name: 'ZZZZZ', region_id: 1, country_id: 'ZZ'});
+    const country3 = new Country({ country_name: 'ZZZZZ', region_id: 1, country_id: 'ZZ' });
     await country3.save();
 
     const c5 = await Country.findByPrimaryKey({ country_id: 'ZZ' });
