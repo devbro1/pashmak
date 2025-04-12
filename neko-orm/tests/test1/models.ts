@@ -1,5 +1,6 @@
 import { Connection } from 'neko-sql/src/Connection';
 import { Query } from 'neko-sql/src/Query';
+import { Parameter } from 'neko-sql/src/types';
 import pluralize from 'pluralize';
 
 export class BaseModel {
@@ -27,6 +28,27 @@ export class BaseModel {
 
   public getTablename(): string {
     return this.tableName;
+  }
+
+  public async save() {
+    const q: Query = await this.getQuery();
+    const params: Record<string, Parameter> = {};
+    for( const key of [...(this.constructor as typeof BaseModel).primaryKey, ...(this.constructor as typeof BaseModel).fillable]) {
+      // @ts-ignore
+      params[key] = this[key];
+    }
+
+    if(this.exists) {
+      for( const pkey of (this.constructor as typeof BaseModel).primaryKey) {
+        // @ts-ignore
+        q.whereOp(pkey,'=',this[pkey]);
+      }
+      await q.update(params);
+    }
+    else {
+      await q.insert(params);
+      this.exists = true;
+    }
   }
 
   public static async findByPrimaryKey<T extends typeof BaseModel>(
