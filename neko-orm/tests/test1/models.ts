@@ -36,10 +36,7 @@ export class BaseModel {
   public async save() {
     const q: Query = await this.getQuery();
     const params: Record<string, Parameter> = {};
-    for (const key of [
-      ...this.primaryKey,
-      ...this.fillable,
-    ]) {
+    for (const key of [...this.primaryKey, ...this.fillable]) {
       // @ts-ignore
       params[key] = this[key];
     }
@@ -56,15 +53,14 @@ export class BaseModel {
     }
   }
 
-  public static async findByPrimaryKey<T extends typeof BaseModel>(keys: Record<string, Parameter>): Promise<any> {
+  public static async findByPrimaryKey<T extends typeof BaseModel>(
+    keys: Record<string, Parameter>
+  ): Promise<any> {
     let self = new this();
     let q: Query = await self.getQuery();
 
     // @ts-ignore
-    q.select([
-      ...self.primaryKey,
-      ...self.fillable,
-    ]);
+    q.select([...self.primaryKey, ...self.fillable]);
     for (const key of self.primaryKey) {
       // @ts-ignore
       q.whereOp(key, '=', keys[key]);
@@ -121,10 +117,12 @@ type AttributeOptions = {
 function Attribute(options: AttributeOptions = {}) {
   return function (target: any, propertyKey: string) {
     if (options.primaryKey === true) {
-      if(!target.constructor.prototype.primaryKey) {
+      if (!target.constructor.prototype.primaryKey) {
         target.constructor.prototype.primaryKey = [];
-      }
-      else if (target.constructor.prototype.primaryKey.length === 1 && target.constructor.prototype.primaryKey[0] === 'id') {
+      } else if (
+        target.constructor.prototype.primaryKey.length === 1 &&
+        target.constructor.prototype.primaryKey[0] === 'id'
+      ) {
         target.constructor.prototype.primaryKey = [];
       }
       target.constructor.prototype.primaryKey.push(propertyKey);

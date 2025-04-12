@@ -129,6 +129,10 @@ export class Query {
     return await this.connection?.runQuery(this.toSql());
   }
 
+  getConnection(): Connection | null {
+    return this.connection;
+  }
+
   async insert(data: Record<string, Parameter>) {
     const csql: CompiledSql = this.grammar.compileInsert(this, data);
     return await this.connection?.runQuery(csql);
