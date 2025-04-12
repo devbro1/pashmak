@@ -5,21 +5,24 @@ import pluralize from 'pluralize';
 
 export class BaseModel {
   protected tableName: string = '';
-  static fillable: string[] = [];
-  static primaryKey: string[] = ['id'];
+  protected fillable: string[] = [];
+  protected primaryKey: string[] = ['id'];
   public id: number | undefined;
   static connection: Connection | (() => Connection) | (() => Promise<Connection>) | undefined;
   protected exists: boolean = false;
 
   constructor(initialData: any = {}) {
     this.tableName = pluralize(this.constructor.name.toLowerCase());
-    for (const key of new.target.fillable) {
+    this.fillable = this.constructor.prototype.fillable ?? [];
+    this.primaryKey = this.constructor.prototype.primaryKey ?? ['id'];
+
+    for (const key of this.fillable) {
       if (typeof initialData[key] !== 'undefined') {
         (this as any)[key] = initialData[key];
       }
     }
 
-    for (const key of new.target.primaryKey) {
+    for (const key of this.primaryKey) {
       if (typeof initialData[key] !== 'undefined') {
         (this as any)[key] = initialData[key];
       }
@@ -34,15 +37,15 @@ export class BaseModel {
     const q: Query = await this.getQuery();
     const params: Record<string, Parameter> = {};
     for (const key of [
-      ...(this.constructor as typeof BaseModel).primaryKey,
-      ...(this.constructor as typeof BaseModel).fillable,
+      ...this.primaryKey,
+      ...this.fillable,
     ]) {
       // @ts-ignore
       params[key] = this[key];
     }
 
     if (this.exists) {
-      for (const pkey of (this.constructor as typeof BaseModel).primaryKey) {
+      for (const pkey of this.primaryKey) {
         // @ts-ignore
         q.whereOp(pkey, '=', this[pkey]);
       }
@@ -53,18 +56,16 @@ export class BaseModel {
     }
   }
 
-  public static async findByPrimaryKey<T extends typeof BaseModel>(keys: {
-    [K in T['primaryKey'][number]]: string | number;
-  }): Promise<any> {
+  public static async findByPrimaryKey<T extends typeof BaseModel>(keys: Record<string, Parameter>): Promise<any> {
     let self = new this();
     let q: Query = await self.getQuery();
 
     // @ts-ignore
     q.select([
-      ...(self.constructor as typeof BaseModel).primaryKey,
-      ...(self.constructor as typeof BaseModel).fillable,
+      ...self.primaryKey,
+      ...self.fillable,
     ]);
-    for (const key of (self.constructor as typeof BaseModel).primaryKey) {
+    for (const key of self.primaryKey) {
       // @ts-ignore
       q.whereOp(key, '=', keys[key]);
     }
@@ -120,12 +121,18 @@ type AttributeOptions = {
 function Attribute(options: AttributeOptions = {}) {
   return function (target: any, propertyKey: string) {
     if (options.primaryKey === true) {
-      if (target.constructor.primaryKey.length === 1 && target.constructor.primaryKey[0] === 'id') {
-        target.constructor.primaryKey = [];
+      if(!target.constructor.prototype.primaryKey) {
+        target.constructor.prototype.primaryKey = [];
       }
-      target.constructor.primaryKey.push(propertyKey);
+      else if (target.constructor.prototype.primaryKey.length === 1 && target.constructor.prototype.primaryKey[0] === 'id') {
+        target.constructor.prototype.primaryKey = [];
+      }
+      target.constructor.prototype.primaryKey.push(propertyKey);
     } else {
-      target.constructor.fillable.push(propertyKey);
+      if (!target.constructor.prototype.fillable) {
+        target.constructor.prototype.fillable = [];
+      }
+      target.constructor.prototype.fillable.push(propertyKey);
     }
 
     Object.defineProperty(target, propertyKey, {
