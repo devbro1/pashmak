@@ -43,7 +43,7 @@ describe('raw queries', () => {
   test('without transaction', async () => {
     const query1 = new Query(conn1, new PostgresqlQueryGrammar());
     const query2 = new Query(conn2, new PostgresqlQueryGrammar());
-    
+
     query1.table('countries');
     query2.table('countries').whereOp('country_id', '=', 'DE');
 
@@ -55,7 +55,7 @@ describe('raw queries', () => {
   test('transaction with commit', async () => {
     const query1 = new Query(conn1, new PostgresqlQueryGrammar());
     const query2 = new Query(conn2, new PostgresqlQueryGrammar());
-    
+
     query1.table('countries');
     query2.table('countries').whereOp('country_id', '=', 'CA');
     expect((await query2.get())[0].country_name).toBe('Canada');
@@ -72,7 +72,7 @@ describe('raw queries', () => {
   test('transaction with rollback', async () => {
     const query1 = new Query(conn1, new PostgresqlQueryGrammar());
     const query2 = new Query(conn2, new PostgresqlQueryGrammar());
-    
+
     query1.table('countries');
     query2.table('countries').whereOp('country_id', '=', 'IT');
 
@@ -89,27 +89,28 @@ describe('raw queries', () => {
   test('transaction with rollback fail', async () => {
     const query1 = new Query(conn1, new PostgresqlQueryGrammar());
     const query2 = new Query(conn2, new PostgresqlQueryGrammar());
-    
+
     query1.table('countries');
     query2.table('countries').whereOp('country_id', '=', 'UK');
 
     try {
-        expect((await query2.get())[0].country_name).toBe('United Kingdom');
+      expect((await query2.get())[0].country_name).toBe('United Kingdom');
 
-        await query1.getConnection()?.beginTransaction();
-        await query1.whereOp('country_id', '=', 'UK').update({ country_name: 'United Kingdom Eh' });
-        expect((await query2.get())[0].country_name).toBe('United Kingdom');
+      await query1.getConnection()?.beginTransaction();
+      await query1.whereOp('country_id', '=', 'UK').update({ country_name: 'United Kingdom Eh' });
+      expect((await query2.get())[0].country_name).toBe('United Kingdom');
 
-        await query1.whereOp('country_id', '=', 'UK').update({ country_nameAAA: 'non existing field' });
+      await query1
+        .whereOp('country_id', '=', 'UK')
+        .update({ country_nameAAA: 'non existing field' });
 
-        await query1.getConnection()?.commit();
-        expect(1).toBe(2); // should never get to this line
+      await query1.getConnection()?.commit();
+      expect(1).toBe(2); // should never get to this line
+    } catch (e) {
+      await query1.getConnection()?.rollback();
+      expect(1).toBe(1);
     }
-    catch (e) {
-        await query1.getConnection()?.rollback();
-        expect(1).toBe(1);
-    }
-    
+
     expect((await query2.get())[0].country_name).toBe('United Kingdom');
   });
 });

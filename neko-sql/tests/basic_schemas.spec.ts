@@ -15,35 +15,28 @@ describe('raw schemas', () => {
   test('basic schema to create a table', async () => {
     let sql: CompiledSql = { sql: '', bindings: [] };
     const fakeConnection: Connection = {
-      connect: async function (): Promise<boolean>
-      {
+      connect: async function (): Promise<boolean> {
         return true;
       },
-      runQuery: function (sql2: CompiledSql): Promise<any>
-      {
+      runQuery: function (sql2: CompiledSql): Promise<any> {
         sql = sql2;
         return Promise.resolve([]);
       },
-      disconnect: async function (): Promise<boolean>
-      {
+      disconnect: async function (): Promise<boolean> {
         return true;
       },
-      getQuery()
-      {
+      getQuery() {
         return new Query(null, new PostgresqlQueryGrammar());
       },
-      beginTransaction: function (): Promise<void>
-      {
+      beginTransaction: function (): Promise<void> {
         throw new Error('Function not implemented.');
       },
-      commit: function (): Promise<void>
-      {
+      commit: function (): Promise<void> {
         throw new Error('Function not implemented.');
       },
-      rollback: function (): Promise<void>
-      {
+      rollback: function (): Promise<void> {
         throw new Error('Function not implemented.');
-      }
+      },
     };
 
     const schema = new Schema(fakeConnection, new SchemaGrammar());
