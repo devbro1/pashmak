@@ -2,7 +2,7 @@ import { describe, expect, test } from '@jest/globals';
 import { PostgresqlConnection } from 'neko-sql/src/databases/postgresql/PostgresqlConnection';
 import { Connection } from 'neko-sql/src/Connection';
 import { execSync } from 'child_process';
-import { BaseModel, Country, Region } from './models';
+import { BaseModel, Country, Job, Region } from './models';
 
 describe('raw queries', () => {
   let conn: Connection;
@@ -66,5 +66,14 @@ describe('raw queries', () => {
 
     const c6 = await Country.findByPrimaryKey({ country_id: 'ZZ' });
     expect(c6.country_name).toBe('ZZXZZ');
+  });
+
+  test('job orm', async () => {
+    BaseModel.setConnection(() => conn);
+    const job = await Job.find(3);
+    expect(job.title).toBe('Administration Assistant');
+
+    const jobs: Job[] = await (await Job.getQuery()).whereOp('min_salary', '>=', 10000).get();
+    expect(jobs.length).toBe(3);
   });
 });

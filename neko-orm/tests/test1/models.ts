@@ -10,6 +10,8 @@ export class BaseModel {
   public id: number | undefined;
   static connection: Connection | (() => Connection) | (() => Promise<Connection>) | undefined;
   protected exists: boolean = false;
+  protected guarded: string[] = [];
+
 
   constructor(initialData: any = {}) {
     this.tableName = pluralize(this.constructor.name.toLowerCase());
@@ -53,6 +55,38 @@ export class BaseModel {
     }
   }
 
+  public async delete() {
+    const q: Query = await this.getQuery();
+    for (const pkey of this.primaryKey) {
+      // @ts-ignore
+      q.whereOp(pkey, '=', this[pkey]);
+    }
+    await q.delete();
+    this.exists = false;
+  }
+
+  public async refresh() {
+    const q: Query = await this.getQuery();
+    for (const pkey of this.primaryKey) {
+      // @ts-ignore
+      q.whereOp(pkey, '=', this[pkey]);
+    }
+    q.limit(1);
+    let r = await q.get();
+    if (r.length === 0) {
+      throw new Error('No record found');
+    }
+
+    for (const k in r[0]) {
+      // @ts-ignore
+      this[k] = r[0][k];
+    }
+  }
+
+  public static async find(id: number) {
+    return this.findByPrimaryKey({ id });
+  }
+
   public static async findByPrimaryKey<T extends typeof BaseModel>(
     keys: Record<string, Parameter>
   ): Promise<any> {
@@ -83,7 +117,7 @@ export class BaseModel {
     return self;
   }
 
-  public static setConnection(conn: Connection) {
+  public static setConnection(conn: Connection | (() => Connection) | (() => Promise<Connection>)) {
     BaseModel.connection = conn;
   }
 
@@ -96,11 +130,41 @@ export class BaseModel {
     return BaseModel.connection;
   }
 
-  public async getQuery(): Promise<any> {
+  public async getQuery(): Promise<Query> {
     const conn = await BaseModel.getConnection();
     let rc = conn.getQuery();
     rc.table(this.tableName);
     return rc;
+  }
+
+  public static async getQuery(): Promise<any> {
+    const conn = await BaseModel.getConnection();
+    let rc = conn.getQuery();
+    let self = new this();
+    rc.table(self.tableName);
+    return rc;
+  }
+
+  public fill(data: Record<string, Parameter>) {
+    for (const key of this.fillable) {
+      if (typeof data[key] !== 'undefined') {
+        // @ts-ignore
+        this[key] = data[key];
+      }
+    }
+  }
+
+  public toJson() {
+    const data: Record<string, Parameter> = {};
+    for (const key of [...this.primaryKey, ...this.fillable]) {
+      if(this.guarded.includes(key)) {
+        continue;
+      }
+
+      // @ts-ignore
+      data[key] = this[key];
+    }
+    return data;
   }
 }
 
@@ -155,4 +219,15 @@ export class Country extends BaseModel {
 
   @Attribute()
   public region_id: number | undefined;
+}
+
+export class Job extends BaseModel {
+  @Attribute()
+  public title: string | undefined;
+
+  @Attribute()
+  public min_salary: number | undefined;
+
+  @Attribute()
+  public max_salary: number | undefined;
 }
