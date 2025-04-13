@@ -75,5 +75,13 @@ describe('raw queries', () => {
 
     const jobs: Job[] = await (await Job.getQuery()).whereOp('min_salary', '>=', 10000).get();
     expect(jobs.length).toBe(3);
+
+    const job2 = new Job();
+    job2.title = 'Cat Petter';
+    job2.min_salary = 1000;
+    job2.max_salary = 2000;
+    await job2.save();
+    console.log('job2', job2);
+    expect(job2.id).not.toBeUndefined();
   });
 });
