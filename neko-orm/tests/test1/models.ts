@@ -41,7 +41,7 @@ export class BaseModel {
     const q: Query = await this.getQuery();
     const params: Record<string, Parameter> = {};
 
-    if(!this.incrementing || this.exists) {
+    if (!this.incrementing || this.exists) {
       for (const key of this.primaryKey) {
         // @ts-ignore
         params[key] = this[key];
@@ -61,7 +61,7 @@ export class BaseModel {
       await q.update(params);
     } else {
       const result = this.incrementing ? await q.insertGetId(params) : await q.insert(params);
-      if(this.incrementing && !this.exists) {
+      if (this.incrementing && !this.exists) {
         for (const key of this.primaryKey) {
           // @ts-ignore
           this[key] = result[0][key];
