@@ -138,6 +138,11 @@ export class Query {
     return await this.connection?.runQuery(csql);
   }
 
+  async insertGetId(data: Record<string, Parameter>, options: { primaryKey: string[] } = { primaryKey: ['id'] }) {
+    const csql: CompiledSql = this.grammar.compileInsertGetId(this, data, options);
+    return await this.connection?.runQuery(csql);
+  }
+
   async update(data: Record<string, Parameter>) {
     const csql: CompiledSql = this.grammar.compileUpdate(this, data);
     return await this.connection?.runQuery(csql);

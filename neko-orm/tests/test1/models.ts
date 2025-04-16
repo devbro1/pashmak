@@ -7,15 +7,18 @@ export class BaseModel {
   protected tableName: string = '';
   protected fillable: string[] = [];
   protected primaryKey: string[] = ['id'];
-  public id: number | undefined;
+  protected incrementing: boolean = true;
+  public id: number | undefined = undefined;
   static connection: Connection | (() => Connection) | (() => Promise<Connection>) | undefined;
   protected exists: boolean = false;
   protected guarded: string[] = [];
 
   constructor(initialData: any = {}) {
+    this.id = undefined;
     this.tableName = pluralize(this.constructor.name.toLowerCase());
     this.fillable = this.constructor.prototype.fillable ?? [];
     this.primaryKey = this.constructor.prototype.primaryKey ?? ['id'];
+    this.incrementing = this.constructor.prototype.incrementing ?? true;
 
     for (const key of this.fillable) {
       if (typeof initialData[key] !== 'undefined') {
@@ -37,7 +40,15 @@ export class BaseModel {
   public async save() {
     const q: Query = await this.getQuery();
     const params: Record<string, Parameter> = {};
-    for (const key of [...this.primaryKey, ...this.fillable]) {
+
+    if(!this.incrementing || this.exists) {
+      for (const key of this.primaryKey) {
+        // @ts-ignore
+        params[key] = this[key];
+      }
+    }
+
+    for (const key of this.fillable) {
       // @ts-ignore
       params[key] = this[key];
     }
@@ -49,7 +60,13 @@ export class BaseModel {
       }
       await q.update(params);
     } else {
-      await q.insert(params);
+      const result = this.incrementing ? await q.insertGetId(params) : await q.insert(params);
+      if(this.incrementing && !this.exists) {
+        for (const key of this.primaryKey) {
+          // @ts-ignore
+          this[key] = result[0][key];
+        }
+      }
       this.exists = true;
     }
   }
@@ -189,6 +206,7 @@ function Attribute(options: AttributeOptions = {}) {
         target.constructor.prototype.primaryKey = [];
       }
       target.constructor.prototype.primaryKey.push(propertyKey);
+      target.constructor.prototype.incrementing = false;
     } else {
       if (!target.constructor.prototype.fillable) {
         target.constructor.prototype.fillable = [];

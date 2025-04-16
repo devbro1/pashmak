@@ -126,7 +126,6 @@ INSERT INTO jobs(id,title,min_salary,max_salary) VALUES (17,'Shipping Clerk',250
 INSERT INTO jobs(id,title,min_salary,max_salary) VALUES (18,'Stock Clerk',2000.00,5000.00);
 INSERT INTO jobs(id,title,min_salary,max_salary) VALUES (19,'Stock Manager',5500.00,8500.00);
 
-
 /*Data for the table departments */
 
 INSERT INTO departments(department_id,department_name,location_id) VALUES (1,'Administration',1700);
@@ -219,3 +218,9 @@ INSERT INTO dependents(dependent_id,first_name,last_name,relationship,employee_i
 INSERT INTO dependents(dependent_id,first_name,last_name,relationship,employee_id) VALUES (28,'Woody','Russell','Child',145);
 INSERT INTO dependents(dependent_id,first_name,last_name,relationship,employee_id) VALUES (29,'Alec','Partners','Child',146);
 INSERT INTO dependents(dependent_id,first_name,last_name,relationship,employee_id) VALUES (30,'Sandra','Taylor','Child',176);
+
+SELECT setval(                                                 
+    'jobs_id_seq',
+    (SELECT COALESCE(MAX(job_id) + 1, 1) FROM employees),
+    false
+);
