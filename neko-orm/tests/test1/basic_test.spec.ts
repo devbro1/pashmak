@@ -2,7 +2,7 @@ import { describe, expect, test } from '@jest/globals';
 import { PostgresqlConnection } from 'neko-sql/src/databases/postgresql/PostgresqlConnection';
 import { Connection } from 'neko-sql/src/Connection';
 import { execSync } from 'child_process';
-import { BaseModel, Country, Region } from './models';
+import { BaseModel, Country, Job, Region } from './models';
 
 describe('raw queries', () => {
   let conn: Connection;
@@ -32,7 +32,7 @@ describe('raw queries', () => {
     await conn?.disconnect();
   });
 
-  test('basic select all', async () => {
+  test('basic testing', async () => {
     BaseModel.setConnection(conn);
     class Region2 extends BaseModel {
       protected tableName: string = 'RRRRRRR';
@@ -51,6 +51,36 @@ describe('raw queries', () => {
     expect(country2.country_name).toBe('Indonesia');
     expect(country2.region_id).toBe(1);
 
-    console.log(await Country.findByPrimaryKey({ country_id: 'AR' }));
+    const c4 = await Country.findByPrimaryKey({ country_id: 'AR' });
+    expect(c4.country_id).toBe('AR');
+    expect(c4.country_name).toBe('Argentina');
+
+    const country3 = new Country({ country_name: 'ZZZZZ', region_id: 1, country_id: 'ZZ' });
+    await country3.save();
+
+    const c5 = await Country.findByPrimaryKey({ country_id: 'ZZ' });
+    expect(c5.country_name).toBe('ZZZZZ');
+
+    country3.country_name = 'ZZXZZ';
+    await country3.save();
+
+    const c6 = await Country.findByPrimaryKey({ country_id: 'ZZ' });
+    expect(c6.country_name).toBe('ZZXZZ');
+  });
+
+  test('job orm', async () => {
+    BaseModel.setConnection(() => conn);
+    const job = await Job.find(3);
+    expect(job.title).toBe('Administration Assistant');
+
+    const jobs: Job[] = await (await Job.getQuery()).whereOp('min_salary', '>=', 10000).get();
+    expect(jobs.length).toBe(3);
+
+    const job2 = new Job();
+    job2.title = 'Cat Petter';
+    job2.min_salary = 1000;
+    job2.max_salary = 2000;
+    await job2.save();
+    expect(job2.id).not.toBeUndefined();
   });
 });

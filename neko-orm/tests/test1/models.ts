@@ -1,24 +1,32 @@
 import { Connection } from 'neko-sql/src/Connection';
 import { Query } from 'neko-sql/src/Query';
+import { Parameter } from 'neko-sql/src/types';
 import pluralize from 'pluralize';
 
 export class BaseModel {
   protected tableName: string = '';
-  static fillable: string[] = [];
-  static primaryKey: string[] = ['id'];
-  public id: number | undefined;
+  protected fillable: string[] = [];
+  protected primaryKey: string[] = ['id'];
+  protected incrementing: boolean = true;
+  public id: number | undefined = undefined;
   static connection: Connection | (() => Connection) | (() => Promise<Connection>) | undefined;
   protected exists: boolean = false;
+  protected guarded: string[] = [];
 
   constructor(initialData: any = {}) {
+    this.id = undefined;
     this.tableName = pluralize(this.constructor.name.toLowerCase());
-    for (const key of new.target.fillable) {
+    this.fillable = this.constructor.prototype.fillable ?? [];
+    this.primaryKey = this.constructor.prototype.primaryKey ?? ['id'];
+    this.incrementing = this.constructor.prototype.incrementing ?? true;
+
+    for (const key of this.fillable) {
       if (typeof initialData[key] !== 'undefined') {
         (this as any)[key] = initialData[key];
       }
     }
 
-    for (const key of new.target.primaryKey) {
+    for (const key of this.primaryKey) {
       if (typeof initialData[key] !== 'undefined') {
         (this as any)[key] = initialData[key];
       }
@@ -29,18 +37,81 @@ export class BaseModel {
     return this.tableName;
   }
 
-  public static async findByPrimaryKey<T extends typeof BaseModel>(keys: {
-    [K in T['primaryKey'][number]]: string | number;
-  }): Promise<any> {
+  public async save() {
+    const q: Query = await this.getQuery();
+    const params: Record<string, Parameter> = {};
+
+    if (!this.incrementing || this.exists) {
+      for (const key of this.primaryKey) {
+        // @ts-ignore
+        params[key] = this[key];
+      }
+    }
+
+    for (const key of this.fillable) {
+      // @ts-ignore
+      params[key] = this[key];
+    }
+
+    if (this.exists) {
+      for (const pkey of this.primaryKey) {
+        // @ts-ignore
+        q.whereOp(pkey, '=', this[pkey]);
+      }
+      await q.update(params);
+    } else {
+      const result = this.incrementing ? await q.insertGetId(params) : await q.insert(params);
+      if (this.incrementing && !this.exists) {
+        for (const key of this.primaryKey) {
+          // @ts-ignore
+          this[key] = result[0][key];
+        }
+      }
+      this.exists = true;
+    }
+  }
+
+  public async delete() {
+    const q: Query = await this.getQuery();
+    for (const pkey of this.primaryKey) {
+      // @ts-ignore
+      q.whereOp(pkey, '=', this[pkey]);
+    }
+    await q.delete();
+    this.exists = false;
+  }
+
+  public async refresh() {
+    const q: Query = await this.getQuery();
+    for (const pkey of this.primaryKey) {
+      // @ts-ignore
+      q.whereOp(pkey, '=', this[pkey]);
+    }
+    q.limit(1);
+    let r = await q.get();
+    if (r.length === 0) {
+      throw new Error('No record found');
+    }
+
+    for (const k in r[0]) {
+      // @ts-ignore
+      this[k] = r[0][k];
+    }
+  }
+
+  public static async find(id: number) {
+    return this.findByPrimaryKey({ id });
+  }
+
+  public static async findByPrimaryKey<T extends typeof BaseModel>(
+    keys: Record<string, Parameter>
+  ): Promise<any> {
     let self = new this();
     let q: Query = await self.getQuery();
 
     // @ts-ignore
-    q.select([
-      ...(self.constructor as typeof BaseModel).primaryKey,
-      ...(self.constructor as typeof BaseModel).fillable,
-    ]);
-    for (const key of (self.constructor as typeof BaseModel).primaryKey) {
+    q.select([...self.primaryKey, ...self.fillable]);
+    for (const key of self.primaryKey) {
       // @ts-ignore
       q.whereOp(key, '=', keys[key]);
     }
@@ -62,7 +133,7 @@ export class BaseModel {
     return self;
   }
 
-  public static setConnection(conn: Connection) {
+  public static setConnection(conn: Connection | (() => Connection) | (() => Promise<Connection>)) {
     BaseModel.connection = conn;
   }
 
@@ -75,11 +146,41 @@ export class BaseModel {
     return BaseModel.connection;
   }
 
-  public async getQuery(): Promise<any> {
+  public async getQuery(): Promise<Query> {
     const conn = await BaseModel.getConnection();
     let rc = conn.getQuery();
     rc.table(this.tableName);
     return rc;
+  }
+
+  public static async getQuery(): Promise<any> {
+    const conn = await BaseModel.getConnection();
+    let rc = conn.getQuery();
+    let self = new this();
+    rc.table(self.tableName);
+    return rc;
+  }
+
+  public fill(data: Record<string, Parameter>) {
+    for (const key of this.fillable) {
+      if (typeof data[key] !== 'undefined') {
+        // @ts-ignore
+        this[key] = data[key];
+      }
+    }
+  }
+
+  public toJson() {
+    const data: Record<string, Parameter> = {};
+    for (const key of [...this.primaryKey, ...this.fillable]) {
+      if (this.guarded.includes(key)) {
+        continue;
+      }
+
+      // @ts-ignore
+      data[key] = this[key];
+    }
+    return data;
   }
 }
 
@@ -96,12 +197,21 @@ type AttributeOptions = {
 function Attribute(options: AttributeOptions = {}) {
   return function (target: any, propertyKey: string) {
     if (options.primaryKey === true) {
-      if (target.constructor.primaryKey.length === 1 && target.constructor.primaryKey[0] === 'id') {
-        target.constructor.primaryKey = [];
+      if (!target.constructor.prototype.primaryKey) {
+        target.constructor.prototype.primaryKey = [];
+      } else if (
+        target.constructor.prototype.primaryKey.length === 1 &&
+        target.constructor.prototype.primaryKey[0] === 'id'
+      ) {
+        target.constructor.prototype.primaryKey = [];
       }
-      target.constructor.primaryKey.push(propertyKey);
+      target.constructor.prototype.primaryKey.push(propertyKey);
+      target.constructor.prototype.incrementing = false;
     } else {
-      target.constructor.fillable.push(propertyKey);
+      if (!target.constructor.prototype.fillable) {
+        target.constructor.prototype.fillable = [];
+      }
+      target.constructor.prototype.fillable.push(propertyKey);
     }
 
     Object.defineProperty(target, propertyKey, {
@@ -126,4 +236,15 @@ export class Country extends BaseModel {
 
   @Attribute()
   public region_id: number | undefined;
+}
+
+export class Job extends BaseModel {
+  @Attribute()
+  public title: string | undefined;
+
+  @Attribute()
+  public min_salary: number | undefined;
+
+  @Attribute()
+  public max_salary: number | undefined;
 }

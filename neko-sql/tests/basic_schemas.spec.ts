@@ -28,6 +28,15 @@ describe('raw schemas', () => {
       getQuery() {
         return new Query(null, new PostgresqlQueryGrammar());
       },
+      beginTransaction: function (): Promise<void> {
+        throw new Error('Function not implemented.');
+      },
+      commit: function (): Promise<void> {
+        throw new Error('Function not implemented.');
+      },
+      rollback: function (): Promise<void> {
+        throw new Error('Function not implemented.');
+      },
     };
 
     const schema = new Schema(fakeConnection, new SchemaGrammar());

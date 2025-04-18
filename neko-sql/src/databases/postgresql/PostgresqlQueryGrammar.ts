@@ -23,6 +23,17 @@ export class PostgresqlQueryGrammar extends QueryGrammar {
     return super.compileInsert(query, data);
   }
 
+  compileInsertGetId(
+    query: Query,
+    data: Record<string, any>,
+    options: { primaryKey: string[] } = { primaryKey: ['id'] }
+  ): CompiledSql {
+    this.parameterIndex = 1;
+    const rc = super.compileInsert(query, data);
+    rc.sql += ` RETURNING ${options.primaryKey.join(', ')}`;
+    return rc;
+  }
+
   compileUpdate(query: Query, data: Record<string, any>): CompiledSql {
     this.parameterIndex = 1;
     return super.compileUpdate(query, data);
