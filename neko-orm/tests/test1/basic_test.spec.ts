@@ -2,7 +2,8 @@ import { describe, expect, test } from '@jest/globals';
 import { PostgresqlConnection } from 'neko-sql/src/databases/postgresql/PostgresqlConnection';
 import { Connection } from 'neko-sql/src/Connection';
 import { execSync } from 'child_process';
-import { BaseModel, Country, Job, Region } from './models';
+import { Country, Job, Region } from '../fixtures/models';
+import { BaseModel } from '../../src';
 
 describe('raw queries', () => {
   let conn: Connection;
