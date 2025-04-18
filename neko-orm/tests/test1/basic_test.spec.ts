@@ -33,7 +33,6 @@ describe('raw queries', () => {
   });
 
   test('basic select all', async () => {
-
     BaseModel.setConnection(conn);
     class Region2 extends BaseModel {
       protected tableName: string = 'RRRRRRR';
