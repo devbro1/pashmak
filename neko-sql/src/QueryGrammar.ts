@@ -147,6 +147,12 @@ export abstract class QueryGrammar {
     return { sql, bindings };
   }
 
+  abstract compileInsertGetId(
+    query: Query,
+    data: Record<string, Parameter>,
+    options: { primaryKey: string[] }
+  ): CompiledSql;
+
   compileUpdate(query: Query, data: Record<string, Parameter>): CompiledSql {
     let sql = 'update ' + query.parts.table + ' set ';
     const bindings: Parameter[] = [];

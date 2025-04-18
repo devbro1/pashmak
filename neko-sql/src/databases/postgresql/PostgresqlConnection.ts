@@ -2,6 +2,8 @@ import { Connection as ConnectionAbs } from '../../Connection';
 import { Connection, PoolClient, PoolConfig } from 'pg';
 import { Pool } from 'pg';
 import { CompiledSql } from '../../types';
+import { Query } from '../../Query';
+import { PostgresqlQueryGrammar } from './PostgresqlQueryGrammar';
 export class PostgresqlConnection extends ConnectionAbs {
   connection: PoolClient | undefined;
   static pool: Pool;
@@ -31,5 +33,30 @@ export class PostgresqlConnection extends ConnectionAbs {
   async disconnect(): Promise<boolean> {
     await this.connection?.release();
     return true;
+  }
+
+  getQuery(): Query {
+    return new Query(this, new PostgresqlQueryGrammar());
+  }
+
+  async beginTransaction(): Promise<void> {
+    if (!this.connection) {
+      throw new Error('No active connection to begin a transaction.');
+    }
+    await this.connection.query('BEGIN');
+  }
+
+  async commit(): Promise<void> {
+    if (!this.connection) {
+      throw new Error('No active connection to commit a transaction.');
+    }
+    await this.connection.query('COMMIT');
+  }
+
+  async rollback(): Promise<void> {
+    if (!this.connection) {
+      throw new Error('No active connection to rollback a transaction.');
+    }
+    await this.connection.query('ROLLBACK');
   }
 }
