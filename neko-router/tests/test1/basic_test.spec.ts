@@ -13,20 +13,26 @@ describe('Router tests', () => {
       return 'POST countries';
     });
 
-    router.addRoute(['GET'], '/api/v1/countries/:countryId', async (req: Request, res: Response) => {
-      return 'GET PARAM countries ' + req.params?.countryId;
-    });
+    router.addRoute(
+      ['GET'],
+      '/api/v1/countries/:countryId',
+      async (req: Request, res: Response) => {
+        return 'GET PARAM countries ' + req.params?.countryId;
+      }
+    );
 
     let resolved = router.resolve({ uri: '/api/v1/countries', method: 'GET' } as Request);
     expect(resolved).not.toBe(undefined);
     // @ts-ignore
     expect(resolved.params).toEqual({});
     // @ts-ignore
-    expect(await resolved.handler({},{})).toBe('GET countries');
+    expect(await resolved.handler({}, {})).toBe('GET countries');
 
     resolved = router.resolve({ uri: '/api/v1/countries/ABC', method: 'GET' } as Request);
     // @ts-ignore
-    expect(await resolved.handler({params: resolved?.params},{})).toBe('GET PARAM countries ABC');
+    expect(await resolved.handler({ params: resolved?.params }, {})).toBe(
+      'GET PARAM countries ABC'
+    );
 
     resolved = router.resolve({ uri: '/api/v1/jobs', method: 'GET' } as Request);
     expect(resolved).toBe(undefined);
