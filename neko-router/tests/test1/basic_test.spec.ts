@@ -28,6 +28,9 @@ describe('Router tests', () => {
     // @ts-ignore
     expect(await resolved.handler({}, {})).toBe('GET countries');
 
+    resolved = router.resolve({ uri: '/api/v1/countries/ABC', method: 'HEAD' } as Request);
+    expect(resolved).toBeUndefined();
+
     resolved = router.resolve({ uri: '/api/v1/countries/ABC', method: 'GET' } as Request);
     // @ts-ignore
     expect(await resolved.handler({ params: resolved?.params }, {})).toBe(
