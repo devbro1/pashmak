@@ -1,5 +1,13 @@
 import { LexerToken, Request, Response } from './types';
+
+export interface Middleware {
+  static getInstance: () => Middleware;
+  run(req: Request, res: Response, next: Promise<void>);
+
+}
+
 export class Route {
+  private middlewares: Middleware[] = [];
   private uriRegex: RegExp;
   constructor(
     public methods: string[],
@@ -89,6 +97,19 @@ export class Route {
       // @ts-ignore
       params: r.groups || {},
     };
+  }
+
+
+  addMiddleware(middlewares: Middleware | Middleware[]) {
+    if(!Array.isArray(middlewares)) {
+      middlewares = [middlewares];
+    }
+
+    this.middlewares.concat(middlewares);
+  }
+
+  getMiddlewares() {
+    return this.middlewares;
   }
 }
 export class Router {

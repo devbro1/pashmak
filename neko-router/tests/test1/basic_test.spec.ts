@@ -25,7 +25,7 @@ describe('Router tests', () => {
     let resolved = router.resolve(req);
     expect(resolved).toBeDefined();
     // @ts-ignore
-    expect(resolved?.match(req)).toEqual({params: {}});
+    expect(resolved?.match(req)).toEqual({ params: {} });
     // @ts-ignore
     expect(await resolved.handler({}, {})).toBe('GET countries');
 
@@ -35,9 +35,7 @@ describe('Router tests', () => {
     req = { uri: '/api/v1/countries/ABC', method: 'GET' } as Request;
     resolved = router.resolve(req);
     // @ts-ignore
-    expect(await resolved.handler({ ...resolved.match(req) }, {})).toBe(
-      'GET PARAM countries ABC'
-    );
+    expect(await resolved.handler({ ...resolved.match(req) }, {})).toBe('GET PARAM countries ABC');
 
     resolved = router.resolve({ uri: '/api/v1/jobs', method: 'GET' } as Request);
     expect(resolved).toBe(undefined);
