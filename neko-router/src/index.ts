@@ -67,6 +67,14 @@ export class Route {
     return new RegExp(`^${regexParts.join('')}$`);
   }
 
+  test(request: Request) {
+    if (this.methods.indexOf(request.method) === -1) {
+      return false;
+    }
+
+    return this.uriRegex.test(request.uri);
+  }
+
   match(request: Request) {
     if (this.methods.indexOf(request.method) === -1) {
       return false;
@@ -80,21 +88,22 @@ export class Route {
     return {
       // @ts-ignore
       params: r.groups || {},
-      handler: this.handler,
     };
   }
 }
 export class Router {
   routes: Route[] = [];
   addRoute(methods: string[], path: string, handler: Function) {
-    this.routes.push(new Route(methods, path, handler));
+    const route: Route = new Route(methods, path, handler);
+    this.routes.push(route);
+    return route;
   }
 
-  resolve(request: Request): { params: any; handler: Function } | undefined {
+  resolve(request: Request): Route | undefined {
     for (const route of this.routes) {
       let r = route.match(request);
-      if (r) {
-        return { ...r, handler: route.handler };
+      if (route.test(request)) {
+        return route;
       }
     }
     return undefined;
