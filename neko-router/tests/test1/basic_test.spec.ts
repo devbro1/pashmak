@@ -1,6 +1,34 @@
 import { describe, expect, test } from '@jest/globals';
-import { Router } from '../../src';
+import { Middleware, Router } from '../../src';
 import { Request, Response } from '../../src/types';
+
+class m1 extends Middleware {
+  protected constructor(params: any) {
+    super();
+  }
+
+  public static getInstance(params: any): Middleware {
+    return new m1(params);
+  }
+  async call(req: Request, res: Response, next: () => Promise<void>): Promise<void> {
+    await next();
+  }
+}
+
+class m2 extends Middleware {
+  protected constructor(params: any = {}) {
+    super(params);
+  }
+
+  private static instance: m2 | undefined = undefined;
+  public static getInstance(params: any = {}): Middleware {
+    return (m2.instance = m2.instance || new m2(params));
+  }
+
+  async call(req: Request, res: Response, next: () => Promise<void>): Promise<void> {
+    await next();
+  }
+}
 describe('Router tests', () => {
   test('basic testing', async () => {
     const router: Router = new Router();
@@ -9,9 +37,11 @@ describe('Router tests', () => {
       return 'GET countries';
     });
 
-    router.addRoute(['POST'], '/api/v1/countries', async (req: Request, res: Response) => {
-      return 'POST countries';
-    });
+    router
+      .addRoute(['POST'], '/api/v1/countries', async (req: Request, res: Response) => {
+        return 'POST countries';
+      })
+      .addMiddleware([m1, m2]);
 
     router.addRoute(
       ['GET'],
@@ -45,5 +75,9 @@ describe('Router tests', () => {
 
     resolved = router.resolve({ uri: '/api/v1/countries', method: 'HEAD' } as Request);
     expect(resolved).toBeDefined();
+
+    resolved = router.resolve({ uri: '/api/v1/countries', method: 'POST' } as Request);
+    expect(resolved).toBeDefined();
+    expect(resolved?.getMiddlewares().length).toBe(2);
   });
 });

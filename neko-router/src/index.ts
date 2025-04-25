@@ -1,13 +1,16 @@
 import { LexerToken, Request, Response } from './types';
 
-export interface Middleware {
-  static getInstance: () => Middleware;
-  run(req: Request, res: Response, next: Promise<void>);
+export abstract class Middleware {
+  protected constructor(params: any = {}) {}
+  static getInstance(params: any): Middleware {
+    throw new Error('Method not implemented. Please implement a static getInstance method.');
+  }
 
+  abstract call(req: Request, res: Response, next: () => Promise<void>): Promise<void>;
 }
 
 export class Route {
-  private middlewares: Middleware[] = [];
+  private middlewares: (typeof Middleware | (() => Middleware))[] = [];
   private uriRegex: RegExp;
   constructor(
     public methods: string[],
@@ -99,13 +102,14 @@ export class Route {
     };
   }
 
-
-  addMiddleware(middlewares: Middleware | Middleware[]) {
-    if(!Array.isArray(middlewares)) {
-      middlewares = [middlewares];
-    }
-
-    this.middlewares.concat(middlewares);
+  addMiddleware(
+    middlewares:
+      | typeof Middleware
+      | (typeof Middleware)[]
+      | (() => Middleware)
+      | (() => Middleware)[]
+  ) {
+    this.middlewares = this.middlewares.concat(middlewares);
   }
 
   getMiddlewares() {
