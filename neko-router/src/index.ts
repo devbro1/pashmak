@@ -2,7 +2,7 @@ import { LexerToken, Request, Response } from './types';
 
 export type MiddlewareProvider =
   | typeof Middleware
-  | (() => Middleware)
+  | Middleware
   | ((request: Request, response: Response, next: () => Promise<void>) => Promise<void>);
 
 export abstract class Middleware {
@@ -120,7 +120,13 @@ export class Router {
   addRoute(methods: string[], path: string, handler: Function) {
     const route: Route = new Route(methods, path, handler);
     this.routes.push(route);
+    route.addMiddleware(this.middlewares);
     return route;
+  }
+
+  private middlewares: MiddlewareProvider[] = [];
+  addGlobalMiddleware(middlewares: MiddlewareProvider | MiddlewareProvider[]) {
+    this.middlewares = this.middlewares.concat(middlewares);
   }
 
   resolve(request: Request): Route | undefined {

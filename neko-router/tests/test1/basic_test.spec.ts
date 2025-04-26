@@ -80,4 +80,44 @@ describe('Router tests', () => {
     expect(resolved).toBeDefined();
     expect(resolved?.getMiddlewares().length).toBe(2);
   });
+
+  test('global middlewares', async () => {
+    const router: Router = new Router();
+
+    router.addRoute(['GET'], '/api/v1/nomid', async (req: Request, res: Response) => {
+      return '';
+    });
+
+    router.addGlobalMiddleware(async (req: Request, res: Response, next: () => Promise<void>) => {
+      return await next();
+    });
+
+    router.addRoute(['GET'], '/api/v1/oneGlobal', async (req: Request, res: Response) => {
+      return '';
+    });
+
+    router
+      .addRoute(['GET'], '/api/v1/globnown', async (req: Request, res: Response) => {
+        return '';
+      })
+      .addMiddleware([m1, m2]);
+
+    router.addRoute(['GET'], '/api/v1/postglob', async (req: Request, res: Response) => {
+      return '';
+    });
+
+    expect(
+      router.resolve({ uri: '/api/v1/nomid', method: 'GET' } as Request)?.getMiddlewares().length
+    ).toBe(0);
+    expect(
+      router.resolve({ uri: '/api/v1/oneGlobal', method: 'GET' } as Request)?.getMiddlewares()
+        .length
+    ).toBe(1);
+    expect(
+      router.resolve({ uri: '/api/v1/globnown', method: 'GET' } as Request)?.getMiddlewares().length
+    ).toBe(3);
+    expect(
+      router.resolve({ uri: '/api/v1/postglob', method: 'GET' } as Request)?.getMiddlewares().length
+    ).toBe(1);
+  });
 });
