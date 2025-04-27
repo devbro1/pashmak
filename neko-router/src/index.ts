@@ -83,6 +83,11 @@ export class Route {
     return new RegExp(`^${regexParts.join('')}$`);
   }
 
+  /**
+   * to evaludate if request is a match for this route
+   * @param request http request
+   * @returns return true if route is a match for this request
+   */
   test(request: Request) {
     if (this.methods.indexOf(request.method) === -1) {
       return false;
@@ -91,12 +96,17 @@ export class Route {
     return this.uriRegex.test(request.uri);
   }
 
+  /**
+   * returns details of the match, otherwise it returns false
+   * @param request the request to match
+   * @returns object cotaining details of match including matched params
+   */
   match(request: Request) {
     if (this.methods.indexOf(request.method) === -1) {
       return false;
     }
 
-    let r = this.uriRegex.exec(request.uri);
+    const r = this.uriRegex.exec(request.uri);
     if (!r) {
       return false;
     }
@@ -131,7 +141,6 @@ export class Router {
 
   resolve(request: Request): Route | undefined {
     for (const route of this.routes) {
-      let r = route.match(request);
       if (route.test(request)) {
         return route;
       }
