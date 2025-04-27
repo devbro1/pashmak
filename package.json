@@ -7,6 +7,7 @@
   "private": true,
   "workspaces": [
     "neko-sql",
-    "neko-orm"
+    "neko-orm",
+    "neko-router"
   ]
 }
