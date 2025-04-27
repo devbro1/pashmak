@@ -8,6 +8,7 @@
   "workspaces": [
     "neko-sql",
     "neko-orm",
-    "neko-router"
+    "neko-router",
+    "neko-http-server"
   ]
 }

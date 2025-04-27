@@ -1,3 +1,25 @@
 git diff --cached --name-only --diff-filter=ACMR | xargs npx prettier --write --ignore-unknown
 git add --all
-yarn workspaces --parallel run test
+
+ALL_WORKSPACES=$(yarn workspaces info --json | sed '1d; $d' | jq -r '.[].location')
+
+# Get list of staged files
+CHANGED_FILES=$(git diff --cached --name-only)
+
+# Find which workspaces have changes
+CHANGED_WORKSPACES=$(for workspace in $ALL_WORKSPACES; do
+  if echo "$CHANGED_FILES" | grep -q "^$workspace/"; then
+    echo "$workspace"
+  fi
+done | sort -u)
+
+if [ -z "$CHANGED_WORKSPACES" ]; then
+  echo "No changes in workspaces. Skipping tests."
+  return 0
+fi
+
+# Run tests only in the changed workspaces
+for WORKSPACE in $CHANGED_WORKSPACES; do
+  echo "Running tests for workspace: $WORKSPACE"
+  yarn workspace "$(basename "$WORKSPACE")" run test
+done
