@@ -1,4 +1,5 @@
-export type Request = {
+import { IncomingMessage } from 'http';
+export type Request = IncomingMessage & {
   params: any;
   url: string;
   method: string;

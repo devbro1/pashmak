@@ -124,6 +124,10 @@ export class Route {
   getMiddlewares() {
     return this.middlewares;
   }
+
+  callHanlder(request: Request, response: Response) {
+    return this.handler(request, response);
+  }
 }
 export class Router {
   routes: Route[] = [];
@@ -214,9 +218,17 @@ export class CompiledRoute {
     finalHandler: Function
   ) {
     let index = 0;
+    let me = this;
 
     async function next() {
-      if (index >= middlewares.length) return;
+      if (index >= middlewares.length) {
+        const controller_rc = await me.route.callHanlder(req, res);
+        if (controller_rc) {
+          res.body = controller_rc;
+          res.statusCode = 200;
+        }
+        return;
+      }
 
       const middleware: Middleware | any = middlewares[index++];
 

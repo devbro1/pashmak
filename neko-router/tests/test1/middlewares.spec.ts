@@ -12,7 +12,7 @@ class m1 extends Middleware {
   }
   async call(req: Request, res: Response, next: () => Promise<void>): Promise<void> {
     // @ts-ignore
-    req.parts[1] = 'm1';
+    req.parts.m1 = 'm1';
     await next();
   }
 }
@@ -27,7 +27,7 @@ class m2 extends Middleware {
   }
   async call(req: Request, res: Response, next: () => Promise<void>): Promise<void> {
     // @ts-ignore
-    req.parts[1] = 'm2';
+    req.parts.m2 = 'm2';
     await next();
   }
 }
@@ -42,7 +42,7 @@ class m3 extends Middleware {
   }
   async call(req: Request, res: Response, next: () => Promise<void>): Promise<void> {
     // @ts-ignore
-    req.parts[1] = 'm3';
+    req.parts.m3 = 'm3';
     await next();
   }
 }
@@ -57,10 +57,14 @@ describe('Router tests', () => {
       })
       .addMiddleware([m1, m2, m3]);
 
-    let req = { url: '/api/v1/countries', method: 'GET' } as Request;
-    let resolved: CompiledRoute | undefined = router.getCompiledRoute(req, {} as Response);
+    // @ts-ignore
+    let req = { url: '/api/v1/countries', method: 'GET', parts: {} } as Request & { parts: any };
+    let res = {} as Response;
+    let resolved: CompiledRoute | undefined = router.getCompiledRoute(req, res);
     expect(resolved).toBeDefined();
-
     await resolved?.run();
+    expect(req.parts).toEqual({ m1: 'm1', m2: 'm2', m3: 'm3' });
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toBe('GET countries');
   });
 });
