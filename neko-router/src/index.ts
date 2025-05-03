@@ -16,20 +16,20 @@ export abstract class Middleware {
 
 export class Route {
   private middlewares: MiddlewareProvider[] = [];
-  private uriRegex: RegExp;
+  private urlRegex: RegExp;
   constructor(
     public methods: string[],
     public path: string,
     public handler: Function
   ) {
-    this.uriRegex = this.pathToRegex(path);
+    this.urlRegex = this.pathToRegex(path);
   }
   pathToRegex(path: string): RegExp {
-    const lex = this.lexUriPath(path);
+    const lex = this.lexUrlPath(path);
     return this.tokensToRegex(lex);
   }
 
-  lexUriPath(path: string) {
+  lexUrlPath(path: string) {
     const tokens = [];
     let i = 0;
 
@@ -93,7 +93,7 @@ export class Route {
       return false;
     }
 
-    return this.uriRegex.test(request.uri);
+    return this.urlRegex.test(request.url);
   }
 
   /**
@@ -106,7 +106,7 @@ export class Route {
       return false;
     }
 
-    const r = this.uriRegex.exec(request.uri);
+    const r = this.urlRegex.exec(request.url);
     if (!r) {
       return false;
     }

@@ -51,7 +51,7 @@ describe('Router tests', () => {
       }
     );
 
-    let req = { uri: '/api/v1/countries', method: 'GET' } as Request;
+    let req = { url: '/api/v1/countries', method: 'GET' } as Request;
     let resolved = router.resolve(req);
     expect(resolved).toBeDefined();
     // @ts-ignore
@@ -59,24 +59,24 @@ describe('Router tests', () => {
     // @ts-ignore
     expect(await resolved.handler({}, {})).toBe('GET countries');
 
-    resolved = router.resolve({ uri: '/api/v1/countries/ABC', method: 'HEAD' } as Request);
+    resolved = router.resolve({ url: '/api/v1/countries/ABC', method: 'HEAD' } as Request);
     expect(resolved).toBeUndefined();
 
-    req = { uri: '/api/v1/countries/ABC', method: 'GET' } as Request;
+    req = { url: '/api/v1/countries/ABC', method: 'GET' } as Request;
     resolved = router.resolve(req);
     // @ts-ignore
     expect(await resolved.handler({ ...resolved.match(req) }, {})).toBe('GET PARAM countries ABC');
 
-    resolved = router.resolve({ uri: '/api/v1/jobs', method: 'GET' } as Request);
+    resolved = router.resolve({ url: '/api/v1/jobs', method: 'GET' } as Request);
     expect(resolved).toBe(undefined);
 
-    resolved = router.resolve({ uri: '/api/v1/countries/ABC', method: 'DELETE' } as Request);
+    resolved = router.resolve({ url: '/api/v1/countries/ABC', method: 'DELETE' } as Request);
     expect(resolved).toBeUndefined();
 
-    resolved = router.resolve({ uri: '/api/v1/countries', method: 'HEAD' } as Request);
+    resolved = router.resolve({ url: '/api/v1/countries', method: 'HEAD' } as Request);
     expect(resolved).toBeDefined();
 
-    resolved = router.resolve({ uri: '/api/v1/countries', method: 'POST' } as Request);
+    resolved = router.resolve({ url: '/api/v1/countries', method: 'POST' } as Request);
     expect(resolved).toBeDefined();
     expect(resolved?.getMiddlewares().length).toBe(2);
   });
@@ -107,17 +107,17 @@ describe('Router tests', () => {
     });
 
     expect(
-      router.resolve({ uri: '/api/v1/nomid', method: 'GET' } as Request)?.getMiddlewares().length
+      router.resolve({ url: '/api/v1/nomid', method: 'GET' } as Request)?.getMiddlewares().length
     ).toBe(0);
     expect(
-      router.resolve({ uri: '/api/v1/oneGlobal', method: 'GET' } as Request)?.getMiddlewares()
+      router.resolve({ url: '/api/v1/oneGlobal', method: 'GET' } as Request)?.getMiddlewares()
         .length
     ).toBe(1);
     expect(
-      router.resolve({ uri: '/api/v1/globnown', method: 'GET' } as Request)?.getMiddlewares().length
+      router.resolve({ url: '/api/v1/globnown', method: 'GET' } as Request)?.getMiddlewares().length
     ).toBe(3);
     expect(
-      router.resolve({ uri: '/api/v1/postglob', method: 'GET' } as Request)?.getMiddlewares().length
+      router.resolve({ url: '/api/v1/postglob', method: 'GET' } as Request)?.getMiddlewares().length
     ).toBe(1);
   });
 });
