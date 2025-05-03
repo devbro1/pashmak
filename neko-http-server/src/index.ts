@@ -22,7 +22,13 @@ export class HttpServer {
 
   handle(req: IncomingMessage, res: ServerResponse) {
     let r: Route | undefined = this.router?.resolve(req as any);
-    console.log(r);
+    if (r === undefined) {
+      res.statusCode = 404;
+      res.write('Not Found');
+      res.end();
+      return;
+    }
+
     res.statusCode = 200;
     res.write('Hello World!');
     res.end();

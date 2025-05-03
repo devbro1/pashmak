@@ -147,4 +147,91 @@ export class Router {
     }
     return undefined;
   }
+
+  getCompiledRoute(request: Request, response: Response) {
+    const route = this.resolve(request);
+    if (!route) {
+      return undefined;
+    }
+    const match = route.match(request);
+    if (!match) {
+      return undefined;
+    }
+
+    return new CompiledRoute(route, match, request, response);
+  }
+}
+
+export class CompiledRoute {
+  constructor(
+    public route: Route,
+    public match: any,
+    public request: Request,
+    public response: Response
+  ) {
+    this.prepareMiddlewares();
+  }
+
+  private middlewares: Middleware[] = [];
+
+  private prepareMiddlewares() {
+    this.middlewares = [];
+    for (const middleware of this.route.getMiddlewares()) {
+      if (middleware instanceof Middleware) {
+        this.middlewares.push(middleware);
+      } else if (this.isClass(middleware)) {
+        this.middlewares.push((middleware as any).getInstance({}));
+      } else if (typeof middleware === 'function') {
+        let middlewareFunc = {} as Middleware;
+        // @ts-ignore
+        middlewareFunc.call = middleware;
+        this.middlewares.push(middlewareFunc);
+      } else {
+        throw new Error('Invalid middleware type');
+      }
+    }
+  }
+
+  isClass(func: any) {
+    return typeof func === 'function' && /^class\s/.test(Function.prototype.toString.call(func));
+  }
+
+  async run() {
+    return await this.runMiddlewares(
+      this.middlewares,
+      this.request,
+      this.response,
+      async (request: any, response: any) => {
+        console.log('done', request?.parts);
+      }
+    );
+  }
+
+  async runMiddlewares(
+    middlewares: Middleware[],
+    req: Request,
+    res: Response,
+    finalHandler: Function
+  ) {
+    let index = 0;
+
+    async function next() {
+      if (index >= middlewares.length) return;
+
+      const middleware: Middleware | any = middlewares[index++];
+
+      if (middleware instanceof Middleware) {
+        await middleware.call(req, res, next);
+      } else if (typeof middleware === 'function') {
+        await middleware(req, res, next);
+      }
+    }
+
+    try {
+      await next();
+    } catch (err) {
+      console.error('Error in middleware:', err);
+      finalHandler(err);
+    }
+  }
 }
