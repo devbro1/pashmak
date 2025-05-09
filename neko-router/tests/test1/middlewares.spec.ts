@@ -67,4 +67,27 @@ describe('Router tests', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body).toBe('GET countries');
   });
+
+  test('error handling', async () => {
+    const router: Router = new Router();
+
+    router
+      .addRoute(['GET', 'HEAD'], '/api/v1/countries', async (req: Request, res: Response) => {
+        return 'GET countries';
+      })
+      .addMiddleware([m1, m2, m3]).addMiddleware(async (req: Request, res: Response, next: Function) => {
+        throw new Error('Error in middleware');
+      });
+
+    // @ts-ignore
+    let req = { url: '/api/v1/countries', method: 'GET', parts: {} } as Request & { parts: any };
+    let res = {} as Response;
+    let resolved: CompiledRoute | undefined = router.getCompiledRoute(req, res);
+    expect(resolved).toBeDefined();
+    try {
+      await resolved?.run();
+    } catch (e) {
+      expect(e).toEqual(new Error('Error in middleware'));
+    }
+  });
 });

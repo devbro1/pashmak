@@ -92,8 +92,9 @@ export class Route {
     if (this.methods.indexOf(request.method) === -1) {
       return false;
     }
+    let url = new URL(request.url, 'http://localhost');
 
-    return this.urlRegex.test(request.url);
+    return this.urlRegex.test(url.pathname);
   }
 
   /**
@@ -119,6 +120,7 @@ export class Route {
 
   addMiddleware(middlewares: MiddlewareProvider | MiddlewareProvider[]) {
     this.middlewares = this.middlewares.concat(middlewares);
+    return this;
   }
 
   getMiddlewares() {
@@ -205,17 +207,26 @@ export class CompiledRoute {
       this.middlewares,
       this.request,
       this.response,
-      async (request: any, response: any) => {
-        console.log('done', request?.parts);
-      }
     );
+  }
+
+  convertToString(obj: any) {
+    if (typeof obj === 'string') {
+      return obj;
+    } else if (typeof obj === 'object' && obj !== null && typeof obj.toJson === 'function') {
+      return obj.toJson().toString();
+    } else if (obj instanceof Buffer) {
+      return obj.toString();
+    } else if (typeof obj === 'object') {
+      return JSON.stringify(obj);
+    }
+    return String(obj);
   }
 
   async runMiddlewares(
     middlewares: Middleware[],
     req: Request,
     res: Response,
-    finalHandler: Function
   ) {
     let index = 0;
     let me = this;
@@ -223,9 +234,20 @@ export class CompiledRoute {
     async function next() {
       if (index >= middlewares.length) {
         const controller_rc = await me.route.callHanlder(req, res);
+        if(controller_rc && res.writableEnded) {
+          throw new Error('cannot write to response, response has already ended');
+        }
+
         if (controller_rc) {
-          res.body = controller_rc;
-          res.statusCode = 200;
+          const header_content_type = res.getHeader('Content-Type');
+          if (!header_content_type && typeof controller_rc === 'object') {
+            res.setHeader('Content-Type', 'application/json');
+          }
+          else if (!header_content_type) {
+            res.setHeader('Content-Type', 'text/plain');
+          }
+
+          res.end(me.convertToString(controller_rc));
         }
         return;
       }
@@ -239,11 +261,6 @@ export class CompiledRoute {
       }
     }
 
-    try {
-      await next();
-    } catch (err) {
-      console.error('Error in middleware:', err);
-      finalHandler(err);
-    }
+    await next();
   }
 }
