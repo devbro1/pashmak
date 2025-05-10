@@ -1,7 +1,7 @@
 import { describe, expect, test } from '@jest/globals';
 import { Middleware, Router, Route, CompiledRoute } from '../../src';
 import { Request, Response } from '../../src/types';
-
+import { createMockResponse } from './mocks';
 class m1 extends Middleware {
   protected constructor(params: any) {
     super();
@@ -58,9 +58,9 @@ describe('Router tests', () => {
       .addMiddleware([m1, m2, m3]);
 
     // @ts-ignore
-    let req = { url: '/api/v1/countries', method: 'GET', parts: {} } as Request & { parts: any };
-    let res = {} as Response;
-    let resolved: CompiledRoute | undefined = router.getCompiledRoute(req, res);
+    const req = { url: '/api/v1/countries', method: 'GET', parts: {} } as Request & { parts: any };
+    const res = createMockResponse();
+    const resolved: CompiledRoute | undefined = router.getCompiledRoute(req, res);
     expect(resolved).toBeDefined();
     await resolved?.run();
     expect(req.parts).toEqual({ m1: 'm1', m2: 'm2', m3: 'm3' });
@@ -75,14 +75,14 @@ describe('Router tests', () => {
       .addRoute(['GET', 'HEAD'], '/api/v1/countries', async (req: Request, res: Response) => {
         return 'GET countries';
       })
-      .addMiddleware([m1, m2, m3]).addMiddleware(async (req: Request, res: Response, next: Function) => {
+      .addMiddleware([m1, m2, m3])
+      .addMiddleware(async (req: Request, res: Response, next: Function) => {
         throw new Error('Error in middleware');
       });
 
-    // @ts-ignore
-    let req = { url: '/api/v1/countries', method: 'GET', parts: {} } as Request & { parts: any };
-    let res = {} as Response;
-    let resolved: CompiledRoute | undefined = router.getCompiledRoute(req, res);
+    const req = { url: '/api/v1/countries', method: 'GET', parts: {} } as Request & { parts: any };
+    const res = createMockResponse();
+    const resolved: CompiledRoute | undefined = router.getCompiledRoute(req, res);
     expect(resolved).toBeDefined();
     try {
       await resolved?.run();
