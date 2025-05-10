@@ -15,7 +15,7 @@ done | sort -u)
 
 if [ -z "$CHANGED_WORKSPACES" ]; then
   echo "No changes in workspaces. Skipping tests."
-  return 0
+  exit 0
 fi
 
 # Run tests only in the changed workspaces
