@@ -1,9 +1,11 @@
 import { IncomingMessage, RequestListener, ServerResponse, createServer } from 'http';
+import { createServer as createServerSecured } from 'https';
 import { Route, Router } from 'neko-router/src';
 import { NotFound } from 'http-errors';
 import { Request } from 'neko-router/src/types';
 
 export class HttpServer {
+  private https_certs: undefined | { key: string; cert: string } = undefined;
   constructor() {}
 
   private router: Router | undefined;
@@ -27,19 +29,23 @@ export class HttpServer {
     res.end('Internal Server Error');
   }
 
-  setErrorHandler(handler: (err: Error, req: IncomingMessage, res: ServerResponse) => Promise<void>) {
+  setErrorHandler(
+    handler: (err: Error, req: IncomingMessage, res: ServerResponse) => Promise<void>
+  ) {
     this.errorHandler = handler;
   }
 
   async handle(req: IncomingMessage, res: ServerResponse) {
-    
     try {
       const r: Route | undefined = this.router?.resolve(req as any);
       if (r === undefined) {
         throw new NotFound();
       }
 
-      let compiled_route = this.router?.getCompiledRoute(req as Request,res);
+      const compiled_route = this.router?.getCompiledRoute(req as Request, res);
+      if (compiled_route === undefined) {
+        throw new NotFound();
+      }
       await compiled_route?.run();
     } catch (e: any) {
       await this.errorHandler(e, req, res);
@@ -47,8 +53,18 @@ export class HttpServer {
     return;
   }
 
+  enableHttps(options: { key: string; cert: string }) {
+    this.https_certs = options;
+  }
+
   async listen(port: number, callback: () => void) {
-    const server = createServer(this.getHttpHanlder());
+    let server;
+
+    if (this.https_certs) {
+      server = createServerSecured(this.https_certs, this.getHttpHanlder());
+    } else {
+      server = createServer(this.getHttpHanlder());
+    }
     return server.listen(port, callback);
   }
 }

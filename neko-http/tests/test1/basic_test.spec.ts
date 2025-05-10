@@ -2,17 +2,14 @@ import { describe, expect, test } from '@jest/globals';
 import { HttpServer } from '../../src';
 import supertest from 'supertest';
 import { Router } from 'neko-router/src/index';
-import { App } from 'supertest/types';
-import { IncomingMessage, RequestListener, ServerResponse } from 'http';
-import { Server } from 'net';
-import express from 'express';
+import { Request, Response } from 'neko-router/src/types';
 
 describe('general http server', () => {
   test('basic testing', async () => {
     const router = new Router();
-    router.addRoute(['GET'], '/', (req: any, res: any) => {
-      res.status(200);
-      res.send('Hello World!');
+    router.addRoute(['GET'], '/', (req: Request, res: Response) => {
+      res.statusCode = 200;
+      res.write('Hello World!');
       res.end();
     });
 
