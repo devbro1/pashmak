@@ -9,6 +9,7 @@
     "neko-sql",
     "neko-orm",
     "neko-router",
-    "neko-http"
+    "neko-http",
+    "main-app"
   ]
 }

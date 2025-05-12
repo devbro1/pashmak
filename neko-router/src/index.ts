@@ -1,18 +1,13 @@
+import { Middleware } from './Middleware';
 import { LexerToken, Request, Response } from './types';
+import { MiddlewareFactory } from './MiddlewareFactory';
+export * from './Middleware';
+export * from './MiddlewareFactory';
 
 export type MiddlewareProvider =
   | typeof Middleware
   | Middleware
   | ((request: Request, response: Response, next: () => Promise<void>) => Promise<void>);
-
-export abstract class Middleware {
-  protected constructor(params: any = {}) {}
-  static getInstance(params: any): Middleware {
-    throw new Error('Method not implemented. Please implement a static getInstance method.');
-  }
-
-  abstract call(req: Request, res: Response, next: () => Promise<void>): Promise<void>;
-}
 
 export class Route {
   private middlewares: MiddlewareProvider[] = [];
@@ -188,7 +183,7 @@ export class CompiledRoute {
       } else if (this.isClass(middleware)) {
         this.middlewares.push((middleware as any).getInstance({}));
       } else if (typeof middleware === 'function') {
-        let middlewareFunc = {} as Middleware;
+        let middlewareFunc = MiddlewareFactory.create(middleware);
         // @ts-ignore
         middlewareFunc.call = middleware;
         this.middlewares.push(middlewareFunc);
@@ -203,11 +198,7 @@ export class CompiledRoute {
   }
 
   async run() {
-    return await this.runMiddlewares(
-      this.middlewares,
-      this.request,
-      this.response,
-    );
+    return await this.runMiddlewares(this.middlewares, this.request, this.response);
   }
 
   convertToString(obj: any) {
@@ -223,18 +214,14 @@ export class CompiledRoute {
     return String(obj);
   }
 
-  async runMiddlewares(
-    middlewares: Middleware[],
-    req: Request,
-    res: Response,
-  ) {
+  async runMiddlewares(middlewares: Middleware[], req: Request, res: Response) {
     let index = 0;
     let me = this;
 
     async function next() {
       if (index >= middlewares.length) {
         const controller_rc = await me.route.callHanlder(req, res);
-        if(controller_rc && res.writableEnded) {
+        if (controller_rc && res.writableEnded) {
           throw new Error('cannot write to response, response has already ended');
         }
 
@@ -242,8 +229,7 @@ export class CompiledRoute {
           const header_content_type = res.getHeader('Content-Type');
           if (!header_content_type && typeof controller_rc === 'object') {
             res.setHeader('Content-Type', 'application/json');
-          }
-          else if (!header_content_type) {
+          } else if (!header_content_type) {
             res.setHeader('Content-Type', 'text/plain');
           }
 
@@ -258,6 +244,8 @@ export class CompiledRoute {
         await middleware.call(req, res, next);
       } else if (typeof middleware === 'function') {
         await middleware(req, res, next);
+      } else {
+        throw new Error('does not know how to run middleware');
       }
     }
 
