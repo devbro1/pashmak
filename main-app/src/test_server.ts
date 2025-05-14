@@ -2,6 +2,7 @@ import { Router } from "neko-router/src";
 import { HttpServer } from "neko-http/src";
 import { Request, Response } from "neko-router/src/types";
 import { HttpError } from "http-errors";
+import { wait } from "neko-helper/src/time";
 
 let server = new HttpServer();
 
@@ -40,9 +41,27 @@ router.addRoute(
   },
 );
 
-router.addRoute(["GET", "HEAD"], "/api/v1/time", async (req: any, res: any) => {
-  return { yey: "GET time", time: new Date().toISOString() };
-});
+function InjectedValue(value: any) {
+  return function (
+    target: any,
+    propertyKey: string | symbol,
+    parameterIndex: number,
+  ) {
+    return 1;
+  };
+}
+
+router.addRoute(
+  ["GET", "HEAD"],
+  "/api/v1/time",
+  async (req: Request, res: Response) => {
+    const aa = InjectedValue(22)(null, "aa", 1);
+    console.log(aa);
+    await wait(parseInt(req?.query?.wait || "") || 0);
+    console.log("waited", req?.query?.wait);
+    return { yey: "GET time", time: new Date().toISOString(), aa };
+  },
+);
 
 server.setRouter(router);
 

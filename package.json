@@ -10,6 +10,7 @@
     "neko-orm",
     "neko-router",
     "neko-http",
+    "neko-helper",
     "main-app"
   ]
 }

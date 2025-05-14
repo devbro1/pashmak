@@ -87,7 +87,7 @@ export class Route {
     if (this.methods.indexOf(request.method) === -1) {
       return false;
     }
-    let url = new URL(request.url, 'http://localhost');
+    const url = new URL(request.url, 'http://localhost');
 
     return this.urlRegex.test(url.pathname);
   }
@@ -102,13 +102,15 @@ export class Route {
       return false;
     }
 
-    const r = this.urlRegex.exec(request.url);
+    const url = new URL(request.url, 'http://localhost');
+
+    const r = this.urlRegex.exec(url.pathname);
     if (!r) {
       return false;
     }
 
     return {
-      // @ts-ignore
+      url,
       params: r.groups || {},
     };
   }
@@ -158,6 +160,8 @@ export class Router {
     if (!match) {
       return undefined;
     }
+
+    request.query = Object.fromEntries(match.url.searchParams.entries());
 
     return new CompiledRoute(route, match, request, response);
   }
