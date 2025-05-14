@@ -150,6 +150,7 @@ export class Router {
   }
 
   getCompiledRoute(request: Request, response: Response) {
+    request.context = request.context || {};
     const route = this.resolve(request);
     if (!route) {
       return undefined;

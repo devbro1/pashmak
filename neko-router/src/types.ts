@@ -5,6 +5,7 @@ export type Request = IncomingMessage & {
   method: string;
   headers?: Record<string, string>;
   body?: any;
+  context: any;
 };
 
 export type Response = ServerResponse;

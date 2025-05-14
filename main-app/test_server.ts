@@ -2,6 +2,7 @@ import { Router } from "neko-router/src";
 import { HttpServer } from "neko-http/src";
 import { Request, Response } from "neko-router/src/types";
 import { HttpError } from "http-errors";
+import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
 
 let server = new HttpServer();
 
@@ -17,6 +18,16 @@ server.setErrorHandler(async (err: Error, _req: any, res: any) => {
 });
 
 let router = new Router();
+
+// load database connection
+router.addGlobalMiddleware(
+  async (req: Request, res: Response, next: () => Promise<void>) => {
+    const db = DatabaseServiceProvider.getInstance();
+    const conn = await db.getConnection();
+    req.context.db = conn;
+    await next();
+    await conn.disconnect();
+  });
 
 router.addGlobalMiddleware(
   async (req: Request, res: Response, next: () => Promise<void>) => {
@@ -40,7 +51,10 @@ router.addRoute(
   },
 );
 
-router.addRoute(["GET", "HEAD"], "/api/v1/time", async (req: any, res: any) => {
+router.addRoute(["GET", "HEAD"], "/api/v1/time", async (req: Request, res: any) => {
+  // @ts-ignore
+  //await req.context.db.query("insert into meow (name) values (?)",[req.query.name]);
+  console.log("query:", req.query);
   return { yey: "GET time", time: new Date().toISOString() };
 });
 
