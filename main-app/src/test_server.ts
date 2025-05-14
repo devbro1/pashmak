@@ -25,9 +25,14 @@ router.addGlobalMiddleware(
   async (req: Request, res: Response, next: () => Promise<void>) => {
     const db = DatabaseServiceProvider.getInstance();
     const conn = await db.getConnection();
-    req.context.db = conn;
-    await next();
-    await conn.disconnect();
+    try {
+      req.context.db = conn;
+      await next();
+    } catch (err) {
+      throw err;
+    } finally {
+      await conn.disconnect();
+    }
   },
 );
 
@@ -67,13 +72,17 @@ router.addRoute(
   ["GET", "HEAD"],
   "/api/v1/time",
   async (req: Request, res: Response) => {
-    // @ts-ignore
-    //await req.context.db.query("insert into meow (name) values (?)",[req.query.name]);
-    const aa = InjectedValue(22)(null, "aa", 1);
-    console.log(aa);
+    console.log("GET time", req?.query?.wait);
+    await req.context.db.beginTransaction();
+    await req.context.db.runQuery({
+      sql: "insert into cats (name) values ($1)",
+      bindings: [req?.query?.name],
+    });
     await wait(parseInt(req?.query?.wait || "") || 0);
     console.log("waited", req?.query?.wait);
-    return { yey: "GET time", time: new Date().toISOString(), aa };
+    await req.context.db.commit();
+    console.log("FIN time", req?.query?.wait);
+    return { yey: "GET time", time: new Date().toISOString() };
   },
 );
 

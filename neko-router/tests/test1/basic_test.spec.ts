@@ -55,7 +55,7 @@ describe('Router tests', () => {
     let resolved = router.resolve(req);
     expect(resolved).toBeDefined();
     // @ts-ignore
-    expect(resolved?.match(req)).toEqual({ params: {} });
+    expect(Object.keys(resolved?.match(req) || {})).toEqual(['url', 'params']);
     // @ts-ignore
     expect(await resolved.handler({}, {})).toBe('GET countries');
 
