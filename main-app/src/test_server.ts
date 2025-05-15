@@ -10,12 +10,14 @@ import { BaseModel } from "neko-orm/src/baseModel";
 
 let server = new HttpServer();
 
-server.setErrorHandler(async (err: Error, _req: any, res: any) => {
-  console.error("Error:", err);
+server.setErrorHandler(async (err: Error, req: any, res: any) => {
   if (err instanceof HttpError) {
     res.writeHead(err.statusCode, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ message: err.message }));
+    console.log("HttpError:", err.message);
     return;
+  } else {
+    console.error("non HttpError:", err);
   }
   res.writeHead(500, { "Content-Type": "" });
   res.end(JSON.stringify({ error: "Internal Server Error" }));
@@ -28,6 +30,7 @@ router.addGlobalMiddleware(
   async (req: Request, res: Response, next: () => Promise<void>) => {
     const db = DatabaseServiceProvider.getInstance();
     const conn = await db.getConnection();
+    ctx().get<Request>("request").context.dd = "cc";
     try {
       ctx().set("db", conn);
       BaseModel.setConnection(() => ctx().getOrThrow<Connection>("db"));
@@ -105,7 +108,8 @@ router.addRoute(
     }
 
     console.log("FIN time", req?.query?.wait);
-    return { yey: "GET time", time: new Date().toISOString(), error };
+    let dd = req.context.dd;
+    return { yey: "GET time", time: new Date().toISOString(), error, dd };
   },
 );
 

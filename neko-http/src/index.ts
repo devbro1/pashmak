@@ -43,16 +43,22 @@ export class HttpServer {
     this.errorHandler = handler;
   }
 
+  generateRequestId(request: IncomingMessage, response: ServerResponse): number | string {
+    return this.requestId++;
+  }
+  setRequestIdGenerator(func: (request: Request, response: ServerResponse) => number | string) {
+    this.generateRequestId = func;
+  }
+
   async handle(req: IncomingMessage, res: ServerResponse) {
     try {
       await cp.run(async () => {
-        ctx().set('url', req.url);
-        ctx().set('req', req);
-        ctx().set('res', res);
-        ctx().set('requestId', this.requestId++);
+        ctx().set('request', req);
+        ctx().set('response', res);
+        ctx().set('requestId', this.generateRequestId(req, res));
         const r: Route | undefined = this.router?.resolve(req as any);
         if (r === undefined) {
-          throw new NotFound();
+          throw new NotFound(`Route ${req.url} not found`);
         }
 
         const compiled_route = this.router?.getCompiledRoute(req as Request, res);
