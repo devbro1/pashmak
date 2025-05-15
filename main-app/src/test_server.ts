@@ -6,6 +6,7 @@ import { wait } from "neko-helper/src/time";
 import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
 import { ctx } from "neko-http/src";
 import { Connection } from "neko-sql/src/Connection";
+import { BaseModel } from "neko-orm/src/baseModel";
 
 let server = new HttpServer();
 
@@ -29,6 +30,7 @@ router.addGlobalMiddleware(
     const conn = await db.getConnection();
     try {
       ctx().set("db", conn);
+      BaseModel.setConnection(() => ctx().getOrThrow<Connection>("db"));
       await next();
     } catch (err) {
       throw err;
@@ -71,7 +73,6 @@ function InjectedValue(value: any) {
   };
 }
 
-
 /*
 CREATE TABLE cats (
   id SERIAL PRIMARY KEY,
@@ -82,12 +83,12 @@ router.addRoute(
   ["GET", "HEAD"],
   "/api/v1/time",
   async (req: Request, res: Response) => {
-    console.log("GET time", req?.query?.wait);
+    console.log("GET time", req?.query?.wait, ctx().get("requestId"));
 
     await wait(parseInt(req?.query?.wait || "") || 0);
     console.log("waited", req?.query?.wait);
 
-    let db = ctx().get<Connection>("db");
+    let db = ctx().getOrThrow<Connection>("db");
     let error = undefined;
     try {
       await db.beginTransaction();
@@ -96,12 +97,12 @@ router.addRoute(
         bindings: [req?.query?.name as string],
       });
       await db.commit();
+      error = "success";
     } catch (err) {
       await db.rollback();
       error = "FAILED";
       res.statusCode = 500;
     }
-
 
     console.log("FIN time", req?.query?.wait);
     return { yey: "GET time", time: new Date().toISOString(), error };

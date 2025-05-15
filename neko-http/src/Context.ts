@@ -1,9 +1,8 @@
-import { AsyncLocalStorage } from "async_hooks";
+import { AsyncLocalStorage } from 'async_hooks';
 
 export class Context {
   private _context: Record<string, any> = {};
   private _asyncLocalStorage: AsyncLocalStorage<Context> = new AsyncLocalStorage();
-
 
   set(key: string, value: any) {
     this._context[key] = value;
@@ -11,6 +10,14 @@ export class Context {
 
   get<T>(key: string) {
     return this._context[key] as T;
+  }
+
+  getOrThrow<T>(key: string) {
+    let rc = this.get<T>(key);
+    if (rc === undefined) {
+      throw new Error(`Key ${key} not found in context`);
+    }
+    return rc;
   }
 
   has(key: string) {
@@ -36,18 +43,18 @@ export class Context {
 
 export class ContextProvider {
   private _asyncLocalStorage: AsyncLocalStorage<Context> = new AsyncLocalStorage<Context>();
-  
+
   async run(callback: () => void) {
     return this._asyncLocalStorage.run(new Context(), callback);
   }
 
-    getStore() : Context {
-        let rc = this._asyncLocalStorage.getStore();
-        if(!rc) {
-            throw new Error('Context not started');
-        }
-        return rc;
+  getStore(): Context {
+    let rc = this._asyncLocalStorage.getStore();
+    if (!rc) {
+      throw new Error('Context not started');
     }
+    return rc;
+  }
 }
 
 // export let cp = new ContextProvider();

@@ -13,7 +13,8 @@ export function ctx() {
 
 export class HttpServer {
   private https_certs: undefined | { key: string; cert: string } = undefined;
-  constructor() { }
+  constructor() {}
+  private requestId: number = 1;
 
   private router: Router | undefined;
   setRouter(router: Router) {
@@ -45,8 +46,10 @@ export class HttpServer {
   async handle(req: IncomingMessage, res: ServerResponse) {
     try {
       await cp.run(async () => {
-        console.log('context', ctx().keys());
         ctx().set('url', req.url);
+        ctx().set('req', req);
+        ctx().set('res', res);
+        ctx().set('requestId', this.requestId++);
         const r: Route | undefined = this.router?.resolve(req as any);
         if (r === undefined) {
           throw new NotFound();
