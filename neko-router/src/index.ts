@@ -1,35 +1,30 @@
+import { Middleware } from './Middleware';
 import { LexerToken, Request, Response } from './types';
+import { MiddlewareFactory } from './MiddlewareFactory';
+export * from './Middleware';
+export * from './MiddlewareFactory';
 
 export type MiddlewareProvider =
   | typeof Middleware
   | Middleware
   | ((request: Request, response: Response, next: () => Promise<void>) => Promise<void>);
 
-export abstract class Middleware {
-  protected constructor(params: any = {}) {}
-  static getInstance(params: any): Middleware {
-    throw new Error('Method not implemented. Please implement a static getInstance method.');
-  }
-
-  abstract call(req: Request, res: Response, next: () => Promise<void>): Promise<void>;
-}
-
 export class Route {
   private middlewares: MiddlewareProvider[] = [];
-  private uriRegex: RegExp;
+  private urlRegex: RegExp;
   constructor(
     public methods: string[],
     public path: string,
     public handler: Function
   ) {
-    this.uriRegex = this.pathToRegex(path);
+    this.urlRegex = this.pathToRegex(path);
   }
   pathToRegex(path: string): RegExp {
-    const lex = this.lexUriPath(path);
+    const lex = this.lexUrlPath(path);
     return this.tokensToRegex(lex);
   }
 
-  lexUriPath(path: string) {
+  lexUrlPath(path: string) {
     const tokens = [];
     let i = 0;
 
@@ -92,8 +87,9 @@ export class Route {
     if (this.methods.indexOf(request.method) === -1) {
       return false;
     }
+    const url = new URL(request.url || '/', 'http://localhost');
 
-    return this.uriRegex.test(request.uri);
+    return this.urlRegex.test(url.pathname);
   }
 
   /**
@@ -106,23 +102,30 @@ export class Route {
       return false;
     }
 
-    const r = this.uriRegex.exec(request.uri);
+    const url = new URL(request.url || '/', 'http://localhost');
+
+    const r = this.urlRegex.exec(url.pathname);
     if (!r) {
       return false;
     }
 
     return {
-      // @ts-ignore
+      url,
       params: r.groups || {},
     };
   }
 
   addMiddleware(middlewares: MiddlewareProvider | MiddlewareProvider[]) {
     this.middlewares = this.middlewares.concat(middlewares);
+    return this;
   }
 
   getMiddlewares() {
     return this.middlewares;
+  }
+
+  callHanlder(request: Request, response: Response) {
+    return this.handler(request, response);
   }
 }
 export class Router {
@@ -146,5 +149,110 @@ export class Router {
       }
     }
     return undefined;
+  }
+
+  getCompiledRoute(request: Request, response: Response) {
+    const route = this.resolve(request);
+    if (!route) {
+      return undefined;
+    }
+    const match = route.match(request);
+    if (!match) {
+      return undefined;
+    }
+
+    request.query = Object.fromEntries(match.url.searchParams.entries());
+
+    return new CompiledRoute(route, match, request, response);
+  }
+}
+
+export class CompiledRoute {
+  constructor(
+    public route: Route,
+    public match: any,
+    public request: Request,
+    public response: Response
+  ) {
+    this.prepareMiddlewares();
+  }
+
+  private middlewares: Middleware[] = [];
+
+  private prepareMiddlewares() {
+    this.middlewares = [];
+    for (const middleware of this.route.getMiddlewares()) {
+      if (middleware instanceof Middleware) {
+        this.middlewares.push(middleware);
+      } else if (this.isClass(middleware)) {
+        this.middlewares.push((middleware as any).getInstance({}));
+      } else if (typeof middleware === 'function') {
+        let middlewareFunc = MiddlewareFactory.create(middleware);
+        // @ts-ignore
+        middlewareFunc.call = middleware;
+        this.middlewares.push(middlewareFunc);
+      } else {
+        throw new Error('Invalid middleware type');
+      }
+    }
+  }
+
+  isClass(func: any) {
+    return typeof func === 'function' && /^class\s/.test(Function.prototype.toString.call(func));
+  }
+
+  async run() {
+    return await this.runMiddlewares(this.middlewares, this.request, this.response);
+  }
+
+  convertToString(obj: any) {
+    if (typeof obj === 'string') {
+      return obj;
+    } else if (typeof obj === 'object' && obj !== null && typeof obj.toJson === 'function') {
+      return obj.toJson().toString();
+    } else if (obj instanceof Buffer) {
+      return obj.toString();
+    } else if (typeof obj === 'object') {
+      return JSON.stringify(obj);
+    }
+    return String(obj);
+  }
+
+  async runMiddlewares(middlewares: Middleware[], req: Request, res: Response) {
+    let index = 0;
+    let me = this;
+
+    async function next() {
+      if (index >= middlewares.length) {
+        const controller_rc = await me.route.callHanlder(req, res);
+        if (controller_rc && res.writableEnded) {
+          throw new Error('cannot write to response, response has already ended');
+        }
+
+        if (controller_rc) {
+          const header_content_type = res.getHeader('Content-Type');
+          if (!header_content_type && typeof controller_rc === 'object') {
+            res.setHeader('Content-Type', 'application/json');
+          } else if (!header_content_type) {
+            res.setHeader('Content-Type', 'text/plain');
+          }
+
+          res.end(me.convertToString(controller_rc));
+        }
+        return;
+      }
+
+      const middleware: Middleware | any = middlewares[index++];
+
+      if (middleware instanceof Middleware) {
+        await middleware.call(req, res, next);
+      } else if (typeof middleware === 'function') {
+        await middleware(req, res, next);
+      } else {
+        throw new Error('does not know how to run middleware');
+      }
+    }
+
+    await next();
   }
 }

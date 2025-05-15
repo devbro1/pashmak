@@ -1,16 +1,13 @@
-export type Request = {
+import { IncomingMessage, ServerResponse } from 'http';
+export type Request = IncomingMessage & {
   params: any;
-  uri: string;
   method: string;
   headers?: Record<string, string>;
   body?: any;
+  query?: Record<string, string>;
 };
 
-export type Response = {
-  statusCode: number;
-  headers?: Record<string, string>;
-  body?: any;
-};
+export type Response = ServerResponse;
 
 export type LexerToken = {
   type: string;

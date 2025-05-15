@@ -10,25 +10,25 @@ for documentation please check [documentations](https://devbro1.github.io/sql-ge
 ## Quick Example
 
 ```javascript
-import { Query } from '@devbro1/sql-generator';
+import { Query } from "@devbro1/sql-generator";
 
 let query = new Query({
-  client: 'postgresql',
+  client: "postgresql",
   connection: {
-    host: 'my.database-server.com',
+    host: "my.database-server.com",
     port: 5432,
-    database: 'database-name',
-    user: 'database-user',
-    password: 'secretpassword!!',
+    database: "database-name",
+    user: "database-user",
+    password: "secretpassword!!",
   },
 });
 
 const qb = query
-  .select(['product_id', query.raw('SUM(quantity) AS total_quantity')])
-  .from('sales')
-  .where('col1', '=', 'value')
-  .orWhere('col2', '=', 'value2')
-  .groupBy(query.raw('product_id'));
+  .select(["product_id", query.raw("SUM(quantity) AS total_quantity")])
+  .from("sales")
+  .where("col1", "=", "value")
+  .orWhere("col2", "=", "value2")
+  .groupBy(query.raw("product_id"));
 
 console.log(qb.toFullSQL());
 const result = await qb.get();
@@ -52,4 +52,10 @@ If you want to help with money or coffee, please consider donating to your local
 
 ```
 clear; jest --findRelatedTests tests/select/join.spec.ts
+```
+
+create a new typescript workspace
+
+```
+
 ```

@@ -15,8 +15,8 @@ export class PostgresqlConnection extends ConnectionAbs {
         port: 5432,
         ssl: false,
         max: 20,
-        idleTimeoutMillis: 1000,
-        connectionTimeoutMillis: 1000,
+        idleTimeoutMillis: 30000, // wait 30 seconds before closing an idle connection
+        connectionTimeoutMillis: 30000, // wait up to 30 seconds to obtain a connection
         maxUses: 7500,
       };
       PostgresqlConnection.pool = new Pool({ ...defaults, ...params });
