@@ -87,7 +87,7 @@ export class Route {
     if (this.methods.indexOf(request.method) === -1) {
       return false;
     }
-    const url = new URL(request.url, 'http://localhost');
+    const url = new URL(request.url || '/', 'http://localhost');
 
     return this.urlRegex.test(url.pathname);
   }
@@ -102,7 +102,7 @@ export class Route {
       return false;
     }
 
-    const url = new URL(request.url, 'http://localhost');
+    const url = new URL(request.url || '/', 'http://localhost');
 
     const r = this.urlRegex.exec(url.pathname);
     if (!r) {
@@ -152,7 +152,6 @@ export class Router {
   }
 
   getCompiledRoute(request: Request, response: Response) {
-    request.context = request.context || {};
     const route = this.resolve(request);
     if (!route) {
       return undefined;

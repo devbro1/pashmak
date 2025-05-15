@@ -13,6 +13,10 @@ describe('general http server', () => {
       res.end();
     });
 
+    router.addRoute(['GET'], '/22', (req: Request, res: Response) => {
+      return 'Hello World!2';
+    });
+
     const server = new HttpServer();
     server.setRouter(router);
 
@@ -21,5 +25,9 @@ describe('general http server', () => {
     let r = await s.get('/');
     expect(r.status).toBe(200);
     expect(r.text).toBe('Hello World!');
+
+    r = await s.get('/22');
+    expect(r.status).toBe(200);
+    expect(r.text).toBe('Hello World!2');
   });
 });

@@ -30,7 +30,8 @@ router.addGlobalMiddleware(
   async (req: Request, res: Response, next: () => Promise<void>) => {
     const db = DatabaseServiceProvider.getInstance();
     const conn = await db.getConnection();
-    ctx().get<Request>("request").context.dd = "cc";
+    // @ts-ignore
+    ctx().get<Request>("request").context = { dd: "cc" };
     try {
       ctx().set("db", conn);
       BaseModel.setConnection(() => ctx().getOrThrow<Connection>("db"));
@@ -108,6 +109,7 @@ router.addRoute(
     }
 
     console.log("FIN time", req?.query?.wait);
+    // @ts-ignore
     let dd = req.context.dd;
     return { yey: "GET time", time: new Date().toISOString(), error, dd };
   },

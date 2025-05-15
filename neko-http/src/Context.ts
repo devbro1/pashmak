@@ -56,9 +56,3 @@ export class ContextProvider {
     return rc;
   }
 }
-
-// export let cp = new ContextProvider();
-
-// export function ctx(): Context {
-//     return cp.getStore();
-// }
