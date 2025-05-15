@@ -4,6 +4,8 @@ import { Request, Response } from "neko-router/src/types";
 import { HttpError } from "http-errors";
 import { wait } from "neko-helper/src/time";
 import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
+import { ctx } from "neko-http/src";
+import { Connection } from "neko-sql/src/Connection";
 
 let server = new HttpServer();
 
@@ -26,7 +28,7 @@ router.addGlobalMiddleware(
     const db = DatabaseServiceProvider.getInstance();
     const conn = await db.getConnection();
     try {
-      req.context.db = conn;
+      ctx().set("db", conn);
       await next();
     } catch (err) {
       throw err;
@@ -39,6 +41,7 @@ router.addGlobalMiddleware(
 router.addGlobalMiddleware(
   async (req: Request, res: Response, next: () => Promise<void>) => {
     console.log("route:", req.url);
+    console.log("context", ctx().keys());
     await next();
   },
 );
@@ -68,21 +71,40 @@ function InjectedValue(value: any) {
   };
 }
 
+
+/*
+CREATE TABLE cats (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) UNIQUE
+);
+*/
 router.addRoute(
   ["GET", "HEAD"],
   "/api/v1/time",
   async (req: Request, res: Response) => {
     console.log("GET time", req?.query?.wait);
-    await req.context.db.beginTransaction();
-    await req.context.db.runQuery({
-      sql: "insert into cats (name) values ($1)",
-      bindings: [req?.query?.name],
-    });
+
     await wait(parseInt(req?.query?.wait || "") || 0);
     console.log("waited", req?.query?.wait);
-    await req.context.db.commit();
+
+    let db = ctx().get<Connection>("db");
+    let error = undefined;
+    try {
+      await db.beginTransaction();
+      await db.runQuery({
+        sql: "insert into cats (name) values ($1)",
+        bindings: [req?.query?.name as string],
+      });
+      await db.commit();
+    } catch (err) {
+      await db.rollback();
+      error = "FAILED";
+      res.statusCode = 500;
+    }
+
+
     console.log("FIN time", req?.query?.wait);
-    return { yey: "GET time", time: new Date().toISOString() };
+    return { yey: "GET time", time: new Date().toISOString(), error };
   },
 );
 

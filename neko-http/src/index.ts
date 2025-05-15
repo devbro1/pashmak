@@ -3,10 +3,17 @@ import { createServer as createServerSecured } from 'https';
 import { Route, Router } from 'neko-router/src';
 import { NotFound } from 'http-errors';
 import { Request } from 'neko-router/src/types';
+import { ContextProvider } from './Context';
+
+let cp = new ContextProvider();
+
+export function ctx() {
+  return cp.getStore();
+}
 
 export class HttpServer {
   private https_certs: undefined | { key: string; cert: string } = undefined;
-  constructor() {}
+  constructor() { }
 
   private router: Router | undefined;
   setRouter(router: Router) {
@@ -37,16 +44,20 @@ export class HttpServer {
 
   async handle(req: IncomingMessage, res: ServerResponse) {
     try {
-      const r: Route | undefined = this.router?.resolve(req as any);
-      if (r === undefined) {
-        throw new NotFound();
-      }
+      await cp.run(async () => {
+        console.log('context', ctx().keys());
+        ctx().set('url', req.url);
+        const r: Route | undefined = this.router?.resolve(req as any);
+        if (r === undefined) {
+          throw new NotFound();
+        }
 
-      const compiled_route = this.router?.getCompiledRoute(req as Request, res);
-      if (compiled_route === undefined) {
-        throw new NotFound();
-      }
-      await compiled_route?.run();
+        const compiled_route = this.router?.getCompiledRoute(req as Request, res);
+        if (compiled_route === undefined) {
+          throw new NotFound();
+        }
+        await compiled_route?.run();
+      });
     } catch (e: any) {
       await this.errorHandler(e, req, res);
     }
