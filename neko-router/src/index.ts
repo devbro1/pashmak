@@ -179,6 +179,10 @@ export class CompiledRoute {
 
   private middlewares: Middleware[] = [];
 
+  getMiddlewares() {
+    return this.middlewares;
+  }
+
   private prepareMiddlewares() {
     this.middlewares = [];
     for (const middleware of [...this.globalMiddlewares, ...this.route.getMiddlewares()]) {
