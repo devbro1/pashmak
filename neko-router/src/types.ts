@@ -13,3 +13,5 @@ export type LexerToken = {
   type: string;
   value: string;
 };
+
+export type HandlerType = (req: Request, res: Response, next?: (() => any) | undefined ) => Promise<any> | any;

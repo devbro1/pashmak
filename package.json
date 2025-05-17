@@ -6,11 +6,12 @@
   "license": "MIT",
   "private": true,
   "workspaces": [
-    "neko-sql",
+    "neko-helper",
+    "neko-http",
     "neko-orm",
     "neko-router",
-    "neko-http",
-    "neko-helper",
+    "neko-scheduler",
+    "neko-sql",
     "main-app"
   ]
 }
