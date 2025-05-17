@@ -1,5 +1,5 @@
 import { Middleware } from './Middleware';
-import { LexerToken, Request, Response } from './types';
+import { HandlerType, LexerToken, Request, Response } from './types';
 import { MiddlewareFactory } from './MiddlewareFactory';
 export * from './Middleware';
 export * from './MiddlewareFactory';
@@ -15,7 +15,7 @@ export class Route {
   constructor(
     public methods: string[],
     public path: string,
-    public handler: Function
+    public handler: HandlerType
   ) {
     this.urlRegex = this.pathToRegex(path);
   }
@@ -130,10 +130,9 @@ export class Route {
 }
 export class Router {
   routes: Route[] = [];
-  addRoute(methods: string[], path: string, handler: Function) {
+  addRoute(methods: string[], path: string, handler: HandlerType) {
     const route: Route = new Route(methods, path, handler);
     this.routes.push(route);
-    route.addMiddleware(this.middlewares);
     return route;
   }
 
@@ -163,7 +162,7 @@ export class Router {
 
     request.query = Object.fromEntries(match.url.searchParams.entries());
 
-    return new CompiledRoute(route, match, request, response);
+    return new CompiledRoute(route, match, request, response, this.middlewares);
   }
 }
 
@@ -172,7 +171,8 @@ export class CompiledRoute {
     public route: Route,
     public match: any,
     public request: Request,
-    public response: Response
+    public response: Response,
+    public globalMiddlewares: MiddlewareProvider[] = []
   ) {
     this.prepareMiddlewares();
   }
@@ -181,16 +181,13 @@ export class CompiledRoute {
 
   private prepareMiddlewares() {
     this.middlewares = [];
-    for (const middleware of this.route.getMiddlewares()) {
+    for (const middleware of [...this.globalMiddlewares, ...this.route.getMiddlewares()]) {
       if (middleware instanceof Middleware) {
         this.middlewares.push(middleware);
       } else if (this.isClass(middleware)) {
         this.middlewares.push((middleware as any).getInstance({}));
       } else if (typeof middleware === 'function') {
-        let middlewareFunc = MiddlewareFactory.create(middleware);
-        // @ts-ignore
-        middlewareFunc.call = middleware;
-        this.middlewares.push(middlewareFunc);
+        this.middlewares.push(MiddlewareFactory.create(middleware as HandlerType));
       } else {
         throw new Error('Invalid middleware type');
       }
@@ -220,7 +217,8 @@ export class CompiledRoute {
 
   async runMiddlewares(middlewares: Middleware[], req: Request, res: Response) {
     let index = 0;
-    let me = this;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const me = this;
 
     async function next() {
       if (index >= middlewares.length) {
