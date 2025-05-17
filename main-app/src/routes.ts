@@ -1,5 +1,5 @@
 import { Request, Response } from "neko-router/src/types";
-import { router } from "./router";
+import { router } from "./facades";
 
 router.addRoute(
   ["GET", "HEAD"],

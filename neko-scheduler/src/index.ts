@@ -5,6 +5,7 @@ export class Schedule {
   private name: string = '';
   private timezone = '';
   private cronTime = '* * * * * *';
+  private runOnStart = false;
 
   constructor(private func: () => void) {}
 
@@ -17,13 +18,14 @@ export class Schedule {
       return;
     }
 
-    this.cronJob = new CronJob(
-      this.cronTime,
-      this.func,
-      null, // onComplete
-      true, // start now
-      this.timezone // timezone
-    );
+    this.cronJob = CronJob.from({
+      cronTime: this.cronTime,
+      onTick: this.func,
+      onComplete: null,
+      start: true,
+      timeZone: this.timezone,
+      runOnInit: this.runOnStart,
+    });
   }
 
   stop(): void {
@@ -59,6 +61,15 @@ export class Schedule {
   }
   getCronTime(): string {
     return this.cronTime;
+  }
+
+  setRunOnStart(runOnStart: boolean): this {
+    this.runOnStart = runOnStart;
+    return this;
+  }
+
+  getRunOnStart(): boolean {
+    return this.runOnStart;
   }
 }
 

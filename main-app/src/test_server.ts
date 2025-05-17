@@ -5,9 +5,10 @@ import { wait } from "neko-helper/src/time";
 import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
 import { ctx } from "neko-http/src";
 import { Connection } from "neko-sql/src/Connection";
-import { router } from "./router";
+import { router, scheduler } from "./facades";
 
 import "./routes";
+import "./schedules";
 
 let server = new HttpServer();
 
@@ -89,6 +90,7 @@ router.addRoute(
   },
 );
 
+scheduler.start();
 server.setRouter(router);
 
 server.listen(3000, () => {
