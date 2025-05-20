@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
-import { Middleware, Router } from '../../src';
-import { Request, Response } from '../../src/types';
+import { Middleware, Router } from '../src';
+import { Request, Response } from '../src/types';
 
 class m1 extends Middleware {
   protected constructor(params: any) {

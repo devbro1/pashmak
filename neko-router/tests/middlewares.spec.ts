@@ -1,7 +1,7 @@
 import { describe, expect, test } from '@jest/globals';
-import { Middleware, Router, Route, CompiledRoute } from '../../src';
-import { Request, Response } from '../../src/types';
-import { createMockResponse } from './mocks';
+import { Middleware, Router, Route, CompiledRoute } from '../src';
+import { Request, Response } from '../src/types';
+import { createMockResponse } from './fixtures/mocks';
 class m1 extends Middleware {
   protected constructor(params: any) {
     super();

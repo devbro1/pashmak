@@ -1,10 +1,11 @@
 import { Request, Response } from "neko-router/src/types";
-import { router } from "./facades";
+import { router as routerFunc } from "./facades";
 import { wait } from "neko-helper/src/time";
 import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
 import { ctx } from "neko-http/src";
 import { Connection } from "neko-sql/src/Connection";
 
+const router = routerFunc();
 
 // load database connection
 router.addGlobalMiddleware(DatabaseServiceProvider);

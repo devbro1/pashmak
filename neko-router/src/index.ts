@@ -1,6 +1,8 @@
 import { Middleware } from './Middleware';
 import { HandlerType, LexerToken, Request, Response } from './types';
 import { MiddlewareFactory } from './MiddlewareFactory';
+import { BaseController } from './Controller';
+import path from 'path';
 export * from './Middleware';
 export * from './MiddlewareFactory';
 
@@ -75,6 +77,12 @@ export class Route {
       }
     }
 
+    if (regexParts.length > 0 && regexParts[regexParts.length - 1] === '\\/') {
+      regexParts[regexParts.length - 1] = '\\/?';
+    } else {
+      regexParts.push('\\/?');
+    }
+
     return new RegExp(`^${regexParts.join('')}$`);
   }
 
@@ -134,6 +142,19 @@ export class Router {
     const route: Route = new Route(methods, path, handler);
     this.routes.push(route);
     return route;
+  }
+
+  addController(controller: typeof BaseController) {
+    const basePath = controller.basePath || '';
+    for (const route of controller.routes) {
+      const urlPath = path.join(basePath, route.path);
+      this.addRoute(route.methods, urlPath, async (req: Request, res: Response) => {
+        const controllerInstance = controller.getInstance();
+        // TODO: route.handler may have wrong value!
+        // @ts-ignore
+        return await controllerInstance[route.handler]();
+      });
+    }
   }
 
   private middlewares: MiddlewareProvider[] = [];
@@ -219,6 +240,23 @@ export class CompiledRoute {
     return String(obj);
   }
 
+  processResponseBody(res: Response, controller_rc: any) {
+    if (controller_rc && res.writableEnded) {
+      throw new Error('cannot write to response, response has already ended');
+    }
+
+    if (controller_rc) {
+      const header_content_type = res.getHeader('Content-Type');
+      if (!header_content_type && typeof controller_rc === 'object') {
+        res.setHeader('Content-Type', 'application/json');
+      } else if (!header_content_type) {
+        res.setHeader('Content-Type', 'text/plain');
+      }
+
+      res.end(this.convertToString(controller_rc));
+    }
+  }
+
   async runMiddlewares(middlewares: Middleware[], req: Request, res: Response) {
     let index = 0;
     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -227,20 +265,7 @@ export class CompiledRoute {
     async function next() {
       if (index >= middlewares.length) {
         const controller_rc = await me.route.callHanlder(req, res);
-        if (controller_rc && res.writableEnded) {
-          throw new Error('cannot write to response, response has already ended');
-        }
-
-        if (controller_rc) {
-          const header_content_type = res.getHeader('Content-Type');
-          if (!header_content_type && typeof controller_rc === 'object') {
-            res.setHeader('Content-Type', 'application/json');
-          } else if (!header_content_type) {
-            res.setHeader('Content-Type', 'text/plain');
-          }
-
-          res.end(me.convertToString(controller_rc));
-        }
+        await me.processResponseBody(res, controller_rc);
         return;
       }
 

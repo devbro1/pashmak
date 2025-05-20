@@ -20,8 +20,8 @@ server.setErrorHandler(async (err: Error, req: any, res: any) => {
   res.end(JSON.stringify({ error: "Internal Server Error" }));
 });
 
-scheduler.start();
-server.setRouter(router);
+scheduler().start();
+server.setRouter(router());
 
 server.listen(3000, () => {
   console.log("Server is running on http://localhost:3000");

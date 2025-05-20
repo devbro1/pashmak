@@ -13,11 +13,18 @@ export class DatabaseServiceProvider extends Middleware {
     next: () => Promise<void>,
   ): Promise<void> {
     const db = DatabaseServiceProvider.getInstance();
-    const conn = await db.getConnection();
-    // @ts-ignore
-    ctx().get<Request>("request").context = { dd: "cc" };
+    const db_config: PoolConfig & { name: string } = {
+      host: process.env.DB_HOST,
+      database: process.env.DB_NAME || "test_db",
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      port: parseInt(process.env.DB_PORT || "5432"),
+      name: "db",
+    };
+    const conn = await db.getConnection(db_config);
+
     try {
-      ctx().set("db", conn);
+      ctx().set(db_config.name, conn);
       BaseModel.setConnection(() => ctx().getOrThrow<Connection>("db"));
       await next();
     } catch (err) {
@@ -39,15 +46,7 @@ export class DatabaseServiceProvider extends Middleware {
     return DatabaseServiceProvider.instance;
   }
 
-  async getConnection(): Promise<PostgresqlConnection> {
-    const db_config: PoolConfig = {
-      host: process.env.DB_HOST,
-      database: process.env.DB_NAME || "test_db",
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      port: parseInt(process.env.DB_PORT || "5432"),
-    };
-
+  async getConnection(db_config: PoolConfig): Promise<PostgresqlConnection> {
     const conn = new PostgresqlConnection(db_config);
     if (!(await conn.connect())) {
       throw new Error("Failed to connect to the database");

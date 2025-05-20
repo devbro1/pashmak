@@ -1,6 +1,6 @@
 import { scheduler } from "./facades";
 
-scheduler
+scheduler()
   .call(() => {
     console.log("Hello World");
   })
