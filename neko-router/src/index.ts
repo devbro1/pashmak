@@ -182,7 +182,7 @@ export class Router {
     }
 
     request.query = Object.fromEntries(match.url.searchParams.entries());
-
+    request.params = match.params;
     return new CompiledRoute(route, match, request, response, this.middlewares);
   }
 }

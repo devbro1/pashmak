@@ -4,6 +4,7 @@ import { wait } from "neko-helper/src/time";
 import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
 import { ctx } from "neko-http/src";
 import { Connection } from "neko-sql/src/Connection";
+import { CatController } from "./controllers";
 
 const router = routerFunc();
 
@@ -74,8 +75,10 @@ router.addRoute(
 
 router.addRoute(
   ["GET", "HEAD"],
-  "/api/v1/part2",
+  "/api/v1/part2/:param1",
   async (req: Request, res: Response) => {
-    return { yey: "GET part2" };
+    return { yey: "GET part2", param1: req.params.param1 };
   },
 );
+
+router.addController(CatController);

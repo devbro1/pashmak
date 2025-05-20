@@ -1,3 +1,7 @@
+import 'reflect-metadata';
+import { ctx } from 'neko-http/src/index';
+import { Request } from 'neko-router/src/types';
+
 export class BaseController {
   static routes: {
     methods: string[];
@@ -18,72 +22,66 @@ export function Controller(path: string) {
   };
 }
 
-export function GET(path: string = '/') {
+function createHttpDecorator(data: { methods: string[]; path: string }) {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     if (!target.constructor.routes) {
       target.constructor.routes = [];
     }
 
     target.constructor.routes.push({
-      methods: ['GET', 'HEAD'],
-      path: path,
+      methods: data.methods,
+      path: data.path,
       handler: propertyKey,
     });
+
+    ////////////////
+    const originalMethod = descriptor.value!;
+    let paramKeys = Reflect.getMetadataKeys(target, propertyKey);
+
+    descriptor.value = function (...args: any[]) {
+      for (const paramKey of paramKeys.filter((key: string) => key.endsWith(':param'))) {
+        const paramIndex = Reflect.getMetadata(paramKey, target, propertyKey!);
+        if (typeof paramIndex === 'number') {
+          args[paramIndex] = ctx().get<Request>('request').params[paramKey.replace(':param', '')];
+        }
+      }
+
+      return originalMethod.apply(this, args);
+    };
   };
+}
+
+export function GET(path: string = '/') {
+  return createHttpDecorator({
+    methods: ['GET', 'HEAD'],
+    path,
+  });
 }
 
 export function POST(path: string = '/') {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    if (!target.constructor.routes) {
-      target.constructor.routes = [];
-    }
-
-    target.constructor.routes.push({
-      methods: ['POST'],
-      path: path,
-      handler: propertyKey,
-    });
-  };
+  return createHttpDecorator({
+    methods: ['POST'],
+    path,
+  });
 }
 
 export function PUT(path: string = '/') {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    if (!target.constructor.routes) {
-      target.constructor.routes = [];
-    }
-
-    target.constructor.routes.push({
-      methods: ['PUT'],
-      path: path,
-      handler: propertyKey,
-    });
-  };
+  return createHttpDecorator({
+    methods: ['PUT'],
+    path,
+  });
 }
 
 export function PATCH(path: string = '/') {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    if (!target.constructor.routes) {
-      target.constructor.routes = [];
-    }
-
-    target.constructor.routes.push({
-      methods: ['PATCH'],
-      path: path,
-      handler: propertyKey,
-    });
-  };
+  return createHttpDecorator({
+    methods: ['PATCH'],
+    path,
+  });
 }
 
 export function DELETE(path: string = '/') {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    if (!target.constructor.routes) {
-      target.constructor.routes = [];
-    }
-
-    target.constructor.routes.push({
-      methods: ['DELETE'],
-      path: path,
-      handler: propertyKey,
-    });
-  };
+  return createHttpDecorator({
+    methods: ['DELETE'],
+    path,
+  });
 }
