@@ -1,5 +1,5 @@
 import { BaseController, Controller, GET } from "neko-router/src/Controller";
-import { Param } from "neko-http/src/Param";
+import { Param } from "neko-router/src/Controller";
 
 @Controller("/api/v1/cats")
 export class CatController extends BaseController {
