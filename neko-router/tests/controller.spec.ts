@@ -1,16 +1,16 @@
 import { describe, expect, test } from '@jest/globals';
 import { Middleware, Router } from '../src';
 import { Request, Response } from '../src/types';
-import { BaseController, GET, Controller } from '../src/Controller';
+import { BaseController, Get, Controller } from '../src/Controller';
 
 @Controller('/api/v1/countries')
 class CountryController extends BaseController {
-  @GET()
+  @Get()
   show() {
     return 'GET countries';
   }
 
-  @GET('/:id')
+  @Get('/:id')
   showById() {
     return 'GET countries by id';
   }

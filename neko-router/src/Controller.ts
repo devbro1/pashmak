@@ -15,15 +15,15 @@ export class BaseController {
   }
 }
 
-export function Controller(path: string) {
+export function Controller(path: string): ClassDecorator {
   return function (target: any) {
     (target as any).routes = (target as any).routes || [];
     (target as any).basePath = path;
   };
 }
 
-function createHttpDecorator(data: { methods: string[]; path: string }) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+function createHttpDecorator(data: { methods: string[]; path: string }): MethodDecorator {
+  return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
     if (!target.constructor.routes) {
       target.constructor.routes = [];
     }
@@ -51,45 +51,45 @@ function createHttpDecorator(data: { methods: string[]; path: string }) {
   };
 }
 
-export function GET(path: string = '/') {
+export function Get(path: string = '/'): MethodDecorator {
   return createHttpDecorator({
     methods: ['GET', 'HEAD'],
     path,
   });
 }
 
-export function POST(path: string = '/') {
+export function Post(path: string = '/'): MethodDecorator {
   return createHttpDecorator({
     methods: ['POST'],
     path,
   });
 }
 
-export function PUT(path: string = '/') {
+export function Put(path: string = '/'): MethodDecorator {
   return createHttpDecorator({
     methods: ['PUT'],
     path,
   });
 }
 
-export function PATCH(path: string = '/') {
+export function Patch(path: string = '/'): MethodDecorator {
   return createHttpDecorator({
     methods: ['PATCH'],
     path,
   });
 }
 
-export function DELETE(path: string = '/') {
+export function Delete(path: string = '/'): MethodDecorator {
   return createHttpDecorator({
     methods: ['DELETE'],
     path,
   });
 }
 
-export function Param(paramName: string) {
+export function Param(paramName: string): ParameterDecorator {
   return function MyParamDecorator(
     target: Object,
-    propertyKey: string | symbol,
+    propertyKey: string | symbol | undefined,
     parameterIndex: number
   ) {
     Reflect.defineMetadata(`${paramName}:param`, parameterIndex, target, propertyKey!);
