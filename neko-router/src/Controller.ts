@@ -1,12 +1,14 @@
 import 'reflect-metadata';
 import { ctx } from 'neko-http/src/index';
 import { Request } from 'neko-router/src/types';
+import { MiddlewareProvider } from '.';
 
 export class BaseController {
   static routes: {
     methods: string[];
     path: string;
     handler: string;
+    middlewares: MiddlewareProvider[];
   }[] = [];
   static basePath: string = '';
 
@@ -22,7 +24,11 @@ export function Controller(path: string): ClassDecorator {
   };
 }
 
-function createHttpDecorator(data: { methods: string[]; path: string }): MethodDecorator {
+function createHttpDecorator(data: {
+  methods: string[];
+  path: string;
+  middlewares: MiddlewareProvider[];
+}): MethodDecorator {
   return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
     if (!target.constructor.routes) {
       target.constructor.routes = [];
@@ -32,11 +38,11 @@ function createHttpDecorator(data: { methods: string[]; path: string }): MethodD
       methods: data.methods,
       path: data.path,
       handler: propertyKey,
+      middlewares: data.middlewares || [],
     });
 
-    ////////////////
     const originalMethod = descriptor.value!;
-    let paramKeys = Reflect.getMetadataKeys(target, propertyKey);
+    const paramKeys = Reflect.getMetadataKeys(target, propertyKey);
 
     descriptor.value = function (...args: any[]) {
       for (const paramKey of paramKeys.filter((key: string) => key.endsWith(':param'))) {
@@ -51,38 +57,53 @@ function createHttpDecorator(data: { methods: string[]; path: string }): MethodD
   };
 }
 
-export function Get(path: string = '/'): MethodDecorator {
+export function Get(
+  data: { path?: string; middlewares?: MiddlewareProvider[] } = {}
+): MethodDecorator {
   return createHttpDecorator({
     methods: ['GET', 'HEAD'],
-    path,
+    path: data.path || '/',
+    middlewares: data.middlewares || [],
   });
 }
 
-export function Post(path: string = '/'): MethodDecorator {
+export function Post(
+  data: { path?: string; middlewares?: MiddlewareProvider[] } = {}
+): MethodDecorator {
   return createHttpDecorator({
     methods: ['POST'],
-    path,
+    path: data.path || '/',
+    middlewares: data.middlewares || [],
   });
 }
 
-export function Put(path: string = '/'): MethodDecorator {
+export function Put(
+  data: { path?: string; middlewares?: MiddlewareProvider[] } = {}
+): MethodDecorator {
   return createHttpDecorator({
     methods: ['PUT'],
-    path,
+    path: data.path || '/',
+    middlewares: data.middlewares || [],
   });
 }
 
-export function Patch(path: string = '/'): MethodDecorator {
+export function Patch(
+  data: { path?: string; middlewares?: MiddlewareProvider[] } = {}
+): MethodDecorator {
   return createHttpDecorator({
     methods: ['PATCH'],
-    path,
+    path: data.path || '/',
+    middlewares: data.middlewares || [],
   });
 }
 
-export function Delete(path: string = '/'): MethodDecorator {
+export function Delete(
+  data: { path?: string; middlewares?: MiddlewareProvider[] } = {}
+): MethodDecorator {
   return createHttpDecorator({
     methods: ['DELETE'],
-    path,
+    path: data.path || '/',
+    middlewares: data.middlewares || [],
   });
 }
 

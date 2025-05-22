@@ -150,10 +150,9 @@ export class Router {
       const urlPath = path.join(basePath, route.path);
       this.addRoute(route.methods, urlPath, async (req: Request, res: Response) => {
         const controllerInstance = controller.getInstance();
-        // TODO: route.handler may have wrong value!
         // @ts-ignore
         return await controllerInstance[route.handler]();
-      });
+      }).addMiddleware(route.middlewares);
     }
   }
 

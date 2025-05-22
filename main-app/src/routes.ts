@@ -5,19 +5,14 @@ import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
 import { ctx } from "neko-http/src";
 import { Connection } from "neko-sql/src/Connection";
 import { CatController } from "./controllers";
+import { loggerMiddleware, logResponseMiddleware } from "./middlewares";
 
 const router = routerFunc();
 
 // load database connection
 router.addGlobalMiddleware(DatabaseServiceProvider);
 
-router.addGlobalMiddleware(
-  async (req: Request, res: Response, next: () => Promise<void>) => {
-    console.log("route:", req.url);
-    console.log("context", ctx().keys());
-    await next();
-  },
-);
+router.addGlobalMiddleware(loggerMiddleware);
 router.addRoute(
   ["GET", "HEAD"],
   "/api/v1/countries",
@@ -73,12 +68,14 @@ router.addRoute(
   },
 );
 
-router.addRoute(
-  ["GET", "HEAD"],
-  "/api/v1/part2/:param1",
-  async (req: Request, res: Response) => {
-    return { yey: "GET part2", param1: req.params.param1 };
-  },
-);
+router
+  .addRoute(
+    ["GET", "HEAD"],
+    "/api/v1/part2/:param1",
+    async (req: Request, res: Response) => {
+      return { yey: "GET part2", param1: req.params.param1 };
+    },
+  )
+  .addMiddleware(logResponseMiddleware);
 
 router.addController(CatController);

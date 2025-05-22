@@ -10,21 +10,17 @@ class CountryController extends BaseController {
     return 'GET countries';
   }
 
-  @Get('/:id')
+  @Get({ path: '/:id' })
   showById() {
     return 'GET countries by id';
   }
 }
-
-console.log('CountryController', CountryController);
 
 describe('Controller Class', () => {
   test('basic testing', async () => {
     const router: Router = new Router();
 
     router.addController(CountryController);
-
-    console.log('router.routes', router.routes);
 
     expect(router.resolve({ url: '/api/v1/countries', method: 'GET' } as Request)).toBeDefined();
     expect(router.resolve({ url: '/api/v1/countries/', method: 'GET' } as Request)).toBeDefined();
