@@ -23,7 +23,8 @@ export class Context {
   }
 
   getOrThrow<T>(key: string | string[]) {
-    let rc = this.get<T>(key);
+    key = this.generateContextKey(key);
+    const rc = this.get<T>(key);
     if (rc === undefined) {
       throw new Error(`Key ${key} not found in context`);
     }
@@ -59,7 +60,7 @@ export class ContextProvider {
   }
 
   getStore(): Context {
-    let rc = this._asyncLocalStorage.getStore();
+    const rc = this._asyncLocalStorage.getStore();
     if (!rc) {
       throw new Error('Context not started');
     }

@@ -9,8 +9,8 @@ export class Schedule {
 
   constructor(private func: () => void) {}
 
-  trigger(): void {
-    this.func();
+  async trigger(): Promise<void> {
+    await this.func();
   }
 
   start(): void {

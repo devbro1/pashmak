@@ -13,14 +13,13 @@ export class DatabaseServiceProvider extends Middleware {
     res: Response,
     next: () => Promise<void>,
   ): Promise<void> {
-    const db_provider = DatabaseServiceProvider.getInstance();
     const db_configs: Record<string, PoolConfig & { name: string }> =
       config.get("databases");
 
     let conns = [];
     try {
       for (const [name, db_config] of Object.entries(db_configs)) {
-        const conn = await db_provider.getConnection(db_config);
+        const conn = await this.getConnection(db_config);
         ctx().set(["database", name], conn);
         conns.push(conn);
       }
@@ -36,7 +35,6 @@ export class DatabaseServiceProvider extends Middleware {
   }
 
   private static instance: DatabaseServiceProvider;
-  private conn: PostgresqlConnection | undefined;
 
   async register(): Promise<void> {}
 

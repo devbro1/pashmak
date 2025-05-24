@@ -7,4 +7,4 @@ import { Connection } from "neko-sql/src/Connection";
 export const router = createSingleton(() => new Router());
 export const scheduler = createSingleton(() => new Scheduler());
 export const db = (label = "default") =>
-  ctx().getOrThrow<Connection>(["databases", label]);
+  ctx().getOrThrow<Connection>(["database", label]);

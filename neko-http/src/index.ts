@@ -5,10 +5,10 @@ import { NotFound } from 'http-errors';
 import { Request } from 'neko-router/src/types';
 import { ContextProvider } from './Context';
 
-let cp = new ContextProvider();
+export const context_provider = new ContextProvider();
 
 export function ctx() {
-  return cp.getStore();
+  return context_provider.getStore();
 }
 
 export class HttpServer {
@@ -26,7 +26,7 @@ export class HttpServer {
   }
 
   getHttpHanlder() {
-    let me = this;
+    const me = this;
     return (req: IncomingMessage, res: ServerResponse) => {
       return me.handle(req, res);
     };
@@ -52,7 +52,7 @@ export class HttpServer {
 
   async handle(req: IncomingMessage, res: ServerResponse) {
     try {
-      await cp.run(async () => {
+      await context_provider.run(async () => {
         ctx().set('request', req);
         ctx().set('response', res);
         ctx().set('requestId', this.generateRequestId(req, res));

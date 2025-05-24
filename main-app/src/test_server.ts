@@ -1,9 +1,12 @@
+import dotenv from "dotenv";
+dotenv.config();
+
+process.env["NODE_CONFIG_DIR"] = __dirname + "/config/";
+import config from "config";
+
 import { HttpServer } from "neko-http/src";
 import { HttpError } from "http-errors";
 import { router, scheduler } from "./facades";
-process.env["NODE_CONFIG_DIR"] = __dirname + "/config/";
-
-import config from "config";
 
 import "./routes";
 import "./schedules";
