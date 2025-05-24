@@ -4,15 +4,25 @@ export class Context {
   private _context: Record<string, any> = {};
   private _asyncLocalStorage: AsyncLocalStorage<Context> = new AsyncLocalStorage();
 
-  set(key: string, value: any) {
-    this._context[key] = value;
+  set(key: string | string[], value: any) {
+    this._context[this.generateContextKey(key)] = value;
   }
 
-  get<T>(key: string) {
-    return this._context[key] as T;
+  get<T>(key: string | string[]) {
+    return this._context[this.generateContextKey(key)] as T;
   }
 
-  getOrThrow<T>(key: string) {
+  generateContextKey(key: string | string[]) {
+    let new_key = '';
+    if (Array.isArray(key)) {
+      new_key = key.join('.');
+    } else {
+      new_key = key;
+    }
+    return new_key;
+  }
+
+  getOrThrow<T>(key: string | string[]) {
     let rc = this.get<T>(key);
     if (rc === undefined) {
       throw new Error(`Key ${key} not found in context`);

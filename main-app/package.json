@@ -20,11 +20,13 @@
   "author": "Farzad Meow Khalafi",
   "license": "MIT",
   "devDependencies": {
+    "jest": "^29.7.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
-    "jest": "^29.7.0"
+    "@types/config": "^3.3.5"
   },
   "dependencies": {
+    "config": "^4.0.0",
     "pg-pool": "3.10.0"
   },
   "directories": {

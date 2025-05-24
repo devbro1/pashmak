@@ -1,5 +1,5 @@
 import { Request, Response } from "neko-router/src/types";
-import { router as routerFunc } from "./facades";
+import { router as routerFunc, db as dbf } from "./facades";
 import { wait } from "neko-helper/src/time";
 import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
 import { ctx } from "neko-http/src";
@@ -44,7 +44,7 @@ router.addRoute(
     await wait(parseInt(req?.query?.wait || "") || 0);
     console.log("waited", req?.query?.wait);
 
-    let db = ctx().getOrThrow<Connection>("db");
+    let db = dbf();
     let error = undefined;
     try {
       await db.beginTransaction();
