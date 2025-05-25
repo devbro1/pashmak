@@ -2,6 +2,7 @@ import Stream from 'stream';
 import { AWSS3Storage } from './AWSS3Storage';
 import { LocalStorage } from './LocalStorage';
 import { S3ClientConfig } from '@aws-sdk/client-s3';
+import { ReadStream } from 'fs';
 
 export * from './AWSS3Storage';
 export * from './LocalStorage';
@@ -11,6 +12,8 @@ export interface Storage {
   put(path: string, content: string | object | Stream | Buffer): Promise<boolean>;
   getJson(path: string): Promise<object>;
   getString(path: string): Promise<string>;
+  getBuffer(path: string): Promise<Buffer>;
+  getStream(path: string): Promise<ReadStream>;
   delete(path: string): Promise<boolean>;
 }
 
@@ -25,15 +28,15 @@ export interface StorageConstructor {
   canHandle(config: StorageConfig): boolean;
 }
 
-export class StorageBuilder {
+export class StorageFactory {
   public static storageEngines: StorageConstructor[] = [LocalStorage, AWSS3Storage];
 
   registerStorageEngine(engine: StorageConstructor) {
-    StorageBuilder.storageEngines.push(engine);
+    StorageFactory.storageEngines.push(engine);
   }
 
-  buildStorage(config: StorageConfig): Storage {
-    for (const engine of StorageBuilder.storageEngines) {
+  public static create(config: StorageConfig): Storage {
+    for (const engine of StorageFactory.storageEngines) {
       if (engine.canHandle(config)) {
         return new engine(config);
       }

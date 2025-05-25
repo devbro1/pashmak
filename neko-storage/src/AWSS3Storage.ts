@@ -6,7 +6,8 @@ import {
   GetObjectCommand,
   DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
-import Stream from 'stream';
+import { ReadStream } from 'fs';
+import Stream, { Readable } from 'stream';
 
 export class AWSS3Storage implements Storage {
   private s3: S3Client;
@@ -84,5 +85,26 @@ export class AWSS3Storage implements Storage {
       stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
       stream.on('error', reject);
     });
+  }
+
+  async getBuffer(path: string): Promise<Buffer> {
+    const data = await this.s3.send(
+      new GetObjectCommand({ Bucket: this.config.bucket, Key: path })
+    );
+    const chunks: Uint8Array[] = [];
+    const stream = data.Body as Readable;
+
+    return new Promise((resolve, reject) => {
+      stream.on('data', (chunk) => chunks.push(chunk));
+      stream.on('end', () => resolve(Buffer.concat(chunks)));
+      stream.on('error', reject);
+    });
+  }
+
+  async getStream(path: string): Promise<ReadStream> {
+    const data = await this.s3.send(
+      new GetObjectCommand({ Bucket: this.config.bucket, Key: path })
+    );
+    return data.Body as unknown as ReadStream;
   }
 }

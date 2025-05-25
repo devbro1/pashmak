@@ -14,8 +14,7 @@
     "format": "eslint . --fix --ext ts,tsx --report-unused-disable-directives --max-warnings 0 ",
     "prepare": "husky",
     "prettier": "prettier --write .",
-    "dev": "nodemon --watch src --ext ts,tsx --signal SIGTERM --exec \"clear && ts-node src/test_server.ts\"",
-    "devc": "ts-node src/Context.ts"
+    "dev": "nodemon --watch src --ext ts,tsx,json --signal SIGTERM --exec \"clear && ts-node -r tsconfig-paths/register src/test_server.ts\""
   },
   "author": "Farzad Meow Khalafi",
   "license": "MIT",
@@ -28,7 +27,8 @@
   "dependencies": {
     "config": "^4.0.0",
     "dotenv": "^16.5.0",
-    "pg-pool": "3.10.0"
+    "pg-pool": "3.10.0",
+    "tsconfig-paths": "^4.2.0"
   },
   "directories": {
     "doc": "docs",

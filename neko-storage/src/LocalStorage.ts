@@ -1,6 +1,6 @@
 import Stream from 'stream';
 import * as fs from 'fs/promises';
-import { createWriteStream } from 'fs';
+import { createWriteStream, createReadStream, ReadStream } from 'fs';
 import * as path from 'path';
 import { Storage, StorageConfig } from '.';
 
@@ -63,9 +63,19 @@ export class LocalStorage implements Storage {
     return JSON.parse(content);
   }
 
-  async getString(path: string): Promise<string> {
+  async getString(path: string, encoding: BufferEncoding = 'utf-8'): Promise<string> {
     const fullPath = this.getFullPath(path);
-    return await fs.readFile(fullPath, 'utf-8');
+    return await fs.readFile(fullPath, encoding);
+  }
+
+  async getBuffer(path: string): Promise<Buffer> {
+    const fullPath = this.getFullPath(path);
+    return await fs.readFile(fullPath);
+  }
+
+  async getStream(path: string): Promise<ReadStream> {
+    const fullPath = this.getFullPath(path);
+    return createReadStream(fullPath);
   }
 
   async delete(path: string): Promise<boolean> {
