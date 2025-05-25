@@ -23,7 +23,6 @@ scheduler()
             sql: "select * from users",
             bindings: [],
           });
-          console.log(r);
         },
       );
     });

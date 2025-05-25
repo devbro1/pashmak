@@ -244,6 +244,10 @@ export class CompiledRoute {
       throw new Error('cannot write to response, response has already ended');
     }
 
+    if (res.writableEnded) {
+      return;
+    }
+
     if (controller_rc) {
       const header_content_type = res.getHeader('Content-Type');
       if (!header_content_type && typeof controller_rc === 'object') {
@@ -253,6 +257,10 @@ export class CompiledRoute {
       }
 
       res.end(this.convertToString(controller_rc));
+      return;
+    } else {
+      res.statusCode = [200].includes(res.statusCode) ? 204 : res.statusCode;
+      res.end();
     }
   }
 

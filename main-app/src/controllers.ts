@@ -7,6 +7,7 @@ import {
 import { Param } from "neko-router/src/Controller";
 import { logResponseMiddleware } from "./middlewares";
 import { db } from "./facades";
+import { ctx } from "neko-http/src";
 
 @Controller("/api/v1/cats")
 export class CatController extends BaseController {
@@ -21,7 +22,9 @@ export class CatController extends BaseController {
 
   @Post()
   store() {
-    throw new Error("TODO");
+    let req = ctx().get<Request>("request");
+
+    return req.body;
   }
 
   @Get({ path: "/:id/:id2" })

@@ -19,6 +19,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/express": "^5.0.1",
+    "@types/formidable": "^3.4.5",
     "@types/jest": "^29.5.12",
     "@types/node": "^22.14.1",
     "@types/supertest": "^6.0.3",
@@ -39,6 +40,7 @@
   "dependencies": {
     "@types/pluralize": "^0.0.33",
     "@types/sqlstring": "^2.3.2",
+    "formidable": "^3.5.4",
     "luxon": "^3.4.4",
     "neko-router": "0.1.0",
     "pluralize": "^8.0.0",

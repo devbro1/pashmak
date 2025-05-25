@@ -4,6 +4,8 @@ export type Request = IncomingMessage & {
   method: string;
   headers?: Record<string, string>;
   body?: any;
+  raw_body?: any;
+  files?: any;
   query?: Record<string, string>;
 };
 
@@ -14,4 +16,8 @@ export type LexerToken = {
   value: string;
 };
 
-export type HandlerType = (req: Request, res: Response, next?: (() => any) | undefined ) => Promise<any> | any;
+export type HandlerType = (
+  req: Request,
+  res: Response,
+  next?: (() => any) | undefined
+) => Promise<any> | any;
