@@ -7,7 +7,7 @@ import {
 import { Param } from "neko-router/src/Controller";
 import { logResponseMiddleware } from "./middlewares";
 import { db } from "./facades";
-import { ctx } from "neko-http/src";
+import { ctx } from "neko-helper/src/context";
 
 @Controller("/api/v1/cats")
 export class CatController extends BaseController {

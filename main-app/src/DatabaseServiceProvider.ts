@@ -4,7 +4,7 @@ import { PostgresqlConnection } from "neko-sql/src/databases/postgresql/Postgres
 import { PoolConfig } from "pg";
 import { Connection } from "neko-sql/src/Connection";
 import { BaseModel } from "neko-orm/src/baseModel";
-import { ctx } from "neko-http/src";
+import { ctx } from "neko-helper/src/context";
 import config from "config";
 
 export class DatabaseServiceProvider extends Middleware {

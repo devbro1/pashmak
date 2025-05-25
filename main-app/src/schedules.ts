@@ -3,7 +3,7 @@ import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
 import { runNext } from "neko-helper/src/patternEnforcer";
 import { Middleware } from "neko-router/src";
 import { Request, Response } from "neko-router/src/types";
-import { context_provider } from "neko-http/src/index";
+import { context_provider } from "neko-helper/src/context";
 import { db } from "./facades";
 
 scheduler()

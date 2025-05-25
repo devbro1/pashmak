@@ -2,7 +2,7 @@ import { Request, Response } from "neko-router/src/types";
 import { router as routerFunc, db as dbf } from "./facades";
 import { wait } from "neko-helper/src/time";
 import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
-import { ctx } from "neko-http/src";
+import { ctx } from "neko-helper/src/context";
 import { Connection } from "neko-sql/src/Connection";
 import { CatController } from "./controllers";
 import { loggerMiddleware, logResponseMiddleware } from "./middlewares";

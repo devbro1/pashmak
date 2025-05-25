@@ -67,3 +67,9 @@ export class ContextProvider {
     return rc;
   }
 }
+
+export const context_provider = new ContextProvider();
+
+export function ctx() {
+  return context_provider.getStore();
+}

@@ -3,18 +3,12 @@ import { createServer as createServerSecured } from 'https';
 import { Route, Router } from 'neko-router/src';
 import { NotFound, UnsupportedMediaType } from 'http-errors';
 import { Request } from 'neko-router/src/types';
-import { ContextProvider } from './Context';
+import { context_provider, ctx } from 'neko-helper/src/context';
 import formidable from 'formidable';
 // @ts-ignore
 import { firstValues } from 'formidable/src/helpers/firstValues.js';
 import path from 'path';
 import os from 'os';
-
-export const context_provider = new ContextProvider();
-
-export function ctx() {
-  return context_provider.getStore();
-}
 
 export class HttpServer {
   private https_certs: undefined | { key: string; cert: string } = undefined;

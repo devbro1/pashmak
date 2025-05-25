@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { ctx } from 'neko-http/src/index';
+import { ctx } from 'neko-helper/src/context';
 import { Request } from 'neko-router/src/types';
 import { MiddlewareProvider } from '.';
 
