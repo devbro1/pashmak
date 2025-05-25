@@ -4,7 +4,8 @@ import { PostgresqlConnection } from "neko-sql/src/databases/postgresql/Postgres
 import { PoolConfig } from "pg";
 import { Connection } from "neko-sql/src/Connection";
 import { BaseModel } from "neko-orm/src/baseModel";
-import { ctx } from "neko-http/src";
+import { ctx } from "neko-helper/src/context";
+import config from "config";
 
 export class DatabaseServiceProvider extends Middleware {
   async call(
@@ -12,23 +13,28 @@ export class DatabaseServiceProvider extends Middleware {
     res: Response,
     next: () => Promise<void>,
   ): Promise<void> {
-    const db = DatabaseServiceProvider.getInstance();
-    const conn = await db.getConnection();
-    // @ts-ignore
-    ctx().get<Request>("request").context = { dd: "cc" };
+    const db_configs: Record<string, PoolConfig & { name: string }> =
+      config.get("databases");
+
+    let conns = [];
     try {
-      ctx().set("db", conn);
-      BaseModel.setConnection(() => ctx().getOrThrow<Connection>("db"));
+      for (const [name, db_config] of Object.entries(db_configs)) {
+        const conn = await this.getConnection(db_config);
+        ctx().set(["database", name], conn);
+        conns.push(conn);
+      }
+      BaseModel.setConnection(() =>
+        ctx().getOrThrow<Connection>(["database", "default"]),
+      );
       await next();
     } catch (err) {
       throw err;
     } finally {
-      await conn.disconnect();
+      await conns.map(async (conn) => await conn.disconnect());
     }
   }
 
   private static instance: DatabaseServiceProvider;
-  private conn: PostgresqlConnection | undefined;
 
   async register(): Promise<void> {}
 
@@ -39,15 +45,7 @@ export class DatabaseServiceProvider extends Middleware {
     return DatabaseServiceProvider.instance;
   }
 
-  async getConnection(): Promise<PostgresqlConnection> {
-    const db_config: PoolConfig = {
-      host: process.env.DB_HOST,
-      database: process.env.DB_NAME || "test_db",
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      port: parseInt(process.env.DB_PORT || "5432"),
-    };
-
+  async getConnection(db_config: PoolConfig): Promise<PostgresqlConnection> {
     const conn = new PostgresqlConnection(db_config);
     if (!(await conn.connect())) {
       throw new Error("Failed to connect to the database");

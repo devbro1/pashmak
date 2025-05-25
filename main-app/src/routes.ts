@@ -1,21 +1,18 @@
 import { Request, Response } from "neko-router/src/types";
-import { router } from "./facades";
+import { router as routerFunc, db as dbf } from "./facades";
 import { wait } from "neko-helper/src/time";
 import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
-import { ctx } from "neko-http/src";
+import { ctx } from "neko-helper/src/context";
 import { Connection } from "neko-sql/src/Connection";
+import { CatController } from "./controllers";
+import { loggerMiddleware, logResponseMiddleware } from "./middlewares";
 
+const router = routerFunc();
 
 // load database connection
 router.addGlobalMiddleware(DatabaseServiceProvider);
 
-router.addGlobalMiddleware(
-  async (req: Request, res: Response, next: () => Promise<void>) => {
-    console.log("route:", req.url);
-    console.log("context", ctx().keys());
-    await next();
-  },
-);
+router.addGlobalMiddleware(loggerMiddleware);
 router.addRoute(
   ["GET", "HEAD"],
   "/api/v1/countries",
@@ -47,7 +44,7 @@ router.addRoute(
     await wait(parseInt(req?.query?.wait || "") || 0);
     console.log("waited", req?.query?.wait);
 
-    let db = ctx().getOrThrow<Connection>("db");
+    let db = dbf();
     let error = undefined;
     try {
       await db.beginTransaction();
@@ -71,10 +68,14 @@ router.addRoute(
   },
 );
 
-router.addRoute(
-  ["GET", "HEAD"],
-  "/api/v1/part2",
-  async (req: Request, res: Response) => {
-    return { yey: "GET part2" };
-  },
-);
+router
+  .addRoute(
+    ["GET", "HEAD"],
+    "/api/v1/part2/:param1",
+    async (req: Request, res: Response) => {
+      return { yey: "GET part2", param1: req.params.param1 };
+    },
+  )
+  .addMiddleware(logResponseMiddleware);
+
+router.addController(CatController);

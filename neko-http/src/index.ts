@@ -1,15 +1,14 @@
 import { IncomingMessage, RequestListener, ServerResponse, createServer } from 'http';
 import { createServer as createServerSecured } from 'https';
 import { Route, Router } from 'neko-router/src';
-import { NotFound } from 'http-errors';
+import { NotFound, UnsupportedMediaType } from 'http-errors';
 import { Request } from 'neko-router/src/types';
-import { ContextProvider } from './Context';
-
-let cp = new ContextProvider();
-
-export function ctx() {
-  return cp.getStore();
-}
+import { context_provider, ctx } from 'neko-helper/src/context';
+import formidable from 'formidable';
+// @ts-ignore
+import { firstValues } from 'formidable/src/helpers/firstValues.js';
+import path from 'path';
+import os from 'os';
 
 export class HttpServer {
   private https_certs: undefined | { key: string; cert: string } = undefined;
@@ -26,7 +25,7 @@ export class HttpServer {
   }
 
   getHttpHanlder() {
-    let me = this;
+    const me = this;
     return (req: IncomingMessage, res: ServerResponse) => {
       return me.handle(req, res);
     };
@@ -50,9 +49,54 @@ export class HttpServer {
     this.generateRequestId = func;
   }
 
+  async preprocessRequest(req: Request): Promise<Request> {
+    return new Promise(async (resolve, reject) => {
+      if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
+        if (
+          req.headers['content-type']?.includes('multipart/form-data') ||
+          req.headers['content-type']?.includes('application/x-www-form-urlencoded') ||
+          req.headers['content-type']?.includes('application/json')
+        ) {
+          const form = formidable({
+            multiples: true,
+            uploadDir: path.join(os.tmpdir(), ''),
+            keepExtensions: true,
+          });
+
+          let [fields, files] = await form.parse(req);
+          req.body = firstValues(form, fields);
+          req.files = files;
+
+          resolve(req);
+          return;
+        } else {
+          let body = '';
+
+          req.on('data', (chunk) => {
+            body += chunk.toString(); // Convert Buffer to string
+          });
+
+          req.on('end', () => {
+            if (req.headers['content-type']?.includes('text/plain')) {
+              req.body = body;
+            } else {
+              reject(new UnsupportedMediaType());
+            }
+
+            resolve(req);
+            return;
+          });
+        }
+      } else {
+        resolve(req);
+      }
+    });
+  }
+
   async handle(req: IncomingMessage, res: ServerResponse) {
     try {
-      await cp.run(async () => {
+      await context_provider.run(async () => {
+        req = await this.preprocessRequest(req as Request);
         ctx().set('request', req);
         ctx().set('response', res);
         ctx().set('requestId', this.generateRequestId(req, res));

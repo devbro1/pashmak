@@ -1,3 +1,9 @@
+import dotenv from "dotenv";
+dotenv.config();
+
+process.env["NODE_CONFIG_DIR"] = __dirname + "/config/";
+import config from "config";
+
 import { HttpServer } from "neko-http/src";
 import { HttpError } from "http-errors";
 import { router, scheduler } from "./facades";
@@ -6,6 +12,8 @@ import "./routes";
 import "./schedules";
 
 let server = new HttpServer();
+
+console.log(config.get("databases"));
 
 server.setErrorHandler(async (err: Error, req: any, res: any) => {
   if (err instanceof HttpError) {
@@ -20,9 +28,9 @@ server.setErrorHandler(async (err: Error, req: any, res: any) => {
   res.end(JSON.stringify({ error: "Internal Server Error" }));
 });
 
-scheduler.start();
-server.setRouter(router);
+scheduler().start();
+server.setRouter(router());
 
-server.listen(3000, () => {
-  console.log("Server is running on http://localhost:3000");
+server.listen(config.get("port"), () => {
+  console.log("Server is running on http://localhost:" + config.get("port"));
 });
