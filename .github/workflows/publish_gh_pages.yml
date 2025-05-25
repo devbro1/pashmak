@@ -18,8 +18,6 @@ jobs:
         run: yarn install --frozen-lockfile
       - name: Build Docusaurus site
         run: yarn workspace docs build
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/build
+      - name: Build Docusaurus site
+        # we are using gh-pages branch for docs website
+        run: yarn workspace docs deploy

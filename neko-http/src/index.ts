@@ -7,8 +7,7 @@ import { context_provider, ctx } from 'neko-helper/src/context';
 import formidable from 'formidable';
 // @ts-ignore
 import { firstValues } from 'formidable/src/helpers/firstValues.js';
-import path from 'path';
-import os from 'os';
+import config from 'config';
 
 export class HttpServer {
   private https_certs: undefined | { key: string; cert: string } = undefined;
@@ -59,7 +58,7 @@ export class HttpServer {
         ) {
           const form = formidable({
             multiples: true,
-            uploadDir: path.join(os.tmpdir(), ''),
+            uploadDir: config.get('file_upload_path'),
             keepExtensions: true,
           });
 

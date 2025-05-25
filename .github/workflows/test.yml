@@ -34,4 +34,4 @@ jobs:
       - name: run tests
         run: |
           yarn
-          yarn workspace neko-sql test
+          yarn workspaces run test
