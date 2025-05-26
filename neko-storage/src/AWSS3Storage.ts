@@ -1,10 +1,11 @@
-import { Storage, StorageConfig } from './index';
+import { Metadata, Storage, StorageConfig } from './index';
 import {
   S3Client,
   HeadObjectCommand,
   PutObjectCommand,
   GetObjectCommand,
   DeleteObjectCommand,
+  HeadObjectOutput,
 } from '@aws-sdk/client-s3';
 import { ReadStream } from 'fs';
 import Stream, { Readable } from 'stream';
@@ -106,5 +107,16 @@ export class AWSS3Storage implements Storage {
       new GetObjectCommand({ Bucket: this.config.bucket, Key: path })
     );
     return data.Body as unknown as ReadStream;
+  }
+
+  async metadata(path: string): Promise<Metadata> {
+    const metadata = await this.s3.send(
+      new HeadObjectCommand({ Bucket: this.config.bucket, Key: path })
+    );
+    return {
+      size: metadata.ContentLength || 0,
+      mimeType: metadata.ContentType || 'unknown',
+      lastModifiedDate: (metadata.LastModified || new Date(0)).toISOString(),
+    };
   }
 }

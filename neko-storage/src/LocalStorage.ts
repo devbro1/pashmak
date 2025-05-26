@@ -2,7 +2,8 @@ import Stream from 'stream';
 import * as fs from 'fs/promises';
 import { createWriteStream, createReadStream, ReadStream } from 'fs';
 import * as path from 'path';
-import { Storage, StorageConfig } from '.';
+import * as mime from 'mime-types';
+import { Metadata, Storage, StorageConfig } from '.';
 
 export class LocalStorage implements Storage {
   constructor(private config: StorageConfig) {
@@ -14,6 +15,16 @@ export class LocalStorage implements Storage {
     fs.mkdir(this.config.basePath, { recursive: true }).catch((error) => {
       throw error;
     });
+  }
+
+  async metadata(path: string): Promise<Metadata> {
+    const fullPath = this.getFullPath(path);
+    const stats = await fs.stat(fullPath);
+    return {
+      size: stats.size,
+      mimeType: mime.lookup(fullPath) || 'unknown',
+      lastModifiedDate: stats.mtime.toISOString(),
+    };
   }
 
   static canHandle(config: StorageConfig) {

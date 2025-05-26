@@ -15,7 +15,14 @@ export interface Storage {
   getBuffer(path: string): Promise<Buffer>;
   getStream(path: string): Promise<ReadStream>;
   delete(path: string): Promise<boolean>;
+  metadata(path: string): Promise<Metadata>;
 }
+
+export type Metadata = {
+  size: number;
+  mimeType: string;
+  lastModifiedDate: string;
+};
 
 export type StorageConfig = {
   engine: string;

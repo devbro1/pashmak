@@ -70,6 +70,26 @@ await storage().put("test.jpg", fs.readFileSync("path/to/file.jpg")); // Buffer
 await storage().put("test.jpg", createReadStream("./example.txt")); // ReadStream
 ```
 
+### metadata(path)
+
+sometime you need details of the file
+
+```ts
+await storage().metadata("test.jpg");
+```
+
+the return will look like:
+
+```ts
+{
+    "size": 97511,
+    "mimeType": "image/jpeg",
+    "lastModifiedDate": "2025-05-25T22:01:27.625Z"
+}
+```
+
+depending on the driver you may end up with more or less data.
+
 ### getString(path), getJson(path), getBuffer(path), getStream(path)
 
 Depending on your need a few different methods are provided to help getting the file content.
