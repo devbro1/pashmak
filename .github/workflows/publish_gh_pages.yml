@@ -3,9 +3,9 @@ name: Deploy Docusaurus to GitHub Pages
 on:
   workflow_dispatch:
   push:
-    branches: [master]
     paths:
       - "docs"
+    branches: [master]
 
 jobs:
   deploy:
