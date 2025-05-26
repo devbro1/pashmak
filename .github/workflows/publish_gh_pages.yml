@@ -17,7 +17,11 @@ jobs:
         with:
           node-version: "22"
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: |
+          git config --global user.email "docs@devbro.com"
+          git config --global user.name "Docusaurus Bot"
+
+          yarn install --frozen-lockfile
       # - name: Build Docusaurus site
       #   run: yarn workspace docs build
       - name: Build Docusaurus site
