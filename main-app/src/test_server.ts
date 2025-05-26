@@ -13,8 +13,6 @@ import "./schedules";
 
 let server = new HttpServer();
 
-console.log(config.get("databases"));
-
 server.setErrorHandler(async (err: Error, req: any, res: any) => {
   if (err instanceof HttpError) {
     res.writeHead(err.statusCode, { "Content-Type": "application/json" });

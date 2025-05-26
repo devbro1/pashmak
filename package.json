@@ -1,7 +1,7 @@
 {
-  "name": "neko-db-manager",
+  "name": "pashmak",
   "version": "1.0.0",
-  "repository": "git@github.com:devbro1/neko-db-manager.git",
+  "repository": "git@github.com:devbro1/pashmak.git",
   "author": "Farzad Meow Khalafi <farzadk@gmail.com>",
   "license": "MIT",
   "private": true,
@@ -13,6 +13,7 @@
     "neko-router",
     "neko-scheduler",
     "neko-sql",
+    "neko-storage",
     "main-app"
   ]
 }

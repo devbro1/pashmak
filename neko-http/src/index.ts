@@ -64,7 +64,7 @@ export class HttpServer {
 
           let [fields, files] = await form.parse(req);
           req.body = firstValues(form, fields);
-          req.files = files;
+          req.files = firstValues(form, files);
 
           resolve(req);
           return;

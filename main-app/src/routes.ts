@@ -3,8 +3,7 @@ import { router as routerFunc, db as dbf } from "./facades";
 import { wait } from "neko-helper/src/time";
 import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
 import { ctx } from "neko-helper/src/context";
-import { Connection } from "neko-sql/src/Connection";
-import { CatController } from "./controllers";
+import { CatController } from "./app/controllers/CatController";
 import { loggerMiddleware, logResponseMiddleware } from "./middlewares";
 
 const router = routerFunc();

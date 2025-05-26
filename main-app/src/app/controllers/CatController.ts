@@ -5,9 +5,11 @@ import {
   Post,
 } from "neko-router/src/Controller";
 import { Param } from "neko-router/src/Controller";
-import { logResponseMiddleware } from "./middlewares";
-import { db } from "./facades";
+import { logResponseMiddleware } from "@root/middlewares";
+import { db, storage } from "@root/facades";
 import { ctx } from "neko-helper/src/context";
+import { Request, Response } from "neko-router/src/types";
+import fs from "fs";
 
 @Controller("/api/v1/cats")
 export class CatController extends BaseController {
@@ -21,10 +23,30 @@ export class CatController extends BaseController {
   }
 
   @Post()
-  store() {
+  async store() {
     let req = ctx().get<Request>("request");
-
+    console.log(req.body);
+    console.log(req.files);
+    await storage().put(
+      req.files.f1.newFilename,
+      fs.readFileSync(req.files.f1.filepath),
+    );
     return req.body;
+  }
+
+  @Get({ path: "/file" })
+  async getFile() {
+    let res = ctx().get<Response>("response");
+    await res.writeHead(200, {
+      "Content-Type": "image/jpeg",
+    });
+
+    (await storage().getStream("test.jpg")).pipe(res);
+  }
+
+  @Get({ path: "/file-details" })
+  async getFileDetails() {
+    return await storage().metadata("test.jpg");
   }
 
   @Get({ path: "/:id/:id2" })
