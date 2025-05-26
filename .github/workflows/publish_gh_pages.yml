@@ -16,8 +16,8 @@ jobs:
           node-version: "22"
       - name: Install dependencies
         run: yarn install --frozen-lockfile
-      - name: Build Docusaurus site
-        run: yarn workspace docs build
+      # - name: Build Docusaurus site
+      #   run: yarn workspace docs build
       - name: Build Docusaurus site
         # we are using gh-pages branch for docs website
         run: yarn workspace docs deploy
