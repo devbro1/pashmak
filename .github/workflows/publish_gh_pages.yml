@@ -8,8 +8,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      GIT_USER: ${{ secrets.GITHUB_ACTOR }}
-      GIT_PASS: ${{ secrets.GITHUB_TOKEN }}
+      USE_SSH: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
