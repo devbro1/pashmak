@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GIT_USER: devbro1
+      GIT_PASS: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
