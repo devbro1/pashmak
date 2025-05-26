@@ -22,8 +22,10 @@ jobs:
           git config --global user.name "Docusaurus Bot"
 
           yarn install --frozen-lockfile
-      # - name: Build Docusaurus site
-      #   run: yarn workspace docs build
       - name: Build Docusaurus site
-        # we are using gh-pages branch for docs website
-        run: yarn workspace docs deploy
+        run: yarn workspace docs build
+      - name: Deploy Docusaurus site
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/build
