@@ -1,8 +1,11 @@
 name: Deploy Docusaurus to GitHub Pages
 
 on:
+  workflow_dispatch:
   push:
     branches: [master]
+    paths:
+      - "docs/**"
 
 jobs:
   deploy:
@@ -16,6 +19,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+          key: node_modules-${{ hashFiles('**/yarn.lock') }}
       - name: Install dependencies
         run: |
           git config --global user.email "docs@devbro.com"
