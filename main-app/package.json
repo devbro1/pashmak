@@ -14,7 +14,7 @@
     "format": "eslint . --fix --ext ts,tsx --report-unused-disable-directives --max-warnings 0 ",
     "prepare": "husky",
     "prettier": "prettier --write .",
-    "dev": "nodemon --watch src --ext ts,tsx,json --signal SIGTERM --exec \"clear && ts-node -r tsconfig-paths/register src/test_server.ts start\"",
+    "dev": "nodemon --watch src --ext ts,tsx,json --signal SIGTERM --exec \"clear && ts-node -r tsconfig-paths/register src/test_server.ts\"",
     "dev2": "ts-node -r tsconfig-paths/register src/test_server.ts"
   },
   "author": "Farzad Meow Khalafi",

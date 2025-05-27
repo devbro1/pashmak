@@ -3,7 +3,7 @@ import config from "config";
 
 import { HttpServer } from "neko-http/src";
 import { HttpError } from "http-errors";
-import { router, scheduler } from "@root/facades";
+import { cli, router, scheduler } from "@root/facades";
 
 export class StartCommand extends Command {
   scheduler = Option.Boolean(`--scheduler`, false);
@@ -39,3 +39,5 @@ export class StartCommand extends Command {
     });
   }
 }
+
+cli().register(StartCommand);

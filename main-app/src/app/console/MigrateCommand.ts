@@ -1,3 +1,4 @@
+import { cli } from "@root/facades";
 import { Command, Option } from "clipanion";
 
 export class MigrateCommand extends Command {
@@ -6,3 +7,5 @@ export class MigrateCommand extends Command {
     this.context.stdout.write(`Hello Migrate Command!\n`);
   }
 }
+
+cli().register(MigrateCommand);
