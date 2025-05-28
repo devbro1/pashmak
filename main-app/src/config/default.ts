@@ -6,4 +6,7 @@ export default {
   storages: require("./storages"),
   port: process.env.PORT || 3000,
   file_upload_path: path.join(os.tmpdir(), ""),
+  migration: {
+    path: path.join(__dirname, "..", "database/migration"),
+  },
 };
