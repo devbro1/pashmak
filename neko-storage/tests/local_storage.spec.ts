@@ -3,13 +3,15 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
 import * as os from 'os';
+import { wait } from 'neko-helper/src/time';
 
 describe('LocalStorage', () => {
   const basePath = path.resolve(os.tmpdir(), `test-storage-${randomUUID()}`);
   let storage: LocalStorage;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     storage = new LocalStorage({ engine: 'local', basePath });
+    await wait(1000);
   });
 
   afterAll(async () => {
@@ -17,7 +19,7 @@ describe('LocalStorage', () => {
   });
 
   test('should create a file and check its existence', async () => {
-    const filePath = 'test-file.txt';
+    const filePath = 'test-file1.txt';
     const content = 'Hello, LocalStorage!';
     await storage.put(filePath, content);
 
@@ -26,7 +28,7 @@ describe('LocalStorage', () => {
   });
 
   test('should read a file as a string', async () => {
-    const filePath = 'test-file.txt';
+    const filePath = 'test-file2.txt';
     const content = 'Hello, LocalStorage!';
     await storage.put(filePath, content);
 
@@ -35,7 +37,7 @@ describe('LocalStorage', () => {
   });
 
   test('should read a file as JSON', async () => {
-    const filePath = 'test-file.json';
+    const filePath = 'test-file3.json';
     const content = { message: 'Hello, LocalStorage!' };
     await storage.put(filePath, content);
 
@@ -44,7 +46,7 @@ describe('LocalStorage', () => {
   });
 
   test('should delete a file', async () => {
-    const filePath = 'test-file.txt';
+    const filePath = 'test-file4.txt';
     const content = 'Hello, LocalStorage!';
     await storage.put(filePath, content);
 
