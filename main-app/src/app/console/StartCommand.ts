@@ -4,6 +4,7 @@ import config from "config";
 import { HttpServer } from "neko-http/src";
 import { HttpError } from "http-errors";
 import { cli, router, scheduler } from "@root/facades";
+import { PostgresqlConnection } from "neko-sql/src/databases/postgresql/PostgresqlConnection";
 
 export class StartCommand extends Command {
   scheduler = Option.Boolean(`--scheduler`, false);
@@ -30,6 +31,9 @@ export class StartCommand extends Command {
       this.context.stdout.write(`starting scheduler\n`);
       scheduler().start();
     }
+
+    PostgresqlConnection.pool.options.idleTimeoutMillis = 10000;
+
     server.setRouter(router());
 
     server.listen(config.get("port"), () => {

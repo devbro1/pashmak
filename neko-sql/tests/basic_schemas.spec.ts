@@ -6,6 +6,7 @@ import { Blueprint } from '../src/Blueprint';
 import { SchemaGrammar } from '../src/SchemaGrammar';
 import { Query } from '../src/Query';
 import { PostgresqlQueryGrammar } from '../src/databases/postgresql/PostgresqlQueryGrammar';
+import { PostgresqlSchemaGrammar } from '../src';
 
 describe('raw schemas', () => {
   beforeAll(async () => {});
@@ -27,6 +28,9 @@ describe('raw schemas', () => {
       },
       getQuery() {
         return new Query(null, new PostgresqlQueryGrammar());
+      },
+      getSchema() {
+        return new Schema(null, new PostgresqlSchemaGrammar());
       },
       beginTransaction: function (): Promise<void> {
         throw new Error('Function not implemented.');

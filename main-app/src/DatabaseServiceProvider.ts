@@ -30,7 +30,9 @@ export class DatabaseServiceProvider extends Middleware {
     } catch (err) {
       throw err;
     } finally {
-      await conns.map(async (conn) => await conn.disconnect());
+      for (const conn of conns) {
+        await conn.disconnect();
+      }
     }
   }
 

@@ -9,22 +9,12 @@ import { db } from "./facades";
 scheduler()
   .call(async () => {
     await context_provider.run(async () => {
-      let middlewares: Middleware[] = [];
-      middlewares.push(DatabaseServiceProvider.getInstance());
-
-      await runNext(
-        middlewares,
-        {} as Request,
-        {} as Response,
-        async (req, res) => {
-          console.log("Hello World");
-          let d = db();
-          let r = await d.runQuery({
-            sql: "select * from users",
-            bindings: [],
-          });
-        },
-      );
+      console.log("Hello World");
+      let d = db();
+      let r = await d.runQuery({
+        sql: "select * from users",
+        bindings: [],
+      });
     });
   })
   .setCronTime("* * * * *")

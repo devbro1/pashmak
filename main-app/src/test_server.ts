@@ -8,6 +8,25 @@ import "./app/console";
 
 import "./routes";
 import "./schedules";
+import { context_provider } from "neko-helper/src/context";
+import { Middleware } from "neko-router/src";
+import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
+import { runNext } from "neko-helper/src/patternEnforcer";
+import { Request, Response } from "neko-router/src/types";
+
+context_provider.setPreLoader(async (f: Function) => {
+  let middlewares: Middleware[] = [];
+  // do I need to use ServiceProvider like a middleware or can I get rid of this logic?
+  middlewares.push(DatabaseServiceProvider.getInstance());
+
+  return await runNext(
+    middlewares,
+    {} as Request,
+    {} as Response,
+    // @ts-ignore
+    f,
+  );
+});
 
 const [node, app, ...args] = process.argv;
 cli().runExit(args);

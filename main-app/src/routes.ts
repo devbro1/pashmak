@@ -8,9 +8,6 @@ import { loggerMiddleware, logResponseMiddleware } from "./middlewares";
 
 const router = routerFunc();
 
-// load database connection
-router.addGlobalMiddleware(DatabaseServiceProvider);
-
 router.addGlobalMiddleware(loggerMiddleware);
 router.addRoute(
   ["GET", "HEAD"],

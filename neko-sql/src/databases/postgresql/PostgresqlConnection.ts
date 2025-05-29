@@ -4,6 +4,8 @@ import { Pool } from 'pg';
 import { CompiledSql } from '../../types';
 import { Query } from '../../Query';
 import { PostgresqlQueryGrammar } from './PostgresqlQueryGrammar';
+import { Schema } from '../../Schema';
+import { PostgresqlSchemaGrammar } from './PostgresqlSchemaGrammar';
 export class PostgresqlConnection extends ConnectionAbs {
   connection: PoolClient | undefined;
   static pool: Pool;
@@ -15,8 +17,8 @@ export class PostgresqlConnection extends ConnectionAbs {
         port: 5432,
         ssl: false,
         max: 20,
-        idleTimeoutMillis: 30000, // wait 30 seconds before closing an idle connection
-        connectionTimeoutMillis: 30000, // wait up to 30 seconds to obtain a connection
+        idleTimeoutMillis: 1, // wait X milli seconds before closing an idle/released connection
+        connectionTimeoutMillis: 30000, // wait up to 30 seconds to obtain a new connection
         maxUses: 7500,
       };
       PostgresqlConnection.pool = new Pool({ ...defaults, ...params });
@@ -39,6 +41,10 @@ export class PostgresqlConnection extends ConnectionAbs {
     return new Query(this, new PostgresqlQueryGrammar());
   }
 
+  getSchema(): Schema {
+    return new Schema(this, new PostgresqlSchemaGrammar());
+  }
+
   async beginTransaction(): Promise<void> {
     if (!this.connection) {
       throw new Error('No active connection to begin a transaction.');
@@ -58,5 +64,10 @@ export class PostgresqlConnection extends ConnectionAbs {
       throw new Error('No active connection to rollback a transaction.');
     }
     await this.connection.query('ROLLBACK');
+  }
+
+  static async destroy(): Promise<void> {
+    PostgresqlConnection.pool.end();
+    return;
   }
 }
