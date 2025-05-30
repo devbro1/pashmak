@@ -1,8 +1,8 @@
 import { Request, Response } from "neko-router/src/types";
 import { router as routerFunc, db as dbf } from "./facades";
-import { wait } from "neko-helper/src/time";
+import { sleep } from "neko-helper";
 import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
-import { ctx } from "neko-helper/src/context";
+import { ctx } from "neko-helper";
 import { CatController } from "./app/controllers/CatController";
 import { loggerMiddleware, logResponseMiddleware } from "./middlewares";
 
@@ -37,7 +37,7 @@ router.addRoute(
   async (req: Request, res: Response) => {
     console.log("GET time", req?.query?.wait, ctx().get("requestId"));
 
-    await wait(parseInt(req?.query?.wait || "") || 0);
+    await sleep(parseInt(req?.query?.wait || "") || 0);
     console.log("waited", req?.query?.wait);
 
     const db = dbf();

@@ -7,7 +7,7 @@ import {
 import { Param } from "neko-router/src/Controller";
 import { logResponseMiddleware } from "@root/middlewares";
 import { db, storage } from "@root/facades";
-import { ctx } from "neko-helper/src/context";
+import { ctx } from "neko-helper";
 import { Request, Response } from "neko-router/src/types";
 import fs from "fs";
 

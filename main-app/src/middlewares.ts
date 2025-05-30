@@ -1,4 +1,4 @@
-import { ctx } from "neko-helper/src/context";
+import { ctx } from "neko-helper";
 import { Request, Response } from "neko-router/src/types";
 
 export async function loggerMiddleware(

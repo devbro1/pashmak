@@ -1,9 +1,9 @@
 import { scheduler } from "./facades";
 import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
-import { runNext } from "neko-helper/src/patternEnforcer";
+import { runNext } from "neko-helper";
 import { Middleware } from "neko-router/src";
 import { Request, Response } from "neko-router/src/types";
-import { context_provider } from "neko-helper/src/context";
+import { context_provider } from "neko-helper";
 import { db } from "./facades";
 
 scheduler()

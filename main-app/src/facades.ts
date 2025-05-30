@@ -1,7 +1,7 @@
 import { Router } from "neko-router/src";
 import { Scheduler } from "neko-scheduler/src";
-import { createSingleton } from "neko-helper/src/patternEnforcer";
-import { ctx } from "neko-helper/src/context";
+import { createSingleton } from "neko-helper";
+import { ctx } from "neko-helper";
 import { Connection } from "neko-sql/src/Connection";
 import { Storage, StorageFactory } from "neko-storage/src/";
 import config from "config";

@@ -3,7 +3,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
 import * as os from 'os';
-import { wait } from 'neko-helper/src/time';
+import { sleep } from 'neko-helper/src/time';
 
 describe('LocalStorage', () => {
   const basePath = path.resolve(os.tmpdir(), `test-storage-${randomUUID()}`);
@@ -11,7 +11,7 @@ describe('LocalStorage', () => {
 
   beforeEach(async () => {
     storage = new LocalStorage({ engine: 'local', basePath });
-    await wait(1000);
+    await sleep(1000);
   });
 
   afterAll(async () => {

@@ -8,10 +8,10 @@ import "./app/console";
 
 import "./routes";
 import "./schedules";
-import { context_provider } from "neko-helper/src/context";
+import { context_provider } from "neko-helper";
 import { Middleware } from "neko-router/src";
 import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
-import { runNext } from "neko-helper/src/patternEnforcer";
+import { runNext } from "neko-helper";
 import { Request, Response } from "neko-router/src/types";
 
 context_provider.setPreLoader(async (f: Function) => {
