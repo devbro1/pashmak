@@ -10,8 +10,8 @@ scheduler()
   .call(async () => {
     await context_provider.run(async () => {
       console.log("Hello World");
-      let d = db();
-      let r = await d.runQuery({
+      const d = db();
+      const r = await d.runQuery({
         sql: "select * from users",
         bindings: [],
       });

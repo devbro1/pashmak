@@ -12,7 +12,7 @@ export class StartCommand extends Command {
 
   async execute() {
     this.context.stdout.write(`Hello Start Command!\n`);
-    let server = new HttpServer();
+    const server = new HttpServer();
 
     server.setErrorHandler(async (err: Error, req: any, res: any) => {
       if (err instanceof HttpError) {
@@ -36,7 +36,7 @@ export class StartCommand extends Command {
 
     server.setRouter(router());
 
-    server.listen(config.get("port"), () => {
+    await server.listen(config.get("port"), () => {
       console.log(
         "Server is running on http://localhost:" + config.get("port"),
       );

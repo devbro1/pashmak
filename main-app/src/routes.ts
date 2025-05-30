@@ -40,7 +40,7 @@ router.addRoute(
     await wait(parseInt(req?.query?.wait || "") || 0);
     console.log("waited", req?.query?.wait);
 
-    let db = dbf();
+    const db = dbf();
     let error = undefined;
     try {
       await db.beginTransaction();
@@ -59,7 +59,7 @@ router.addRoute(
 
     console.log("FIN time", req?.query?.wait);
     // @ts-ignore
-    let dd = req.context.dd;
+    const dd = req.context.dd;
     return { yey: "GET time", time: new Date().toISOString(), error, dd };
   },
 );

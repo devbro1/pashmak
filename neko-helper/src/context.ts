@@ -74,7 +74,8 @@ export class ContextProvider {
   }
 
   private preloader: Function = async (a: any) => await a();
-  async setPreLoader(func: (callback: () => void) => void) {
+
+  setPreLoader(func: (callback: () => void) => void) {
     this.preloader = func;
   }
 }

@@ -16,7 +16,7 @@ export class DatabaseServiceProvider extends Middleware {
     const db_configs: Record<string, PoolConfig & { name: string }> =
       config.get("databases");
 
-    let conns = [];
+    const conns = [];
     try {
       for (const [name, db_config] of Object.entries(db_configs)) {
         const conn = await this.getConnection(db_config);
@@ -27,8 +27,6 @@ export class DatabaseServiceProvider extends Middleware {
         ctx().getOrThrow<Connection>(["database", "default"]),
       );
       await next();
-    } catch (err) {
-      throw err;
     } finally {
       for (const conn of conns) {
         await conn.disconnect();

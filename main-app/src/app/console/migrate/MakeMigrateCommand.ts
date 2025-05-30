@@ -31,7 +31,7 @@ export class MakeMigrateCommand extends Command {
       date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds(),
     ).padStart(5, "0");
 
-    let fixed_name = Case.snake(this.name);
+    const fixed_name = Case.snake(this.name);
     const filename = `${year}_${month}_${day}_${secondsOfDay}_${fixed_name}.ts`;
     this.context.stdout.write(`creating migration file ${filename}\n`);
 
@@ -42,11 +42,14 @@ export class MakeMigrateCommand extends Command {
         await fs.readFile(path.join(__dirname, "./make_migration.tpl"))
       ).toString(),
     );
-    let template = await compiledTemplate({
+    const template = await compiledTemplate({
       className: Case.pascal(this.name),
     });
 
-    fs.writeFile(path.join(config.get("migration.path"), filename), template);
+    await fs.writeFile(
+      path.join(config.get("migration.path"), filename),
+      template,
+    );
   }
 }
 

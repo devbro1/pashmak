@@ -28,7 +28,7 @@ export class MigrateCommand extends Command {
     await context_provider.run(async () => {
       // this.context.stdout.write(`Hello Migrate Command!\n`);
       const db = database();
-      let schema = db.getSchema();
+      const schema = db.getSchema();
 
       //create migration table if not exists
       if (!(await schema.tableExists("migrations"))) {
@@ -52,13 +52,13 @@ export class MigrateCommand extends Command {
       batch_number = batch_number[0].next_batch || 0;
       batch_number++;
 
-      let migrations = await db.runQuery({
+      const migrations = await db.runQuery({
         sql: "select * from migrations order by created_at ASC",
         bindings: [],
       });
 
-      let completed_migrations = migrations.map((r: any) => r.filename);
-      let pending_migrations = files.filter(
+      const completed_migrations = migrations.map((r: any) => r.filename);
+      const pending_migrations = files.filter(
         (file) => !completed_migrations.includes(file),
       );
 
@@ -67,7 +67,7 @@ export class MigrateCommand extends Command {
         const ClassToMigrate = require(
           path.join(migrationsDir, class_to_migrate),
         ).default;
-        let c: Migration = new ClassToMigrate();
+        const c: Migration = new ClassToMigrate();
         await c.up(db.getSchema());
         await db.runQuery({
           sql: "insert into migrations (filename, batch) values ($1,$2)",

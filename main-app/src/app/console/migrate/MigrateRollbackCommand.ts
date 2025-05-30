@@ -19,7 +19,7 @@ export class MigrateRollbackCommand extends Command {
     await context_provider.run(async () => {
       // this.context.stdout.write(`Hello Migrate Command!\n`);
       const db = database();
-      let schema = db.getSchema();
+      const schema = db.getSchema();
 
       const migrationsDir = config.get<string>("migration.path");
       let files: string[] = [];
@@ -27,21 +27,21 @@ export class MigrateRollbackCommand extends Command {
       const dirEntries = await fs.readdir(migrationsDir);
       files = dirEntries.filter((entry) => entry.endsWith(".ts")).sort();
 
-      let migrations = await db.runQuery({
+      const migrations = await db.runQuery({
         sql: "select * from migrations order by created_at DESC",
         bindings: [],
       });
 
-      let count = 0;
+      const count = 0;
       for (const migration of migrations) {
-        let class_to_migrate = migration.filename;
+        const class_to_migrate = migration.filename;
         this.context.stdout.write(`rolling back ${class_to_migrate}`);
 
         const ClassToMigrate = require(
           path.join(migrationsDir, class_to_migrate),
         ).default;
 
-        let c: Migration = new ClassToMigrate();
+        const c: Migration = new ClassToMigrate();
         await c.down(db.getSchema());
         await db.runQuery({
           sql: "delete from migrations where id = $1",
