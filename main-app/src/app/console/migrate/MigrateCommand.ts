@@ -7,6 +7,10 @@ import { runNext } from "neko-helper/src/patternEnforcer";
 import { Middleware } from "neko-router/src";
 import { Request, Response } from "neko-router/src/types";
 import { PostgresqlConnection } from "neko-sql/src/databases/postgresql/PostgresqlConnection";
+import { wait } from "neko-helper/src/time";
+import path from "path";
+import fs from "fs/promises";
+import config from "config";
 
 /*
 pashmak make migration <FILENAME>
@@ -20,36 +24,55 @@ export class MigrateCommand extends Command {
   static paths = [[`migrate`]];
   async execute() {
     await context_provider.run(async () => {
-      this.context.stdout.write(`Hello Migrate Command!\n`);
+      // this.context.stdout.write(`Hello Migrate Command!\n`);
       const db = database();
       let schema = db.getSchema();
 
-      console.log(await schema.tables());
-      console.log(await schema.tableExists("users"));
       //create migration table if not exists
-      // if(!(await schema.tableExists('migrations'))) {
-      //   await schema.createTable('migrations', (blueprint: Blueprint) => {
-      //     blueprint.id();
-      //     blueprint.timestamps();
-      //     blueprint.string('filename');
-      //     blueprint.integer('batch');
-      //     blueprint.string('status').default('success').nullable(false);
-      //   })
-      // }
+      if (!(await schema.tableExists("migrations"))) {
+        await schema.createTable("migrations", (blueprint: Blueprint) => {
+          blueprint.id();
+          blueprint.timestamps();
+          blueprint.string("filename");
+          blueprint.integer("batch");
+        });
+      }
 
-      // let files = []; //list of files with migration classes
-      // let migrations = db.runQuery({sql: 'select * from migrations order by created_at ASC', bindings: []});
+      const migrationsDir = config.get<string>("migration.path");
+      let files: string[] = [];
 
-      // let already_migrated = []; // TODO
-      // let need_migrations = []; // TODO
+      const dirEntries = await fs.readdir(migrationsDir);
+      files = dirEntries.filter((entry) => entry.endsWith(".ts")).sort();
+      let batch_number = await db.runQuery({
+        sql: "select max(batch) as next_batch from migrations",
+        bindings: [],
+      });
+      batch_number = batch_number[0].next_batch || 0;
+      batch_number++;
 
-      // for(const class_to_migrate of need_migrations) {
-      //   let c = new class_to_migrate();
-      //   await c.up();
-      //   await db.runQuery({sql: 'insert into migrations (filename, batch) values (?,?)', bindings:[class_to_migrate,2]});
-      // }
+      let migrations = await db.runQuery({
+        sql: "select * from migrations order by created_at ASC",
+        bindings: [],
+      });
+
+      let completed_migrations = migrations.map((r: any) => r.filename);
+      let pending_migrations = files.filter(
+        (file) => !completed_migrations.includes(file),
+      );
+
+      for (const class_to_migrate of pending_migrations) {
+        console.log(`migrating ${class_to_migrate}`);
+        const ClassToMigrate = require(
+          path.join(migrationsDir, class_to_migrate),
+        ).default;
+        let c = new ClassToMigrate();
+        await c.up();
+        await db.runQuery({
+          sql: "insert into migrations (filename, batch) values ($1,$2)",
+          bindings: [class_to_migrate, batch_number],
+        });
+      }
     });
-    // await PostgresqlConnection.destroy();
   }
 }
 

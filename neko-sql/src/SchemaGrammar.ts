@@ -1,4 +1,5 @@
 import { Blueprint, Column } from './Blueprint';
+import { Expression } from './Expression';
 import { CompiledSql, Parameter } from './types';
 
 export class SchemaGrammar {
@@ -74,6 +75,10 @@ export class SchemaGrammar {
 
     if (value instanceof Date) {
       return "'" + value.toISOString() + "'";
+    }
+
+    if (value instanceof Expression) {
+      return value.toCompiledSql().sql;
     }
 
     return "'" + value.replace("'", "\\'") + "'";

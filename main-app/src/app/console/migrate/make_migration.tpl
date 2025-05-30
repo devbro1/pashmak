@@ -1,9 +1,10 @@
-export class {{className}} extends Migration {
-    up(????) {
+import { Migration } from 'neko-sql/src/Migration';
+export default class {{className}} extends Migration {
+    async up() {
 
     }
 
-    down(????) {
+    async down() {
         
     }
 }

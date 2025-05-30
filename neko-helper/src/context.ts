@@ -55,13 +55,11 @@ export class Context {
 export class ContextProvider {
   private _asyncLocalStorage: AsyncLocalStorage<Context> = new AsyncLocalStorage<Context>();
 
-  async run(callback: () => void) {
+  async run(callback: () => Promise<void>) {
     let cfunc = callback;
     if (typeof this.preloader == 'function') {
-      // @ts-ignore
       cfunc = async () => {
-        // @ts-ignore
-        this.preloader(callback);
+        await this.preloader(callback);
       };
     }
     return this._asyncLocalStorage.run(new Context(), cfunc);
@@ -75,7 +73,7 @@ export class ContextProvider {
     return rc;
   }
 
-  private preloader: Function | undefined = undefined;
+  private preloader: Function = async (a: any) => await a();
   async setPreLoader(func: (callback: () => void) => void) {
     this.preloader = func;
   }

@@ -15,7 +15,10 @@ pashmak migrate refresh # doing all roll back then migrate
 pashmak migrate fresh # removing all tables then migrate
 */
 export class MakeMigrateCommand extends Command {
-  static paths = [[`make`, `migrate`]];
+  static paths = [
+    [`make`, `migrate`],
+    ["make", "migration"],
+  ];
 
   name = Option.String({ required: true });
 
