@@ -116,7 +116,7 @@ export class SchemaGrammar {
   }
 
   compileDropTable(tableName: string): CompiledSql {
-    return { sql: 'drop table ?', bindings: [tableName] };
+    return { sql: `drop table ${this.doubleQuoteString(tableName)}`, bindings: [] };
   }
 
   protected compileSchemaWhereClause(
@@ -137,5 +137,12 @@ export class SchemaGrammar {
       return value.map((v) => `'${v.replace(/'/g, "\\'")}'`).join(', ');
     }
     return `'${value.replace(/'/g, "\\'")}'`;
+  }
+
+  protected doubleQuoteString(value: string | string[]): string {
+    if (Array.isArray(value)) {
+      return value.map((v) => this.doubleQuoteString(v)).join(', ');
+    }
+    return `"${value.replace(/"/g, '\\"')}"`;
   }
 }

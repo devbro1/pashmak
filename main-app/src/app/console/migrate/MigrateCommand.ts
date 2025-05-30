@@ -11,6 +11,7 @@ import { wait } from "neko-helper/src/time";
 import path from "path";
 import fs from "fs/promises";
 import config from "config";
+import { Migration } from "neko-sql/src/Migration";
 
 /*
 pashmak make migration <FILENAME>
@@ -22,6 +23,7 @@ pashmak migrate fresh # removing all tables then migrate
 */
 export class MigrateCommand extends Command {
   static paths = [[`migrate`]];
+
   async execute() {
     await context_provider.run(async () => {
       // this.context.stdout.write(`Hello Migrate Command!\n`);
@@ -61,12 +63,12 @@ export class MigrateCommand extends Command {
       );
 
       for (const class_to_migrate of pending_migrations) {
-        console.log(`migrating ${class_to_migrate}`);
+        this.context.stdout.write(`migrating up ${class_to_migrate}`);
         const ClassToMigrate = require(
           path.join(migrationsDir, class_to_migrate),
         ).default;
-        let c = new ClassToMigrate();
-        await c.up();
+        let c: Migration = new ClassToMigrate();
+        await c.up(db.getSchema());
         await db.runQuery({
           sql: "insert into migrations (filename, batch) values ($1,$2)",
           bindings: [class_to_migrate, batch_number],
