@@ -14,7 +14,18 @@ export class DefaultCommand extends Command {
   });
 
   async execute() {
-    this.context.stdout.write(`Hello Default!\n`);
+    // @ts-ignore
+    const commandList = cli().registrations; //.definitions().map((def:any) => def.paths.map((path:any) => path.join(' '))).flat();
+
+    let paths: string[] = [];
+    console.log("Available commands:");
+    commandList.forEach((index, val) =>
+      paths.push(index.builder.paths[0]?.join(" ") || ""),
+    );
+
+    for (const cmd of paths) {
+      console.log(cmd);
+    }
   }
 }
 
