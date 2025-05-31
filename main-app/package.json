@@ -9,7 +9,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
     "test": "jest",
     "format": "eslint . --fix --ext ts,tsx --report-unused-disable-directives --max-warnings 0 ",
     "prepare": "husky",
