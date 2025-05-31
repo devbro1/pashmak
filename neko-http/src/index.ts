@@ -95,20 +95,24 @@ export class HttpServer {
   async handle(req: IncomingMessage, res: ServerResponse) {
     try {
       await context_provider.run(async () => {
-        req = await this.preprocessRequest(req as Request);
-        ctx().set('request', req);
-        ctx().set('response', res);
-        ctx().set('requestId', this.generateRequestId(req, res));
-        const r: Route | undefined = this.router?.resolve(req as any);
-        if (r === undefined) {
-          throw new NotFound(`Route ${req.url} not found`);
-        }
+        try {
+          req = await this.preprocessRequest(req as Request);
+          ctx().set('request', req);
+          ctx().set('response', res);
+          ctx().set('requestId', this.generateRequestId(req, res));
+          const r: Route | undefined = this.router?.resolve(req as any);
+          if (r === undefined) {
+            throw new NotFound(`Route ${req.url} not found`);
+          }
 
-        const compiled_route = this.router?.getCompiledRoute(req as Request, res);
-        if (compiled_route === undefined) {
-          throw new NotFound();
+          const compiled_route = this.router?.getCompiledRoute(req as Request, res);
+          if (compiled_route === undefined) {
+            throw new NotFound();
+          }
+          await compiled_route?.run();
+        } catch (err) {
+          await this.errorHandler(err as Error, req, res);
         }
-        await compiled_route?.run();
       });
     } catch (e: any) {
       await this.errorHandler(e, req, res);

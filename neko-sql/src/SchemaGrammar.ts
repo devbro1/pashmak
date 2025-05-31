@@ -1,5 +1,6 @@
 import { Blueprint, Column } from './Blueprint';
-import { Parameter } from './types';
+import { Expression } from './Expression';
+import { CompiledSql, Parameter } from './types';
 
 export class SchemaGrammar {
   toSql(blueprint: Blueprint): string {
@@ -76,6 +77,10 @@ export class SchemaGrammar {
       return "'" + value.toISOString() + "'";
     }
 
+    if (value instanceof Expression) {
+      return value.toCompiledSql().sql;
+    }
+
     return "'" + value.replace("'", "\\'") + "'";
   }
 
@@ -85,5 +90,59 @@ export class SchemaGrammar {
     }
 
     return 'primary key (' + primaryKeys.join(', ') + ')';
+  }
+
+  compileTables(schema: string | string[] | undefined = undefined): CompiledSql {
+    return {
+      sql:
+        'select c.relname as name, n.nspname as schema, pg_total_relation_size(c.oid) as size, ' +
+        "obj_description(c.oid, 'pg_class') as comment from pg_class c, pg_namespace n " +
+        "where c.relkind in ('r', 'p') and n.oid = c.relnamespace and " +
+        this.compileSchemaWhereClause(schema, 'n.nspname') +
+        ' order by n.nspname, c.relname',
+      bindings: [],
+    };
+  }
+
+  compileTableExists(tableName: string, schema: string = ''): CompiledSql {
+    return {
+      sql:
+        'select exists (select 1 from pg_class c, pg_namespace n where ' +
+        'n.nspname = ' +
+        (schema ? this.escape(schema) : 'current_schema()') +
+        " and c.relname = $1 and c.relkind in ('r', 'p') and n.oid = c.relnamespace)",
+      bindings: [tableName],
+    };
+  }
+
+  compileDropTable(tableName: string): CompiledSql {
+    return { sql: `drop table ${this.doubleQuoteString(tableName)}`, bindings: [] };
+  }
+
+  protected compileSchemaWhereClause(
+    schema: string | string[] | undefined,
+    column: string
+  ): string {
+    if (Array.isArray(schema) && schema.length > 0) {
+      return `${column} in (${this.quoteString(schema)})`;
+    } else if (schema && typeof schema === 'string') {
+      return `${column} = ${this.quoteString(schema)}`;
+    } else {
+      return `${column} <> 'information_schema' and ${column} not like 'pg\\_%'`;
+    }
+  }
+
+  protected quoteString(value: string | string[]): string {
+    if (Array.isArray(value)) {
+      return value.map((v) => `'${v.replace(/'/g, "\\'")}'`).join(', ');
+    }
+    return `'${value.replace(/'/g, "\\'")}'`;
+  }
+
+  protected doubleQuoteString(value: string | string[]): string {
+    if (Array.isArray(value)) {
+      return value.map((v) => this.doubleQuoteString(v)).join(', ');
+    }
+    return `"${value.replace(/"/g, '\\"')}"`;
   }
 }

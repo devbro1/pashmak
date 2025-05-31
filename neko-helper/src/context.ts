@@ -55,8 +55,14 @@ export class Context {
 export class ContextProvider {
   private _asyncLocalStorage: AsyncLocalStorage<Context> = new AsyncLocalStorage<Context>();
 
-  async run(callback: () => void) {
-    return this._asyncLocalStorage.run(new Context(), callback);
+  async run(callback: () => Promise<void>) {
+    let cfunc = callback;
+    if (typeof this.preloader == 'function') {
+      cfunc = async () => {
+        await this.preloader(callback);
+      };
+    }
+    return this._asyncLocalStorage.run(new Context(), cfunc);
   }
 
   getStore(): Context {
@@ -65,6 +71,12 @@ export class ContextProvider {
       throw new Error('Context not started');
     }
     return rc;
+  }
+
+  private preloader: Function = async (a: any) => await a();
+
+  setPreLoader(func: (callback: () => void) => void) {
+    this.preloader = func;
   }
 }
 

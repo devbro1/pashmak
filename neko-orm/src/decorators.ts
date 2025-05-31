@@ -1,5 +1,6 @@
 type AttributeOptions = {
   primaryKey?: boolean;
+  incrementingPrimaryKey?: boolean;
 };
 
 export function Attribute(options: AttributeOptions = {}) {
@@ -14,7 +15,7 @@ export function Attribute(options: AttributeOptions = {}) {
         target.constructor.prototype.primaryKey = [];
       }
       target.constructor.prototype.primaryKey.push(propertyKey);
-      target.constructor.prototype.incrementing = false;
+      target.constructor.prototype.incrementing = options.incrementingPrimaryKey || true;
     } else {
       if (!target.constructor.prototype.fillable) {
         target.constructor.prototype.fillable = [];

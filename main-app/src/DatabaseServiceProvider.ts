@@ -4,7 +4,7 @@ import { PostgresqlConnection } from "neko-sql/src/databases/postgresql/Postgres
 import { PoolConfig } from "pg";
 import { Connection } from "neko-sql/src/Connection";
 import { BaseModel } from "neko-orm/src/baseModel";
-import { ctx } from "neko-helper/src/context";
+import { ctx } from "neko-helper/src";
 import config from "config";
 
 export class DatabaseServiceProvider extends Middleware {
@@ -16,7 +16,7 @@ export class DatabaseServiceProvider extends Middleware {
     const db_configs: Record<string, PoolConfig & { name: string }> =
       config.get("databases");
 
-    let conns = [];
+    const conns = [];
     try {
       for (const [name, db_config] of Object.entries(db_configs)) {
         const conn = await this.getConnection(db_config);
@@ -27,10 +27,10 @@ export class DatabaseServiceProvider extends Middleware {
         ctx().getOrThrow<Connection>(["database", "default"]),
       );
       await next();
-    } catch (err) {
-      throw err;
     } finally {
-      await conns.map(async (conn) => await conn.disconnect());
+      for (const conn of conns) {
+        await conn.disconnect();
+      }
     }
   }
 

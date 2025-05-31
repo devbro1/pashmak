@@ -20,7 +20,14 @@ export class Schedule {
 
     this.cronJob = CronJob.from({
       cronTime: this.cronTime,
-      onTick: this.func,
+      onTick: async () => {
+        try {
+          await this.func();
+        } catch (err) {
+          console.log(`error in '${this.name}' cronjob`);
+          console.error(err);
+        }
+      },
       onComplete: null,
       start: true,
       timeZone: this.timezone,
