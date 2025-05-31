@@ -1,9 +1,7 @@
 import { Command, Option } from "clipanion";
 import config from "config";
 
-import { HttpServer } from "neko-http/src";
-import { HttpError } from "http-errors";
-import { cli, router, scheduler } from "@root/facades";
+import { cli, httpServer, router, scheduler } from "@root/facades";
 import { PostgresqlConnection } from "neko-sql/src/databases/postgresql/PostgresqlConnection";
 
 export class StartCommand extends Command {
@@ -12,30 +10,14 @@ export class StartCommand extends Command {
 
   async execute() {
     this.context.stdout.write(`Hello Start Command!\n`);
-    const server = new HttpServer();
-
-    server.setErrorHandler(async (err: Error, req: any, res: any) => {
-      if (err instanceof HttpError) {
-        res.writeHead(err.statusCode, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ message: err.message }));
-        console.log("HttpError:", err.message);
-        return;
-      } else {
-        console.error("non HttpError:", err);
-      }
-      res.writeHead(500, { "Content-Type": "" });
-      res.end(JSON.stringify({ error: "Internal Server Error" }));
-    });
-
+    
+    // PostgresqlConnection.pool.options.idleTimeoutMillis = 10000;
     if (this.scheduler) {
       this.context.stdout.write(`starting scheduler\n`);
       scheduler().start();
     }
 
-    PostgresqlConnection.pool.options.idleTimeoutMillis = 10000;
-
-    server.setRouter(router());
-
+    const server = httpServer();
     await server.listen(config.get("port"), () => {
       console.log(
         "Server is running on http://localhost:" + config.get("port"),

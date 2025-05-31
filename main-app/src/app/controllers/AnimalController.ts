@@ -10,14 +10,18 @@ import { db, storage } from "@root/facades";
 import { ctx } from "neko-helper/src";
 import { Request, Response } from "neko-router/src/types";
 import fs from "fs";
+import { Animal } from "../models/Animal";
 
-@Controller("/api/v1/cats")
-export class CatController extends BaseController {
+@Controller("/api/v1/animals")
+export class AnimalController extends BaseController {
   @Get({ middlewares: [logResponseMiddleware] })
   async show() {
-    const r = await db().runQuery({ sql: "select * from cats", bindings: [] });
+    const r = await db().runQuery({
+      sql: "select * from animals",
+      bindings: [],
+    });
     return {
-      message: "GET cats",
+      message: "GET animals",
       data: r,
     };
   }
@@ -27,10 +31,10 @@ export class CatController extends BaseController {
     const req = ctx().get<Request>("request");
     console.log(req.body);
     console.log(req.files);
-    await storage().put(
-      req.files.f1.newFilename,
-      fs.readFileSync(req.files.f1.filepath),
-    );
+    const animal = new Animal();
+    animal.fill(req.body);
+    await animal.save();
+
     return req.body;
   }
 

@@ -1,9 +1,10 @@
 import { Request, Response } from "neko-router/src/types";
 import { router as routerFunc, db as dbf } from "./facades";
-import { sleep } from "neko-helper";
+import { sleep } from "neko-helper/src";
 import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
-import { ctx } from "neko-helper";
+import { ctx } from "neko-helper/src";
 import { CatController } from "./app/controllers/CatController";
+import { AnimalController } from "./app/controllers/AnimalController";
 import { loggerMiddleware, logResponseMiddleware } from "./middlewares";
 
 const router = routerFunc();
@@ -75,3 +76,4 @@ router
   .addMiddleware(logResponseMiddleware);
 
 router.addController(CatController);
+router.addController(AnimalController);

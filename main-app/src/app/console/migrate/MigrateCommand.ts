@@ -1,7 +1,7 @@
 import { cli, db as database } from "@root/facades";
 import { Command, Option } from "clipanion";
 import { Blueprint } from "neko-sql/src/Blueprint";
-import { context_provider } from "neko-helper";
+import { context_provider } from "neko-helper/src";
 import path from "path";
 import fs from "fs/promises";
 import config from "config";

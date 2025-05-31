@@ -3,15 +3,14 @@ dotenv.config();
 process.env["NODE_CONFIG_DIR"] = __dirname + "/config/";
 import config from "config";
 
-import { cli } from "./facades";
 import "./app/console";
 
 import "./routes";
 import "./schedules";
-import { context_provider } from "neko-helper";
+import { context_provider } from "neko-helper/src";
 import { Middleware } from "neko-router/src";
 import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
-import { runNext } from "neko-helper";
+import { runNext } from "neko-helper/src";
 import { Request, Response } from "neko-router/src/types";
 
 context_provider.setPreLoader(async (f: Function) => {
@@ -27,11 +26,3 @@ context_provider.setPreLoader(async (f: Function) => {
     f,
   );
 });
-
-const [node, app, ...args] = process.argv;
-cli()
-  .runExit(args)
-  .then(() => {})
-  .catch((err) => {
-    console.log(err);
-  });

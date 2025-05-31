@@ -1,4 +1,4 @@
-import { ctx } from "neko-helper";
+import { ctx } from "neko-helper/src";
 import { Request, Response } from "neko-router/src/types";
 
 export async function loggerMiddleware(
@@ -6,8 +6,8 @@ export async function loggerMiddleware(
   res: Response,
   next: () => Promise<void>,
 ): Promise<void> {
-  console.log("route:", req.url);
-  console.log("context", ctx().keys());
+  // console.log("route:", req.url);
+  // console.log("context", ctx().keys());
   await next();
 }
 
