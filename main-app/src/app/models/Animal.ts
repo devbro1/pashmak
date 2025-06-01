@@ -12,4 +12,10 @@ export class Animal extends BaseModel {
 
   @Attribute()
   weight: number = 0;
+
+  @Attribute()
+  declare created_at: any;
+
+  @Attribute()
+  declare updated_at: any;
 }

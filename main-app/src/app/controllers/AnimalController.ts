@@ -4,13 +4,13 @@ import {
   Get,
   Post,
 } from "neko-router/src/Controller";
-import { Param } from "neko-router/src/Controller";
 import { logResponseMiddleware } from "@root/middlewares";
 import { db, storage } from "@root/facades";
 import { ctx } from "neko-helper/src";
 import { Request, Response } from "neko-router/src/types";
 import fs from "fs";
 import { Animal } from "../models/Animal";
+import { Model, Param } from "@root/helpers";
 
 @Controller("/api/v1/animals")
 export class AnimalController extends BaseController {
@@ -53,12 +53,8 @@ export class AnimalController extends BaseController {
     return await storage().metadata("test.jpg");
   }
 
-  @Get({ path: "/:id/:id2" })
-  showById(@Param("id2") ss: string, @Param("id") id: string) {
-    return {
-      id,
-      ss,
-      name: "cat name",
-    };
+  @Get({ path: "/:id" })
+  async showById(@Param("id") id: number, @Model(Animal, "id") mm: Animal) {
+    return { mm, id };
   }
 }

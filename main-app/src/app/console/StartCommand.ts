@@ -6,13 +6,15 @@ import { PostgresqlConnection } from "neko-sql/src/databases/postgresql/Postgres
 
 export class StartCommand extends Command {
   scheduler = Option.Boolean(`--scheduler`, false);
+  all = Option.Boolean("--all", false);
   static paths = [[`start`]];
 
   async execute() {
-    this.context.stdout.write(`Hello Start Command!\n`);
-    
-    // PostgresqlConnection.pool.options.idleTimeoutMillis = 10000;
-    if (this.scheduler) {
+    this.context.stdout.write(`Starting Server\n`);
+
+    PostgresqlConnection.defaults.idleTimeoutMillis = 10000;
+
+    if (this.scheduler || this.all) {
       this.context.stdout.write(`starting scheduler\n`);
       scheduler().start();
     }

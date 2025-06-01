@@ -4,6 +4,7 @@ import { Parameter } from 'neko-sql/src/types';
 import pluralize from 'pluralize';
 
 export class BaseModel {
+  [key: string]: any;
   protected tableName: string = '';
   protected fillable: string[] = [];
   protected primaryKey: string[] = ['id'];
@@ -59,16 +60,19 @@ export class BaseModel {
         q.whereOp(pkey, '=', this[pkey]);
       }
       await q.update(params);
-    } else {
-      const result = this.incrementing ? await q.insertGetId(params) : await q.insert(params);
-      if (this.incrementing && !this.exists) {
-        for (const key of this.primaryKey) {
-          // @ts-ignore
-          this[key] = result[0][key];
-        }
+      return;
+    } else if (this.incrementing) {
+      const result = await q.insertGetId(params,{primaryKey: this.primaryKey});
+      for (const key of this.primaryKey) {
+        this[key] = result[0][key];
       }
-      this.exists = true;
+    } else {
+      for (const key of this.primaryKey) {
+        params[key] = this[key];
+      }
+      const result = await q.insert(params);
     }
+    this.exists = true;
   }
 
   public async delete() {
@@ -99,8 +103,8 @@ export class BaseModel {
     }
   }
 
-  public static async find(id: number) {
-    return this.findByPrimaryKey({ id });
+  public static async find<T extends typeof BaseModel>(id: number) {
+    return this.findByPrimaryKey<T>({ id });
   }
 
   public static async findByPrimaryKey<T extends typeof BaseModel>(
@@ -118,7 +122,6 @@ export class BaseModel {
     q.limit(1);
 
     let r = await q.get();
-
     if (r.length === 0) {
       return undefined;
     }
@@ -177,7 +180,11 @@ export class BaseModel {
         continue;
       }
 
-      // @ts-ignore
+      if (this[key] instanceof Date) {
+        data[key] = this[key].toISOString();
+        continue;
+      }
+
       data[key] = this[key];
     }
     return data;

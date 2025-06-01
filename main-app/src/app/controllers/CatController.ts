@@ -4,7 +4,7 @@ import {
   Get,
   Post,
 } from "neko-router/src/Controller";
-import { Param } from "neko-router/src/Controller";
+import { Param } from "@root/helpers";
 import { logResponseMiddleware } from "@root/middlewares";
 import { db, storage } from "@root/facades";
 import { ctx } from "neko-helper/src";

@@ -226,15 +226,39 @@ export class CompiledRoute {
     return await this.runMiddlewares(this.middlewares, this.request, this.response);
   }
 
+  prepareOutputJsonFormat<T>(obj: object | Array<any>): T {
+    function traverse(value: any): any {
+      if (!value || typeof value !== 'object') {
+        return value;
+      }
+
+      if (typeof value.toJson === 'function') {
+        return traverse(value.toJson());
+      }
+
+      if (Array.isArray(value)) {
+        return value.map(traverse);
+      }
+
+      const result: Record<string, any> = {};
+      for (const key in value) {
+        if (Object.prototype.hasOwnProperty.call(value, key)) {
+          result[key] = traverse(value[key]);
+        }
+      }
+      return result;
+    }
+
+    return traverse(obj);
+  }
+
   convertToString(obj: any) {
     if (typeof obj === 'string') {
       return obj;
-    } else if (typeof obj === 'object' && obj !== null && typeof obj.toJson === 'function') {
-      return obj.toJson().toString();
     } else if (obj instanceof Buffer) {
       return obj.toString();
     } else if (typeof obj === 'object') {
-      return JSON.stringify(obj);
+      return JSON.stringify(this.prepareOutputJsonFormat(obj));
     }
     return String(obj);
   }

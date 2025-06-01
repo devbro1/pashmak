@@ -10,18 +10,19 @@ export class PostgresqlConnection extends ConnectionAbs {
   connection: PoolClient | undefined;
   static pool: Pool;
 
+  static defaults: PoolConfig = {
+    port: 5432,
+    ssl: false,
+    max: 20,
+    idleTimeoutMillis: 1, // wait X milli seconds before closing an idle/released connection
+    connectionTimeoutMillis: 30000, // wait up to 30 seconds to obtain a new connection
+    maxUses: 7500,
+  };
+
   constructor(params: PoolConfig) {
     super();
     if (!PostgresqlConnection.pool) {
-      const defaults: PoolConfig = {
-        port: 5432,
-        ssl: false,
-        max: 20,
-        idleTimeoutMillis: 1, // wait X milli seconds before closing an idle/released connection
-        connectionTimeoutMillis: 30000, // wait up to 30 seconds to obtain a new connection
-        maxUses: 7500,
-      };
-      PostgresqlConnection.pool = new Pool({ ...defaults, ...params });
+      PostgresqlConnection.pool = new Pool({ ...PostgresqlConnection.defaults, ...params });
     }
   }
   async connect(): Promise<boolean> {
@@ -29,6 +30,7 @@ export class PostgresqlConnection extends ConnectionAbs {
     return true;
   }
   async runQuery(sql: CompiledSql) {
+    console.log(sql);
     const result = await this.connection?.query(sql.sql, sql.bindings);
     return result?.rows;
   }

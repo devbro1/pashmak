@@ -4,7 +4,7 @@ import { Region } from './Region.model';
 export class Country extends BaseModel {
   protected tableName: string = 'countries';
 
-  @Attribute({ primaryKey: true })
+  @Attribute({ primaryKey: true, incrementingPrimaryKey: false })
   public country_id: number | undefined;
 
   @Attribute()
