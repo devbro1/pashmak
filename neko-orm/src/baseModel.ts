@@ -20,7 +20,6 @@ export class BaseModel {
     this.fillable = this.constructor.prototype.fillable ?? [];
     this.primaryKey = this.constructor.prototype.primaryKey ?? ['id'];
     this.incrementing = this.constructor.prototype.incrementing ?? true;
-
     for (const key of this.fillable) {
       if (typeof initialData[key] !== 'undefined') {
         (this as any)[key] = initialData[key];
@@ -62,7 +61,7 @@ export class BaseModel {
       await q.update(params);
       return;
     } else if (this.incrementing) {
-      const result = await q.insertGetId(params,{primaryKey: this.primaryKey});
+      const result = await q.insertGetId(params, { primaryKey: this.primaryKey });
       for (const key of this.primaryKey) {
         this[key] = result[0][key];
       }

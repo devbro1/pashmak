@@ -17,11 +17,9 @@ describe('raw queries', () => {
       password: process.env.DB_PASSWORD,
       port: parseInt(process.env.DB_PORT || '5432'),
     };
-    console.log('creating test database', db_config.database);
     execSync(
       `psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} postgres -c "CREATE DATABASE ${db_config.database}"`
     );
-    console.log('load database schema and data');
     execSync(
       `psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} -f ./tests/fixtures/load_hr_db_pg.sql ${db_config.database}`
     );
@@ -52,25 +50,20 @@ describe('raw queries', () => {
     expect(country2.country_name).toBe('Indonesia');
     expect(country2.region_id).toBe(1);
 
-    console.log('aaaaa');
     const c4 = await Country.findByPrimaryKey({ country_id: 'AR' });
     expect(c4.country_id).toBe('AR');
     expect(c4.country_name).toBe('Argentina');
 
-        console.log('bbbbb');
     const country3 = new Country({ country_name: 'ZZZZZ', region_id: 1, country_id: 'ZZ' });
-    console.log(country3);
-    
+
     await country3.save();
 
     const c5 = await Country.findByPrimaryKey({ country_id: 'ZZ' });
     expect(c5.country_name).toBe('ZZZZZ');
 
-    console.log('cccc');
     country3.country_name = 'ZZXZZ';
     await country3.save();
 
-    console.log('dd');
     const c6 = await Country.findByPrimaryKey({ country_id: 'ZZ' });
     expect(c6.country_name).toBe('ZZXZZ');
   });
