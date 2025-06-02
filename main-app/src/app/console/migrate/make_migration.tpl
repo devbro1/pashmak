@@ -1,5 +1,5 @@
 import { Migration } from 'neko-sql/src/Migration';
-import { Schema } from "neko-sql/src/Schema";
+import { Schema, Blueprint } from "neko-sql/src";
 
 export default class {{className}} extends Migration {
   async up(schema: Schema) {

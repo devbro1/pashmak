@@ -18,11 +18,33 @@ pashmak migrate fresh # removing all tables then migrate
 export class MigrateCommand extends Command {
   static paths = [[`migrate`]];
 
+  fresh = Option.Boolean("--fresh", false);
+
   async execute() {
     await context_provider.run(async () => {
       // this.context.stdout.write(`Hello Migrate Command!\n`);
       const db = database();
       const schema = db.getSchema();
+
+      if (this.fresh) {
+        console.log("dropping all tables!!");
+        let retry = true;
+        let retry_count = 0;
+        while (retry && retry_count < 10) {
+          retry = false;
+          retry_count++;
+          const tables = await schema.tables();
+          for (const table of tables) {
+            console.log(`dropping table ${table.name}`);
+            try {
+              await schema.dropTable(table.name);
+            } catch {
+              console.error(`failed to drop ${table.name}`);
+              retry = true;
+            }
+          }
+        }
+      }
 
       //create migration table if not exists
       if (!(await schema.tableExists("migrations"))) {
@@ -57,7 +79,7 @@ export class MigrateCommand extends Command {
       );
 
       for (const class_to_migrate of pending_migrations) {
-        this.context.stdout.write(`migrating up ${class_to_migrate}`);
+        console.log(`migrating up ${class_to_migrate}`);
         const ClassToMigrate = require(
           path.join(migrationsDir, class_to_migrate),
         ).default;

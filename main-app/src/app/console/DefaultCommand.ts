@@ -17,12 +17,12 @@ export class DefaultCommand extends Command {
     // @ts-ignore
     const commandList = cli().registrations; //.definitions().map((def:any) => def.paths.map((path:any) => path.join(' '))).flat();
 
-    let paths: string[] = [];
-    console.log("Available commands:");
+    const paths: string[] = [];
     commandList.forEach((index, val) =>
       paths.push(index.builder.paths[0]?.join(" ") || ""),
     );
 
+    console.log("Available commands:");
     for (const cmd of paths) {
       console.log(cmd);
     }

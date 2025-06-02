@@ -8,6 +8,7 @@ import config from "config";
 import { Command, Option, runExit, Cli } from "clipanion";
 import { HttpServer } from "neko-http/src";
 import { HttpError } from "http-errors";
+import * as yup from "yup";
 
 export const router = createSingleton<Router>(() => new Router());
 export const scheduler = createSingleton<Scheduler>(() => new Scheduler());
@@ -30,19 +31,41 @@ export const cli = createSingleton<Cli>(() => {
 export const httpServer = createSingleton<HttpServer>(() => {
   const server = new HttpServer();
 
-    server.setErrorHandler(async (err: Error, req: any, res: any) => {
-      if (err instanceof HttpError) {
-        res.writeHead(err.statusCode, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ message: err.message }));
-        console.log("HttpError:", err.message);
-        return;
-      } else {
-        console.error("non HttpError:", err);
-      }
-      res.writeHead(500, { "Content-Type": "" });
-      res.end(JSON.stringify({ error: "Internal Server Error" }));
-    });
-    server.setRouter(router());
+  server.setErrorHandler(async (err: Error, req: any, res: any) => {
+    if (err instanceof HttpError) {
+      res.writeHead(err.statusCode, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ message: err.message }));
+      console.log("HttpError:", err.message);
+      return;
+    } else if (err instanceof yup.ValidationError) {
+      res.writeHead(422, { "Content-Type": "application/json" });
+      const errs: any = {};
+      console.log(err);
+      err.inner.forEach((e: yup.ValidationError) => {
+        // Sanitize sensitive fields
+        const sanitizedParams = { ...e.params };
+        if (/passw/i.test(e.path!)) {
+          sanitizedParams.value = "******";
+          sanitizedParams.originalValue = "******";
+        }
 
-    return server;
+        errs[e.path!] = {
+          type: e.type,
+          message: e.message,
+          params: sanitizedParams,
+        };
+      });
+
+      res.end(JSON.stringify({ message: "validation error", errors: errs }));
+      console.log("ValidationError:", err.message, errs);
+      return;
+    } else {
+      console.error("non HttpError:", err);
+    }
+    res.writeHead(500, { "Content-Type": "" });
+    res.end(JSON.stringify({ error: "Internal Server Error" }));
+  });
+  server.setRouter(router());
+
+  return server;
 });

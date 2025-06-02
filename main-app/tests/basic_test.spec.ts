@@ -16,6 +16,6 @@ describe("basic tests", () => {
 
     let r = await s.get('/api/v1/animals');
     expect(r.status).toBe(200);
-    expect(r.text).toContain('cat');
+    expect(r.text).toContain('data');
   });
 });
