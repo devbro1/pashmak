@@ -6,10 +6,18 @@ import { PostgresqlConnection } from "neko-sql/src/databases/postgresql/Postgres
 
 export class StartCommand extends Command {
   scheduler = Option.Boolean(`--scheduler`, false);
+  http = Option.Boolean(`--http`, false);
   all = Option.Boolean("--all", false);
   static paths = [[`start`]];
 
   async execute() {
+    if ([this.all, this.http, this.scheduler].filter((x) => x).length == 0) {
+      this.context.stdout.write(
+        `No service was selected. please check -h for details\n`,
+      );
+      return;
+    }
+
     this.context.stdout.write(`Starting Server\n`);
 
     PostgresqlConnection.defaults.idleTimeoutMillis = 10000;
@@ -19,12 +27,14 @@ export class StartCommand extends Command {
       scheduler().start();
     }
 
-    const server = httpServer();
-    await server.listen(config.get("port"), () => {
-      console.log(
-        "Server is running on http://localhost:" + config.get("port"),
-      );
-    });
+    if (this.http || this.all) {
+      const server = httpServer();
+      await server.listen(config.get("port"), () => {
+        console.log(
+          "Server is running on http://localhost:" + config.get("port"),
+        );
+      });
+    }
   }
 }
 
