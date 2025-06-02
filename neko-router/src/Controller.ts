@@ -1,6 +1,3 @@
-import 'reflect-metadata';
-import { ctx } from 'neko-helper/src/context';
-import { Request } from 'neko-router/src/types';
 import { MiddlewareProvider } from '.';
 
 export class BaseController {
@@ -42,13 +39,17 @@ function createHttpDecorator(data: {
     });
 
     const originalMethod = descriptor.value!;
-    const paramKeys = Reflect.getMetadataKeys(target, propertyKey);
+    const paramKeys = Reflect.ownKeys(target);
 
-    descriptor.value = function (...args: any[]) {
-      for (const paramKey of paramKeys.filter((key: string) => key.endsWith(':param'))) {
-        const paramIndex = Reflect.getMetadata(paramKey, target, propertyKey!);
-        if (typeof paramIndex === 'number') {
-          args[paramIndex] = ctx().get<Request>('request').params[paramKey.replace(':param', '')];
+    descriptor.value = async function (...args: any[]) {
+      const paramCustomKeys = paramKeys.filter(
+        (key) => typeof key === 'string' && key.endsWith(':custom')
+      );
+      for (const paramKey of paramCustomKeys) {
+        const paramIndex = parseInt((paramKey as string).split(':')[1]);
+        let method = Reflect.get(target, paramKey.toString());
+        if (typeof paramIndex === 'number' && typeof method === 'function') {
+          args[paramIndex] = await method();
         }
       }
 
@@ -107,12 +108,12 @@ export function Delete(
   });
 }
 
-export function Param(paramName: string): ParameterDecorator {
+export function createParamDecorator(func: () => Promise<any> | (() => any)): ParameterDecorator {
   return function MyParamDecorator(
     target: Object,
     propertyKey: string | symbol | undefined,
     parameterIndex: number
   ) {
-    Reflect.defineMetadata(`${paramName}:param`, parameterIndex, target, propertyKey!);
+    Reflect.set(target, `${propertyKey?.toString()}:${parameterIndex}:custom`, func);
   };
 }

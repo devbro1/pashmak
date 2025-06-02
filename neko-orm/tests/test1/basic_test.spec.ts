@@ -17,11 +17,9 @@ describe('raw queries', () => {
       password: process.env.DB_PASSWORD,
       port: parseInt(process.env.DB_PORT || '5432'),
     };
-    console.log('creating test database', db_config.database);
     execSync(
       `psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} postgres -c "CREATE DATABASE ${db_config.database}"`
     );
-    console.log('load database schema and data');
     execSync(
       `psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} -f ./tests/fixtures/load_hr_db_pg.sql ${db_config.database}`
     );
@@ -57,6 +55,7 @@ describe('raw queries', () => {
     expect(c4.country_name).toBe('Argentina');
 
     const country3 = new Country({ country_name: 'ZZZZZ', region_id: 1, country_id: 'ZZ' });
+
     await country3.save();
 
     const c5 = await Country.findByPrimaryKey({ country_id: 'ZZ' });

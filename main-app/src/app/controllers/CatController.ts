@@ -4,10 +4,10 @@ import {
   Get,
   Post,
 } from "neko-router/src/Controller";
-import { Param } from "neko-router/src/Controller";
+import { Param } from "@root/helpers";
 import { logResponseMiddleware } from "@root/middlewares";
 import { db, storage } from "@root/facades";
-import { ctx } from "neko-helper/src/context";
+import { ctx } from "neko-helper/src";
 import { Request, Response } from "neko-router/src/types";
 import fs from "fs";
 
@@ -15,7 +15,7 @@ import fs from "fs";
 export class CatController extends BaseController {
   @Get({ middlewares: [logResponseMiddleware] })
   async show() {
-    let r = await db().runQuery({ sql: "select * from cats", bindings: [] });
+    const r = await db().runQuery({ sql: "select * from cats", bindings: [] });
     return {
       message: "GET cats",
       data: r,
@@ -24,7 +24,7 @@ export class CatController extends BaseController {
 
   @Post()
   async store() {
-    let req = ctx().get<Request>("request");
+    const req = ctx().get<Request>("request");
     console.log(req.body);
     console.log(req.files);
     await storage().put(
@@ -36,7 +36,7 @@ export class CatController extends BaseController {
 
   @Get({ path: "/file" })
   async getFile() {
-    let res = ctx().get<Response>("response");
+    const res = ctx().get<Response>("response");
     await res.writeHead(200, {
       "Content-Type": "image/jpeg",
     });

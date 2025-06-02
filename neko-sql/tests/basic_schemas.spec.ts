@@ -6,6 +6,7 @@ import { Blueprint } from '../src/Blueprint';
 import { SchemaGrammar } from '../src/SchemaGrammar';
 import { Query } from '../src/Query';
 import { PostgresqlQueryGrammar } from '../src/databases/postgresql/PostgresqlQueryGrammar';
+import { PostgresqlSchemaGrammar } from '../src';
 
 describe('raw schemas', () => {
   beforeAll(async () => {});
@@ -27,6 +28,9 @@ describe('raw schemas', () => {
       },
       getQuery() {
         return new Query(null, new PostgresqlQueryGrammar());
+      },
+      getSchema() {
+        return new Schema(null, new PostgresqlSchemaGrammar());
       },
       beginTransaction: function (): Promise<void> {
         throw new Error('Function not implemented.');
@@ -55,7 +59,7 @@ describe('raw schemas', () => {
     });
 
     expect(sql.sql).toBe(
-      "create table users (id serial not null, created_at timestamp not null, updated_at timestamp not null, email varchar(250) not null unique, first_name varchar(255) not null default '', last_name varchar(255) null, balance float not null default 0, active boolean not null default true, age integer not null, height double precision not null, blood_type char not null, date_of_birth date not null,primary key (id))"
+      "create table users (id serial not null, created_at timestamp not null default now(), updated_at timestamp not null default now(), email varchar(250) not null unique, first_name varchar(255) not null default '', last_name varchar(255) null, balance float not null default 0, active boolean not null default true, age integer not null, height double precision not null, blood_type char not null, date_of_birth date not null,primary key (id))"
     );
 
     await schema.createTable('users', (table: Blueprint) => {

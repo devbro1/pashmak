@@ -1,15 +1,14 @@
 import { Request, Response } from "neko-router/src/types";
 import { router as routerFunc, db as dbf } from "./facades";
-import { wait } from "neko-helper/src/time";
+import { sleep } from "neko-helper/src";
 import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
-import { ctx } from "neko-helper/src/context";
+import { ctx } from "neko-helper/src";
 import { CatController } from "./app/controllers/CatController";
+import { AnimalController } from "./app/controllers/AnimalController";
 import { loggerMiddleware, logResponseMiddleware } from "./middlewares";
+import { AuthController } from "./app/controllers/AuthController";
 
 const router = routerFunc();
-
-// load database connection
-router.addGlobalMiddleware(DatabaseServiceProvider);
 
 router.addGlobalMiddleware(loggerMiddleware);
 router.addRoute(
@@ -40,10 +39,10 @@ router.addRoute(
   async (req: Request, res: Response) => {
     console.log("GET time", req?.query?.wait, ctx().get("requestId"));
 
-    await wait(parseInt(req?.query?.wait || "") || 0);
+    await sleep(parseInt(req?.query?.wait || "") || 0);
     console.log("waited", req?.query?.wait);
 
-    let db = dbf();
+    const db = dbf();
     let error = undefined;
     try {
       await db.beginTransaction();
@@ -62,7 +61,7 @@ router.addRoute(
 
     console.log("FIN time", req?.query?.wait);
     // @ts-ignore
-    let dd = req.context.dd;
+    const dd = req.context.dd;
     return { yey: "GET time", time: new Date().toISOString(), error, dd };
   },
 );
@@ -78,3 +77,5 @@ router
   .addMiddleware(logResponseMiddleware);
 
 router.addController(CatController);
+router.addController(AnimalController);
+router.addController(AuthController);

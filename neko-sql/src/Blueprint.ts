@@ -1,3 +1,4 @@
+import { Expression } from './Expression';
 import { Parameter } from './types';
 
 export type ColumnPropertiesType = {
@@ -114,8 +115,8 @@ export class Blueprint {
   }
 
   timestamps() {
-    this.columns.push(new Column('created_at', 'timestamp'));
-    this.columns.push(new Column('updated_at', 'timestamp'));
+    this.columns.push(new Column('created_at', 'timestamp').default(new Expression('CURRENT_TIMESTAMP')));
+    this.columns.push(new Column('updated_at', 'timestamp').default(new Expression('CURRENT_TIMESTAMP')));
   }
 
   date(columnName: string) {
