@@ -53,7 +53,7 @@ export function createJwtToken(data: any, token_params: jwt.SignOptions = {}) {
 export async function decodeJwtToken(token: string) {
   if (!(await jwt.verify(token, config.get<string>("jwt.public")))) {
     throw new BadRequest(
-      "bad refresh_token. invalid, expired, or signed with wrong key.",
+      "bad token. invalid, expired, or signed with wrong key.",
     );
   }
 

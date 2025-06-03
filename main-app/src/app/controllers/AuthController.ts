@@ -4,25 +4,16 @@ import {
   Get,
   Post,
 } from "neko-router/src/Controller";
-import { logResponseMiddleware } from "@root/middlewares";
-import { db, storage } from "@root/facades";
-import { ctx } from "neko-helper/src";
-import { Request, Response } from "neko-router/src/types";
-import fs from "fs";
-import { Animal } from "../models/Animal";
 import {
   createJwtToken,
   decodeJwtToken,
-  Model,
-  Param,
   ValidatedRequest,
 } from "@root/helpers";
 import * as yup from "yup";
 import { User } from "../models/User";
-import { HttpError, BadRequest } from "http-errors";
+import { BadRequest } from "http-errors";
 import { compareBcrypt } from "neko-helper/src/crypto";
 import config from "config";
-import ms from "ms";
 import { JwtPayload } from "jsonwebtoken";
 
 @Controller("/api/v1/auth")
@@ -55,11 +46,9 @@ export class AuthController extends BaseController {
       token_type: "Bearer",
       refresh_token: await createJwtToken(
         { refresh: true, user_id: user.id },
-        { expiresIn: "72h" },
+        config.get("jwt.refresh_options"),
       ),
-      expires_in:
-        ms(config.get<string>("jwt.options.expiresIn") as ms.StringValue) /
-        1000,
+      expires_in: config.get<number>("jwt.options.expiresIn"),
       scope: "*",
     };
   }
@@ -68,6 +57,12 @@ export class AuthController extends BaseController {
   async refresh(@ValidatedRequest(AuthController.loginValidation) body: any) {
     let refresh_token = body.refresh_token;
     let payload = (await decodeJwtToken(refresh_token))! as JwtPayload;
+
+    if (payload.refresh !== true) {
+      throw new BadRequest(
+        "bad token. invalid, expired, or signed with wrong key.",
+      );
+    }
 
     const user = await User.findOne({ id: payload.user_id });
 

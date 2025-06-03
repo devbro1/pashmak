@@ -12,7 +12,11 @@ export default {
   jwt: {
     options: {
       algorithm: "RS256",
-      expiresIn: "8h",
+      expiresIn: 8 * 3600,
+    },
+    refresh_options: {
+      algorithm: "RS256",
+      expiresIn: 3 * 24 * 3600,
     },
     secret:
       "-----BEGIN RSA PRIVATE KEY-----\n" +
