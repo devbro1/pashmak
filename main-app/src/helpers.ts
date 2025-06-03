@@ -4,6 +4,8 @@ import { Request } from "neko-router/src/types";
 import { NotFound } from "http-errors";
 import { createParamDecorator } from "neko-router/src/Controller";
 import * as yup from "yup";
+import * as jwt from "jsonwebtoken";
+import config from "config";
 
 export function Model(
   model: typeof BaseModel,
@@ -35,4 +37,15 @@ export function ValidatedRequest(
 
     return rc;
   });
+}
+
+export function createJwtToken(data: any, token_params: jwt.SignOptions = {}) {
+  let secret = config.get<string>("jwt.secret");
+  token_params = config.get<jwt.SignOptions>("jwt.options");
+  const token = jwt.sign(data, secret, { ...token_params, ...token_params });
+
+  if (!token) {
+    throw new Error("Unable to sign token !!");
+  }
+  return token;
 }

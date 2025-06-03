@@ -10,7 +10,7 @@ import { ctx } from "neko-helper/src";
 import { Request, Response } from "neko-router/src/types";
 import fs from "fs";
 import { Animal } from "../models/Animal";
-import { Model, Param, ValidatedRequest } from "@root/helpers";
+import { createJwtToken, Model, Param, ValidatedRequest } from "@root/helpers";
 import * as yup from "yup";
 
 @Controller("/api/v1/auth")
@@ -22,6 +22,7 @@ export class AuthController extends BaseController {
 
   @Post()
   async store(@ValidatedRequest(AuthController.loginValidation) userInfo: any) {
-    return userInfo;
+    let a = await createJwtToken({ a: 1, b: 2 });
+    return { a };
   }
 }
