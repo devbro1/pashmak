@@ -49,7 +49,7 @@ export class BaseModel {
     }
 
     for (const key of this.fillable) {
-      if(this[key] !== undefined) {
+      if (this[key] !== undefined) {
         params[key] = this[key];
       }
     }
@@ -107,9 +107,29 @@ export class BaseModel {
     return this.findByPrimaryKey<T>({ id });
   }
 
+  public static async findOne<T extends typeof BaseModel>(conditions: object) {
+    let self = new this();
+    let q: Query = await self.getQuery();
+
+    for (const [key, value] of Object.entries(conditions)) {
+      q.whereOp(key, '=', value);
+    }
+    q.limit(1);
+
+    let r = await q.get();
+    if (r.length === 0) {
+      return undefined;
+    }
+
+    self.fill(r[0]);
+
+    self.exists = true;
+    return self;
+  }
+
   public static async findorFail<T extends typeof BaseModel>(id: number) {
     const rc = this.find<T>(id);
-    if(!rc) {
+    if (!rc) {
       throw new Error('Not found');
     }
     return rc;
@@ -121,10 +141,8 @@ export class BaseModel {
     let self = new this();
     let q: Query = await self.getQuery();
 
-    // @ts-ignore
     q.select([...self.primaryKey, ...self.fillable]);
     for (const key of self.primaryKey) {
-      // @ts-ignore
       q.whereOp(key, '=', keys[key]);
     }
     q.limit(1);
