@@ -27,6 +27,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "change-case-all": "^2.1.0",
     "clipanion": "^4.0.0-rc.4",
     "config": "^4.0.0",

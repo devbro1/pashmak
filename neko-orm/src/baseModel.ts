@@ -49,8 +49,9 @@ export class BaseModel {
     }
 
     for (const key of this.fillable) {
-      // @ts-ignore
-      params[key] = this[key];
+      if(this[key] !== undefined) {
+        params[key] = this[key];
+      }
     }
 
     if (this.exists) {
@@ -61,6 +62,7 @@ export class BaseModel {
       await q.update(params);
       return;
     } else if (this.incrementing) {
+      console.log(params);
       const result = await q.insertGetId(params, { primaryKey: this.primaryKey });
       for (const key of this.primaryKey) {
         this[key] = result[0][key];
@@ -104,6 +106,14 @@ export class BaseModel {
 
   public static async find<T extends typeof BaseModel>(id: number) {
     return this.findByPrimaryKey<T>({ id });
+  }
+
+  public static async findorFail<T extends typeof BaseModel>(id: number) {
+    const rc = this.find<T>(id);
+    if(!rc) {
+      throw new Error('Not found');
+    }
+    return rc;
   }
 
   public static async findByPrimaryKey<T extends typeof BaseModel>(
