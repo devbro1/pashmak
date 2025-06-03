@@ -43,7 +43,7 @@ export class AuthController extends BaseController {
       access_token: await createJwtToken(user.toJson()),
       token_type: "Bearer",
       refresh_token: await createJwtToken(
-        { refresh: true },
+        { refresh: true, user_id: user.id },
         { expiresIn: "72h" },
       ),
       expires_in:
