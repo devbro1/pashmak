@@ -1,7 +1,7 @@
 import { ctx } from "neko-helper/src";
 import { BaseModel } from "neko-orm/src";
 import { Request } from "neko-router/src/types";
-import { NotFound } from "http-errors";
+import { BadRequest, NotFound } from "http-errors";
 import { createParamDecorator } from "neko-router/src/Controller";
 import * as yup from "yup";
 import * as jwt from "jsonwebtoken";
@@ -48,4 +48,14 @@ export function createJwtToken(data: any, token_params: jwt.SignOptions = {}) {
     throw new Error("Unable to sign token !!");
   }
   return token;
+}
+
+export async function decodeJwtToken(token: string) {
+  if (!(await jwt.verify(token, config.get<string>("jwt.public")))) {
+    throw new BadRequest(
+      "bad refresh_token. invalid, expired, or signed with wrong key.",
+    );
+  }
+
+  return await jwt.decode(token);
 }
