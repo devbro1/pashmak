@@ -19,12 +19,12 @@ export default {
       expiresIn: 3 * 24 * 3600,
     },
     secret:
-      "-----BEGIN RSA PRIVATE KEY-----\n" +
+      "-----BEGIN PRIVATE KEY-----\n" +
       process.env.jwt_secret_private +
-      "\n-----END RSA PRIVATE KEY-----\n",
+      "\n-----END PRIVATE KEY-----\n",
     public:
-      "-----BEGIN RSA PUPLIC KEY-----\n" +
+      "-----BEGIN PUBLIC KEY-----\n" +
       process.env.jwt_secret_public +
-      "\n-----END RSA PUBLIC KEY-----\n",
+      "\n-----END PUBLIC KEY-----\n",
   },
 };

@@ -1,4 +1,6 @@
 import { IncomingMessage, ServerResponse } from 'http';
+import { MiddlewareProvider } from '.';
+
 export type Request = IncomingMessage & {
   params: any;
   method: string;
@@ -21,3 +23,7 @@ export type HandlerType = (
   res: Response,
   next?: (() => any) | undefined
 ) => Promise<any> | any;
+
+export type ControllerDecoratorOptions = {
+  middlewares?: MiddlewareProvider[];
+};
