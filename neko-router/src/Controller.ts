@@ -1,4 +1,5 @@
 import { MiddlewareProvider } from '.';
+import { ControllerDecoratorOptions } from './types';
 
 export class BaseController {
   static routes: {
@@ -8,16 +9,18 @@ export class BaseController {
     middlewares: MiddlewareProvider[];
   }[] = [];
   static basePath: string = '';
+  static baseMiddlewares: MiddlewareProvider[];
 
   static getInstance() {
     return new this();
   }
 }
 
-export function Controller(path: string): ClassDecorator {
+export function Controller(path: string, options: ControllerDecoratorOptions = {}): ClassDecorator {
   return function (target: any) {
     (target as any).routes = (target as any).routes || [];
     (target as any).basePath = path;
+    (target as any).baseMiddlewares = options.middlewares || [];
   };
 }
 
@@ -30,7 +33,6 @@ function createHttpDecorator(data: {
     if (!target.constructor.routes) {
       target.constructor.routes = [];
     }
-
     target.constructor.routes.push({
       methods: data.methods,
       path: data.path,

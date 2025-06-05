@@ -9,4 +9,22 @@ export default {
   migration: {
     path: path.join(__dirname, "..", "database/migrations"),
   },
+  jwt: {
+    options: {
+      algorithm: "RS256",
+      expiresIn: 8 * 3600,
+    },
+    refresh_options: {
+      algorithm: "RS256",
+      expiresIn: 3 * 24 * 3600,
+    },
+    secret:
+      "-----BEGIN PRIVATE KEY-----\n" +
+      process.env.jwt_secret_private +
+      "\n-----END PRIVATE KEY-----\n",
+    public:
+      "-----BEGIN PUBLIC KEY-----\n" +
+      process.env.jwt_secret_public +
+      "\n-----END PUBLIC KEY-----\n",
+  },
 };

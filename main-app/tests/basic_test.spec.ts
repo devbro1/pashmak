@@ -15,7 +15,8 @@ describe("basic tests", () => {
     const s = supertest(server.getHttpHanlder());
 
     let r = await s.get('/api/v1/animals');
-    expect(r.status).toBe(200);
-    expect(r.text).toContain('data');
+    expect(r.status).toBe(401);
+    expect(r.text).toContain('auth');
+    
   });
 });

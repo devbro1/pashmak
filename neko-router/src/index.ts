@@ -152,7 +152,7 @@ export class Router {
         const controllerInstance = controller.getInstance();
         // @ts-ignore
         return await controllerInstance[route.handler]();
-      }).addMiddleware(route.middlewares);
+      }).addMiddleware([...this.middlewares, ...controller.baseMiddlewares, ...route.middlewares]);
     }
   }
 

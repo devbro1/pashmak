@@ -4,7 +4,7 @@ import {
   Get,
   Post,
 } from "neko-router/src/Controller";
-import { logResponseMiddleware } from "@root/middlewares";
+import { authenticate, logResponseMiddleware } from "@root/middlewares";
 import { db, storage } from "@root/facades";
 import { ctx } from "neko-helper/src";
 import { Request, Response } from "neko-router/src/types";
@@ -12,7 +12,7 @@ import fs from "fs";
 import { Animal } from "../models/Animal";
 import { Model, Param } from "@root/helpers";
 
-@Controller("/api/v1/animals")
+@Controller("/api/v1/animals", { middlewares: [authenticate] })
 export class AnimalController extends BaseController {
   @Get({ middlewares: [logResponseMiddleware] })
   async show() {
