@@ -37,8 +37,14 @@ export async function authenticate(
   if (parts.length !== 2 || parts[0].toLowerCase() !== "bearer") {
     throw new Unauthorized('expected "authorization: Bearer TOKEN"');
   }
-  let user = await decodeJwtToken(parts[1]);
-  ctx().set("auth_user", user);
+  try {
+    let user = await decodeJwtToken(parts[1]);
+    ctx().set("auth_user", user);
+  } catch (ex: any) {
+    let err = new Unauthorized("invalid jwt token");
+    err.cause = ex;
+    throw err;
+  }
 
   await next();
 }
