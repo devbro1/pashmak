@@ -2,7 +2,11 @@ import { Connection } from 'neko-sql/src/Connection';
 import { Query } from 'neko-sql/src/Query';
 import { Parameter } from 'neko-sql/src/types';
 import pluralize from 'pluralize';
+import { format } from 'date-fns-tz';
 
+export type saveObjectOptions = {
+  updateTimestamps: boolean  
+}
 export class BaseModel {
   [key: string]: any;
   protected tableName: string = '';
@@ -13,6 +17,10 @@ export class BaseModel {
   static connection: Connection | (() => Connection) | (() => Promise<Connection>) | undefined;
   protected exists: boolean = false;
   protected guarded: string[] = [];
+  protected hasTimestamps = true;
+  protected timestampFormat = 'yyyy-MM-dd HH:mm:ss';
+  protected createdAtFieldName = 'created_at';
+  protected updatedAtFieldName = 'updated_at';
 
   constructor(initialData: any = {}) {
     this.id = undefined;
@@ -37,7 +45,9 @@ export class BaseModel {
     return this.tableName;
   }
 
-  public async save() {
+  public async save(options: saveObjectOptions = {
+    updateTimestamps: true
+  }) {
     const q: Query = await this.getQuery();
     const params: Record<string, Parameter> = {};
 
@@ -52,6 +62,14 @@ export class BaseModel {
       if (this[key] !== undefined) {
         params[key] = this[key];
       }
+    }
+
+    // adjust timestamps
+    if(this.hasTimestamps && options.updateTimestamps) {
+      if(!this.exists) {
+        params[this.createdAtFieldName] = format(new Date(), this.timestampFormat, { timeZone: 'UTC'});
+      }
+      params[this.updatedAtFieldName] = format(new Date(), this.timestampFormat, { timeZone: 'UTC'});
     }
 
     if (this.exists) {

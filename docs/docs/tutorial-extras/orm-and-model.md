@@ -123,3 +123,34 @@ to mass field parameters in a object
 ```ts
 user.fill({ email: "meow@devbro.com" });
 ```
+
+## `created_at` and `updated_at` timestamps
+every model comes with standard `created_at` and `updated_at` fields. you can use these fields to track when they were created and updated last.
+
+to modify standard behaviors you can define your models as such:
+```ts
+class Animal extends BaseModel {
+  protected hasTimestamps = true;
+  protected timestampFormat = 'yyyy-MM-dd HH:mm:ss';
+  protected createdAtFieldName = 'created_at';
+  protected updatedAtFieldName = 'updated_at';
+
+  @Attribute()
+  declare created_at: Date;
+  
+  @attribute()
+  declare updated_at: Date;
+}
+```
+
+- hasTimestamps: controls if class has time stamp fields or not. you can set to false if your model does not have these fields.
+- timestampFormat: the format timestamp needs to be converted to in string before inserting to database.
+- createdAtFieldName: the field name that will contain created_at date
+- updatedAtFeildName: the field name that contains updated_at date
+
+these values are calculated automatically during save(). if save() is successfull created_at and updated_at will be adjust in the model.
+
+if you want to run save() without update timestamps then:
+```ts
+await cat.save({updateTimestamps: false});
+```
