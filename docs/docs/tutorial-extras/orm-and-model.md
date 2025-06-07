@@ -131,7 +131,7 @@ to modify standard behaviors you can define your models as such:
 ```ts
 class Animal extends BaseModel {
   protected hasTimestamps = true;
-  protected timestampFormat = 'yyyy-MM-dd HH:mm:ss';
+  protected timestampFormat = 'yyyy-MM-dd HH:mm:ss.SSS';
   protected createdAtFieldName = 'created_at';
   protected updatedAtFieldName = 'updated_at';
 
