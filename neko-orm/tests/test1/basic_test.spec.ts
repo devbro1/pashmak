@@ -4,6 +4,8 @@ import { Connection } from 'neko-sql/src/Connection';
 import { execSync } from 'child_process';
 import { Country, Job, Region } from '../fixtures/models';
 import { BaseModel } from '../../src';
+import { faker } from '@faker-js/faker';
+import { sleep } from 'neko-helper/src/time';
 
 describe('raw queries', () => {
   let conn: Connection;
@@ -82,5 +84,39 @@ describe('raw queries', () => {
     job2.max_salary = 2000;
     await job2.save();
     expect(job2.id).not.toBeUndefined();
+  });
+
+  test('time stamp testing', async () => {
+    BaseModel.setConnection(() => conn);
+    let res = await conn.runQuery({sql:'SELECT MAX(region_id) as last_id FROM regions',bindings:[]});
+    await conn.runQuery({sql:'SELECT setval($1, $2, false);',bindings:['regions_region_id_seq', res[0].last_id + 1]});
+
+    let r1 = new Region({
+      region_name: faker.location.state()
+    });
+
+    expect(r1.created_at).toBeUndefined();
+    expect(r1.updated_at).toBeUndefined();
+    await r1.save();
+    expect(r1.created_at).toBeDefined();
+    expect(r1.updated_at).toBeDefined();
+    expect(r1.created_at.toISOString()).toBe(r1.updated_at.toISOString());
+    expect(r1.created_at.constructor.name).toBe('Date');
+    expect(r1.updated_at.constructor.name).toBe('Date');
+    let first_created = r1.created_at.toISOString();
+
+    await sleep(1500);
+    await r1.save({ updateTimestamps: false});
+    expect(r1.created_at.toISOString()).toBe(r1.updated_at.toISOString());
+    expect(r1.created_at.constructor.name).toBe('Date');
+    expect(r1.updated_at.constructor.name).toBe('Date');
+
+    await sleep(1500);
+    await r1.save();
+    expect(r1.created_at.toISOString()).not.toBe(r1.updated_at.toISOString());
+    expect(r1.created_at.toISOString()).toBe(first_created);
+    expect(r1.created_at.constructor.name).toBe('Date');
+    expect(r1.updated_at.constructor.name).toBe('Date');
+    
   });
 });

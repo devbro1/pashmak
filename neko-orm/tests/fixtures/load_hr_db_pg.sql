@@ -1,7 +1,10 @@
 CREATE TABLE regions (
-	region_id SERIAL PRIMARY KEY,
-	region_name CHARACTER VARYING (25)
+    region_id SERIAL PRIMARY KEY,
+    region_name VARCHAR(25),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 
 CREATE TABLE countries (
 	country_id CHARACTER (2) PRIMARY KEY,
