@@ -1,6 +1,18 @@
+import { parse, format } from 'date-fns';
+
+export function mutateDbDate(value: string): Date {
+  return parse(value, 'yyyy-MM-dd HH:mm:ss.SSS', new Date());
+}
+
+export function castDbDate(value: Date): string {
+  return format(value, 'yyyy-MM-dd HH:mm:ss.SSS');
+}
+
 type AttributeOptions = {
   primaryKey?: boolean;
   incrementingPrimaryKey?: boolean;
+  caster?: Function;
+  mutator?: Function;
 };
 
 export function Attribute(options: AttributeOptions = {}) {
@@ -21,6 +33,16 @@ export function Attribute(options: AttributeOptions = {}) {
         target.constructor.prototype.fillable = [];
       }
       target.constructor.prototype.fillable.push(propertyKey);
+    }
+
+    target.constructor.prototype.casters = target.constructor.prototype.casters || {};
+    target.constructor.prototype.mutators = target.constructor.prototype.mutators || {};
+
+    if (options.caster) {
+      target.constructor.prototype.casters[propertyKey] = options.caster;
+    }
+    if (options.mutator) {
+      target.constructor.prototype.mutators[propertyKey] = options.mutator;
     }
 
     Object.defineProperty(target, propertyKey, {
