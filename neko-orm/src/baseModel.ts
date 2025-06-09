@@ -6,8 +6,8 @@ import { format } from 'date-fns-tz';
 import { parse } from 'date-fns';
 
 export type saveObjectOptions = {
-  updateTimestamps: boolean  
-}
+  updateTimestamps: boolean;
+};
 export class BaseModel {
   [key: string]: any;
   protected tableName: string = '';
@@ -22,6 +22,8 @@ export class BaseModel {
   protected timestampFormat = 'yyyy-MM-dd HH:mm:ss.SSS';
   protected createdAtFieldName = 'created_at';
   protected updatedAtFieldName = 'updated_at';
+  protected casters: Record<string, Function> = {};
+  protected mutators: Record<string, Function> = {};
 
   constructor(initialData: any = {}) {
     this.id = undefined;
@@ -29,6 +31,9 @@ export class BaseModel {
     this.fillable = this.constructor.prototype.fillable ?? [];
     this.primaryKey = this.constructor.prototype.primaryKey ?? ['id'];
     this.incrementing = this.constructor.prototype.incrementing ?? true;
+    this.casters = this.constructor.prototype.casters ?? {};
+    this.mutators = this.constructor.prototype.mutators ?? {};
+
     for (const key of this.fillable) {
       if (typeof initialData[key] !== 'undefined') {
         (this as any)[key] = initialData[key];
@@ -46,9 +51,11 @@ export class BaseModel {
     return this.tableName;
   }
 
-  public async save(options: saveObjectOptions = {
-    updateTimestamps: true
-  }) {
+  public async save(
+    options: saveObjectOptions = {
+      updateTimestamps: true,
+    }
+  ) {
     const q: Query = await this.getQuery();
     const params: Record<string, Parameter> = {};
 
@@ -66,13 +73,20 @@ export class BaseModel {
     }
 
     // adjust timestamps
-    if(this.hasTimestamps && options.updateTimestamps) {
-      params[this.updatedAtFieldName] = format(new Date(), this.timestampFormat, { timeZone: 'UTC'});
-      if(!this.exists) {
+    if (this.hasTimestamps && options.updateTimestamps) {
+      params[this.updatedAtFieldName] = new Date();
+      if (!this.exists || !params[this.createdAtFieldName]) {
         params[this.createdAtFieldName] = params[this.updatedAtFieldName];
       }
     }
 
+    for (const key of Object.keys(params)) {
+      if (this.casters[key]) {
+        params[key] = this.casters[key](params[key]);
+      }
+    }
+
+    let result;
     if (this.exists) {
       for (const pkey of this.primaryKey) {
         // @ts-ignore
@@ -80,7 +94,7 @@ export class BaseModel {
       }
       await q.update(params);
     } else if (this.incrementing) {
-      const result = await q.insertGetId(params, { primaryKey: this.primaryKey });
+      result = await q.insertGetId(params, { primaryKey: this.primaryKey });
       for (const key of this.primaryKey) {
         this[key] = result[0][key];
       }
@@ -88,16 +102,12 @@ export class BaseModel {
       for (const key of this.primaryKey) {
         params[key] = this[key];
       }
-      const result = await q.insert(params);
-    }
-
-    // adjust timestamps
-    if(this.hasTimestamps && options.updateTimestamps) {
-      this[this.createdAtFieldName] = parse(params[this.createdAtFieldName] as string, this.timestampFormat, new Date());
-      this[this.updatedAtFieldName] = parse(params[this.updatedAtFieldName] as string, this.timestampFormat, new Date());
+      result = await q.insert(params);
     }
 
     this.exists = true;
+
+    await this.refresh();
   }
 
   public async delete() {
@@ -122,9 +132,17 @@ export class BaseModel {
       throw new Error('No record found');
     }
 
-    for (const k in r[0]) {
+    this.fillAndMutate(r[0]);
+  }
+
+  fillAndMutate(r: object) {
+    for (const k in r) {
       // @ts-ignore
-      this[k] = r[0][k];
+      this[k] = r[k];
+
+      if (this.mutators[k]) {
+        this[k] = this.mutators[k](this[k]);
+      }
     }
   }
 
@@ -146,7 +164,7 @@ export class BaseModel {
       return undefined;
     }
 
-    self.fill(r[0]);
+    self.fillAndMutate(r[0]);
 
     self.exists = true;
     return self;
@@ -177,11 +195,7 @@ export class BaseModel {
       return undefined;
     }
 
-    for (const k in r[0]) {
-      // @ts-ignore
-      self[k] = r[0][k];
-    }
-
+    self.fillAndMutate(r[0]);
     self.exists = true;
 
     return self;
