@@ -1,10 +1,8 @@
 ---
-sidebar_position: 5
+sidebar_position: 6
 ---
 
 # Start Your Server
-
-TODO: how to run basic server and related commands
 
 to start a server and all related services run:
 

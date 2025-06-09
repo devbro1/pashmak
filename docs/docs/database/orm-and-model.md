@@ -1,8 +1,8 @@
 ---
-sidebar_position: 2
+sidebar_position: 4
 ---
 
-# Orm: Object Regional Mapping and Models
+# ORM and Models
 
 The aim is to make accessing database easier and more friendly using objects.
 
