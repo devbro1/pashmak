@@ -64,3 +64,21 @@ if(config.get('payment_system.default.provider') === 'stripe') {
 ## .env AKA dotenv
 
 there is also .env support in case you want to load some configs that way. please note, you will still need to add the specific configs you want to default.js to be able to access the values.
+
+## Force config to exists
+
+some configs are essential and you want to stop the process without them. you can do this:
+
+```ts
+import { getEnv } from "neko-helper/src";
+
+export default {
+  https_port: getEnv("HTTPS_PORT", 443),
+  port: getEnv("PORT"),
+  ssh_port: getEnv("SSH_PORT", undefined),
+};
+```
+
+if `PORT` is not defined, an error is thrown and stopping the process entirely before it starts.
+if `HTTPS_PORT` is not defined, it will use default value of 443 and will not throw an error.
+if `ssh_port` is not defined, it will use default value of `undefined` and will NOT throw an error.
