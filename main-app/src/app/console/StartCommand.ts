@@ -1,7 +1,7 @@
 import { Command, Option } from "clipanion";
 import config from "config";
 
-import { cli, httpServer, router, scheduler } from "@root/facades";
+import { cli, httpServer, logger, scheduler } from "@root/facades";
 import { PostgresqlConnection } from "neko-sql/src/databases/postgresql/PostgresqlConnection";
 
 export class StartCommand extends Command {
@@ -30,7 +30,7 @@ export class StartCommand extends Command {
     if (this.http || this.all) {
       const server = httpServer();
       await server.listen(config.get("port"), () => {
-        console.log(
+        logger().info(
           "Server is running on http://localhost:" + config.get("port"),
         );
       });

@@ -1,6 +1,6 @@
 import { Router } from "neko-router/src";
 import { Scheduler } from "neko-scheduler/src";
-import { createSingleton } from "neko-helper/src";
+import { createSingleton, ctxSafe } from "neko-helper/src";
 import { ctx } from "neko-helper/src";
 import { Connection } from "neko-sql/src/Connection";
 import { Storage, StorageFactory } from "neko-storage/src/";
@@ -9,9 +9,16 @@ import { Command, Option, runExit, Cli } from "clipanion";
 import { HttpServer } from "neko-http/src";
 import { HttpError } from "http-errors";
 import * as yup from "yup";
+import { Logger, LogMessage, MapObject } from "neko-logger/src";
 
 export const router = createSingleton<Router>(() => new Router());
-export const scheduler = createSingleton<Scheduler>(() => new Scheduler());
+export const scheduler = createSingleton<Scheduler>(() => {
+  let rc = new Scheduler();
+  rc.setErrorHandler((err) => {
+    logger().error({ msg: "Scheduler error", err });
+  });
+  return rc;
+});
 export const db = (label = "default") =>
   ctx().getOrThrow<Connection>(["database", label]);
 
@@ -35,12 +42,11 @@ export const httpServer = createSingleton<HttpServer>(() => {
     if (err instanceof HttpError) {
       res.writeHead(err.statusCode, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ message: err.message }));
-      console.log("HttpError:", err.message);
+      logger().warn({ msg: "HttpError: " + err.message, err });
       return;
     } else if (err instanceof yup.ValidationError) {
       res.writeHead(422, { "Content-Type": "application/json" });
       const errs: any = {};
-      console.log(err);
       err.inner.forEach((e: yup.ValidationError) => {
         // Sanitize sensitive fields
         const sanitizedParams = { ...e.params };
@@ -57,10 +63,10 @@ export const httpServer = createSingleton<HttpServer>(() => {
       });
 
       res.end(JSON.stringify({ message: "validation error", errors: errs }));
-      console.log("ValidationError:", err.message, errs);
+      logger().warn({ msg: "ValidationError: " + err.message, err });
       return;
     } else {
-      console.error("non HttpError:", err);
+      logger().error({ msg: "Error: " + err.message, err });
     }
     res.writeHead(500, { "Content-Type": "" });
     res.end(JSON.stringify({ error: "Internal Server Error" }));
@@ -68,4 +74,14 @@ export const httpServer = createSingleton<HttpServer>(() => {
   server.setRouter(router());
 
   return server;
+});
+
+export const logger = createSingleton<Logger>((label) => {
+  let rc = new Logger(config.get(["loggers", label].join(".")));
+  rc.setExtrasFunction((message: LogMessage) => {
+    let requestId = ctxSafe()?.get("requestId");
+    requestId && (message.requestId = requestId);
+    return message;
+  });
+  return rc;
 });

@@ -2,14 +2,18 @@ import { ctx } from "neko-helper/src";
 import { Request, Response } from "neko-router/src/types";
 import { Unauthorized } from "http-errors";
 import { decodeJwtToken } from "@root/helpers";
+import { logger } from "@root/facades";
 
 export async function loggerMiddleware(
   req: Request,
   res: Response,
   next: () => Promise<void>,
 ): Promise<void> {
-  // console.log("route:", req.url);
-  // console.log("context", ctx().keys());
+  logger().info({
+    msg: "available context",
+    keys: ctx().keys(),
+    route: req.url,
+  });
   await next();
 }
 
@@ -19,7 +23,7 @@ export async function logResponseMiddleware(
   next: () => Promise<void>,
 ): Promise<void> {
   await next();
-  console.log("response:", res.statusCode);
+  logger().info({ msg: "response:", statusCode: res.statusCode });
 }
 
 export async function authenticate(
