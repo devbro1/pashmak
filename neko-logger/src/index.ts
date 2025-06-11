@@ -1,5 +1,5 @@
 import { info } from 'console';
-import pino from 'pino';
+import pino, { LoggerOptions } from 'pino';
 
 export type MapObject = Record<string, object | string | number | undefined>;
 export type LogLevel = 'info' | 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
@@ -8,11 +8,15 @@ export class Logger {
   private logger;
   private extraFunc: ((message: LogMessage) => LogMessage) | undefined;
 
-  constructor(options: any) {
+  constructor(
+    options: LoggerOptions<never, boolean> & {
+      extrasFunction?: (message: LogMessage) => LogMessage;
+    }
+  ) {
     this.logger = pino(options);
 
-    if (options.extraFunction) {
-      this.extraFunc = options.extraFunction;
+    if (options.extrasFunction) {
+      this.extraFunc = options.extrasFunction;
     }
   }
 

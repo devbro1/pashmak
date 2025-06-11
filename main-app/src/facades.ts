@@ -77,11 +77,7 @@ export const httpServer = createSingleton<HttpServer>(() => {
 });
 
 export const logger = createSingleton<Logger>((label) => {
-  let rc = new Logger(config.get(["loggers", label].join(".")));
-  rc.setExtrasFunction((message: LogMessage) => {
-    let requestId = ctxSafe()?.get("requestId");
-    requestId && (message.requestId = requestId);
-    return message;
-  });
+  let logger_config: any = config.get(["loggers", label].join("."));
+  let rc = new Logger(logger_config);
   return rc;
 });
