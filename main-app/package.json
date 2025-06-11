@@ -14,7 +14,8 @@
     "format": "eslint . --fix --ext ts,tsx --report-unused-disable-directives --max-warnings 0 ",
     "prepare": "husky",
     "prettier": "prettier --write .",
-    "dev": "nodemon --watch src --ext ts,tsx,json --signal SIGTERM --exec \"clear && ts-node -r tsconfig-paths/register src/index.ts start --all | npx pino-pretty\"",
+    "dev": "nodemon --watch src --ext ts,tsx,json --signal SIGTERM --exec \"clear && ts-node --transpile-only -r tsconfig-paths/register src/index.ts start --all | npx pino-pretty\"",
+    "pashm": "ts-node --transpile-only -r tsconfig-paths/register src/index.ts",
     "pashmak": "ts-node -r tsconfig-paths/register src/index.ts"
   },
   "author": "Farzad Meow Khalafi",

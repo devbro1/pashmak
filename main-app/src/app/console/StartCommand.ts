@@ -18,12 +18,12 @@ export class StartCommand extends Command {
       return;
     }
 
-    this.context.stdout.write(`Starting Server\n`);
+    logger().info(`Starting Server\n`);
 
     PostgresqlConnection.defaults.idleTimeoutMillis = 10000;
 
     if (this.scheduler || this.all) {
-      this.context.stdout.write(`starting scheduler\n`);
+      logger().info(`starting scheduler\n`);
       scheduler().start();
     }
 

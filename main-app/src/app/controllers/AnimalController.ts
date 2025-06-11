@@ -5,10 +5,9 @@ import {
   Post,
 } from "neko-router/src/Controller";
 import { authenticate, logResponseMiddleware } from "@root/middlewares";
-import { db, storage } from "@root/facades";
+import { db, storage, logger } from "@root/facades";
 import { ctx } from "neko-helper/src";
 import { Request, Response } from "neko-router/src/types";
-import fs from "fs";
 import { Animal } from "../models/Animal";
 import { Model, Param } from "@root/helpers";
 
@@ -29,8 +28,7 @@ export class AnimalController extends BaseController {
   @Post()
   async store() {
     const req = ctx().get<Request>("request");
-    console.log(req.body);
-    console.log(req.files);
+    logger().info({ msg: "request details", body: req.body, files: req.files });
     const animal = new Animal();
     animal.fill(req.body);
     await animal.save();
