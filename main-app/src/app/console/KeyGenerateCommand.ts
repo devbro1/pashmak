@@ -3,6 +3,7 @@ import { cli } from "@root/facades";
 import { generateKeyPairSync } from "crypto";
 import fs from "fs/promises";
 import path from "path";
+import { logger } from "@root/facades";
 
 export class KeyGenerateCommand extends Command {
   static paths = [[`key`, "generate"]];
@@ -17,7 +18,7 @@ export class KeyGenerateCommand extends Command {
   });
 
   async execute() {
-    console.log("generating keys for jwt token and adding to .env file");
+    logger().info("generating keys for jwt token and adding to .env file");
     const { publicKey, privateKey } = generateKeyPairSync("rsa", {
       modulusLength: 2048, // 2048-bit key is standard for RS256
       publicKeyEncoding: {

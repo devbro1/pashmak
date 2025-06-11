@@ -6,7 +6,7 @@ import {
 } from "neko-router/src/Controller";
 import { Param } from "@root/helpers";
 import { logResponseMiddleware } from "@root/middlewares";
-import { db, storage } from "@root/facades";
+import { db, storage, logger } from "@root/facades";
 import { ctx } from "neko-helper/src";
 import { Request, Response } from "neko-router/src/types";
 import fs from "fs";
@@ -25,8 +25,8 @@ export class CatController extends BaseController {
   @Post()
   async store() {
     const req = ctx().get<Request>("request");
-    console.log(req.body);
-    console.log(req.files);
+    logger().info({ msg: "request details", body: req.body, files: req.files });
+
     await storage().put(
       req.files.f1.newFilename,
       fs.readFileSync(req.files.f1.filepath),

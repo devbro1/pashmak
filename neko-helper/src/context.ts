@@ -82,6 +82,21 @@ export class ContextProvider {
 
 export const context_provider = new ContextProvider();
 
+/**
+ * returns storage of current execution context. will throw an error if called outside of an execution context
+ * or from wrong execution context.
+ * @returns return context
+ */
 export function ctx() {
   return context_provider.getStore();
+}
+
+/**
+ * returns storage of current execution context, unlike ctx() will return undefined instead of throwing an error
+ * @returns context or undefined
+ */
+export function ctxSafe() {
+  try {
+    return ctx();
+  } catch {}
 }

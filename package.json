@@ -9,6 +9,7 @@
     "docs",
     "neko-helper",
     "neko-http",
+    "neko-logger",
     "neko-orm",
     "neko-router",
     "neko-scheduler",

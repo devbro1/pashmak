@@ -9,6 +9,7 @@ export default {
   migration: {
     path: path.join(__dirname, "..", "database/migrations"),
   },
+  loggers: require("./loggers"),
   jwt: {
     options: {
       algorithm: "RS256",

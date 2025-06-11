@@ -6,6 +6,7 @@ import path from "path";
 import fs from "fs/promises";
 import config from "config";
 import { Migration } from "neko-sql/src/Migration";
+import { logger } from "@root/facades";
 
 /*
 pashmak make migration <FILENAME>
@@ -27,7 +28,7 @@ export class MigrateCommand extends Command {
       const schema = db.getSchema();
 
       if (this.fresh) {
-        console.log("dropping all tables!!");
+        logger().info("dropping all tables!!");
         let retry = true;
         let retry_count = 0;
         while (retry && retry_count < 10) {
@@ -35,11 +36,11 @@ export class MigrateCommand extends Command {
           retry_count++;
           const tables = await schema.tables();
           for (const table of tables) {
-            console.log(`dropping table ${table.name}`);
+            logger().info(`dropping table ${table.name}`);
             try {
               await schema.dropTable(table.name);
             } catch {
-              console.error(`failed to drop ${table.name}`);
+              logger().info(`failed to drop ${table.name}`);
               retry = true;
             }
           }
@@ -79,7 +80,7 @@ export class MigrateCommand extends Command {
       );
 
       for (const class_to_migrate of pending_migrations) {
-        console.log(`migrating up ${class_to_migrate}`);
+        logger().info(`migrating up ${class_to_migrate}`);
         const ClassToMigrate = require(
           path.join(migrationsDir, class_to_migrate),
         ).default;
