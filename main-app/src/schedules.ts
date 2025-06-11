@@ -20,3 +20,18 @@ scheduler()
   })
   .setCronTime("* * * * *")
   .setRunOnStart(true);
+
+scheduler()
+  .call(async () => {
+    await context_provider.run(async () => {
+      logger().info("Hello World2");
+      const d = db();
+      const r = await d.runQuery({
+        sql: "select * from usersQWEQWE",
+        bindings: [],
+      });
+    });
+  })
+  .setName("bad cron job")
+  .setCronTime("* * * * *")
+  .setRunOnStart(true);

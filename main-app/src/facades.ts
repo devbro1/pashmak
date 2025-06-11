@@ -1,5 +1,5 @@
 import { Router } from "neko-router/src";
-import { Scheduler } from "neko-scheduler/src";
+import { Schedule, Scheduler } from "neko-scheduler/src";
 import { createSingleton, ctxSafe } from "neko-helper/src";
 import { ctx } from "neko-helper/src";
 import { Connection } from "neko-sql/src/Connection";
@@ -14,8 +14,12 @@ import { Logger, LogMessage, MapObject } from "neko-logger/src";
 export const router = createSingleton<Router>(() => new Router());
 export const scheduler = createSingleton<Scheduler>(() => {
   let rc = new Scheduler();
-  rc.setErrorHandler((err) => {
-    logger().error({ msg: "Scheduler error", err });
+  rc.setErrorHandler((err, job: Schedule) => {
+    logger().error({
+      msg: "Scheduled job error",
+      err,
+      job_name: job.getName(),
+    });
   });
   return rc;
 });
@@ -79,5 +83,6 @@ export const httpServer = createSingleton<HttpServer>(() => {
 export const logger = createSingleton<Logger>((label) => {
   let logger_config: any = config.get(["loggers", label].join("."));
   let rc = new Logger(logger_config);
+
   return rc;
 });

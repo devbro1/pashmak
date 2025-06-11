@@ -13,12 +13,12 @@ export class Schedule {
     await this.func();
   }
 
-  errorHandler(err: any) {
-    console.log(`error in '${this.name}' cronjob`);
+  errorHandler(err: any, self: Schedule) {
+    console.log(`error in '${self.getName()}' cronjob`);
     console.error(err);
   }
 
-  setErrorHandler(func: (err: any) => void) {
+  setErrorHandler(func: typeof this.errorHandler) {
     this.errorHandler = func;
   }
 
@@ -33,7 +33,7 @@ export class Schedule {
         try {
           await this.func();
         } catch (err) {
-          this.errorHandler(err);
+          this.errorHandler(err, this);
         }
       },
       onComplete: null,
@@ -90,7 +90,7 @@ export class Schedule {
 
 export class Scheduler {
   private jobs: Schedule[] = [];
-  private errorHandler: ((err: any) => void) | undefined;
+  private errorHandler: ((err: any, job: Schedule) => void) | undefined;
 
   call(func: () => void): Schedule {
     const schedule = new Schedule(func);

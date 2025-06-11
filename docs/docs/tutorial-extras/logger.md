@@ -9,12 +9,12 @@ you can use log to record details you need during various parts of execution:
 ```ts
 import { logger } from "@root/facades";
 
-logger().info("info message");
-logger().warn("info message");
-logger().error("info message");
-logger().fatal("info message");
-logger().trace("info message");
-logger().debug("info message");
+logger().info("info green message");
+logger().warn("warning yellow message");
+logger().error("error red message");
+logger().fatal("fatal black message");
+logger().trace("trace white message");
+logger().debug("debug gray message");
 ```
 
 these would produce proper log messages in json format to stdout.
