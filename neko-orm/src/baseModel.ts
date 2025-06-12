@@ -254,4 +254,11 @@ export class BaseModel {
     }
     return data;
   }
+
+  public setExists(exists: boolean) {
+    this.exists = exists;
+  }
+  public getExists(): boolean {
+    return this.exists;
+  }
 }

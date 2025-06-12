@@ -129,6 +129,10 @@ export class Query {
     return await this.connection?.runQuery(this.toSql());
   }
 
+  async getCursor() {
+    return await this.connection?.runCursor(this.toSql());
+  }
+
   getConnection(): Connection | null {
     return this.connection;
   }
