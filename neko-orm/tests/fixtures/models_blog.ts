@@ -13,7 +13,8 @@ export class Post extends BaseModel {
   declare created_at: Date;
 
   comments() {
-    return RelationshipFactory.createHasMany<Comment, Post>({
+    return RelationshipFactory.create<Comment, Post>({
+      type: 'hasMany',
       source: this,
       targetModel: Comment,
     });
@@ -32,4 +33,15 @@ export class Comment extends BaseModel {
 
   @Attribute()
   declare post_id: number;
+
+  post() {
+    return RelationshipFactory.create<Comment, Post>({
+      type: 'belongsTo',
+      source: this,
+      targetModel: Post,
+      sourceToTargetKeyAssociation: {
+        post_id: 'id',
+      },
+    });
+  }
 }

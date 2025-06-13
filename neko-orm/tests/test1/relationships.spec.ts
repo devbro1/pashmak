@@ -54,4 +54,15 @@ describe('relationships', () => {
       expect(comment).toBeInstanceOf(Comment);
     }
   });
+
+  test('comment can belong to a post', async () => {
+    let comment1 = await Comment.find(6);
+    expect(comment1).toBeInstanceOf(Comment);
+    expect(comment1.post_id).toBe(1);
+
+    let post1 = await comment1.post().get();
+    console.log(post1);
+    expect(post1).toBeInstanceOf(Post);
+    expect(post1.id).toBe(1);
+  });
 });

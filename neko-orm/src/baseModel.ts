@@ -34,17 +34,7 @@ export class BaseModel {
     this.casters = this.constructor.prototype.casters ?? {};
     this.mutators = this.constructor.prototype.mutators ?? {};
 
-    for (const key of this.fillable) {
-      if (typeof initialData[key] !== 'undefined') {
-        (this as any)[key] = initialData[key];
-      }
-    }
-
-    for (const key of this.primaryKey) {
-      if (typeof initialData[key] !== 'undefined') {
-        (this as any)[key] = initialData[key];
-      }
-    }
+    this.fill(initialData);
   }
 
   public getTablename(): string {
@@ -255,10 +245,9 @@ export class BaseModel {
     return data;
   }
 
-  public setExists(exists: boolean) {
-    this.exists = exists;
-  }
-  public getExists(): boolean {
-    return this.exists;
+  public static newInstance(initialData: any = {}, exists: boolean = false): BaseModel {
+    let rc= new this(initialData);
+    rc.exists = exists;
+    return rc;
   }
 }
