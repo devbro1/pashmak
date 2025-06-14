@@ -1,12 +1,17 @@
 import { Query } from 'neko-sql/src/Query';
 import { BaseModel } from './baseModel';
-import { Case } from "change-case-all";
+import { Case } from 'change-case-all';
 
-export class RelationshipManager<Source extends BaseModel, Target extends BaseModel> {
+export type assocationOptions = {
+  sync: boolean; // if true, will save the target model right away
+};
 
-}
+export class RelationshipManager<Source extends BaseModel, Target extends BaseModel> {}
 
-export class RelationshipManager1toM<Source extends BaseModel, Target extends BaseModel> extends RelationshipManager<Source, Target> {
+export class RelationshipManager1toM<
+  Source extends BaseModel,
+  Target extends BaseModel,
+> extends RelationshipManager<Source, Target> {
   private sourceObject: BaseModel;
   private targetModel: typeof BaseModel;
   private target_keys: Record<string, string> = {}; // { id: 'post_id' }
@@ -18,19 +23,19 @@ export class RelationshipManager1toM<Source extends BaseModel, Target extends Ba
     this.sourceObject = options.source;
     this.targetModel = options.targetModel;
     this.target_keys = options.sourceToTargetKeyAssociation!;
-
   }
 
   async toArray(): Promise<Target[]> {
     let q = await this.getQuery();
     let rows = await q.get();
+
     return rows.map((row: any) => {
       let model = this.targetModel.newInstance(row, true);
       return model;
     });
   }
 
-  async addAndSync(obj: Target | Target[]) {
+  async associate(obj: Target | Target[], options: assocationOptions = { sync: true }) {
     if (!Array.isArray(obj)) {
       obj = [obj];
     }
@@ -40,13 +45,13 @@ export class RelationshipManager1toM<Source extends BaseModel, Target extends Ba
       updates[target_key] = this.sourceObject[local_key];
     });
 
-    for (const o of obj) {
-      o.fill(updates);
-      await o.save();
+    for (let i = 0; i < obj.length; i++) {
+      obj[i].fill(updates);
+      options.sync && (await obj[i].save());
     }
   }
 
-  async removeAndSync(obj: Target | Target[]) {
+  async dessociate(obj: Target | Target[], options: assocationOptions = { sync: true }) {
     if (!Array.isArray(obj)) {
       obj = [obj];
     }
@@ -56,9 +61,9 @@ export class RelationshipManager1toM<Source extends BaseModel, Target extends Ba
       updates[target_key] = undefined;
     });
 
-    for (const o of obj) {
-      o.fill(updates);
-      await o.save();
+    for (let i = 0; i < obj.length; i++) {
+      obj[i].fill(updates);
+      options.sync && (await obj[i].save());
     }
   }
 
@@ -86,7 +91,10 @@ export class RelationshipManager1toM<Source extends BaseModel, Target extends Ba
   }
 }
 
-export class RelationshipManagerMto1<Source extends BaseModel, Target extends BaseModel> extends RelationshipManager<Source, Target> {
+export class RelationshipManagerMto1<
+  Source extends BaseModel,
+  Target extends BaseModel,
+> extends RelationshipManager<Source, Target> {
   private sourceObject: BaseModel;
   private targetModel: typeof BaseModel;
   private target_keys: Record<string, string>;
@@ -98,39 +106,51 @@ export class RelationshipManagerMto1<Source extends BaseModel, Target extends Ba
     this.sourceObject = options.source;
     this.targetModel = options.targetModel;
     this.target_keys = options.sourceToTargetKeyAssociation!;
-
   }
 
-  async addAndSync(obj: Target | Target[]) {
-    if (!Array.isArray(obj)) {
-      obj = [obj];
+  async associate(obj: Target | Target[], options: assocationOptions = { sync: true }) {
+    if (Array.isArray(obj) && obj.length !== 1) {
+      throw new Error('Cannot associate multiple objects to a belongsTo relationship');
     }
+    obj = Array.isArray(obj) ? obj : [obj];
 
     let updates: Record<string, any> = {};
     Object.entries(this.target_keys).forEach(([local_key, target_key]) => {
-      updates[target_key] = this.sourceObject[local_key];
+      updates[target_key] = obj[0][local_key];
     });
 
-    for (const o of obj) {
-      o.fill(updates);
-      await o.save();
-    }
+    this.sourceObject.fill(updates);
+    options.sync && (await this.sourceObject.save());
   }
 
-  async removeAndSync(obj: Target | Target[]) {
-    if (!Array.isArray(obj)) {
-      obj = [obj];
+  async dessociate(obj: Target | Target[], options: assocationOptions = { sync: true }) {
+    if (Array.isArray(obj) && obj.length !== 1) {
+      throw new Error('Cannot associate multiple objects to a belongsTo relationship');
     }
+    obj = Array.isArray(obj) ? obj : [obj];
 
+    let updates: Record<string, any> = {};
+    Object.entries(this.target_keys).forEach(([local_key, target_key]) => {
+      if (this.sourceObject[local_key] !== obj[0][target_key]) {
+        throw new Error(
+          `Cannot dissociate ${obj[0].constructor.name} with ${this.sourceObject.constructor.name}, values for ${local_key}:${target_key} keys do not match`
+        );
+      }
+      updates[target_key] = undefined;
+    });
+
+    this.sourceObject.fill(updates);
+    options.sync && (await this.sourceObject.save());
+  }
+
+  async unlink(options: assocationOptions = { sync: true }) {
     let updates: Record<string, any> = {};
     Object.entries(this.target_keys).forEach(([local_key, target_key]) => {
       updates[target_key] = undefined;
     });
 
-    for (const o of obj) {
-      o.fill(updates);
-      await o.save();
-    }
+    this.sourceObject.fill(updates);
+    options.sync && (await this.sourceObject.save());
   }
 
   async getQuery(): Promise<Query> {
@@ -144,28 +164,79 @@ export class RelationshipManagerMto1<Source extends BaseModel, Target extends Ba
   async get() {
     let q = await this.getQuery();
     let row = await q.get();
-    console.log('ASD', row);
     return this.targetModel.newInstance(row[0], true);
   }
 }
 
 export type RelationFactoryOptionsType = {
-  type: 'hasMany' | 'belongsTo' | 'hasOne' | 'belongsToMany' |
-  'oneToOne' | 'oneToMany' | 'manyToMany' | 'manyToOne';
+  type:
+    | 'hasMany'
+    | 'belongsTo'
+    | 'hasOne'
+    | 'belongsToMany'
+    | 'oneToMany'
+    | 'manyToMany'
+    | 'manyToOne';
   source: BaseModel;
   targetModel: typeof BaseModel;
-  sourceToTargetKeyAssociation?: Record<string, string>;
-  junctionTable?: string;
-  sournceToJunctionKeyAssociation?: Record<string, string>;
-  junctionToSourceKeyAssociation?: Record<string, string>;
+  sourceToTargetKeyAssociation: Record<string, string>;
+  junctionTable: string;
+  sournceToJunctionKeyAssociation: Record<string, string>;
+  junctionToTargetAssociation: Record<string, string>;
 };
 
 export class RelationshipFactory {
-  static create<Source extends BaseModel, Target extends BaseModel>(options: Partial<RelationFactoryOptionsType>): RelationshipManager<Source, Target> {
+  // static create<Source extends BaseModel, Target extends BaseModel>(options: Partial<RelationFactoryOptionsType>): RelationshipManager<Source, Target> {
+  //   let options2: RelationFactoryOptionsType = {
+  //     type: 'hasMany',
+  //     source: BaseModel.newInstance(),
+  //     targetModel: BaseModel
+  //   };
+
+  //   options2.type = options.type!;
+  //   if (!options.source || !options.targetModel) {
+  //     throw new Error('Source and target model must be provided');
+  //   }
+  //   options2.source = options.source!;
+  //   options2.targetModel = options.targetModel!;
+
+  //   options2.junctionTable = options.junctionTable || '';
+  //   options2.sourceToTargetKeyAssociation = options.sourceToTargetKeyAssociation!;
+  //   options2.sournceToJunctionKeyAssociation = options.sournceToJunctionKeyAssociation || {};
+  //   options2.junctionToSourceKeyAssociation = options.junctionToSourceKeyAssociation || {};
+
+  //   if (['hasOne', 'hasMany'].includes(options2.type) && options2.sourceToTargetKeyAssociation === undefined) {
+  //     options2.sourceToTargetKeyAssociation = {};
+  //     let model_name = Case.snake(options2.source.constructor.name);
+  //     // @ts-ignore
+  //     for (const key of options2.source.primaryKey) {
+  //       options2.sourceToTargetKeyAssociation[key] = `${model_name}_${key}`;
+  //     }
+  //   }
+
+  //   switch (options2.type) {
+  //     case 'oneToMany':
+  //     case 'hasMany':
+  //       return this.createHasMany(options2);
+  //       break;
+  //     case 'belongsTo':
+  //     case 'manyToOne':
+  //       return this.createBelongsTo(options2);
+  //       break;
+  //     default:
+  //       throw new Error(`Unsupported relationship type: ${options.type}`);
+  //   }
+  // }
+
+  static populateOptions(options: Partial<RelationFactoryOptionsType>): RelationFactoryOptionsType {
     let options2: RelationFactoryOptionsType = {
-      type: 'hasMany',
       source: BaseModel.newInstance(),
-      targetModel: BaseModel
+      targetModel: BaseModel,
+      type: 'hasMany',
+      sourceToTargetKeyAssociation: {},
+      junctionTable: '',
+      sournceToJunctionKeyAssociation: {},
+      junctionToTargetAssociation: {},
     };
 
     options2.type = options.type!;
@@ -178,37 +249,38 @@ export class RelationshipFactory {
     options2.junctionTable = options.junctionTable || '';
     options2.sourceToTargetKeyAssociation = options.sourceToTargetKeyAssociation!;
     options2.sournceToJunctionKeyAssociation = options.sournceToJunctionKeyAssociation || {};
-    options2.junctionToSourceKeyAssociation = options.junctionToSourceKeyAssociation || {};
+    options2.junctionToTargetAssociation = options.junctionToTargetAssociation || {};
 
-    if(options2.sourceToTargetKeyAssociation === undefined) {
+    if (
+      ['hasOne', 'hasMany'].includes(options2.type) &&
+      options2.sourceToTargetKeyAssociation === undefined
+    ) {
       options2.sourceToTargetKeyAssociation = {};
       let model_name = Case.snake(options2.source.constructor.name);
       // @ts-ignore
-      for(const key of options2.source.primaryKey) {
+      for (const key of options2.source.primaryKey) {
         options2.sourceToTargetKeyAssociation[key] = `${model_name}_${key}`;
       }
-      
     }
-    switch (options2.type) {
-      case 'oneToMany':
-      case 'hasMany':
-        return this.createHasMany(options2);
-        break;
-      case 'belongsTo':
-      case 'oneToOne':
-      case 'manyToOne':
-        return this.createBelongsTo(options2);
-        break;
-      default:
-        throw new Error(`Unsupported relationship type: ${options.type}`);
-    }
+
+    return options2;
   }
 
-  static createHasMany<Source extends BaseModel, Target extends BaseModel>(options: RelationFactoryOptionsType): RelationshipManager<Source, Target> {
-    return new RelationshipManager1toM<Source, Target>(options);
+  static createHasMany<Source extends BaseModel, Target extends BaseModel>(
+    options: Partial<RelationFactoryOptionsType>
+  ): RelationshipManager1toM<Source, Target> {
+    options.type = 'hasMany';
+    return new RelationshipManager1toM<Source, Target>(
+      RelationshipFactory.populateOptions(options)
+    );
   }
 
-  static createBelongsTo<Source extends BaseModel, Target extends BaseModel>(options: RelationFactoryOptionsType): RelationshipManager<Source, Target> {
-    return new RelationshipManagerMto1<Source, Target>(options);
+  static createBelongsTo<Source extends BaseModel, Target extends BaseModel>(
+    options: Partial<RelationFactoryOptionsType>
+  ): RelationshipManagerMto1<Source, Target> {
+    options.type = 'belongsTo';
+    return new RelationshipManagerMto1<Source, Target>(
+      RelationshipFactory.populateOptions(options)
+    );
   }
 }

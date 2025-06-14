@@ -57,9 +57,7 @@ export class BaseModel {
     }
 
     for (const key of this.fillable) {
-      if (this[key] !== undefined) {
-        params[key] = this[key];
-      }
+      params[key] = this[key];
     }
 
     // adjust timestamps
@@ -220,8 +218,8 @@ export class BaseModel {
   }
 
   public fill(data: Record<string, Parameter>) {
-    for (const key of this.fillable) {
-      if (typeof data[key] !== 'undefined') {
+    for (const key of [...this.primaryKey, ...this.fillable]) {
+      if (key in data) {
         // @ts-ignore
         this[key] = data[key];
       }
@@ -246,7 +244,7 @@ export class BaseModel {
   }
 
   public static newInstance(initialData: any = {}, exists: boolean = false): BaseModel {
-    let rc= new this(initialData);
+    let rc = new this(initialData);
     rc.exists = exists;
     return rc;
   }

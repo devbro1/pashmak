@@ -35,7 +35,7 @@ describe('relationships', () => {
   });
 
   test('post can have many comments', async () => {
-    let post1 = await Post.find(1);
+    let post1: Post = await Post.find(1);
 
     let counter = 0;
     for await (const comment of post1.comments()) {
@@ -52,7 +52,46 @@ describe('relationships', () => {
     for (const comment of comments2) {
       expect(comment.post_id).toBe(post2.id);
       expect(comment).toBeInstanceOf(Comment);
+      expect(comment.id).toBeDefined();
     }
+
+    let comment1 = new Comment({
+      content: faker.lorem.sentence(),
+      author: faker.person.fullName(),
+    });
+    await post1.comments().associate(comment1);
+    expect((await post1.comments().toArray()).length).toBe(6);
+
+    let comment2 = new Comment({
+      content: faker.lorem.sentence(),
+      author: faker.person.fullName(),
+    });
+    let comment3 = new Comment({
+      content: faker.lorem.sentence(),
+      author: faker.person.fullName(),
+    });
+
+    await post1.comments().associate([comment2, comment3]);
+    expect((await post1.comments().toArray()).length).toBe(8);
+
+    let comment4 = new Comment({
+      content: faker.lorem.sentence(),
+      author: faker.person.fullName(),
+    });
+
+    await comment4.save();
+    expect((await post1.comments().toArray()).length).toBe(8);
+    await post1.comments().associate(comment4, { sync: false });
+    expect((await post1.comments().toArray()).length).toBe(8);
+    await comment4.save();
+    expect((await post1.comments().toArray()).length).toBe(9);
+    await post1.comments().dessociate(comment4, { sync: false });
+    expect((await post1.comments().toArray()).length).toBe(9);
+    await comment4.save();
+    expect((await post1.comments().toArray()).length).toBe(8);
+
+    await post1.comments().dessociate([comment2, comment3]);
+    expect((await post1.comments().toArray()).length).toBe(6);
   });
 
   test('comment can belong to a post', async () => {
@@ -61,7 +100,7 @@ describe('relationships', () => {
     expect(comment1.post_id).toBe(1);
 
     let post1 = await comment1.post().get();
-    console.log(post1);
+    // console.log(post1);
     expect(post1).toBeInstanceOf(Post);
     expect(post1.id).toBe(1);
   });
