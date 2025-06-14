@@ -128,6 +128,10 @@ export class BaseModel {
       // @ts-ignore
       this[k] = r[k];
 
+      if (this[k] === null) {
+        this[k] = undefined;
+      }
+
       if (this.mutators[k]) {
         this[k] = this.mutators[k](this[k]);
       }
@@ -243,9 +247,18 @@ export class BaseModel {
     return data;
   }
 
-  public static newInstance(initialData: any = {}, exists: boolean = false): BaseModel {
+  public static newInstance<T extends BaseModel>(
+    initialData: any = {},
+    exists: boolean = false
+  ): T {
     let rc = new this(initialData);
     rc.exists = exists;
-    return rc;
+    return rc as T;
+  }
+
+  public static async create<T extends BaseModel>(initialData: any = {}): Promise<T> {
+    let rc = new this(initialData);
+    await rc.save();
+    return rc as T;
   }
 }

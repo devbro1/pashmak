@@ -115,8 +115,8 @@ export class RelationshipManagerMto1<
     obj = Array.isArray(obj) ? obj : [obj];
 
     let updates: Record<string, any> = {};
-    Object.entries(this.target_keys).forEach(([local_key, target_key]) => {
-      updates[target_key] = obj[0][local_key];
+    Object.entries(this.target_keys).forEach(([source_key, target_key]) => {
+      updates[source_key] = obj[0][target_key];
     });
 
     this.sourceObject.fill(updates);
@@ -130,13 +130,13 @@ export class RelationshipManagerMto1<
     obj = Array.isArray(obj) ? obj : [obj];
 
     let updates: Record<string, any> = {};
-    Object.entries(this.target_keys).forEach(([local_key, target_key]) => {
-      if (this.sourceObject[local_key] !== obj[0][target_key]) {
+    Object.entries(this.target_keys).forEach(([source_key, target_key]) => {
+      if (this.sourceObject[source_key] !== obj[0][target_key]) {
         throw new Error(
-          `Cannot dissociate ${obj[0].constructor.name} with ${this.sourceObject.constructor.name}, values for ${local_key}:${target_key} keys do not match`
+          `Cannot dissociate ${obj[0].constructor.name} with ${this.sourceObject.constructor.name}, values for ${source_key}:${target_key} keys do not match`
         );
       }
-      updates[target_key] = undefined;
+      updates[source_key] = undefined;
     });
 
     this.sourceObject.fill(updates);
@@ -145,8 +145,8 @@ export class RelationshipManagerMto1<
 
   async unlink(options: assocationOptions = { sync: true }) {
     let updates: Record<string, any> = {};
-    Object.entries(this.target_keys).forEach(([local_key, target_key]) => {
-      updates[target_key] = undefined;
+    Object.entries(this.target_keys).forEach(([source_key, target_key]) => {
+      updates[source_key] = undefined;
     });
 
     this.sourceObject.fill(updates);
@@ -161,10 +161,10 @@ export class RelationshipManagerMto1<
     return q;
   }
 
-  async get() {
+  async get(): Promise<Target> {
     let q = await this.getQuery();
     let row = await q.get();
-    return this.targetModel.newInstance(row[0], true);
+    return this.targetModel.newInstance<Target>(row[0], true);
   }
 }
 

@@ -95,13 +95,33 @@ describe('relationships', () => {
   });
 
   test('comment can belong to a post', async () => {
-    let comment1 = await Comment.find(6);
-    expect(comment1).toBeInstanceOf(Comment);
-    expect(comment1.post_id).toBe(1);
+    let post1 = await Post.create({
+      title: faker.lorem.sentence(),
+      content: faker.lorem.paragraph(),
+    });
 
-    let post1 = await comment1.post().get();
-    // console.log(post1);
-    expect(post1).toBeInstanceOf(Post);
-    expect(post1.id).toBe(1);
+    let comment1 = await Comment.create<Comment>({
+      content: faker.lorem.sentence(),
+      author: faker.person.fullName(),
+      post_id: post1.id,
+    });
+
+    let post2 = await comment1.post().get();
+    expect(post2.id).toBe(post1.id);
+
+    await comment1.post().dessociate(post2);
+    expect(comment1.post_id).toBeUndefined();
+    await comment1.refresh();
+    expect(comment1.post_id).toBeUndefined();
+
+    await comment1.post().associate(post2, { sync: false });
+    expect(comment1.post_id).toBe(post2.id);
+    await comment1.refresh();
+    expect(comment1.post_id).toBeUndefined();
+
+    await comment1.post().associate(post2);
+    expect(comment1.post_id).toBe(post2.id);
+    await comment1.refresh();
+    expect(comment1.post_id).toBeDefined();
   });
 });

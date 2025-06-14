@@ -50,6 +50,17 @@ to save your data to database, if it is an object that was retrieved from databa
 
 to delete the model from database. data still reside in the object.
 
+## Model.create()
+
+to Quickly create a new object that is saved to database
+
+```ts
+let comment = Comment.create<Comment>({
+  author: "Tiger Cat",
+  comment: "story of my life",
+});
+```
+
 ## table name
 
 table name is auto calculated as plural of the model name. so Country model will look rows from countries table.
