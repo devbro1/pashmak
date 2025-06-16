@@ -61,7 +61,7 @@ export class SchemaGrammar {
   }
 
   escape(value: Parameter): string {
-    if (value === null) {
+    if (value === null || value === undefined) {
       return 'null';
     }
 

@@ -2,7 +2,7 @@ import { describe, expect, test } from '@jest/globals';
 import { PostgresqlConnection } from 'neko-sql/src/databases/postgresql/PostgresqlConnection';
 import { Connection } from 'neko-sql/src/Connection';
 import { execSync } from 'child_process';
-import { Post, Comment } from '../fixtures/models_blog';
+import { Post, Comment, Image, Tag } from '../fixtures/models_blog';
 import { BaseModel } from '../../src';
 import { faker } from '@faker-js/faker';
 import { sleep } from 'neko-helper/src/time';
@@ -123,5 +123,35 @@ describe('relationships', () => {
     expect(comment1.post_id).toBe(post2.id);
     await comment1.refresh();
     expect(comment1.post_id).toBeDefined();
+  });
+
+  test.only('image can have many tags', async () => {
+    let image1 = await Image.create<Image>({
+      author: faker.person.fullName(),
+      filePath: faker.system.filePath(),
+      title: faker.lorem.sentence(),
+    });
+
+    let tag1 = await Tag.create<Tag>({
+      name: faker.lorem.word(),
+    });
+    let tag2 = await Tag.create<Tag>({
+      name: faker.lorem.word(),
+    });
+    let tag3 = await Tag.create<Tag>({
+      name: faker.lorem.word(),
+    });
+
+    console.log("A");
+    expect((await image1.tags().toArray()).length).toBe(0);
+    console.log("B");
+    await image1.tags().associate([tag1, tag2, tag3]);
+    console.log("C");
+    let tags = await image1.tags().toArray();
+    console.log("D");
+    expect(tags.length).toBe(3);
+
+    await image1.tags().dessociate([tag1, tag2]);
+    expect((await image1.tags().toArray()).length).toBe(1);
   });
 });

@@ -168,6 +168,113 @@ export class RelationshipManagerMto1<
   }
 }
 
+export class RelationshipManagerMtoM<
+  Source extends BaseModel,
+  Target extends BaseModel,
+> extends RelationshipManager<Source, Target> {
+  private sourceObject: BaseModel;
+  private targetModel: typeof BaseModel;
+  private type: RelationFactoryOptionsType['type'];
+  private junctionTable: string;
+  private sournceToJunctionKeyAssociation: Record<string, string>;
+  private junctionToTargetAssociation: Record<string, string>;
+
+  constructor(options: RelationFactoryOptionsType) {
+    super();
+    this.sourceObject = options.source;
+    this.targetModel = options.targetModel;
+    this.type = options.type;
+    this.junctionTable = options.junctionTable;
+    this.sournceToJunctionKeyAssociation = options.sournceToJunctionKeyAssociation;
+    this.junctionToTargetAssociation = options.junctionToTargetAssociation;
+  }
+
+  async associate(obj: Target | Target[], options: assocationOptions = { sync: true }) {
+    if (!Array.isArray(obj)) {
+      obj = [obj];
+    }
+
+    let query: Query = await this.targetModel.getQuery();
+    query = query.getConnection()?.getQuery()!;
+    query.table(this.junctionTable);
+
+    for (let i = 0; i < obj.length; i++) {
+      await query.insert({
+        image_id: this.sourceObject.id,
+        tag_id: obj[i].id,
+      });
+    }
+
+  }
+
+  async dessociate(obj: Target | Target[], options: assocationOptions = { sync: true }) {
+    if (!Array.isArray(obj)) {
+      obj = [obj];
+    }
+
+    let query: Query = await this.targetModel.getQuery();
+    query = query.getConnection()?.getQuery()!;
+    query.table(this.junctionTable);
+
+    for (let i = 0; i < obj.length; i++) {
+      query = query.getConnection()?.getQuery()!;
+      query.table(this.junctionTable);
+
+      await query.whereOp(
+        'tag_id',
+        '=',
+        obj[i].id
+      ).whereOp(
+        'image_id',
+        '=',
+        this.sourceObject.id
+      ).delete();
+    }
+  }
+  async getQuery(): Promise<Query> {
+    let target = new this.targetModel();
+    let q: Query = await this.sourceObject.getQuery();
+    q.select([`${target.getTablename()}.*`]);
+
+    q.innerJoin(
+      this.junctionTable, [{
+        type: 'operationColumn',
+        column1: `${this.sourceObject.getTablename()}.id`,
+        operation: '=',
+        column2: `${this.junctionTable}.image_id`,
+        joinCondition: 'and',
+        negateCondition: false
+      }]
+    );
+
+    q.innerJoin(
+      target.getTablename(), [{
+        type: 'operationColumn',
+        column1: `${this.junctionTable}.${Case.snake(this.targetModel.name)}_id`,
+        operation: '=',
+        column2: `${target.getTablename()}.id`,
+        joinCondition: 'and',
+        negateCondition: false
+      }]
+    );
+    // Object.entries(this.sournceToJunctionKeyAssociation).map(([source_key, junction_key]) => {
+    //   q.whereOp(junction_key, '=', this.sourceObject[source_key]);
+    // });
+    return q;
+  }
+
+  async toArray(): Promise<Target[]> {
+    let q = await this.getQuery();
+    console.log(q.toSql());
+    let rows = await q.get();
+
+    return rows.map((row: any) => {
+      let model = this.targetModel.newInstance(row, true);
+      return model;
+    });
+  }
+
+}
 export type RelationFactoryOptionsType = {
   type:
     | 'hasMany'
@@ -262,6 +369,39 @@ export class RelationshipFactory {
         options2.sourceToTargetKeyAssociation[key] = `${model_name}_${key}`;
       }
     }
+    else if (options2.type === 'belongsTo' && Object.keys(options2.sourceToTargetKeyAssociation).length === 0) {
+      options2.sourceToTargetKeyAssociation = {};
+      let model_name = Case.snake(options2.targetModel.name);
+      // @ts-ignore
+      for (const key of options2.targetModel.primaryKey) {
+        options2.sourceToTargetKeyAssociation[`${model_name}_${key}`] = `${key}`;
+      }
+    }
+    else if (options2.type === 'belongsToMany') {
+      if (options2.junctionTable === '') {
+        options2.junctionTable = `${Case.snake(options2.source.constructor.name)}_${Case.snake(options2.targetModel.name)}`;
+      }
+
+      if (Object.keys(options2.sournceToJunctionKeyAssociation).length === 0) {
+        options2.sournceToJunctionKeyAssociation = {};
+        let model_name = Case.snake(options2.source.constructor.name);
+        // @ts-ignore
+        for (const key of options2.source.primaryKey) {
+          options2.sournceToJunctionKeyAssociation[key] = `${model_name}_${key}`;
+        }
+      }
+      if (Object.keys(options2.junctionToTargetAssociation).length === 0) {
+        options2.junctionToTargetAssociation = {};
+        let model_name = Case.snake(options2.targetModel.name);
+
+        let target = new options2.targetModel();
+
+        // @ts-ignore
+        for (const key of target.primaryKey) {
+          options2.junctionToTargetAssociation[`${model_name}_${key}`] = key;
+        }
+      }
+    }
 
     return options2;
   }
@@ -280,6 +420,16 @@ export class RelationshipFactory {
   ): RelationshipManagerMto1<Source, Target> {
     options.type = 'belongsTo';
     return new RelationshipManagerMto1<Source, Target>(
+      RelationshipFactory.populateOptions(options)
+    );
+  }
+
+  static createBelongsToMany<
+    Source extends BaseModel,
+    Target extends BaseModel,
+  >(options: Partial<RelationFactoryOptionsType>): RelationshipManagerMtoM<Source, Target> {
+    options.type = 'belongsToMany';
+    return new RelationshipManagerMtoM<Source, Target>(
       RelationshipFactory.populateOptions(options)
     );
   }

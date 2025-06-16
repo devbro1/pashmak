@@ -49,3 +49,46 @@ export class Comment extends BaseModel {
     });
   }
 }
+
+
+export class Image extends BaseModel {
+  @Attribute()
+  declare author: string;
+
+  @Attribute()
+  declare filePath: number;
+
+  @Attribute()
+  declare title: number;
+
+  @Attribute()
+  declare created_at: Date;
+
+  @Attribute()
+  declare updated_at: Date;
+
+  tags() {
+    return RelationshipFactory.createBelongsToMany<Image, Tag>({
+      source: this,
+      targetModel: Tag,
+    });
+  }
+}
+
+export class Tag extends BaseModel {
+  @Attribute()
+  declare name: string;
+
+  @Attribute()
+  declare created_at: Date;
+
+  @Attribute()
+  declare updated_at: Date;
+
+  images() {
+    return RelationshipFactory.createBelongsToMany<Tag, Image>({
+      source: this,
+      targetModel: Image,
+    });
+  }
+}

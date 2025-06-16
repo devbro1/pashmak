@@ -1,10 +1,11 @@
 import { Connection } from './Connection';
 import { QueryGrammar } from './QueryGrammar';
-import { CompiledSql, JoinCondition, Parameter, selectType, whereType, havingType } from './types';
+import { CompiledSql, JoinCondition, Parameter, selectType, whereType, havingType, joinType } from './types';
 
 export type QueryParts = {
   select: selectType[];
   table: string;
+  join: joinType[];
   where: whereType[];
   groupBy: string[];
   having: havingType[];
@@ -18,6 +19,7 @@ export class Query {
   parts: QueryParts = {
     select: ['*'],
     table: '',
+    join: [],
     where: [],
     groupBy: [],
     having: [],
@@ -48,6 +50,18 @@ export class Query {
       column,
       operation,
       value,
+      joinCondition,
+      negateCondition,
+    });
+    return this;
+  }
+
+  whereColumn(column1: string, operation: (typeof this.allowedOperations)[number], column2: string, joinCondition: JoinCondition = 'and', negateCondition: boolean = false): this {
+    this.parts.where.push({
+      type: 'operationColumn',
+      column1,
+      operation,
+      column2,
       joinCondition,
       negateCondition,
     });
@@ -163,5 +177,25 @@ export class Query {
   async delete() {
     const csql: CompiledSql = this.grammar.compileDelete(this);
     return await this.connection?.runQuery(csql);
+  }
+
+  innerJoin(table: string, condtions: whereType[]): this {
+    this.parts.join.push({ type: 'inner', table, conditions: condtions });
+    return this;
+  }
+
+  leftJoin(table: string, condtions: whereType[]): this {
+    this.parts.join.push({ type: 'left', table, conditions: condtions });
+    return this;
+  }
+
+  rightJoin(table: string, condtions: whereType[]): this {
+    this.parts.join.push({ type: 'right', table, conditions: condtions });
+    return this;
+  }
+
+  fullJoin(table: string, condtions: whereType[]): this {
+    this.parts.join.push({ type: 'full', table, conditions: condtions });
+    return this;
   }
 }

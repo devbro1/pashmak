@@ -18,6 +18,31 @@ CREATE TABLE comments (
   FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
 );
 
+CREATE TABLE images (
+  id SERIAL PRIMARY KEY,
+  author VARCHAR(255),
+  filePath TEXT NOT NULL,
+  title VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE tags (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE image_tag (
+  id SERIAL PRIMARY KEY,
+  image_id INTEGER NOT NULL,
+  tag_id INTEGER NOT NULL,
+  FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE,
+  FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+);
+
+
 -- Insert sample posts
 INSERT INTO posts (title, content) VALUES
 ('First Post', 'This is the content of the first post.'),
