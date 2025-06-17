@@ -55,7 +55,7 @@ to delete the model from database. data still reside in the object.
 to Quickly create a new object that is saved to database
 
 ```ts
-let comment = Comment.create<Comment>({
+let comment = await Comment.create<Comment>({
   author: "Tiger Cat",
   comment: "story of my life",
 });
