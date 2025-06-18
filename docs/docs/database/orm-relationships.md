@@ -113,3 +113,87 @@ await comment.post().unlink();
 ```
 
 keep in mind that these methods are modifying source(comment model) and leaving target model alone(post)
+
+## Many to Many aka belongsToMany
+
+To establish the relationship between two models:
+
+```ts
+export class Image extends BaseModel {
+  @Attribute()
+  declare author: string;
+
+  @Attribute()
+  declare filePath: number;
+
+  @Attribute()
+  declare title: number;
+
+  @Attribute()
+  declare created_at: Date;
+
+  @Attribute()
+  declare updated_at: Date;
+
+  tags() {
+    return RelationshipFactory.createBelongsToMany<Image, Tag>({
+      source: this,
+      targetModel: Tag,
+    });
+  }
+}
+
+export class Tag extends BaseModel {
+  @Attribute()
+  declare name: string;
+
+  @Attribute()
+  declare created_at: Date;
+
+  @Attribute()
+  declare updated_at: Date;
+
+  images() {
+    return RelationshipFactory.createBelongsToMany<Tag, Image>({
+      source: this,
+      targetModel: Image,
+    });
+  }
+}
+```
+
+if you want to make further configurations you can:
+
+```ts
+images() {
+  return RelationshipFactory.createBelongsToMany<Tag, Image>({
+    source: this,
+    targetModel: Image,
+    junctionTable: 'image_tag',
+    sourceToJunctionKeyAssociation: {id: image_id}, //id is image.id
+    junctionToTargetAssociation: { tag_id: id} //id is tag.id
+  });
+}
+```
+
+to make association between new model objects:
+
+```ts
+await image1.tags().associate([tag1, tag2, tag3]);
+```
+
+and to remove:
+
+```ts
+await image1.tags().dessociate([tag1, tag2, tag3]);
+```
+
+NOTE: there is currently no sync=false for MtoM relationships
+
+to get all associated models you can use toArray() or iteration
+
+```ts
+await image1.tags().toArray();
+for await (const tag of image1.tags()) {
+}
+```
