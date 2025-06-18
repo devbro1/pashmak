@@ -50,23 +50,21 @@ for await (const comment of post.comments()) {
 
 this approaches loads one model at a time from database.
 
-### adding to a relationship
+adding to a relationship
 
 ```ts
 await post.comments().associate(comment2);
 await post.comments().associate([comments3, comments4]);
 ```
 
-### removing from a relationship
+removing from a relationship
 
 ```ts
 await post.comments().dessociate(comment2);
 await post.comments().dessociate([comments3, comments4]);
 ```
 
-### making associations without changing db
-
-if you need to do the save step yourself just pass `sync:false`.
+If you need to do the save step yourself just pass `sync:false`.
 
 ```ts
 await post.comments().associate(comment2, { sync: false });
