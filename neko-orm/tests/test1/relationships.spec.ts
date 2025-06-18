@@ -125,8 +125,14 @@ describe('relationships', () => {
     expect(comment1.post_id).toBeDefined();
   });
 
-  test.only('image can have many tags', async () => {
+  test('image can have many tags', async () => {
     let image1 = await Image.create<Image>({
+      author: faker.person.fullName(),
+      filePath: faker.system.filePath(),
+      title: faker.lorem.sentence(),
+    });
+
+    let image2 = await Image.create<Image>({
       author: faker.person.fullName(),
       filePath: faker.system.filePath(),
       title: faker.lorem.sentence(),
@@ -142,16 +148,18 @@ describe('relationships', () => {
       name: faker.lorem.word(),
     });
 
-    console.log("A");
+    let tag4 = await Tag.create<Tag>({
+      name: faker.lorem.word(),
+    });
+
     expect((await image1.tags().toArray()).length).toBe(0);
-    console.log("B");
     await image1.tags().associate([tag1, tag2, tag3]);
-    console.log("C");
+    await image2.tags().associate(tag1);
     let tags = await image1.tags().toArray();
-    console.log("D");
     expect(tags.length).toBe(3);
 
-    await image1.tags().dessociate([tag1, tag2]);
-    expect((await image1.tags().toArray()).length).toBe(1);
+    expect((await tag1.images().toArray()).length).toBe(2);
+    expect((await tag2.images().toArray()).length).toBe(1);
+    expect((await tag4.images().toArray()).length).toBe(0);
   });
 });

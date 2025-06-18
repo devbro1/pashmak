@@ -1,6 +1,6 @@
 import { Attribute } from '../../src';
 import { BaseModel } from '../../src/baseModel';
-import { RelationshipFactory } from '../../src/RelationshipFactory';
+import { RelationshipFactory } from '../../src/relationships/RelationshipFactory';
 
 export class Post extends BaseModel {
   @Attribute()
@@ -49,7 +49,6 @@ export class Comment extends BaseModel {
     });
   }
 }
-
 
 export class Image extends BaseModel {
   @Attribute()
