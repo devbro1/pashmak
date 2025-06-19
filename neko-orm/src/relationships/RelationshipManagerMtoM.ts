@@ -9,21 +9,8 @@ export class RelationshipManagerMtoM<
   Source extends BaseModel,
   Target extends BaseModel,
 > extends RelationshipManager<Source, Target> {
-  private sourceObject: BaseModel;
-  private targetModel: typeof BaseModel;
-  private type: RelationFactoryOptionsType['type'];
-  private junctionTable: string;
-  private sourceToJunctionKeyAssociation: Record<string, string>;
-  private junctionToTargetAssociation: Record<string, string>;
-
   constructor(options: RelationFactoryOptionsType) {
-    super();
-    this.sourceObject = options.source;
-    this.targetModel = options.targetModel;
-    this.type = options.type;
-    this.junctionTable = options.junctionTable;
-    this.sourceToJunctionKeyAssociation = options.sourceToJunctionKeyAssociation;
-    this.junctionToTargetAssociation = options.junctionToTargetAssociation;
+    super(options);
   }
 
   async associate(obj: Target | Target[], options: assocationOptions = { sync: true }) {
@@ -74,7 +61,7 @@ export class RelationshipManagerMtoM<
       await query.delete();
     }
   }
-  async getQuery(): Promise<Query> {
+  async getBaseQuery(): Promise<Query> {
     let target = new this.targetModel();
     let q: Query = await this.sourceObject.getQuery();
     q.select([`${target.getTablename()}.*`]);

@@ -7,48 +7,6 @@ import { RelationshipManagerMtoM } from './RelationshipManagerMtoM';
 import { RelationFactoryOptionsType } from './types';
 
 export class RelationshipFactory {
-  // static create<Source extends BaseModel, Target extends BaseModel>(options: Partial<RelationFactoryOptionsType>): RelationshipManager<Source, Target> {
-  //   let options2: RelationFactoryOptionsType = {
-  //     type: 'hasMany',
-  //     source: BaseModel.newInstance(),
-  //     targetModel: BaseModel
-  //   };
-
-  //   options2.type = options.type!;
-  //   if (!options.source || !options.targetModel) {
-  //     throw new Error('Source and target model must be provided');
-  //   }
-  //   options2.source = options.source!;
-  //   options2.targetModel = options.targetModel!;
-
-  //   options2.junctionTable = options.junctionTable || '';
-  //   options2.sourceToTargetKeyAssociation = options.sourceToTargetKeyAssociation!;
-  //   options2.sourceToJunctionKeyAssociation = options.sourceToJunctionKeyAssociation || {};
-  //   options2.junctionToSourceKeyAssociation = options.junctionToSourceKeyAssociation || {};
-
-  //   if (['hasOne', 'hasMany'].includes(options2.type) && options2.sourceToTargetKeyAssociation === undefined) {
-  //     options2.sourceToTargetKeyAssociation = {};
-  //     let model_name = Case.snake(options2.source.constructor.name);
-  //     // @ts-ignore
-  //     for (const key of options2.source.primaryKey) {
-  //       options2.sourceToTargetKeyAssociation[key] = `${model_name}_${key}`;
-  //     }
-  //   }
-
-  //   switch (options2.type) {
-  //     case 'oneToMany':
-  //     case 'hasMany':
-  //       return this.createHasMany(options2);
-  //       break;
-  //     case 'belongsTo':
-  //     case 'manyToOne':
-  //       return this.createBelongsTo(options2);
-  //       break;
-  //     default:
-  //       throw new Error(`Unsupported relationship type: ${options.type}`);
-  //   }
-  // }
-
   static populateOptions(options: Partial<RelationFactoryOptionsType>): RelationFactoryOptionsType {
     let options2: RelationFactoryOptionsType = {
       source: BaseModel.newInstance(),
@@ -58,6 +16,7 @@ export class RelationshipFactory {
       junctionTable: '',
       sourceToJunctionKeyAssociation: {},
       junctionToTargetAssociation: {},
+      queryModifier: async (query: Query) => query,
     };
 
     options2.type = options.type!;
@@ -71,6 +30,7 @@ export class RelationshipFactory {
     options2.sourceToTargetKeyAssociation = options.sourceToTargetKeyAssociation!;
     options2.sourceToJunctionKeyAssociation = options.sourceToJunctionKeyAssociation || {};
     options2.junctionToTargetAssociation = options.junctionToTargetAssociation || {};
+    options2.queryModifier = options.queryModifier || options2.queryModifier;
 
     if (
       ['hasOne', 'hasMany'].includes(options2.type) &&

@@ -195,3 +195,35 @@ await image1.tags().toArray();
 for await (const tag of image1.tags()) {
 }
 ```
+
+## queryModifier
+
+In order to pull data from database, `RelationshipManager` will generate a query object. you will have an opportunity to modify this query object to further change which records are pulled. `queryModifier` can be an async method in case you need to `await` in your function.
+
+```ts
+export class Post extends BaseModel {
+  // ...
+
+  comments() {
+    return RelationshipFactory.createHasMany<Post, Comment>({
+      source: this,
+      targetModel: Comment,
+    });
+  }
+
+  commentsByAuthor(author: string) {
+    return RelationshipFactory.createHasMany<Post, Comment>({
+      source: this,
+      targetModel: Comment,
+      queryModifier: async (query: Query) => {
+        query.whereOp("author", "=", author);
+        return query;
+      },
+    });
+  }
+
+  // ...
+}
+```
+
+in this example we created `commentsByAuthor(author)` that returns all comments with a given author name.

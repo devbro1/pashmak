@@ -1,3 +1,4 @@
+import { Query } from 'neko-sql/src/Query';
 import { BaseModel } from '../baseModel';
 
 export type assocationOptions = {
@@ -19,4 +20,5 @@ export type RelationFactoryOptionsType = {
   junctionTable: string;
   sourceToJunctionKeyAssociation: Record<string, string>;
   junctionToTargetAssociation: Record<string, string>;
+  queryModifier: (query: Query) => Promise<Query>;
 };

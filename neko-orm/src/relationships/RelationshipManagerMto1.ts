@@ -8,17 +8,8 @@ export class RelationshipManagerMto1<
   Source extends BaseModel,
   Target extends BaseModel,
 > extends RelationshipManager<Source, Target> {
-  private sourceObject: BaseModel;
-  private targetModel: typeof BaseModel;
-  private target_keys: Record<string, string>;
-  private type: RelationFactoryOptionsType['type'];
-
   constructor(options: RelationFactoryOptionsType) {
-    super();
-    this.type = options.type;
-    this.sourceObject = options.source;
-    this.targetModel = options.targetModel;
-    this.target_keys = options.sourceToTargetKeyAssociation!;
+    super(options);
   }
 
   async associate(obj: Target | Target[], options: assocationOptions = { sync: true }) {
@@ -66,7 +57,7 @@ export class RelationshipManagerMto1<
     options.sync && (await this.sourceObject.save());
   }
 
-  async getQuery(): Promise<Query> {
+  async getBaseQuery(): Promise<Query> {
     let q: Query = await this.targetModel.getQuery();
     Object.entries(this.target_keys).map(([local_key, target_key]) => {
       q.whereOp(target_key, '=', this.sourceObject[local_key]);

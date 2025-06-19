@@ -1,6 +1,7 @@
 import { Attribute } from '../../src';
 import { BaseModel } from '../../src/baseModel';
 import { RelationshipFactory } from '../../src/relationships/RelationshipFactory';
+import { Query } from 'neko-sql/src/Query';
 
 export class Post extends BaseModel {
   @Attribute()
@@ -19,6 +20,17 @@ export class Post extends BaseModel {
     return RelationshipFactory.createHasMany<Post, Comment>({
       source: this,
       targetModel: Comment,
+    });
+  }
+
+  commentsByAuthor(author: string) {
+    return RelationshipFactory.createHasMany<Post, Comment>({
+      source: this,
+      targetModel: Comment,
+      queryModifier: async (query: Query) => {
+        query.whereOp('author', '=', author);
+        return query;
+      },
     });
   }
 }

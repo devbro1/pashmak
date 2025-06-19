@@ -162,4 +162,32 @@ describe('relationships', () => {
     expect((await tag2.images().toArray()).length).toBe(1);
     expect((await tag4.images().toArray()).length).toBe(0);
   });
+
+  test('queryModifier', async () => {
+    let post1: Post = await Post.create({
+      title: faker.lorem.words(3),
+      content: faker.lorem.words(10),
+    });
+
+    let comment1: Comment = await Comment.create({
+      author: 'Andy',
+      content: faker.lorem.words(10),
+    });
+
+    let comment2: Comment = await Comment.create({
+      author: 'Brook',
+      content: faker.lorem.words(10),
+    });
+
+    let comment3: Comment = await Comment.create({
+      author: 'Andy',
+      content: faker.lorem.words(10),
+    });
+
+    await post1.comments().associate([comment1, comment2, comment3]);
+
+    expect((await post1.commentsByAuthor('Andy').toArray()).length).toBe(2);
+    expect((await post1.commentsByAuthor('Brook').toArray()).length).toBe(1);
+    expect((await post1.commentsByAuthor('Brook').toArray())[0].content).toBe(comment2.content);
+  });
 });
