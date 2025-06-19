@@ -1,6 +1,7 @@
 import { Query } from 'neko-sql/src/Query';
 import { BaseModel } from '../baseModel';
 import { Case } from 'change-case-all';
+import { RelationshipManager1to1 } from './RelationshipManager1to1';
 import { RelationshipManager1toM } from './RelationshipManager1toM';
 import { RelationshipManagerMto1 } from './RelationshipManagerMto1';
 import { RelationshipManagerMtoM } from './RelationshipManagerMtoM';
@@ -84,6 +85,15 @@ export class RelationshipFactory {
     }
 
     return options2;
+  }
+
+  static createHasOne<Source extends BaseModel, Target extends BaseModel>(
+    options: Partial<RelationFactoryOptionsType>
+  ): RelationshipManager1to1<Source, Target> {
+    options.type = 'hasOne';
+    return new RelationshipManager1to1<Source, Target>(
+      RelationshipFactory.populateOptions(options)
+    );
   }
 
   static createHasMany<Source extends BaseModel, Target extends BaseModel>(

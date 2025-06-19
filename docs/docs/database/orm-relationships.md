@@ -12,6 +12,60 @@ neko-orm can handle relationship among models using `RelationshipFactory`.
 - target: the remote or the model(s) you are associating with
 - junstion: or the junction table is the intermediary table used to manage M-to-M relationships
 
+## 1-to-1 aka hasOne
+
+first step is to define relation among models
+
+```ts
+class User extends BaseModel {
+  session() {
+    return RelationshipFactory.createHasOne<User, Session>({
+      source: this,
+      targetModel: Session,
+    });
+  }
+}
+
+class Session extends BaseModel {
+  session() {
+    return RelationshipFactory.createBelongsTo<Session, User>({
+      source: this,
+      targetModel: User,
+    });
+  }
+}
+```
+
+to make the association, RelationshipFactory predicts possible name of forgein key. if you want to define your own or have multiple primary keys, then define `sourceToTargetKeyAssociation` in the options.
+
+once the relationship is established you can get the child relationship
+
+```ts
+await user.session().get();
+```
+
+adding to a relationship
+
+```ts
+await user.session().associate(session);
+```
+
+removing from a relationship
+
+```ts
+await user.session().dessociate(session);
+```
+
+If you need to do the save step yourself just pass `sync:false`.
+
+```ts
+await user.session().associate(session, { sync: false });
+await session.save();
+
+await user.session().associate(session, { sync: false });
+await session.save();
+```
+
 ## 1-to-Many aka hasMany
 
 first step is to define relation among models
