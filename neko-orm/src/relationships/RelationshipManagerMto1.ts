@@ -65,9 +65,13 @@ export class RelationshipManagerMto1<
     return q;
   }
 
-  async get(): Promise<Target> {
+  async get(): Promise<Target | undefined> {
     let q = await this.getQuery();
     let row = await q.get();
+
+    if( row.length === 0) {
+      return undefined;
+    }
     return this.targetModel.newInstance<Target>(row[0], true);
   }
 }

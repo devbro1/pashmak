@@ -21,4 +21,5 @@ export type RelationFactoryOptionsType = {
   sourceToJunctionKeyAssociation: Record<string, string>;
   junctionToTargetAssociation: Record<string, string>;
   queryModifier: (query: Query) => Promise<Query>;
+  morphIdentifier: string;
 };

@@ -41,6 +41,10 @@ export class BaseModel {
     return this.tableName;
   }
 
+  static getClassName() {
+    return this.name;
+  }
+
   public async save(
     options: saveObjectOptions = {
       updateTimestamps: true,

@@ -3,7 +3,73 @@ import { BaseModel } from '../../src/baseModel';
 import { RelationshipFactory } from '../../src/relationships/RelationshipFactory';
 import { Query } from 'neko-sql/src/Query';
 
+export class User extends BaseModel {
+  @Attribute({
+    primaryKey: true,
+  })
+  declare id: number;
+
+  @Attribute()
+  declare username: string;
+
+  profile() {
+    return RelationshipFactory.createHasOne<User, Profile>({
+      source: this,
+      targetModel: Profile,
+    });
+  }
+
+  posts() {
+    return RelationshipFactory.createHasMany<User, Post>({
+      source: this,
+      targetModel: Post,
+      sourceToTargetKeyAssociation: {
+        id: 'author_id',
+      },
+    });
+  }
+
+  topPosts() {
+    return RelationshipFactory.createHasMany<User, Post>({
+      source: this,
+      targetModel: Post,
+      sourceToTargetKeyAssociation: {
+        id: 'author_id',
+      },
+      queryModifier: async (query: Query) => {
+        return query.whereOp('rating', '>', 8);
+      }
+    });
+  }
+}
+
+export class Profile extends BaseModel {
+  @Attribute({
+    primaryKey: true,
+  })
+  declare id: number;
+
+  @Attribute()
+  declare bio: string;
+
+  @Attribute()
+  declare user_id: number;
+
+  user() {
+    return RelationshipFactory.createBelongsTo <Profile, User>({
+      source: this,
+      targetModel: User,
+    });
+  }
+}
+
+
 export class Post extends BaseModel {
+  @Attribute({
+    primaryKey: true,
+  })
+  declare id: number;
+
   @Attribute()
   declare title: string;
 
@@ -16,26 +82,46 @@ export class Post extends BaseModel {
   @Attribute()
   declare updated_at: Date;
 
-  comments() {
-    return RelationshipFactory.createHasMany<Post, Comment>({
+  @Attribute()
+  declare author_id: number;
+
+  @Attribute()
+  declare rating: number;
+
+  author() {
+    return RelationshipFactory.createBelongsTo<Post, User>({
       source: this,
-      targetModel: Comment,
+      targetModel: User,
+      sourceToTargetKeyAssociation: {
+        author_id: 'id',
+      },
     });
   }
 
-  commentsByAuthor(author: string) {
-    return RelationshipFactory.createHasMany<Post, Comment>({
+  tags() {
+    return RelationshipFactory.createBelongsToMany<Post, Tag>({
       source: this,
-      targetModel: Comment,
-      queryModifier: async (query: Query) => {
-        query.whereOp('author', '=', author);
-        return query;
-      },
+      targetModel: Tag,
     });
   }
 }
 
+export class Viewer extends BaseModel {
+  @Attribute({
+    primaryKey: true,
+  })
+  declare id: number;
+
+  @Attribute()
+  declare ip: string;
+}
+
 export class Comment extends BaseModel {
+  @Attribute({
+    primaryKey: true,
+  })
+  declare id: number;
+
   @Attribute()
   declare author: string;
 
@@ -49,57 +135,36 @@ export class Comment extends BaseModel {
   declare updated_at: Date;
 
   @Attribute()
-  declare post_id: number;
+  declare commentable_id: number;
 
-  post() {
-    return RelationshipFactory.createBelongsTo<Comment, Post>({
-      source: this,
-      targetModel: Post,
-      sourceToTargetKeyAssociation: {
-        post_id: 'id',
-      },
-    });
-  }
+  @Attribute()
+  declare commentable_type: string;
 }
 
 export class Image extends BaseModel {
-  @Attribute()
-  declare author: string;
+  @Attribute({
+    primaryKey: true,
+  })
+  declare id: number;
 
   @Attribute()
-  declare filePath: number;
-
-  @Attribute()
-  declare title: number;
-
-  @Attribute()
-  declare created_at: Date;
-
-  @Attribute()
-  declare updated_at: Date;
-
-  tags() {
-    return RelationshipFactory.createBelongsToMany<Image, Tag>({
-      source: this,
-      targetModel: Tag,
-    });
-  }
+  declare title: string;
 }
 
+
 export class Tag extends BaseModel {
+  @Attribute({
+    primaryKey: true,
+  })
+  declare id: number;
+
   @Attribute()
   declare name: string;
 
-  @Attribute()
-  declare created_at: Date;
-
-  @Attribute()
-  declare updated_at: Date;
-
-  images() {
-    return RelationshipFactory.createBelongsToMany<Tag, Image>({
+  posts() {
+    return RelationshipFactory.createBelongsToMany<Tag, Post>({
       source: this,
-      targetModel: Image,
+      targetModel: Post,
     });
   }
 }

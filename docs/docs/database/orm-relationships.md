@@ -281,3 +281,22 @@ export class Post extends BaseModel {
 ```
 
 in this example we created `commentsByAuthor(author)` that returns all comments with a given author name.
+
+
+## Relationship
+
+```mermaid
+erDiagram
+  User ||--|| Profile : 1to1
+
+  User ||--o{ Post : 1toM
+  Viewer }o--o{ Post : MtoM
+
+  Post }|--o{ Tag : belongsToMany-PolyMorphic
+  Image }|--o{ Tag : belongsToMany-PolyMorphic
+
+  Comment }o--o| Post : 1toM-PolyMorphic
+  Comment }o--o| Image : 1toM-PolyMorphic
+
+  
+```
