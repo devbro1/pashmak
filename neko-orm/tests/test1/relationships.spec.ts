@@ -48,7 +48,6 @@ describe('relationships', () => {
       username: faker.internet.username(),
     });
 
-
     let profile1: Profile = await Profile.create({
       bio: faker.lorem.paragraph(),
     });
@@ -69,23 +68,22 @@ describe('relationships', () => {
     expect((await user1.profile().get())!.id).toBe(profile1.id);
 
     await user2.profile().dessociate(profile2);
-    expect((await user2.profile().get())).toBeUndefined();
+    expect(await user2.profile().get()).toBeUndefined();
 
     await user3.profile().associate(profile3, { sync: false });
-    expect((await user3.profile().get())).toBeUndefined();
+    expect(await user3.profile().get()).toBeUndefined();
     await profile3.save();
     expect((await user3.profile().get())!.id).toBe(profile3.id);
     await user3.profile().dessociate(profile3, { sync: false });
-    expect((await user3.profile().get())).toBeDefined();
+    expect(await user3.profile().get()).toBeDefined();
     await profile3.save();
-    expect((await user3.profile().get())).toBeUndefined();
+    expect(await user3.profile().get()).toBeUndefined();
 
-    expect((await profile3.user().get())).toBeUndefined();
+    expect(await profile3.user().get()).toBeUndefined();
     await profile3.user().associate(user3);
     expect((await profile3.user().get())!.id).toBe(user3.id);
     await profile3.user().dessociate(user3);
-    expect((await profile3.user().get())).toBeUndefined();
-
+    expect(await profile3.user().get()).toBeUndefined();
   });
 
   test('user hasMany posts 1toM', async () => {
@@ -124,7 +122,7 @@ describe('relationships', () => {
 
     await user1.posts().dessociate(post2);
     expect((await user1.posts().toArray()).length).toBe(1);
-    expect((await post2.author().get())).toBeUndefined();
+    expect(await post2.author().get()).toBeUndefined();
     await post2.refresh();
     expect(post2.author_id).toBeUndefined();
     await post2.author().associate(user2);
@@ -147,38 +145,38 @@ describe('relationships', () => {
       content: faker.lorem.words(10),
     });
 
-      let viewer1: Viewer = await Viewer.create({
-        ip: faker.internet.ip(),
-      });
+    let viewer1: Viewer = await Viewer.create({
+      ip: faker.internet.ip(),
+    });
 
-      let viewer2: Viewer = await Viewer.create({
-        ip: faker.internet.ip(),
-      });
+    let viewer2: Viewer = await Viewer.create({
+      ip: faker.internet.ip(),
+    });
 
-      let viewer3: Viewer = await Viewer.create({
-        ip: faker.internet.ip(),
-      });
+    let viewer3: Viewer = await Viewer.create({
+      ip: faker.internet.ip(),
+    });
 
-      await post1.viewers().associate([viewer1, viewer2]);
-      await post2.viewers().associate([viewer2, viewer3]);
+    await post1.viewers().associate([viewer1, viewer2]);
+    await post2.viewers().associate([viewer2, viewer3]);
 
-      expect((await post1.viewers().toArray()).length).toBe(2);
-      expect((await post2.viewers().toArray()).length).toBe(2);
-      expect((await post3.viewers().toArray()).length).toBe(0);
+    expect((await post1.viewers().toArray()).length).toBe(2);
+    expect((await post2.viewers().toArray()).length).toBe(2);
+    expect((await post3.viewers().toArray()).length).toBe(0);
 
-      expect((await viewer1.posts().toArray()).length).toBe(1);
-      expect((await viewer2.posts().toArray()).length).toBe(2);
-      expect((await viewer3.posts().toArray()).length).toBe(1);
+    expect((await viewer1.posts().toArray()).length).toBe(1);
+    expect((await viewer2.posts().toArray()).length).toBe(2);
+    expect((await viewer3.posts().toArray()).length).toBe(1);
 
-      await viewer3.posts().associate(post3);
-      await viewer2.posts().dessociate(post1);
+    await viewer3.posts().associate(post3);
+    await viewer2.posts().dessociate(post1);
 
-      expect((await post1.viewers().toArray()).length).toBe(1);
-      expect((await post2.viewers().toArray()).length).toBe(2);
-      expect((await post3.viewers().toArray()).length).toBe(1);
-      expect((await viewer1.posts().toArray()).length).toBe(1);
-      expect((await viewer2.posts().toArray()).length).toBe(1);
-      expect((await viewer3.posts().toArray()).length).toBe(2);
+    expect((await post1.viewers().toArray()).length).toBe(1);
+    expect((await post2.viewers().toArray()).length).toBe(2);
+    expect((await post3.viewers().toArray()).length).toBe(1);
+    expect((await viewer1.posts().toArray()).length).toBe(1);
+    expect((await viewer2.posts().toArray()).length).toBe(1);
+    expect((await viewer3.posts().toArray()).length).toBe(2);
   });
 
   test('queryModifier', async () => {
@@ -209,15 +207,14 @@ describe('relationships', () => {
 
     expect((await user1.posts().toArray()).length).toBe(3);
     let posts = await user1.topPosts().toArray();
-    let post_ids = posts.map(p => p.id);
-    expect((posts).length).toBe(2);
+    let post_ids = posts.map((p) => p.id);
+    expect(posts.length).toBe(2);
     expect(post_ids).not.toContain(post1.id);
     expect(post_ids).toContain(post2.id);
     expect(post_ids).toContain(post3.id);
   });
 
-
-  test('post and images have many comments 1toM, 1to1', async() => {
+  test('post and images have many comments 1toM, 1to1', async () => {
     let user1: User = await User.create({
       username: faker.internet.username(),
     });
@@ -290,13 +287,16 @@ describe('relationships', () => {
     expect(comment3.commentable_id).toBe(image1.id);
     image1.comments().dessociate(comment3, { sync: false });
     await comment3.save();
+    expect(comment3.commentable_type).toBeUndefined();
+    expect(comment3.commentable_id).toBeUndefined();
+
     expect((await image1.comments().toArray()).length).toBe(1);
     image1.comments().dessociate(comment1);
     expect((await image1.comments().toArray()).length).toBe(0);
   });
 
   test('post and image have many tags MtoM', async () => {
-  let post1: Post = await Post.create({
+    let post1: Post = await Post.create({
       title: faker.lorem.words(3),
       content: faker.lorem.words(10),
     });

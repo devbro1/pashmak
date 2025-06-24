@@ -23,4 +23,6 @@ export type RelationFactoryOptionsType = {
   queryModifier: (query: Query) => Promise<Query>;
   morphIdentifier: string;
   preAssociate: (obj: BaseModel) => Promise<BaseModel>;
+  preMtoMAssociate?: (obj: Record<string, any>, target: BaseModel) => Promise<Record<string, any>>;
+  preDeleteQueryModifier?: (query: Query) => Promise<Query>;
 };

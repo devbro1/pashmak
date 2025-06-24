@@ -38,7 +38,7 @@ export class User extends BaseModel {
       },
       queryModifier: async (query: Query) => {
         return query.whereOp('rating', '>', 8);
-      }
+      },
     });
   }
 }
@@ -56,13 +56,12 @@ export class Profile extends BaseModel {
   declare user_id: number;
 
   user() {
-    return RelationshipFactory.createBelongsTo <Profile, User>({
+    return RelationshipFactory.createBelongsTo<Profile, User>({
       source: this,
       targetModel: User,
     });
   }
 }
-
 
 export class Post extends BaseModel {
   @Attribute({
@@ -117,6 +116,15 @@ export class Post extends BaseModel {
       junctionToTargetAssociation: {
         viewer_id: 'id',
       },
+    });
+  }
+
+  tags() {
+    return RelationshipFactory.createMorphedBelongsToMany<Post, Tag>({
+      source: this,
+      targetModel: Tag,
+      junctionTable: 'taggables',
+      morphIdentifier: 'taggable',
     });
   }
 }
@@ -186,8 +194,16 @@ export class Image extends BaseModel {
       morphIdentifier: 'commentable',
     });
   }
-}
 
+  tags() {
+    return RelationshipFactory.createMorphedBelongsToMany<Image, Tag>({
+      source: this,
+      targetModel: Tag,
+      junctionTable: 'taggables',
+      morphIdentifier: 'taggable',
+    });
+  }
+}
 
 export class Tag extends BaseModel {
   @Attribute({

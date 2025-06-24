@@ -10,8 +10,12 @@ export abstract class RelationshipManager<Source extends BaseModel, Target exten
   protected junctionTable: string;
   protected sourceToJunctionKeyAssociation: Record<string, string>;
   protected junctionToTargetAssociation: Record<string, string>;
+
+  protected morphIdentifier: RelationFactoryOptionsType['morphIdentifier'] = '';
   protected queryModifier: RelationFactoryOptionsType['queryModifier'];
-  protected preAssociate?: (obj: BaseModel) => Promise<BaseModel>;
+  protected preAssociate?: RelationFactoryOptionsType['preAssociate'];
+  protected preDeleteQueryModifier?: RelationFactoryOptionsType['preDeleteQueryModifier'];
+  protected preMtoMAssociate?: RelationFactoryOptionsType['preMtoMAssociate'];
 
   constructor(options: RelationFactoryOptionsType) {
     this.type = options.type;
@@ -22,7 +26,10 @@ export abstract class RelationshipManager<Source extends BaseModel, Target exten
     this.junctionTable = options.junctionTable;
     this.sourceToJunctionKeyAssociation = options.sourceToJunctionKeyAssociation;
     this.junctionToTargetAssociation = options.junctionToTargetAssociation;
+    this.morphIdentifier = options.morphIdentifier || '';
     this.preAssociate = options.preAssociate || undefined;
+    this.preMtoMAssociate = options.preMtoMAssociate || undefined;
+    this.preDeleteQueryModifier = options.preDeleteQueryModifier || undefined;
   }
 
   protected async modifyQuery(query: Query): Promise<Query> {

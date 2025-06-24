@@ -37,6 +37,8 @@ export class RelationshipFactory {
     options2.queryModifier = options.queryModifier || options2.queryModifier;
     options2.morphIdentifier = options.morphIdentifier || '';
     options2.preAssociate = options.preAssociate || (async (obj: BaseModel) => obj);
+    options2.preMtoMAssociate = options.preMtoMAssociate || undefined;
+    options2.preDeleteQueryModifier = options.preDeleteQueryModifier || undefined;
 
     if (
       ['hasOne', 'hasMany'].includes(options2.type) &&
@@ -87,29 +89,28 @@ export class RelationshipFactory {
       }
     }
 
-    if(options2.morphIdentifier) {
+    if (options2.morphIdentifier) {
       let morph_type = options2.morphIdentifier + '_type';
       let morph_id = options2.morphIdentifier + '_id';
-      if(['hasOne', 'hasMany'].includes(options2.type)) {
-        options2.queryModifier = async(query: Query) => {
-          query.whereOp(morph_type, '=',snakeCase(options2.source.getClassName()));
-          query = options.queryModifier ? await options.queryModifier(query): query;
+      if (['hasOne', 'hasMany'].includes(options2.type)) {
+        options2.queryModifier = async (query: Query) => {
+          query.whereOp(morph_type, '=', snakeCase(options2.source.getClassName()));
+          query = options.queryModifier ? await options.queryModifier(query) : query;
           return query;
         };
-        options2.preAssociate = async(obj: BaseModel) => {
+        options2.preAssociate = async (obj: BaseModel) => {
           obj[morph_type] = snakeCase(options2.source.getClassName());
           return obj;
         };
-        options2.sourceToTargetKeyAssociation = { id: morph_id};
-      }
-      else if(['belongsTo'].includes(options2.type)) {
-        options2.queryModifier = async(query: Query) => {
-          query.whereOp(morph_type, '=',snakeCase(options2.targetModel.getClassName()));
+        options2.sourceToTargetKeyAssociation = { id: morph_id };
+      } else if (['belongsTo'].includes(options2.type)) {
+        options2.queryModifier = async (query: Query) => {
+          query.whereOp(morph_type, '=', snakeCase(options2.targetModel.getClassName()));
           query = await options2.queryModifier(query);
           return query;
         };
 
-        options2.sourceToTargetKeyAssociation = { [morph_id]: 'id'};
+        options2.sourceToTargetKeyAssociation = { [morph_id]: 'id' };
       }
     }
 
@@ -147,6 +148,79 @@ export class RelationshipFactory {
     options: Partial<RelationFactoryOptionsType>
   ): RelationshipManagerMtoM<Source, Target> {
     options.type = 'belongsToMany';
+    return new RelationshipManagerMtoM<Source, Target>(
+      RelationshipFactory.populateOptions(options)
+    );
+  }
+
+  static createMorphedBelongsToMany<Source extends BaseModel, Target extends BaseModel>(
+    options: Partial<RelationFactoryOptionsType>
+  ): RelationshipManagerMtoM<Source, Target> {
+    options.type = 'belongsToMany';
+    if (!options.source) {
+      throw new Error('Source model must be provided for morphed relationships');
+    }
+    if (!options.targetModel) {
+      throw new Error('Target model must be provided for morphed relationships');
+    }
+    if (!options.morphIdentifier) {
+      throw new Error('Morph identifier must be provided for morphed relationships');
+    }
+    if (!options.junctionTable) {
+      options.junctionTable = [
+        Case.snake(options.source.getClassName()),
+        Case.snake(options.targetModel.getClassName()),
+      ]
+        .sort()
+        .join('_');
+    }
+
+    options.sourceToJunctionKeyAssociation = options.sourceToJunctionKeyAssociation || {};
+    options.junctionToTargetAssociation = options.junctionToTargetAssociation || {};
+
+    if (Object.keys(options.sourceToJunctionKeyAssociation).length === 0) {
+      let model_name = Case.snake(options.morphIdentifier);
+      // @ts-ignore
+      for (const key of options.source.primaryKey) {
+        options.sourceToJunctionKeyAssociation[key] = `${model_name}_${key}`;
+      }
+    }
+
+    if (Object.keys(options.junctionToTargetAssociation).length === 0) {
+      let target_name = Case.snake(options.targetModel.getClassName());
+      let target = new options.targetModel();
+      // @ts-ignore
+      for (const key of target.primaryKey) {
+        options.junctionToTargetAssociation[`${target_name}_${key}`] = key;
+      }
+    }
+
+    let old_queryModifier = options.queryModifier || ((query: Query) => query);
+
+    options.queryModifier = async (query: Query) => {
+      query.whereOp(
+        `${options.morphIdentifier}_type`,
+        '=',
+        snakeCase(options.source!.getClassName())
+      );
+      return await old_queryModifier(query);
+    };
+
+    options.preMtoMAssociate = async (obj: Record<string, any>, target: BaseModel) => {
+      obj[`${options.morphIdentifier}_type`] = snakeCase(options.source!.getClassName());
+
+      return obj;
+    };
+
+    options.preDeleteQueryModifier = async (query: Query) => {
+      query.whereOp(
+        `${options.morphIdentifier}_type`,
+        '=',
+        snakeCase(options.source!.getClassName())
+      );
+      return query;
+    };
+
     return new RelationshipManagerMtoM<Source, Target>(
       RelationshipFactory.populateOptions(options)
     );

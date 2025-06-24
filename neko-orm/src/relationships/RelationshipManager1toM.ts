@@ -34,7 +34,7 @@ export class RelationshipManager1toM<
 
     for (let i = 0; i < obj.length; i++) {
       obj[i].fill(updates);
-      if(this.preAssociate) {
+      if (this.preAssociate) {
         await this.preAssociate(obj[i]);
       }
       options.sync && (await obj[i].save());
@@ -50,6 +50,10 @@ export class RelationshipManager1toM<
     Object.entries(this.target_keys).forEach(([local_key, target_key]) => {
       updates[target_key] = undefined;
     });
+
+    if (this.morphIdentifier) {
+      updates[`${Case.snake(this.morphIdentifier)}_type`] = undefined;
+    }
 
     for (let i = 0; i < obj.length; i++) {
       obj[i].fill(updates);

@@ -12,37 +12,80 @@ neko-orm can handle relationship among models using `RelationshipFactory`.
 - target: the remote or the model(s) you are associating with
 - pivot: or the junction table is the intermediary table used to manage M-to-M relationships
 
-
 ### Sample data structure
-Examples and test code is based on the following database design
+
+Examples and test code is based on the following database design:
+
 ```mermaid
 erDiagram
-  User ||--|| Profile : 1to1
+  users ||--|| profiles : 1to1
 
-  User ||--o{ Post : 1toM
-  Viewer }o--o{ Post : MtoM
+  users ||--o{ posts : 1toM
 
-  Post }|--o{ Tag : belongsToMany-PolyMorphic
-  Image }|--o{ Tag : belongsToMany-PolyMorphic
+  posts }o..o{ viewers: "MtoM(using post_viewer)"
+  viewers |o--o{ post_viewer : 1toM
+  posts |o--o{ post_viewer : 1toM
 
-  Comment }o--o| Post : 1toM-PolyMorphic
-  Comment }o--o| Image : 1toM-PolyMorphic
 
-User {
+  posts |o--o{ taggables : belongsToMany-PolyMorphic
+  images |o--o{ taggables : belongsToMany-PolyMorphic
+  posts }o..o{ tags : "polymorphic MtoM(through taggables)"
+  images }o..o{ tags : "polymorphic MtoM(through taggables)"
+  taggables }|--|| tags: 1toM
+
+
+  comments }o--o| posts : 1toM-PolyMorphic
+  comments }o--o| images : 1toM-PolyMorphic
+
+users {
     number id PK
 }
 
-Profile {
+profiles {
     number id PK
     number user_id "references user.id"
 }
 
-Post {
+posts {
     number id PK
     number author_id "references user.id"
 }
-  
+
+viewers {
+  number id PK
+}
+
+post_viewer:::JunctionTableClass {
+  number id PK
+  number post_id "ref post.id"
+  number viewer_id "ref viewer.id"
+}
+
+images {
+  number id PK
+}
+
+comments {
+  number id PK
+  string commentable_id "ref image.id or post.id"
+  string commentable_type "image or post"
+}
+
+tags {
+  number id PK
+}
+
+taggables:::JunctionTableClass {
+  number id PK
+  number tag_id "ref tag.id"
+  string taggable_type "image or post"
+  number taggable_id "ref image.id or post.id"
+}
+
+classDef JunctionTableClass fill:#f96
 ```
+
+`post_viewer` and `taggables` are junction(aka intermediary, pivot) tables to help with MtoM relationships, there is no model for them.
 
 ## 1-to-1 aka hasOne
 
@@ -50,17 +93,17 @@ first step is to define relation among models
 
 ```ts
 class User extends BaseModel {
-  session() {
-    return RelationshipFactory.createHasOne<User, Session>({
+  profile() {
+    return RelationshipFactory.createHasOne<User, Profile>({
       source: this,
-      targetModel: Session,
+      targetModel: Profile,
     });
   }
 }
 
-class Session extends BaseModel {
+class Profile extends BaseModel {
   session() {
-    return RelationshipFactory.createBelongsTo<Session, User>({
+    return RelationshipFactory.createBelongsTo<Profile, User>({
       source: this,
       targetModel: User,
     });
@@ -73,29 +116,29 @@ to make the association, RelationshipFactory predicts possible name of forgein k
 once the relationship is established you can get the child relationship
 
 ```ts
-await user.session().get();
+await user.profile().get();
 ```
 
 adding to a relationship
 
 ```ts
-await user.session().associate(session);
+await user.profile().associate(profile);
 ```
 
 removing from a relationship
 
 ```ts
-await user.session().dessociate(session);
+await user.profile().dessociate(profile);
 ```
 
 If you need to do the save step yourself just pass `sync:false`.
 
 ```ts
-await user.session().associate(session, { sync: false });
-await session.save();
+await user.profile().associate(profile, { sync: false });
+await profile.save();
 
-await user.session().associate(session, { sync: false });
-await session.save();
+await user.session().associate(profile, { sync: false });
+await profile.save();
 ```
 
 ## 1-to-Many aka hasMany
@@ -103,18 +146,13 @@ await session.save();
 first step is to define relation among models
 
 ```ts
-class Post extends BaseModel {
+class User extends BaseModel {
   comments() {
-    return RelationshipFactory.createHasMany<Post, Comment>({
+    return RelationshipFactory.createHasMany<User, Post>({
       source: this,
-      targetModel: Comment,
+      targetModel: Post,
     });
   }
-}
-
-class Comment extends BaseModel {
-  @Attribute()
-  declare post_id: number;
 }
 ```
 
@@ -123,14 +161,14 @@ to make the association, RelationshipFactory predicts possible name of forgein k
 once the relationship is established you can iterate among children
 
 ```ts
-for (const comment of await post.comments().toArray()) {
+for (const post of await user.posts().toArray()) {
 }
 ```
 
 if you run into a situation where you have too many children then you can easily async iterate
 
 ```ts
-for await (const comment of post.comments()) {
+for await (const post of user.posts()) {
 }
 ```
 
@@ -139,25 +177,25 @@ this approaches loads one model at a time from database.
 adding to a relationship
 
 ```ts
-await post.comments().associate(comment2);
-await post.comments().associate([comments3, comments4]);
+await user.posts().associate(post1);
+await user.posts().associate([post2, post3]);
 ```
 
 removing from a relationship
 
 ```ts
-await post.comments().dessociate(comment2);
-await post.comments().dessociate([comments3, comments4]);
+await user.posts().dessociate(post1);
+await user.posts().dessociate([post2, post3]);
 ```
 
 If you need to do the save step yourself just pass `sync:false`.
 
 ```ts
-await post.comments().associate(comment2, { sync: false });
-await comment2.save();
+await user.posts().associate(post1, { sync: false });
+await post1.save();
 
-await post.comments().dessociate(comment3, { sync: false });
-await comment3.save();
+await user.posts().dessociate(post1, { sync: false });
+await post1.save();
 ```
 
 ## Many-to-1 aka belongsTo
@@ -165,13 +203,16 @@ await comment3.save();
 As a reverse relationship of hasMany you can define it as such
 
 ```ts
-class Comment extends BaseModel {
-  post() {
-    return RelationshipFactory.createBelongsTo<Comment, Post>({
+class Post extends BaseModel {
+  @Attribute()
+  declare author_id: number;
+
+  author() {
+    return RelationshipFactory.createBelongsTo<Post, User>({
       source: this,
-      targetModel: Post,
+      targetModel: User,
       sourceToTargetKeyAssociation: {
-        post_id: "id",
+        author_id: "id",
       },
     });
   }
@@ -183,64 +224,40 @@ class Comment extends BaseModel {
 since there is only 1 object that can be returned, use get() instead
 
 ```ts
-let post = await comment.post().get();
+let author = await post.author().get();
 ```
 
 ## manage relationship
 
 ```ts
-await comment.post().associate(post1);
-await comment.post().dessociate(post1);
+await post.author().associate(author);
+await post.author().dessociate(author);
 
 //faster way of dessociate
-await comment.post().unlink();
+await post.author().unlink();
 ```
 
-keep in mind that these methods are modifying source(comment model) and leaving target model alone(post)
+keep in mind that these methods are modifying source(post model) and leaving target model alone(user)
 
 ## Many to Many aka belongsToMany
 
 To establish the relationship between two models:
 
 ```ts
-export class Image extends BaseModel {
-  @Attribute()
-  declare author: string;
-
-  @Attribute()
-  declare filePath: number;
-
-  @Attribute()
-  declare title: number;
-
-  @Attribute()
-  declare created_at: Date;
-
-  @Attribute()
-  declare updated_at: Date;
-
-  tags() {
-    return RelationshipFactory.createBelongsToMany<Image, Tag>({
+export class Viewer extends BaseModel {
+  posts() {
+    return RelationshipFactory.createBelongsToMany<Viewer, Post>({
       source: this,
-      targetModel: Tag,
+      targetModel: Post,
     });
   }
 }
 
 export class Tag extends BaseModel {
-  @Attribute()
-  declare name: string;
-
-  @Attribute()
-  declare created_at: Date;
-
-  @Attribute()
-  declare updated_at: Date;
-
-  images() {
-    return RelationshipFactory.createBelongsToMany<Tag, Image>({
+  viewer() {
+    return RelationshipFactory.createBelongsToMany<Post, Viewer>({
       source: this,
-      targetModel: Image,
+      targetModel: Viewer,
     });
   }
 }
@@ -249,13 +266,13 @@ export class Tag extends BaseModel {
 if you want to make further configurations you can:
 
 ```ts
-images() {
-  return RelationshipFactory.createBelongsToMany<Tag, Image>({
+posts() {
+  return RelationshipFactory.createBelongsToMany<Viewer, Post>({
     source: this,
-    targetModel: Image,
-    junctionTable: 'image_tag',
-    sourceToJunctionKeyAssociation: {id: image_id}, //id is image.id
-    junctionToTargetAssociation: { tag_id: id} //id is tag.id
+    targetModel: Post,
+    junctionTable: 'post_viewer',
+    sourceToJunctionKeyAssociation: {id: viewer_id}, //id is viewer.id
+    junctionToTargetAssociation: { post_id: id} //id is post.id
   });
 }
 ```
@@ -263,13 +280,13 @@ images() {
 to make association between new model objects:
 
 ```ts
-await image1.tags().associate([tag1, tag2, tag3]);
+await post.viewers().associate([viewer1, viewer2, viewer3]);
 ```
 
 and to remove:
 
 ```ts
-await image1.tags().dessociate([tag1, tag2, tag3]);
+await post.viewers().dessociate([viewer1, viewer2, viewer3]);
 ```
 
 NOTE: there is currently no sync=false for MtoM relationships
@@ -277,8 +294,8 @@ NOTE: there is currently no sync=false for MtoM relationships
 to get all associated models you can use toArray() or iteration
 
 ```ts
-await image1.tags().toArray();
-for await (const tag of image1.tags()) {
+await post.viewers().toArray();
+for await (const viewer of post.viewers()) {
 }
 ```
 
@@ -287,23 +304,28 @@ for await (const tag of image1.tags()) {
 In order to pull data from database, `RelationshipManager` will generate a query object. you will have an opportunity to modify this query object to further change which records are pulled. `queryModifier` can be an async method in case you need to `await` in your function.
 
 ```ts
-export class Post extends BaseModel {
+export class User extends BaseModel {
   // ...
 
-  comments() {
-    return RelationshipFactory.createHasMany<Post, Comment>({
+  posts() {
+    return RelationshipFactory.createHasMany<User, Post>({
       source: this,
-      targetModel: Comment,
+      targetModel: Post,
+      sourceToTargetKeyAssociation: {
+        id: "author_id",
+      },
     });
   }
 
-  commentsByAuthor(author: string) {
-    return RelationshipFactory.createHasMany<Post, Comment>({
+  topPosts() {
+    return RelationshipFactory.createHasMany<User, Post>({
       source: this,
-      targetModel: Comment,
+      targetModel: Post,
+      sourceToTargetKeyAssociation: {
+        id: "author_id",
+      },
       queryModifier: async (query: Query) => {
-        query.whereOp("author", "=", author);
-        return query;
+        return query.whereOp("rating", ">", 8); //where posts.rating > 0
       },
     });
   }
@@ -312,8 +334,6 @@ export class Post extends BaseModel {
 }
 ```
 
-in this example we created `commentsByAuthor(author)` that returns all comments with a given author name.
+## Polymorphism
 
-
-## Relationship
-
+Polymorphism referes to the concept where two different type of models can relate to same object. for example, image and posts can have comments.

@@ -33,6 +33,9 @@ export class RelationshipManagerMtoM<
         insert_obj[p[0]] = obj[i][p[1]];
       }
 
+      insert_obj = this.preMtoMAssociate
+        ? await this.preMtoMAssociate(insert_obj, obj[i])
+        : insert_obj;
       await query.insert(insert_obj);
     }
   }
@@ -57,6 +60,8 @@ export class RelationshipManagerMtoM<
       Object.entries(this.junctionToTargetAssociation).map(([junction_key, target_key]) => {
         query.whereOp(junction_key, '=', obj[i][target_key]);
       });
+
+      query = this.preDeleteQueryModifier ? await this.preDeleteQueryModifier(query) : query;
 
       await query.delete();
     }
