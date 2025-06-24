@@ -41,6 +41,9 @@ describe('raw schemas', () => {
       rollback: function (): Promise<void> {
         throw new Error('Function not implemented.');
       },
+      runCursor: function (sql: CompiledSql): Promise<any> {
+        throw new Error('Function not implemented.');
+      },
     };
 
     const schema = new Schema(fakeConnection, new SchemaGrammar());

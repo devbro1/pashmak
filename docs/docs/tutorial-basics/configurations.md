@@ -55,9 +55,11 @@ export default {
 import config from 'config';
 
 
-config.get('payment_system.default');
 if(config.get('payment_system.default.provider') === 'stripe') {
-  ?????
+  // standard payment processing
+}
+else if(config.get('payment_system.secondary_payment_system') === 'bitcoin') {
+ // backup payment processing
 }
 ```
 
@@ -80,5 +82,7 @@ export default {
 ```
 
 if `PORT` is not defined, an error is thrown and stopping the process entirely before it starts.
+
 if `HTTPS_PORT` is not defined, it will use default value of 443 and will not throw an error.
+
 if `ssh_port` is not defined, it will use default value of `undefined` and will NOT throw an error.

@@ -1,4 +1,3 @@
-import { table } from 'console';
 import { Query } from './Query';
 import {
   Parameter,
@@ -9,6 +8,8 @@ import {
   whereType,
   whereRaw,
   havingType,
+  whereOpColumn,
+  joinType,
 } from './types';
 
 function toUpperFirst(str: string) {
@@ -18,6 +19,7 @@ export abstract class QueryGrammar {
   sqlParts: string[] = [
     'select',
     'table',
+    'join',
     'where',
     'groupBy',
     'having',
@@ -64,6 +66,28 @@ export abstract class QueryGrammar {
     return { sql: rc, bindings: [] };
   }
 
+  compileJoin(joins: joinType[]): CompiledSql {
+    let sql = '';
+    let bindings: Parameter[] = [];
+
+    for (const j of joins) {
+      sql += ' ' + j.type + ' join ' + j.table + ' on ';
+
+      const where = this.compileWhere(j.conditions);
+      if (where.sql.startsWith('where ')) {
+        where.sql = where.sql.substring('where '.length);
+      }
+
+      sql += '(';
+      sql += where.sql;
+      sql += ')';
+
+      bindings = [...bindings, ...where.bindings];
+    }
+
+    return { sql, bindings };
+  }
+
   compileWhere(wheres: whereType[]): CompiledSql {
     let sql = '';
     let bindings: Parameter[] = [];
@@ -91,6 +115,13 @@ export abstract class QueryGrammar {
     return {
       sql: `${w.column} ${w.operation} ${this.getVariablePlaceholder()}`,
       bindings: [w.value],
+    };
+  }
+
+  compileWhereOperationColumn(w: whereOpColumn): CompiledSql {
+    return {
+      sql: `${w.column1} ${w.operation} ${w.column2}`,
+      bindings: [],
     };
   }
 

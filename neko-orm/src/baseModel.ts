@@ -34,21 +34,19 @@ export class BaseModel {
     this.casters = this.constructor.prototype.casters ?? {};
     this.mutators = this.constructor.prototype.mutators ?? {};
 
-    for (const key of this.fillable) {
-      if (typeof initialData[key] !== 'undefined') {
-        (this as any)[key] = initialData[key];
-      }
-    }
-
-    for (const key of this.primaryKey) {
-      if (typeof initialData[key] !== 'undefined') {
-        (this as any)[key] = initialData[key];
-      }
-    }
+    this.fill(initialData);
   }
 
   public getTablename(): string {
     return this.tableName;
+  }
+
+  static getClassName() {
+    return this.name;
+  }
+
+  public getClassName() {
+    return this.constructor.name;
   }
 
   public async save(
@@ -67,9 +65,7 @@ export class BaseModel {
     }
 
     for (const key of this.fillable) {
-      if (this[key] !== undefined) {
-        params[key] = this[key];
-      }
+      params[key] = this[key];
     }
 
     // adjust timestamps
@@ -139,6 +135,10 @@ export class BaseModel {
     for (const k in r) {
       // @ts-ignore
       this[k] = r[k];
+
+      if (this[k] === null) {
+        this[k] = undefined;
+      }
 
       if (this.mutators[k]) {
         this[k] = this.mutators[k](this[k]);
@@ -230,8 +230,8 @@ export class BaseModel {
   }
 
   public fill(data: Record<string, Parameter>) {
-    for (const key of this.fillable) {
-      if (typeof data[key] !== 'undefined') {
+    for (const key of [...this.primaryKey, ...this.fillable]) {
+      if (key in data) {
         // @ts-ignore
         this[key] = data[key];
       }
@@ -253,5 +253,20 @@ export class BaseModel {
       data[key] = this[key];
     }
     return data;
+  }
+
+  public static newInstance<T extends BaseModel>(
+    initialData: any = {},
+    exists: boolean = false
+  ): T {
+    let rc = new this(initialData);
+    rc.exists = exists;
+    return rc as T;
+  }
+
+  public static async create<T extends BaseModel>(initialData: any = {}): Promise<T> {
+    let rc = new this(initialData);
+    await rc.save();
+    return rc as T;
   }
 }

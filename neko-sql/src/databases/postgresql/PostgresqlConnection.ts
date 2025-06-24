@@ -6,6 +6,8 @@ import { Query } from '../../Query';
 import { PostgresqlQueryGrammar } from './PostgresqlQueryGrammar';
 import { Schema } from '../../Schema';
 import { PostgresqlSchemaGrammar } from './PostgresqlSchemaGrammar';
+import Cursor from 'pg-cursor';
+
 export class PostgresqlConnection extends ConnectionAbs {
   connection: PoolClient | undefined;
   static pool: Pool;
@@ -33,6 +35,11 @@ export class PostgresqlConnection extends ConnectionAbs {
     const result = await this.connection?.query(sql.sql, sql.bindings);
     return result?.rows;
   }
+
+  async runCursor(sql: CompiledSql): Promise<any> {
+    return this.connection?.query(new Cursor(sql.sql, sql.bindings));
+  }
+
   async disconnect(): Promise<boolean> {
     await this.connection?.release();
     return true;
