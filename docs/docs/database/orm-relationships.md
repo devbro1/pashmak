@@ -10,7 +10,39 @@ neko-orm can handle relationship among models using `RelationshipFactory`.
 
 - source: the local or the model you are starting from
 - target: the remote or the model(s) you are associating with
-- junstion: or the junction table is the intermediary table used to manage M-to-M relationships
+- pivot: or the junction table is the intermediary table used to manage M-to-M relationships
+
+
+### Sample data structure
+Examples and test code is based on the following database design
+```mermaid
+erDiagram
+  User ||--|| Profile : 1to1
+
+  User ||--o{ Post : 1toM
+  Viewer }o--o{ Post : MtoM
+
+  Post }|--o{ Tag : belongsToMany-PolyMorphic
+  Image }|--o{ Tag : belongsToMany-PolyMorphic
+
+  Comment }o--o| Post : 1toM-PolyMorphic
+  Comment }o--o| Image : 1toM-PolyMorphic
+
+User {
+    number id PK
+}
+
+Profile {
+    number id PK
+    number user_id "references user.id"
+}
+
+Post {
+    number id PK
+    number author_id "references user.id"
+}
+  
+```
 
 ## 1-to-1 aka hasOne
 
@@ -285,18 +317,3 @@ in this example we created `commentsByAuthor(author)` that returns all comments 
 
 ## Relationship
 
-```mermaid
-erDiagram
-  User ||--|| Profile : 1to1
-
-  User ||--o{ Post : 1toM
-  Viewer }o--o{ Post : MtoM
-
-  Post }|--o{ Tag : belongsToMany-PolyMorphic
-  Image }|--o{ Tag : belongsToMany-PolyMorphic
-
-  Comment }o--o| Post : 1toM-PolyMorphic
-  Comment }o--o| Image : 1toM-PolyMorphic
-
-  
-```

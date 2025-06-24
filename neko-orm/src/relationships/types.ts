@@ -22,4 +22,5 @@ export type RelationFactoryOptionsType = {
   junctionToTargetAssociation: Record<string, string>;
   queryModifier: (query: Query) => Promise<Query>;
   morphIdentifier: string;
+  preAssociate: (obj: BaseModel) => Promise<BaseModel>;
 };

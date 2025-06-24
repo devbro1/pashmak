@@ -34,6 +34,9 @@ export class RelationshipManager1toM<
 
     for (let i = 0; i < obj.length; i++) {
       obj[i].fill(updates);
+      if(this.preAssociate) {
+        await this.preAssociate(obj[i]);
+      }
       options.sync && (await obj[i].save());
     }
   }

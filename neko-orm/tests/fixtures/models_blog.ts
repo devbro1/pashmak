@@ -98,10 +98,25 @@ export class Post extends BaseModel {
     });
   }
 
-  tags() {
-    return RelationshipFactory.createBelongsToMany<Post, Tag>({
+  comments() {
+    return RelationshipFactory.createHasMany<Post, Comment>({
       source: this,
-      targetModel: Tag,
+      targetModel: Comment,
+      morphIdentifier: 'commentable',
+    });
+  }
+
+  viewers() {
+    return RelationshipFactory.createBelongsToMany<Post, Viewer>({
+      source: this,
+      targetModel: Viewer,
+      junctionTable: 'post_viewer',
+      sourceToJunctionKeyAssociation: {
+        id: 'post_id',
+      },
+      junctionToTargetAssociation: {
+        viewer_id: 'id',
+      },
     });
   }
 }
@@ -114,6 +129,20 @@ export class Viewer extends BaseModel {
 
   @Attribute()
   declare ip: string;
+
+  posts() {
+    return RelationshipFactory.createBelongsToMany<Viewer, Post>({
+      source: this,
+      targetModel: Post,
+      junctionTable: 'post_viewer',
+      sourceToJunctionKeyAssociation: {
+        id: 'viewer_id',
+      },
+      junctionToTargetAssociation: {
+        post_id: 'id',
+      },
+    });
+  }
 }
 
 export class Comment extends BaseModel {
@@ -123,7 +152,7 @@ export class Comment extends BaseModel {
   declare id: number;
 
   @Attribute()
-  declare author: string;
+  declare author_id: number;
 
   @Attribute()
   declare content: string;
@@ -149,6 +178,14 @@ export class Image extends BaseModel {
 
   @Attribute()
   declare title: string;
+
+  comments() {
+    return RelationshipFactory.createHasMany<Image, Comment>({
+      source: this,
+      targetModel: Comment,
+      morphIdentifier: 'commentable',
+    });
+  }
 }
 
 

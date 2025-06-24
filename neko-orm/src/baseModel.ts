@@ -45,6 +45,10 @@ export class BaseModel {
     return this.name;
   }
 
+  public getClassName() {
+    return this.constructor.name;
+  }
+
   public async save(
     options: saveObjectOptions = {
       updateTimestamps: true,

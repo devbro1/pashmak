@@ -24,6 +24,9 @@ export class RelationshipManagerMto1<
     });
 
     this.sourceObject.fill(updates);
+    if(this.preAssociate) {
+      await this.preAssociate(this.sourceObject);
+    }
     options.sync && (await this.sourceObject.save());
   }
 

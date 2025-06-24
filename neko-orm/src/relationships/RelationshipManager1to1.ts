@@ -30,6 +30,9 @@ export class RelationshipManager1to1<
     });
 
     obj.fill(updates);
+    if(this.preAssociate) {
+        await this.preAssociate(obj);
+    }
     options.sync && (await obj.save());
   }
 

@@ -2,7 +2,7 @@ import { describe, expect, test } from '@jest/globals';
 import { PostgresqlConnection } from 'neko-sql/src/databases/postgresql/PostgresqlConnection';
 import { Connection } from 'neko-sql/src/Connection';
 import { execSync } from 'child_process';
-import { User, Profile, Post, Comment, Image, Tag } from '../fixtures/models_blog';
+import { User, Profile, Post, Comment, Image, Tag, Viewer } from '../fixtures/models_blog';
 import { BaseModel } from '../../src';
 import { faker } from '@faker-js/faker';
 
@@ -131,7 +131,7 @@ describe('relationships', () => {
     expect((await post2.author().get())!.id).toBe(user2.id);
   });
 
-  test('post contains many links MtoM', async () => {
+  test('post is visited by many viewers MtoM', async () => {
     let post1: Post = await Post.create({
       title: faker.lorem.words(3),
       content: faker.lorem.words(10),
@@ -147,38 +147,38 @@ describe('relationships', () => {
       content: faker.lorem.words(10),
     });
 
-    let tag1: Tag = await Tag.create({
-      name: faker.lorem.word(),
-    });
+      let viewer1: Viewer = await Viewer.create({
+        ip: faker.internet.ip(),
+      });
 
-    let tag2: Tag = await Tag.create({
-      name: faker.lorem.word(),
-    });
+      let viewer2: Viewer = await Viewer.create({
+        ip: faker.internet.ip(),
+      });
 
-    let tag3: Tag = await Tag.create({
-      name: faker.lorem.word(),
-    });
+      let viewer3: Viewer = await Viewer.create({
+        ip: faker.internet.ip(),
+      });
 
-    await post1.tags().associate([tag1, tag2]);
-    await post2.tags().associate([tag2, tag3]);
+      await post1.viewers().associate([viewer1, viewer2]);
+      await post2.viewers().associate([viewer2, viewer3]);
 
-    expect((await post1.tags().toArray()).length).toBe(2);
-    expect((await post2.tags().toArray()).length).toBe(2);
-    expect((await post3.tags().toArray()).length).toBe(0);
+      expect((await post1.viewers().toArray()).length).toBe(2);
+      expect((await post2.viewers().toArray()).length).toBe(2);
+      expect((await post3.viewers().toArray()).length).toBe(0);
 
-    expect((await tag1.posts().toArray()).length).toBe(1);
-    expect((await tag2.posts().toArray()).length).toBe(2);
-    expect((await tag3.posts().toArray()).length).toBe(1);
+      expect((await viewer1.posts().toArray()).length).toBe(1);
+      expect((await viewer2.posts().toArray()).length).toBe(2);
+      expect((await viewer3.posts().toArray()).length).toBe(1);
 
-    await tag3.posts().associate(post3);
-    await tag2.posts().dessociate(post1);
+      await viewer3.posts().associate(post3);
+      await viewer2.posts().dessociate(post1);
 
-    expect((await post1.tags().toArray()).length).toBe(1);
-    expect((await post2.tags().toArray()).length).toBe(2);
-    expect((await post3.tags().toArray()).length).toBe(1);
-    expect((await tag1.posts().toArray()).length).toBe(1);
-    expect((await tag2.posts().toArray()).length).toBe(1);
-    expect((await tag3.posts().toArray()).length).toBe(2);
+      expect((await post1.viewers().toArray()).length).toBe(1);
+      expect((await post2.viewers().toArray()).length).toBe(2);
+      expect((await post3.viewers().toArray()).length).toBe(1);
+      expect((await viewer1.posts().toArray()).length).toBe(1);
+      expect((await viewer2.posts().toArray()).length).toBe(1);
+      expect((await viewer3.posts().toArray()).length).toBe(2);
   });
 
   test('queryModifier', async () => {
@@ -218,48 +218,125 @@ describe('relationships', () => {
 
 
   test('post and images have many comments 1toM, 1to1', async() => {
-  //   let car1 = await Car.create({});
-  //   let bike1 = await Bike.create({});
-  //   let unicycle = await Unicycle.create({});
+    let user1: User = await User.create({
+      username: faker.internet.username(),
+    });
 
-  //   let tire1 = await Tire.create({});
-  //   let tire2 = await Tire.create({});
-  //   let tire3 = await Tire.create({});
-  //   let tire4 = await Tire.create({});
+    let post1: Post = await Post.create({
+      title: faker.lorem.words(3),
+      content: faker.lorem.words(10),
+    });
 
-  //   await car1.tires().associate([tire1,tire2]);
-  //   await bike1.tires().associate([tire3]);
-  //   await unicycle.tire().associate(tire4);
+    let post2: Post = await Post.create({
+      title: faker.lorem.words(3),
+      content: faker.lorem.words(10),
+    });
 
-  //   expect(tire1.tireable_type).toBe('car');
-  //   expect(tire2.tireable_type).toBe('car');
-  //   expect(tire3.tireable_type).toBe('bike');
-  //   expect(tire4.tireable_type).toBe('unicycle');
-  //   expect(tire1.tireable_id).toBe(car1.id);
-  //   expect(tire2.tireable_id).toBe(car1.id);
-  //   expect(tire3.tireable_id).toBe(bike1.id);
-  //   expect(tire4.tireable_id).toBe(unicycle.id);
+    let image1: Image = await Image.create({
+      title: faker.lorem.words(2),
+    });
 
-  //   expect((await tire1.car().get()).id).toBe(car1.id);
-  //   expect((await tire1.bike().get())).toBeUndefined();
+    let image2: Image = await Image.create({
+      title: faker.lorem.words(2),
+    });
 
-  //   expect((await tire2.car().get()).id).toBe(car1.id);
-  //   expect((await tire2.bike().get())).toBeUndefined();
+    let image3: Image = await Image.create({
+      title: faker.lorem.words(2),
+    });
 
-  //   expect((await tire3.car().get())).toBeUndefined();
-  //   expect((await tire3.bike().get()).id).toBe(bike1.id);
+    let comment1 = await Comment.create<Comment>({
+      content: faker.lorem.sentence(),
+      author_id: user1.id,
+    });
 
-  //   expect((await tire4.car().get())).toBeUndefined();
-  //   expect((await tire4.unicycle().get()).id).toBe(unicycle.id);
+    let comment2 = await Comment.create<Comment>({
+      content: faker.lorem.sentence(),
+      author_id: user1.id,
+    });
+
+    let comment3 = await Comment.create<Comment>({
+      content: faker.lorem.sentence(),
+      author_id: user1.id,
+    });
+
+    image1.comments().associate(comment1);
+    post1.comments().associate(comment2);
+
+    await comment1.refresh();
+    await comment2.refresh();
+    await comment3.refresh();
+
+    expect(comment1.commentable_type).toBe('image');
+    expect(comment1.commentable_id).toBe(image1.id);
+    expect(comment2.commentable_type).toBe('post');
+    expect(comment2.commentable_id).toBe(post1.id);
+    expect(comment3.commentable_type).toBeUndefined();
+    expect(comment3.commentable_id).toBeUndefined();
+
+    image1.comments().associate(comment3, { sync: false });
+    await comment3.refresh();
+    expect(comment3.commentable_type).toBeUndefined();
+    expect(comment3.commentable_id).toBeUndefined();
+    image1.comments().associate(comment3, { sync: false });
+    expect(comment3.commentable_type).toBe('image');
+    expect(comment3.commentable_id).toBe(image1.id);
+    expect((await image1.comments().toArray()).length).toBe(1);
+    await comment3.save();
+    expect((await image1.comments().toArray()).length).toBe(2);
+    image1.comments().dessociate(comment3, { sync: false });
+    expect((await image1.comments().toArray()).length).toBe(2);
+    await comment3.refresh();
+    expect(comment3.commentable_type).toBe('image');
+    expect(comment3.commentable_id).toBe(image1.id);
+    image1.comments().dessociate(comment3, { sync: false });
+    await comment3.save();
+    expect((await image1.comments().toArray()).length).toBe(1);
+    image1.comments().dessociate(comment1);
+    expect((await image1.comments().toArray()).length).toBe(0);
   });
 
   test('post and image have many tags MtoM', async () => {
-  //   let post1 = await Post.create({
-  //     title: faker.lorem.sentence(),
-  //     content: faker.lorem.paragraph(),
-  //   });
+  let post1: Post = await Post.create({
+      title: faker.lorem.words(3),
+      content: faker.lorem.words(10),
+    });
 
-  //   let image1 = await Image.create({
-  //   });
+    let post2: Post = await Post.create({
+      title: faker.lorem.words(3),
+      content: faker.lorem.words(10),
+    });
+
+    let image1: Image = await Image.create({
+      title: faker.lorem.words(2),
+    });
+
+    let image2: Image = await Image.create({
+      title: faker.lorem.words(2),
+    });
+
+    let image3: Image = await Image.create({
+      title: faker.lorem.words(2),
+    });
+
+    let tag1: Tag = await Tag.create({
+      name: faker.lorem.word(),
+    });
+
+    let tag2: Tag = await Tag.create({
+      name: faker.lorem.word(),
+    });
+
+    let tag3: Tag = await Tag.create({
+      name: faker.lorem.word(),
+    });
+
+    await post1.tags().associate([tag1, tag2]);
+    await image1.tags().associate([tag2, tag3]);
+    expect((await post1.tags().toArray()).length).toBe(2);
+    expect((await image1.tags().toArray()).length).toBe(2);
+
+    await post1.tags().dessociate(tag2);
+    expect((await post1.tags().toArray()).length).toBe(1);
+    expect((await image1.tags().toArray()).length).toBe(2);
   });
 });

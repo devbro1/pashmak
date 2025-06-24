@@ -11,6 +11,7 @@ export abstract class RelationshipManager<Source extends BaseModel, Target exten
   protected sourceToJunctionKeyAssociation: Record<string, string>;
   protected junctionToTargetAssociation: Record<string, string>;
   protected queryModifier: RelationFactoryOptionsType['queryModifier'];
+  protected preAssociate?: (obj: BaseModel) => Promise<BaseModel>;
 
   constructor(options: RelationFactoryOptionsType) {
     this.type = options.type;
@@ -21,6 +22,7 @@ export abstract class RelationshipManager<Source extends BaseModel, Target exten
     this.junctionTable = options.junctionTable;
     this.sourceToJunctionKeyAssociation = options.sourceToJunctionKeyAssociation;
     this.junctionToTargetAssociation = options.junctionToTargetAssociation;
+    this.preAssociate = options.preAssociate || undefined;
   }
 
   protected async modifyQuery(query: Query): Promise<Query> {

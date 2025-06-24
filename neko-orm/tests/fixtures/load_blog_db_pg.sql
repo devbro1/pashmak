@@ -34,13 +34,13 @@ Create Table images (
 
 CREATE TABLE comments (
   id SERIAL PRIMARY KEY,
-  author INTEGER NOT NULL,
+  author_id INTEGER NOT NULL,
   content TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  commentable_id INTEGER NOT NULL,
-  commentable_type VARCHAR(50) NOT NULL,
-  FOREIGN KEY (author) REFERENCES users(id) ON DELETE CASCADE
+  commentable_id INTEGER,
+  commentable_type VARCHAR(50),
+  FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 

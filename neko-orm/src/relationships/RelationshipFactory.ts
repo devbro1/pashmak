@@ -20,6 +20,7 @@ export class RelationshipFactory {
       junctionToTargetAssociation: {},
       queryModifier: async (query: Query) => query,
       morphIdentifier: '',
+      preAssociate: async (obj: BaseModel) => obj,
     };
 
     options2.type = options.type!;
@@ -35,6 +36,7 @@ export class RelationshipFactory {
     options2.junctionToTargetAssociation = options.junctionToTargetAssociation || {};
     options2.queryModifier = options.queryModifier || options2.queryModifier;
     options2.morphIdentifier = options.morphIdentifier || '';
+    options2.preAssociate = options.preAssociate || (async (obj: BaseModel) => obj);
 
     if (
       ['hasOne', 'hasMany'].includes(options2.type) &&
@@ -91,10 +93,13 @@ export class RelationshipFactory {
       if(['hasOne', 'hasMany'].includes(options2.type)) {
         options2.queryModifier = async(query: Query) => {
           query.whereOp(morph_type, '=',snakeCase(options2.source.getClassName()));
-          query = await options2.queryModifier(query);
+          query = options.queryModifier ? await options.queryModifier(query): query;
           return query;
         };
-
+        options2.preAssociate = async(obj: BaseModel) => {
+          obj[morph_type] = snakeCase(options2.source.getClassName());
+          return obj;
+        };
         options2.sourceToTargetKeyAssociation = { id: morph_id};
       }
       else if(['belongsTo'].includes(options2.type)) {
