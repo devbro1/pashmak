@@ -1,6 +1,6 @@
-import { Connection } from 'neko-sql/src/Connection';
-import { Query } from 'neko-sql/src/Query';
-import { Parameter } from 'neko-sql/src/types';
+import { Connection } from 'neko-sql';
+import { Query } from 'neko-sql';
+import { Parameter } from 'neko-sql';
 import pluralize from 'pluralize';
 import { format } from 'date-fns-tz';
 import { parse } from 'date-fns';

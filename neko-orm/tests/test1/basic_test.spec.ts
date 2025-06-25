@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
-import { PostgresqlConnection } from 'neko-sql/src/databases/postgresql/PostgresqlConnection';
-import { Connection } from 'neko-sql/src/Connection';
+import { PostgresqlConnection } from 'neko-sql';
+import { Connection } from 'neko-sql';
 import { execSync } from 'child_process';
 import { Country, Job, Region } from '../fixtures/models';
 import { BaseModel } from '../../src';
@@ -88,11 +88,17 @@ describe('raw queries', () => {
 
   test('time stamp testing', async () => {
     BaseModel.setConnection(() => conn);
-    let res = await conn.runQuery({sql:'SELECT MAX(region_id) as last_id FROM regions',bindings:[]});
-    await conn.runQuery({sql:'SELECT setval($1, $2, false);',bindings:['regions_region_id_seq', res[0].last_id + 1]});
+    let res = await conn.runQuery({
+      sql: 'SELECT MAX(region_id) as last_id FROM regions',
+      bindings: [],
+    });
+    await conn.runQuery({
+      sql: 'SELECT setval($1, $2, false);',
+      bindings: ['regions_region_id_seq', res[0].last_id + 1],
+    });
 
     let r1 = new Region({
-      region_name: faker.location.state()
+      region_name: faker.location.state(),
     });
 
     expect(r1.created_at).toBeUndefined();
@@ -106,7 +112,7 @@ describe('raw queries', () => {
     let first_created = r1.created_at.toISOString();
 
     await sleep(1500);
-    await r1.save({ updateTimestamps: false});
+    await r1.save({ updateTimestamps: false });
     expect(r1.created_at.toISOString()).toBe(r1.updated_at.toISOString());
     expect(r1.created_at.constructor.name).toBe('Date');
     expect(r1.updated_at.constructor.name).toBe('Date');
@@ -117,6 +123,5 @@ describe('raw queries', () => {
     expect(r1.created_at.toISOString()).toBe(first_created);
     expect(r1.created_at.constructor.name).toBe('Date');
     expect(r1.updated_at.constructor.name).toBe('Date');
-    
   });
 });

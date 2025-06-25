@@ -1,4 +1,4 @@
-import { Query } from 'neko-sql/src/Query';
+import { Query } from 'neko-sql';
 import { BaseModel } from '../baseModel';
 import { RelationFactoryOptionsType } from './types';
 

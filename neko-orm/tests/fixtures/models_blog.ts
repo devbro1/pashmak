@@ -1,7 +1,7 @@
 import { Attribute } from '../../src';
 import { BaseModel } from '../../src/baseModel';
 import { RelationshipFactory } from '../../src/relationships/RelationshipFactory';
-import { Query } from 'neko-sql/src/Query';
+import { Query } from 'neko-sql';
 
 export class User extends BaseModel {
   @Attribute({

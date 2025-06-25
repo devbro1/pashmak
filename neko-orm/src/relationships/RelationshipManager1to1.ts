@@ -1,4 +1,4 @@
-import { Query } from 'neko-sql/src/Query';
+import { Query } from 'neko-sql';
 import { BaseModel } from '../baseModel';
 import { Case } from 'change-case-all';
 import { assocationOptions, RelationFactoryOptionsType } from './types';
@@ -30,8 +30,8 @@ export class RelationshipManager1to1<
     });
 
     obj.fill(updates);
-    if(this.preAssociate) {
-        await this.preAssociate(obj);
+    if (this.preAssociate) {
+      await this.preAssociate(obj);
     }
     options.sync && (await obj.save());
   }

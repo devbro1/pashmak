@@ -1,4 +1,4 @@
-import { Query } from 'neko-sql/src/Query';
+import { Query } from 'neko-sql';
 import { BaseModel } from '../baseModel';
 import { Case } from 'change-case-all';
 import { assocationOptions, RelationFactoryOptionsType } from './types';
@@ -24,7 +24,7 @@ export class RelationshipManagerMto1<
     });
 
     this.sourceObject.fill(updates);
-    if(this.preAssociate) {
+    if (this.preAssociate) {
       await this.preAssociate(this.sourceObject);
     }
     options.sync && (await this.sourceObject.save());
@@ -72,7 +72,7 @@ export class RelationshipManagerMto1<
     let q = await this.getQuery();
     let row = await q.get();
 
-    if( row.length === 0) {
+    if (row.length === 0) {
       return undefined;
     }
     return this.targetModel.newInstance<Target>(row[0], true);
