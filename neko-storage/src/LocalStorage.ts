@@ -9,6 +9,10 @@ import { Storage } from './Storage';
 export class LocalStorage extends Storage {
   constructor(config: StorageConfig) {
     super(config);
+
+    if (!LocalStorage.canHandle(config)) {
+      throw new Error(`storage engine cannot handle this config.`);
+    }
     // Ensure the base folder exists
     fs.mkdir(this.config.basePath, { recursive: true }).catch((error) => {
       throw error;

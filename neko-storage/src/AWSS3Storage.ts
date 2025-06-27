@@ -17,6 +17,10 @@ export class AWSS3Storage extends Storage {
   constructor(protected config: StorageConfig) {
     super(config);
 
+    if (!AWSS3Storage.canHandle(config)) {
+      throw new Error(`storage engine cannot handle this config.`);
+    }
+
     this.s3 = new S3Client(this.config?.s3Config || {});
   }
 

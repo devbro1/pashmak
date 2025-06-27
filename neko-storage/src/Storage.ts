@@ -4,11 +4,7 @@ import { Metadata } from './types';
 import { StorageConfig } from './types';
 
 export abstract class Storage {
-  constructor(protected config: StorageConfig) {
-    if (!Storage.canHandle(config)) {
-      throw new Error(`storage engine type mismatch, ${this.config.engine} vs local`);
-    }
-  }
+  constructor(protected config: StorageConfig) {}
 
   static canHandle(config: StorageConfig): boolean {
     throw new Error('Method not implemented.');
