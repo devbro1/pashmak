@@ -1,5 +1,5 @@
-import { MiddlewareProvider } from '.';
-import { ControllerDecoratorOptions } from './types';
+import { ControllerDecoratorOptions, MiddlewareProvider } from './types';
+import { Middleware } from './Middleware';
 
 export class BaseController {
   static routes: {

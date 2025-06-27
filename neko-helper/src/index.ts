@@ -1,6 +1,7 @@
 export * from './context';
 export * from './patternEnforcer';
 export * from './time';
+export * from './crypto';
 
 export function getEnv(key: string, ...defaultValue: any[]) {
   let rc = process.env[key] ?? defaultValue[0];

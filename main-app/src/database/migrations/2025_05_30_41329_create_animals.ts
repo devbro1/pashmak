@@ -1,6 +1,6 @@
-import { Blueprint } from "neko-sql/src/Blueprint";
-import { Migration } from "neko-sql/src/Migration";
-import { Schema } from "neko-sql/src/Schema";
+import { Blueprint } from "neko-sql";
+import { Migration } from "neko-sql";
+import { Schema } from "neko-sql";
 
 export default class CreateAnimals extends Migration {
   async up(schema: Schema) {

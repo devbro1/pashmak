@@ -7,11 +7,11 @@ import "./app/console";
 
 import "./routes";
 import "./schedules";
-import { context_provider } from "neko-helper/src";
-import { Middleware } from "neko-router/src";
+import { context_provider } from "neko-helper";
+import { Middleware } from "neko-router";
 import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
-import { runNext } from "neko-helper/src";
-import { Request, Response } from "neko-router/src/types";
+import { runNext } from "neko-helper";
+import { Request, Response } from "neko-router";
 
 context_provider.setPreLoader(async (f: Function) => {
   const middlewares: Middleware[] = [];

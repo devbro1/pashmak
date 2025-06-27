@@ -1,8 +1,8 @@
-import { ctx } from "neko-helper/src";
-import { BaseModel } from "neko-orm/src";
-import { Request } from "neko-router/src/types";
+import { ctx } from "neko-helper";
+import { BaseModel } from "neko-orm";
+import { Request } from "neko-router";
 import { BadRequest, NotFound } from "http-errors";
-import { createParamDecorator } from "neko-router/src/Controller";
+import { createParamDecorator } from "neko-router";
 import * as yup from "yup";
 import * as jwt from "jsonwebtoken";
 import config from "config";

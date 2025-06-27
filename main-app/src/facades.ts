@@ -1,20 +1,20 @@
-import { Router } from "neko-router/src";
-import { Schedule, Scheduler } from "neko-scheduler/src";
-import { createSingleton, ctxSafe } from "neko-helper/src";
-import { ctx } from "neko-helper/src";
-import { Connection } from "neko-sql/src/Connection";
-import { Storage, StorageFactory } from "neko-storage/src/";
+import { Router } from "neko-router";
+import { Schedule, Scheduler } from "neko-scheduler";
+import { createSingleton, ctxSafe } from "neko-helper";
+import { ctx } from "neko-helper";
+import { Connection } from "neko-sql";
+import { Storage, StorageFactory } from "neko-storage";
 import config from "config";
 import { Cli } from "clipanion";
-import { HttpServer } from "neko-http/src";
+import { HttpServer } from "neko-http";
 import { HttpError } from "http-errors";
 import * as yup from "yup";
-import { Logger } from "neko-logger/src";
+import { Logger } from "neko-logger";
 
 export const router = createSingleton<Router>(() => new Router());
 export const scheduler = createSingleton<Scheduler>(() => {
   let rc = new Scheduler();
-  rc.setErrorHandler((err, job: Schedule) => {
+  rc.setErrorHandler((err: any, job: Schedule) => {
     logger().error({
       msg: "Scheduled job error",
       err,

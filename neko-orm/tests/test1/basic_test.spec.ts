@@ -5,7 +5,7 @@ import { execSync } from 'child_process';
 import { Country, Job, Region } from '../fixtures/models';
 import { BaseModel } from '../../src';
 import { faker } from '@faker-js/faker';
-import { sleep } from 'neko-helper/src/time';
+import { sleep } from 'neko-helper';
 
 describe('raw queries', () => {
   let conn: Connection;

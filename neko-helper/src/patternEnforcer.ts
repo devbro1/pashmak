@@ -1,5 +1,5 @@
-import { Request, Response } from 'neko-router/src/types';
-import { Middleware } from 'neko-router/src/Middleware';
+import { Request, Response } from 'neko-router';
+import { Middleware } from 'neko-router';
 export function createSingleton<T>(
   func: (...args: any[]) => T
 ): (label?: string, ...args: any[]) => T {

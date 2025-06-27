@@ -1,4 +1,3 @@
-import { info } from 'console';
 import pino, { LoggerOptions } from 'pino';
 
 export type MapObject = Record<string, object | string | number | undefined>;

@@ -1,4 +1,5 @@
-import { Metadata, Storage, StorageConfig } from './index';
+import { Metadata, StorageConfig } from './types';
+import { Storage } from './Storage';
 import {
   S3Client,
   HeadObjectCommand,
@@ -10,13 +11,12 @@ import {
 import { ReadStream } from 'fs';
 import Stream, { Readable } from 'stream';
 
-export class AWSS3Storage implements Storage {
+export class AWSS3Storage extends Storage {
   private s3: S3Client;
 
-  constructor(private config: StorageConfig) {
-    if (!AWSS3Storage.canHandle(this.config)) {
-      throw new Error(`storage engine type mismatch, ${this.config.engine} vs s3`);
-    }
+  constructor(protected config: StorageConfig) {
+    super(config);
+
     this.s3 = new S3Client(this.config?.s3Config || {});
   }
 

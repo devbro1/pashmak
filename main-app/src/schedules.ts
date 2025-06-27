@@ -1,10 +1,10 @@
-import { scheduler } from "./facades";
+import { scheduler } from "@root/facades";
 import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
-import { runNext } from "neko-helper/src";
-import { Middleware } from "neko-router/src";
-import { Request, Response } from "neko-router/src/types";
-import { context_provider } from "neko-helper/src";
-import { db } from "./facades";
+import { runNext } from "neko-helper";
+import { Middleware } from "neko-router";
+import { Request, Response } from "neko-router";
+import { context_provider } from "neko-helper";
+import { db } from "@root/facades";
 import { logger } from "@root/facades";
 
 scheduler()

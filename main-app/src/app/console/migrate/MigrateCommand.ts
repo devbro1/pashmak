@@ -1,11 +1,11 @@
 import { cli, db as database } from "@root/facades";
 import { Command, Option } from "clipanion";
-import { Blueprint } from "neko-sql/src/Blueprint";
-import { context_provider } from "neko-helper/src";
+import { Blueprint } from "neko-sql";
+import { context_provider } from "neko-helper";
 import path from "path";
 import fs from "fs/promises";
 import config from "config";
-import { Migration } from "neko-sql/src/Migration";
+import { Migration } from "neko-sql";
 import { logger } from "@root/facades";
 
 /*

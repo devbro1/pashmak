@@ -1,13 +1,8 @@
-import {
-  BaseController,
-  Controller,
-  Get,
-  Post,
-} from "neko-router/src/Controller";
+import { BaseController, Controller, Get, Post } from "neko-router";
 import { authenticate, logResponseMiddleware } from "@root/middlewares";
 import { db, storage, logger } from "@root/facades";
-import { ctx } from "neko-helper/src";
-import { Request, Response } from "neko-router/src/types";
+import { ctx } from "neko-helper";
+import { Request, Response } from "neko-router";
 import { Animal } from "../models/Animal";
 import { Model, Param } from "@root/helpers";
 

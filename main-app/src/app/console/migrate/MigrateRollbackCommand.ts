@@ -1,10 +1,10 @@
 import { cli, db as database } from "@root/facades";
 import { Command, Option } from "clipanion";
-import { context_provider } from "neko-helper/src";
+import { context_provider } from "neko-helper";
 import path from "path";
 import fs from "fs/promises";
 import config from "config";
-import { Migration } from "neko-sql/src/Migration";
+import { Migration } from "neko-sql";
 import * as t from "typanion";
 
 export class MigrateRollbackCommand extends Command {

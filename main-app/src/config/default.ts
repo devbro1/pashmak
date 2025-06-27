@@ -1,6 +1,6 @@
 import path from "path";
 import os from "os";
-import { getEnv } from "neko-helper/src";
+import { getEnv } from "neko-helper";
 
 export default {
   databases: require("./databases"),

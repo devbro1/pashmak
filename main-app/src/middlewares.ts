@@ -1,5 +1,5 @@
-import { ctx } from "neko-helper/src";
-import { Request, Response } from "neko-router/src/types";
+import { ctx } from "neko-helper";
+import { Request, Response } from "neko-router";
 import { Unauthorized } from "http-errors";
 import { decodeJwtToken } from "@root/helpers";
 import { logger } from "@root/facades";

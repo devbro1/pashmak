@@ -34,7 +34,7 @@ describe('relationships', () => {
     await conn?.disconnect();
   });
 
-  test.only('user and profile 1to1', async () => {
+  test('user and profile 1to1', async () => {
     let user1: User = await User.create({
       username: faker.internet.username(),
     });

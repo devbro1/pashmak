@@ -1,7 +1,6 @@
 import "./initialize";
 
-import { cli } from "./facades";
-import { logger } from "@root/facades";
+import { logger, cli } from "@root/facades";
 
 logger().info("start of everything");
 

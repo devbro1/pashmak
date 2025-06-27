@@ -1,14 +1,9 @@
-import {
-  BaseController,
-  Controller,
-  Get,
-  Post,
-} from "neko-router/src/Controller";
+import { BaseController, Controller, Get, Post } from "neko-router";
 import { Param } from "@root/helpers";
 import { logResponseMiddleware } from "@root/middlewares";
 import { db, storage, logger } from "@root/facades";
-import { ctx } from "neko-helper/src";
-import { Request, Response } from "neko-router/src/types";
+import { ctx } from "neko-helper";
+import { Request, Response } from "neko-router";
 import fs from "fs";
 
 @Controller("/api/v1/cats")

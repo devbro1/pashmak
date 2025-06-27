@@ -1,6 +1,6 @@
-import { Request, Response } from "neko-router/src/types";
-import { router as routerFunc, db as dbf } from "./facades";
-import { sleep } from "neko-helper/src";
+import { Request, Response } from "neko-router";
+import { router as routerFunc, db as dbf } from "@root/facades";
+import { sleep } from "neko-helper";
 import { CatController } from "./app/controllers/CatController";
 import { AnimalController } from "./app/controllers/AnimalController";
 import { loggerMiddleware, logResponseMiddleware } from "./middlewares";

@@ -1,9 +1,8 @@
-import { BaseModel, Attribute } from "neko-orm/src";
-import { encryptPassword, isBcryptHash } from 'neko-helper/src/crypto';
+import { BaseModel, Attribute } from "neko-orm";
+import { encryptPassword, isBcryptHash } from "neko-helper";
 
 export class User extends BaseModel {
-
-  protected guarded: string[] = ['password'];
+  protected guarded: string[] = ["password"];
   @Attribute({ primaryKey: true, incrementingPrimaryKey: true })
   declare id: number;
 
@@ -36,7 +35,7 @@ export class User extends BaseModel {
   }
 
   async save() {
-    if(!isBcryptHash(this.password)) {
+    if (!isBcryptHash(this.password)) {
       await this.setPassword(this.password);
     }
     await super.save();

@@ -1,9 +1,4 @@
-import {
-  BaseController,
-  Controller,
-  Get,
-  Post,
-} from "neko-router/src/Controller";
+import { BaseController, Controller, Get, Post } from "neko-router";
 import {
   createJwtToken,
   decodeJwtToken,
@@ -12,7 +7,7 @@ import {
 import * as yup from "yup";
 import { User } from "../models/User";
 import { BadRequest } from "http-errors";
-import { compareBcrypt } from "neko-helper/src/crypto";
+import { compareBcrypt } from "neko-helper";
 import config from "config";
 import { JwtPayload } from "jsonwebtoken";
 
