@@ -1,7 +1,7 @@
 import { Command, Option } from "clipanion";
 import config from "config";
 
-import { cli, httpServer, logger, scheduler } from "@root/facades";
+import { cli, httpServer, logger, scheduler } from "@devbro/pashmak/src/facades";
 import { PostgresqlConnection } from "neko-sql";
 
 export class StartCommand extends Command {

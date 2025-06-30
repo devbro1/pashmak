@@ -1,6 +1,6 @@
-import "./initialize";
+import "@devbro/pashmak/src/initialize";
 
-import { logger, cli } from "@root/facades";
+import { logger, cli } from "@devbro/pashmak/src/facades";
 
 logger().info("start of everything");
 

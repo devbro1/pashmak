@@ -1,4 +1,4 @@
-import { cli, db as database } from "@root/facades";
+import { cli, db as database } from "@devbro/pashmak/src/facades";
 import { Command, Option } from "clipanion";
 import { context_provider } from "neko-helper";
 import path from "path";

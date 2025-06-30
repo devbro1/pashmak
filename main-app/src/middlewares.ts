@@ -1,8 +1,8 @@
 import { ctx } from "neko-helper";
-import { Request, Response } from "neko-router";
+import { Request, Response } from "@devbro/pashmak/src/Router";
 import { Unauthorized } from "http-errors";
 import { decodeJwtToken } from "@root/helpers";
-import { logger } from "@root/facades";
+import { logger } from "@devbro/pashmak/src/facades";
 
 export async function loggerMiddleware(
   req: Request,

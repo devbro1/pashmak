@@ -1,8 +1,6 @@
-import { BaseController, Controller, Get, Post } from "neko-router";
 import {
   createJwtToken,
   decodeJwtToken,
-  ValidatedRequest,
 } from "@root/helpers";
 import * as yup from "yup";
 import { User } from "../models/User";
@@ -10,6 +8,8 @@ import { BadRequest } from "http-errors";
 import { compareBcrypt } from "neko-helper";
 import config from "config";
 import { JwtPayload } from "jsonwebtoken";
+import { ValidatedRequest, BaseController, Controller, Get, Post } from "@devbro/pashmak/src/Router";
+import { router } from "@devbro/pashmak/src/facades";
 
 @Controller("/api/v1/auth")
 export class AuthController extends BaseController {
@@ -50,8 +50,8 @@ export class AuthController extends BaseController {
 
   @Post({ path: "/refresh" })
   async refresh(@ValidatedRequest(AuthController.loginValidation) body: any) {
-    let refresh_token = body.refresh_token;
-    let payload = (await decodeJwtToken(refresh_token))! as JwtPayload;
+    const refresh_token = body.refresh_token;
+    const payload = (await decodeJwtToken(refresh_token))! as JwtPayload;
 
     if (payload.refresh !== true) {
       throw new BadRequest(
@@ -78,3 +78,5 @@ export class AuthController extends BaseController {
     };
   }
 }
+
+router().addController(AuthController);

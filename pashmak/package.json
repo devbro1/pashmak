@@ -1,5 +1,5 @@
 {
-  "name": "main-app",
+  "name": "@devbro/pashmak",
   "version": "0.1.0",
   "description": "testing application for the entire repo",
   "main": "./dist/index.js",
@@ -38,7 +38,6 @@
     "dotenv": "^16.5.0",
     "handlebars": "^4.7.8",
     "jsonwebtoken": "^9.0.2",
-    "@devbro/pashmak": "0.1.0",
     "pg-pool": "3.10.0",
     "ts-jest": "^29.3.4",
     "tsconfig-paths": "^4.2.0",

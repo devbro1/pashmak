@@ -1,11 +1,7 @@
-import { scheduler } from "@root/facades";
-import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
-import { runNext } from "neko-helper";
-import { Middleware } from "neko-router";
-import { Request, Response } from "neko-router";
+import { scheduler } from "@devbro/pashmak/src/facades";
 import { context_provider } from "neko-helper";
-import { db } from "@root/facades";
-import { logger } from "@root/facades";
+import { db } from "@devbro/pashmak/src/facades";
+import { logger } from "@devbro/pashmak/src/facades";
 
 scheduler()
   .call(async () => {

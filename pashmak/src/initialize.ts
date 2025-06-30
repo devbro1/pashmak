@@ -1,12 +1,19 @@
+import { dirname } from "path";
+const root_dir = dirname(require.main?.filename || '');
+
 import dotenv from "dotenv";
 dotenv.config();
-process.env["NODE_CONFIG_DIR"] = __dirname + "/config/";
+process.env["NODE_CONFIG_DIR"] = root_dir + "/config/";
 import config from "config";
+config; // to force import
 
-import "./app/console";
+require(`./app/console`);
 
-import "./routes";
-import "./schedules";
+require(`${root_dir}/app/console`);
+require(`${root_dir}/routes`);
+require(`${root_dir}/schedules`);
+
+
 import { context_provider } from "neko-helper";
 import { Middleware } from "neko-router";
 import { DatabaseServiceProvider } from "./DatabaseServiceProvider";

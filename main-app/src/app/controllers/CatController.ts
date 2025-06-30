@@ -1,10 +1,8 @@
-import { BaseController, Controller, Get, Post } from "neko-router";
-import { Param } from "@root/helpers";
 import { logResponseMiddleware } from "@root/middlewares";
-import { db, storage, logger } from "@root/facades";
+import { db, storage, logger } from "@devbro/pashmak/src/facades";
 import { ctx } from "neko-helper";
-import { Request, Response } from "neko-router";
 import fs from "fs";
+import { Request, Response, Model, Param, ValidatedRequest, BaseController, Controller, Get, Post } from "@devbro/pashmak/src/Router";
 
 @Controller("/api/v1/cats")
 export class CatController extends BaseController {

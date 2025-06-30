@@ -1,5 +1,5 @@
 import { Command, Option } from "clipanion";
-import { cli } from "@root/facades";
+import { cli } from "@devbro/pashmak/src/facades";
 
 export class DefaultCommand extends Command {
   static usage = Command.Usage({
@@ -24,7 +24,9 @@ export class DefaultCommand extends Command {
 
     console.log("Available commands:");
     for (const cmd of paths) {
-      console.log(cmd);
+      if(cmd) {
+        console.log(cmd);
+      }
     }
   }
 }
