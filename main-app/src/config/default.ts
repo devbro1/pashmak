@@ -28,5 +28,9 @@ export default {
       "-----BEGIN PUBLIC KEY-----\n" +
       process.env.jwt_secret_public +
       "\n-----END PUBLIC KEY-----\n",
+      public_retired:
+      "-----BEGIN PUBLIC KEY-----\n" +
+      process.env.jwt_secret_public_retired +
+      "\n-----END PUBLIC KEY-----\n",
   },
 };

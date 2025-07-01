@@ -9,5 +9,5 @@ cli()
   .runExit(args)
   .then(() => {})
   .catch((err) => {
-    logger().info(err);
+    logger().error(err);
   });

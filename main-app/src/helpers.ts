@@ -15,11 +15,16 @@ export function createJwtToken(data: any, token_params: jwt.SignOptions = {}) {
 }
 
 export async function decodeJwtToken(token: string) {
-  if (!(await jwt.verify(token, config.get<string>("jwt.public")))) {
-    throw new BadRequest(
-      "bad token. invalid, expired, or signed with wrong key.",
-    );
+  if ((await jwt.verify(token, config.get<string>("jwt.public")))) {
+    return await jwt.decode(token);
   }
 
-  return await jwt.decode(token);
+  if ((await jwt.verify(token, config.get<string>("jwt.public_retired")))) {
+    return await jwt.decode(token);
+  }
+
+  throw new BadRequest(
+    "bad token. invalid, expired, or signed with wrong key.",
+  );
+  
 }

@@ -13,7 +13,7 @@ import { Logger } from "neko-logger";
 
 export const router = createSingleton<Router>(() => new Router());
 export const scheduler = createSingleton<Scheduler>(() => {
-  let rc = new Scheduler();
+  const rc = new Scheduler();
   rc.setErrorHandler((err: any, job: Schedule) => {
     logger().error({
       msg: "Scheduled job error",
