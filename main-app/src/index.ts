@@ -1,6 +1,5 @@
-import "@devbro/pashmak/src/initialize";
-
-import { logger, cli } from "@devbro/pashmak/src/facades";
+import "./initialize";
+import { logger, cli } from "@devbro/pashmak/facades";
 
 logger().info("start of everything");
 
@@ -8,6 +7,6 @@ const [node, app, ...args] = process.argv;
 cli()
   .runExit(args)
   .then(() => {})
-  .catch((err) => {
+  .catch((err: any) => {
     logger().error(err);
   });

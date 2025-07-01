@@ -8,6 +8,29 @@
   "files": [
     "dist"
   ],
+   "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./facades": {
+      "types": "./dist/facades.d.ts",
+      "import": "./dist/facades.mjs",
+      "require": "./dist/facades.js"
+    },
+    "./router": {
+      "types": "./dist/router.d.ts",
+      "import": "./dist/router.mjs",
+      "require": "./dist/router.js"
+    },
+    "./initialize": {
+      "types": "./dist/initialize.d.ts",
+      "import": "./dist/initialize.mjs",
+      "require": "./dist/initialize.js"
+    },
+    "./package.json": "./package.json"
+   },
   "scripts": {
     "build": "tsup",
     "papa": "ts-node -r tsconfig-paths/register dist/index.js",

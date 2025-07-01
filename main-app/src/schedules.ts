@@ -1,7 +1,7 @@
-import { scheduler } from "@devbro/pashmak/src/facades";
+import { scheduler } from "@devbro/pashmak/facades";
 import { context_provider } from "neko-helper";
-import { db } from "@devbro/pashmak/src/facades";
-import { logger } from "@devbro/pashmak/src/facades";
+import { db } from "@devbro/pashmak/facades";
+import { logger } from "@devbro/pashmak/facades";
 
 scheduler().setContextWrapper((fn: () => Promise<void>): () => Promise<void> => {
   return async (): Promise<void> => {

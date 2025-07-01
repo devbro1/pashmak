@@ -3,7 +3,7 @@ import "@root/initialize";
 import { describe, expect, test } from "@jest/globals";
 import supertest from "supertest";
 import { Request, Response } from "neko-router";
-import { httpServer } from "@devbro/pashmak/src/facades";
+import { httpServer } from "@devbro/pashmak/facades";
 
 describe("basic tests", () => {
   test("basic testing", async () => {

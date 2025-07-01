@@ -1,4 +1,4 @@
-import { cli } from "@devbro/pashmak/src/facades";
+import { cli } from "../../../facades";
 import { Command, Option } from "clipanion";
 import { Case } from "change-case-all";
 import path from "path";

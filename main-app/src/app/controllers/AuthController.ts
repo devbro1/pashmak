@@ -8,8 +8,8 @@ import { BadRequest } from "http-errors";
 import { compareBcrypt } from "neko-helper";
 import config from "config";
 import { JwtPayload } from "jsonwebtoken";
-import { ValidatedRequest, BaseController, Controller, Get, Post } from "@devbro/pashmak/src/Router";
-import { router } from "@devbro/pashmak/src/facades";
+import { ValidatedRequest, BaseController, Controller, Get, Post } from "@devbro/pashmak/router";
+import { router } from "@devbro/pashmak/facades";
 
 @Controller("/api/v1/auth")
 export class AuthController extends BaseController {

@@ -1,5 +1,5 @@
 import { Command, Option } from "clipanion";
-import { cli } from "@devbro/pashmak/src/facades";
+import { cli } from "../../facades";
 
 export class DefaultCommand extends Command {
   static usage = Command.Usage({

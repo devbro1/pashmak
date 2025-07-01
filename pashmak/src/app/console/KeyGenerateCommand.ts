@@ -2,7 +2,7 @@ import { Command, Option } from "clipanion";
 import { generateKeyPairSync } from "crypto";
 import fs from "fs/promises";
 import path from "path";
-import { logger, cli } from "@devbro/pashmak/src/facades";
+import { logger, cli } from "../../facades";
 
 export class KeyGenerateCommand extends Command {
   static paths = [[`key`, "generate"]];
