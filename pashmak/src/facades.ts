@@ -4,7 +4,7 @@ import { createSingleton, ctxSafe } from "neko-helper";
 import { ctx } from "neko-helper";
 import { Connection } from "neko-sql";
 import { Storage, StorageFactory } from "neko-storage";
-import config from "config";
+import { config } from "neko-config";
 import { Cli } from "clipanion";
 import { HttpServer } from "neko-http";
 import { HttpError } from "http-errors";

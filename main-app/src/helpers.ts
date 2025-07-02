@@ -1,11 +1,11 @@
 import { BadRequest, NotFound } from "http-errors";
 import * as jwt from "jsonwebtoken";
-import config from "config";
+import { config } from "neko-config";
 
 
 export function createJwtToken(data: any, token_params: jwt.SignOptions = {}) {
-  const secret = config.get<string>("jwt.secret");
-  const token_params2 = config.get<jwt.SignOptions>("jwt.options");
+  const secret = config.get("jwt.secret") as string;
+  const token_params2 = config.get("jwt.options") as jwt.SignOptions;
   const token = jwt.sign(data, secret, { ...token_params2, ...token_params });
 
   if (!token) {
@@ -15,11 +15,11 @@ export function createJwtToken(data: any, token_params: jwt.SignOptions = {}) {
 }
 
 export async function decodeJwtToken(token: string) {
-  if ((await jwt.verify(token, config.get<string>("jwt.public")))) {
+  if ((await jwt.verify(token, config.get("jwt.public")))) {
     return await jwt.decode(token);
   }
 
-  if ((await jwt.verify(token, config.get<string>("jwt.public_retired")))) {
+  if ((await jwt.verify(token, config.get("jwt.public_retired")))) {
     return await jwt.decode(token);
   }
 

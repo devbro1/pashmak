@@ -6,7 +6,7 @@ import * as yup from "yup";
 import { User } from "../models/User";
 import { BadRequest } from "http-errors";
 import { compareBcrypt } from "neko-helper";
-import config from "config";
+import { config } from "neko-config";
 import { JwtPayload } from "jsonwebtoken";
 import { ValidatedRequest, BaseController, Controller, Get, Post } from "@devbro/pashmak/router";
 import { router } from "@devbro/pashmak/facades";
@@ -43,7 +43,7 @@ export class AuthController extends BaseController {
         { refresh: true, user_id: user.id },
         config.get("jwt.refresh_options"),
       ),
-      expires_in: config.get<number>("jwt.options.expiresIn"),
+      expires_in: config.get("jwt.options.expiresIn", 3600) as number,
       scope: "*",
     };
   }

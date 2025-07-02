@@ -7,7 +7,7 @@ import { context_provider, ctx } from 'neko-helper';
 import formidable from 'formidable';
 // @ts-ignore
 import { firstValues } from 'formidable/src/helpers/firstValues.js';
-import config from 'config';
+import {config} from 'neko-config';
 
 export class HttpServer {
   private https_certs: undefined | { key: string; cert: string } = undefined;

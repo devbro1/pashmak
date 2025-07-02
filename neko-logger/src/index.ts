@@ -10,7 +10,7 @@ export class Logger {
   constructor(
     options: LoggerOptions<never, boolean> & {
       extrasFunction?: (message: LogMessage) => LogMessage;
-    }
+    } = {}
   ) {
     this.logger = pino(options);
 

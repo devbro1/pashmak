@@ -5,7 +5,7 @@ import { PoolConfig } from "pg";
 import { Connection } from "neko-sql";
 import { BaseModel } from "neko-orm";
 import { ctx } from "neko-helper";
-import config from "config";
+import { config } from "neko-config";
 
 export class DatabaseServiceProvider extends Middleware {
   async call(

@@ -9,7 +9,7 @@ Under the hood, we are using [config](https://www.npmjs.com/package/config) libr
 To start place your related configs in `config/default.ts` file and it will be autoloaded.
 
 ```typescript
-import config from "config";
+import { config } from "neko-config";
 
 console.log(config.get("databases"));
 ```

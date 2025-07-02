@@ -1,5 +1,5 @@
 import { Command, Option } from "clipanion";
-import config from "config";
+import { config } from "neko-config";
 
 import { cli, httpServer, logger, scheduler } from "../../facades";
 import { PostgresqlConnection } from "neko-sql";

@@ -13,6 +13,7 @@
   },
   "workspaces": [
     "docs",
+    "neko-config",
     "neko-context",
     "neko-helper",
     "neko-http",

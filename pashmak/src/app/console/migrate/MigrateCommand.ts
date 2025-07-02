@@ -4,7 +4,7 @@ import { Blueprint } from "neko-sql";
 import { context_provider } from "neko-helper";
 import path from "path";
 import fs from "fs/promises";
-import config from "config";
+import { config } from "neko-config";
 import { Migration } from "neko-sql";
 
 /*
@@ -56,7 +56,7 @@ export class MigrateCommand extends Command {
         });
       }
 
-      const migrationsDir = config.get<string>("migration.path");
+      const migrationsDir = config.get("migration.path");
       let files: string[] = [];
 
       const dirEntries = await fs.readdir(migrationsDir);

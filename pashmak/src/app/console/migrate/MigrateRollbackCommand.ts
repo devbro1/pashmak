@@ -3,7 +3,7 @@ import { Command, Option } from "clipanion";
 import { context_provider } from "neko-helper";
 import path from "path";
 import fs from "fs/promises";
-import config from "config";
+import { config } from "neko-config";
 import { Migration } from "neko-sql";
 import * as t from "typanion";
 
@@ -21,7 +21,7 @@ export class MigrateRollbackCommand extends Command {
       const db = database();
       const schema = db.getSchema();
 
-      const migrationsDir = config.get<string>("migration.path");
+      const migrationsDir = config.get("migration.path");
       let files: string[] = [];
 
       const dirEntries = await fs.readdir(migrationsDir);
