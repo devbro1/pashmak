@@ -1,5 +1,7 @@
 import { bootstrap } from "@devbro/pashmak";
+import { dirname } from "path";
+import { fileURLToPath } from "url";
 
-bootstrap({
-  root_dir: __dirname,
+await bootstrap({
+  root_dir: dirname(fileURLToPath (import.meta.url)),
 });

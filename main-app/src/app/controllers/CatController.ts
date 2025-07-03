@@ -1,4 +1,4 @@
-import { logResponseMiddleware } from "@root/middlewares";
+import { logResponseMiddleware } from "../../middlewares";
 import { db, storage, logger } from "@devbro/pashmak/facades";
 import { ctx } from "neko-helper";
 import fs from "fs";

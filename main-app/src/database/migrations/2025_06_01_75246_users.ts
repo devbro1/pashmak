@@ -1,6 +1,6 @@
 import { Migration } from "neko-sql";
 import { Schema, Blueprint } from "neko-sql";
-import { User } from "@root/app/models/User";
+import { User } from "../../app/models/User";
 
 export default class Users extends Migration {
   async up(schema: Schema) {

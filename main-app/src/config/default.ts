@@ -1,16 +1,22 @@
 import path from "path";
 import os from "os";
 import { getEnv } from "neko-helper";
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 
 export default {
-  databases: require("./databases"),
-  storages: require("./storages"),
+  databases: await import("./databases"),
+  storages: await import("./storages"),
   port: getEnv("PORT", 3000),
   file_upload_path: path.join(os.tmpdir(), ""),
   migration: {
     path: path.join(__dirname, "..", "database/migrations"),
   },
-  loggers: require("./loggers"),
+  loggers: await import("./loggers"),
   jwt: {
     options: {
       algorithm: "RS256",

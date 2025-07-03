@@ -1,4 +1,4 @@
-import { authenticate, logResponseMiddleware } from "@root/middlewares";
+import { authenticate, logResponseMiddleware } from "../../middlewares";
 import { db, storage, logger } from "@devbro/pashmak/facades";
 import { ctx } from "neko-helper";
 import { Animal } from "../models/Animal";

@@ -1,5 +1,5 @@
-import { BadRequest, NotFound } from "http-errors";
-import * as jwt from "jsonwebtoken";
+import { HttpBadRequestError } from "neko-http/errors";
+import jwt from "jsonwebtoken";
 import { config } from "neko-config";
 
 
@@ -23,7 +23,7 @@ export async function decodeJwtToken(token: string) {
     return await jwt.decode(token);
   }
 
-  throw new BadRequest(
+  throw new HttpBadRequestError(
     "bad token. invalid, expired, or signed with wrong key.",
   );
   

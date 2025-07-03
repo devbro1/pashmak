@@ -17,7 +17,6 @@ export class Config {
   }
 
   public load(new_config_data: Record<string, any>): void {
-    console.log("Loading new configuration data:", new_config_data);
     this.configs = JSON.parse(JSON.stringify(new_config_data));
   }
 

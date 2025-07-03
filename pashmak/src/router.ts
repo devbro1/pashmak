@@ -1,7 +1,7 @@
 import { ctx } from "neko-helper";
 import { BaseModel } from "neko-orm";
 import { Request } from "neko-router";
-import { NotFound } from "http-errors";
+import { HttpNotFoundError } from "neko-http/errors";
 import { createParamDecorator } from "neko-router";
 import * as yup from "yup";
 export * from "neko-router";
@@ -16,7 +16,7 @@ export function Model(
         let rc = await model.find(ctx().get<Request>("request").params[paramName]);
         if (!rc)
         {
-            throw new NotFound("Object not found");
+            throw new HttpNotFoundError("Object not found");
         }
 
         return rc;

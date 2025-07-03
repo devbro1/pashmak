@@ -6,7 +6,7 @@ import { Request, Response } from "neko-router";
 import { config } from "neko-config";
 
 export { config };
-export function bootstrap(options: { root_dir: string }): void {
+export async function bootstrap(options: { root_dir: string }): Promise<void> {
     // This function is used to bootstrap the application.
     // It can be used to initialize the application, load configuration, etc.
     // Currently, it does nothing but can be extended in the future.
@@ -14,17 +14,18 @@ export function bootstrap(options: { root_dir: string }): void {
 
     console.log("Bootstrapping application...");
     console.log(`Root directory: ${options.root_dir}`);
-    let a = require(`${options.root_dir}/config/default`).default;
+    let a = (await import(`${options.root_dir}/config/default`)).default;
     config.load(a);
 
     console.log("Loading application modules...");
-    require(`./app/console`);
-    const { DatabaseServiceProvider } = require("./DatabaseServiceProvider");
+    await import(`./app/console`);
+    console.log("Loading Database Provider ...");
+    const { DatabaseServiceProvider } = await import("./DatabaseServiceProvider");
 
     console.log("Registering service providers...");
-    require(`${options.root_dir}/app/console`);
-    require(`${options.root_dir}/routes`);
-    require(`${options.root_dir}/schedules`);
+    await import(`${options.root_dir}/app/console`);
+    await import(`${options.root_dir}/routes`);
+    await import(`${options.root_dir}/schedules`);
 
     console.log("Setting up pre-loader for context provider...");
     context_provider.setPreLoader(async (f: Function) => {

@@ -1,10 +1,10 @@
 import {
   createJwtToken,
   decodeJwtToken,
-} from "@root/helpers";
+} from "../../helpers";
 import * as yup from "yup";
 import { User } from "../models/User";
-import { BadRequest } from "http-errors";
+import { HttpBadRequestError } from "@devbro/pashmak/http";
 import { compareBcrypt } from "neko-helper";
 import { config } from "neko-config";
 import { JwtPayload } from "jsonwebtoken";
@@ -27,11 +27,11 @@ export class AuthController extends BaseController {
     const user = await User.findOne({ username: userInfo.username });
 
     if (!user || !(await compareBcrypt(userInfo.password, user.password))) {
-      throw new BadRequest("Invalid username or password");
+      throw new HttpBadRequestError("Invalid username or password");
     }
 
     if (!user.active) {
-      throw new BadRequest(
+      throw new HttpBadRequestError(
         "This user is not active, please contact your admin.",
       );
     }
@@ -54,7 +54,7 @@ export class AuthController extends BaseController {
     const payload = (await decodeJwtToken(refresh_token))! as JwtPayload;
 
     if (payload.refresh !== true) {
-      throw new BadRequest(
+      throw new HttpBadRequestError(
         "bad token. invalid, expired, or signed with wrong key.",
       );
     }
@@ -62,11 +62,11 @@ export class AuthController extends BaseController {
     const user = await User.findOne({ id: payload.user_id });
 
     if (!user) {
-      throw new BadRequest("Invalid user_id");
+      throw new HttpBadRequestError("Invalid user_id");
     }
 
     if (!user.active) {
-      throw new BadRequest(
+      throw new HttpBadRequestError(
         "This user is not active, please contact your admin.",
       );
     }

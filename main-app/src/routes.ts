@@ -70,4 +70,4 @@ router
 
 router.addController(CatController);
 router.addController(AnimalController);
-require("./app/controllers/AuthController");
+await import("./app/controllers/AuthController");

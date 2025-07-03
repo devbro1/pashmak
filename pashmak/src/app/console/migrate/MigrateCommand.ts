@@ -80,9 +80,9 @@ export class MigrateCommand extends Command {
 
       for (const class_to_migrate of pending_migrations) {
         logger().info(`migrating up ${class_to_migrate}`);
-        const ClassToMigrate = require(
-          path.join(migrationsDir, class_to_migrate),
-        ).default;
+        const ClassToMigrate = (await import(
+          path.join(migrationsDir, class_to_migrate)
+        )).default;
         const c: Migration = new ClassToMigrate();
         await c.up(db.getSchema());
         await db.runQuery({

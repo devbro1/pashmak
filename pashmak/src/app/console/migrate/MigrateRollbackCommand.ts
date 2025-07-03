@@ -37,9 +37,9 @@ export class MigrateRollbackCommand extends Command {
         const class_to_migrate = migration.filename;
         this.context.stdout.write(`rolling back ${class_to_migrate}`);
 
-        const ClassToMigrate = require(
-          path.join(migrationsDir, class_to_migrate),
-        ).default;
+        const ClassToMigrate = (await import(
+          path.join(migrationsDir, class_to_migrate)
+        )).default;
 
         const c: Migration = new ClassToMigrate();
         await c.down(db.getSchema());
