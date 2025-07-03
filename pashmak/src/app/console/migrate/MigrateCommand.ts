@@ -60,7 +60,9 @@ export class MigrateCommand extends Command {
       let files: string[] = [];
 
       const dirEntries = await fs.readdir(migrationsDir);
-      files = dirEntries.filter((entry) => entry.endsWith(".ts")).sort();
+      files = dirEntries
+        .filter((entry) => entry.endsWith(".ts") || entry.endsWith(".js"))
+        .sort();
       let batch_number = await db.runQuery({
         sql: "select max(batch) as next_batch from migrations",
         bindings: [],
@@ -78,18 +80,27 @@ export class MigrateCommand extends Command {
         (file) => !completed_migrations.includes(file),
       );
 
+      let migrated_count = 0;
       for (const class_to_migrate of pending_migrations) {
         logger().info(`migrating up ${class_to_migrate}`);
-        const ClassToMigrate = (await import(
-          path.join(migrationsDir, class_to_migrate)
-        )).default;
+        const ClassToMigrate = (
+          await import(path.join(migrationsDir, class_to_migrate))
+        ).default;
         const c: Migration = new ClassToMigrate();
         await c.up(db.getSchema());
         await db.runQuery({
           sql: "insert into migrations (filename, batch) values ($1,$2)",
           bindings: [class_to_migrate, batch_number],
         });
+        migrated_count++;
       }
+
+      if (migrated_count === 0) {
+        logger().warn("no migrations to run!");
+        return;
+      }
+
+      logger().info(`migrated ${migrated_count} migrations successfully!`);
     });
   }
 }
