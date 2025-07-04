@@ -1,4 +1,4 @@
-import { ctx } from "neko-helper";
+import { ctx } from "@devbro/pashmak/context";
 import { Request, Response } from "@devbro/pashmak/router";
 import { HttpUnauthorizedError } from "@devbro/pashmak/http";
 import { decodeJwtToken } from "./helpers";

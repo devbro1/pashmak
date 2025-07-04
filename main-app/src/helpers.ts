@@ -1,7 +1,6 @@
-import { HttpBadRequestError } from "neko-http/errors";
+import { HttpBadRequestError } from "@devbro/pashmak/http";
 import jwt from "jsonwebtoken";
-import { config } from "neko-config";
-
+import { config } from "@devbro/pashmak/config";
 
 export function createJwtToken(data: any, token_params: jwt.SignOptions = {}) {
   const secret = config.get("jwt.secret") as string;
@@ -15,16 +14,15 @@ export function createJwtToken(data: any, token_params: jwt.SignOptions = {}) {
 }
 
 export async function decodeJwtToken(token: string) {
-  if ((await jwt.verify(token, config.get("jwt.public")))) {
+  if (await jwt.verify(token, config.get("jwt.public"))) {
     return await jwt.decode(token);
   }
 
-  if ((await jwt.verify(token, config.get("jwt.public_retired")))) {
+  if (await jwt.verify(token, config.get("jwt.public_retired"))) {
     return await jwt.decode(token);
   }
 
   throw new HttpBadRequestError(
     "bad token. invalid, expired, or signed with wrong key.",
   );
-  
 }

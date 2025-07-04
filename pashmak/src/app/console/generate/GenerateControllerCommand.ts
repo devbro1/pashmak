@@ -5,16 +5,22 @@ import path from "path";
 import * as fs from "fs/promises";
 import { config } from "neko-config";
 import handlebars from "handlebars";
+import { fileURLToPath } from "url";
+import pluralize from "pluralize";
 
-export class MakeMigrateCommand extends Command {
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export class GenerateControllerCommand extends Command {
   static paths = [
-    [`make`, `migrate`],
-    ["make", "migration"],
+    [`make`, `controller`],
+    [`generate`, `controller`],
   ];
 
   name = Option.String({ required: true });
 
   async execute() {
+    const rootDir = process.cwd();
+
     const date = new Date();
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -24,25 +30,24 @@ export class MakeMigrateCommand extends Command {
     ).padStart(5, "0");
 
     const fixed_name = Case.snake(this.name);
-    const filename = `${year}_${month}_${day}_${secondsOfDay}_${fixed_name}.ts`;
+    const filename = `${Case.capital(this.name)}Controller.ts`;
     this.context.stdout.write(`creating migration file ${filename}\n`);
 
     await fs.mkdir(config.get("migration.path"), { recursive: true });
 
     const compiledTemplate = handlebars.compile(
-      (
-        await fs.readFile(path.join(__dirname, "./make_migration.tpl"))
-      ).toString(),
+      (await fs.readFile(path.join(__dirname, "./controller.tpl"))).toString(),
     );
     const template = await compiledTemplate({
       className: Case.pascal(this.name),
+      routeName: Case.kebab(pluralize(this.name)),
     });
 
     await fs.writeFile(
-      path.join(config.get("migration.path"), filename),
+      path.join(rootDir, "src/app/controllers", filename),
       template,
     );
   }
 }
 
-cli().register(MakeMigrateCommand);
+cli().register(GenerateControllerCommand);
