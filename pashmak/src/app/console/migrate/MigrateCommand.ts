@@ -1,20 +1,12 @@
 import { cli, db as database, logger } from "../../../facades";
 import { Command, Option } from "clipanion";
 import { Blueprint } from "neko-sql";
-import { context_provider } from "neko-helper";
+import { context_provider } from "neko-context";
 import path from "path";
 import fs from "fs/promises";
 import { config } from "neko-config";
 import { Migration } from "neko-sql";
 
-/*
-pashmak make migration <FILENAME>
-pashmak migrate 
-pashmak migrate status # return status of existing migrations in db
-pashmak migrate rollback
-pashmak migrate refresh # doing all roll back then migrate
-pashmak migrate fresh # removing all tables then migrate
-*/
 export class MigrateCommand extends Command {
   static paths = [[`migrate`]];
 
