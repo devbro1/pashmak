@@ -1,35 +1,38 @@
-import { scheduler } from "./facades";
-import { DatabaseServiceProvider } from "./DatabaseServiceProvider";
-import { runNext } from "neko-helper/src";
-import { Middleware } from "neko-router/src";
-import { Request, Response } from "neko-router/src/types";
-import { context_provider } from "neko-helper/src";
-import { db } from "./facades";
-import { logger } from "@root/facades";
+import { scheduler } from "@devbro/pashmak/facades";
+import { context_provider } from "neko-context";
+import { db } from "@devbro/pashmak/facades";
+import { logger } from "@devbro/pashmak/facades";
+
+scheduler().setContextWrapper(
+  (fn: () => Promise<void>): (() => Promise<void>) => {
+    return async (): Promise<void> => {
+      await context_provider.run(async (): Promise<void> => {
+        await fn();
+      });
+    };
+  },
+);
 
 scheduler()
   .call(async () => {
-    await context_provider.run(async () => {
-      logger().info("Hello World");
-      const d = db();
-      const r = await d.runQuery({
-        sql: "select * from users",
-        bindings: [],
-      });
+    logger().info("Hello World");
+    const d = db();
+    const r = await d.runQuery({
+      sql: "select * from users",
+      bindings: [],
     });
+    logger().info({ msg: "query result", data: r });
   })
   .setCronTime("* * * * *")
   .setRunOnStart(true);
 
 scheduler()
   .call(async () => {
-    await context_provider.run(async () => {
-      logger().info("Hello World2");
-      const d = db();
-      const r = await d.runQuery({
-        sql: "select * from usersQWEQWE",
-        bindings: [],
-      });
+    logger().info("Hello World2");
+    const d = db();
+    const r = await d.runQuery({
+      sql: "select * from usersQWEQWE",
+      bindings: [],
     });
   })
   .setName("bad cron job")

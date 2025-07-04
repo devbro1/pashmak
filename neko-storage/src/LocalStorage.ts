@@ -3,14 +3,16 @@ import * as fs from 'fs/promises';
 import { createWriteStream, createReadStream, ReadStream } from 'fs';
 import * as path from 'path';
 import * as mime from 'mime-types';
-import { Metadata, Storage, StorageConfig } from '.';
+import { Metadata, StorageConfig } from './types';
+import { Storage } from './Storage';
 
-export class LocalStorage implements Storage {
-  constructor(private config: StorageConfig) {
-    if (!LocalStorage.canHandle(this.config)) {
-      throw new Error(`storage engine type mismatch, ${this.config.engine} vs local`);
+export class LocalStorage extends Storage {
+  constructor(config: StorageConfig) {
+    super(config);
+
+    if (!LocalStorage.canHandle(config)) {
+      throw new Error(`storage engine cannot handle this config.`);
     }
-
     // Ensure the base folder exists
     fs.mkdir(this.config.basePath, { recursive: true }).catch((error) => {
       throw error;

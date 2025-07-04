@@ -91,8 +91,12 @@ export class Schedule {
 export class Scheduler {
   private jobs: Schedule[] = [];
   private errorHandler: ((err: any, job: Schedule) => void) | undefined;
+  private contextWrapper: ((func: () => void) => () => void) | undefined;
 
   call(func: () => void): Schedule {
+    if (this.contextWrapper) {
+      func = this.contextWrapper(func);
+    }
     const schedule = new Schedule(func);
     this.jobs.push(schedule);
     return schedule;
@@ -127,5 +131,9 @@ export class Scheduler {
 
   getScheduleNames(): string[] {
     return this.jobs.map((job) => job.getName()).filter((name) => name !== '') as string[];
+  }
+
+  setContextWrapper(func: typeof this.contextWrapper) {
+    this.contextWrapper = func;
   }
 }

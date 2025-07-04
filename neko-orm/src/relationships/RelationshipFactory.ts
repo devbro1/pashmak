@@ -1,4 +1,4 @@
-import { Query } from 'neko-sql/src/Query';
+import { Query } from 'neko-sql';
 import { BaseModel } from '../baseModel';
 import { Case, snakeCase } from 'change-case-all';
 import { RelationshipManager1to1 } from './RelationshipManager1to1';

@@ -1,8 +1,8 @@
-import { ctx } from "neko-helper/src";
-import { Request, Response } from "neko-router/src/types";
-import { Unauthorized } from "http-errors";
-import { decodeJwtToken } from "@root/helpers";
-import { logger } from "@root/facades";
+import { ctx } from "neko-helper";
+import { Request, Response } from "@devbro/pashmak/router";
+import { HttpUnauthorizedError } from "@devbro/pashmak/http";
+import { decodeJwtToken } from "./helpers";
+import { logger } from "@devbro/pashmak/facades";
 
 export async function loggerMiddleware(
   req: Request,
@@ -33,19 +33,19 @@ export async function authenticate(
 ): Promise<void> {
   let auth_header = req.headers.authorization;
   if (!auth_header) {
-    throw new Unauthorized("missing authorization header");
+    throw new HttpUnauthorizedError("missing authorization header");
   }
 
   // Expect header format: "Bearer <token>"
   const parts = auth_header.split(" ");
   if (parts.length !== 2 || parts[0].toLowerCase() !== "bearer") {
-    throw new Unauthorized('expected "authorization: Bearer TOKEN"');
+    throw new HttpUnauthorizedError('expected "authorization: Bearer TOKEN"');
   }
   try {
     let user = await decodeJwtToken(parts[1]);
     ctx().set("auth_user", user);
   } catch (ex: any) {
-    let err = new Unauthorized("invalid jwt token");
+    let err = new HttpUnauthorizedError("invalid jwt token");
     err.cause = ex;
     throw err;
   }

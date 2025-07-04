@@ -1,8 +1,8 @@
 import { Command, Option } from "clipanion";
-import config from "config";
+import { config } from "neko-config";
 
-import { cli, httpServer, logger, scheduler } from "@root/facades";
-import { PostgresqlConnection } from "neko-sql/src/databases/postgresql/PostgresqlConnection";
+import { cli, httpServer, logger, scheduler } from "../../facades";
+import { PostgresqlConnection } from "neko-sql";
 
 export class StartCommand extends Command {
   scheduler = Option.Boolean(`--scheduler`, false);

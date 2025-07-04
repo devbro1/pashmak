@@ -1,8 +1,8 @@
 import { describe, expect, test } from '@jest/globals';
 import { HttpServer } from '../../src';
 import supertest from 'supertest';
-import { Router } from 'neko-router/src/index';
-import { Request, Response } from 'neko-router/src/types';
+import { Router } from 'neko-router';
+import { Request, Response } from 'neko-router';
 
 describe('general http server', () => {
   test('basic testing', async () => {

@@ -1,10 +1,10 @@
-import { cli, db as database } from "@root/facades";
+import { cli, db as database } from "../../../facades";
 import { Command, Option } from "clipanion";
-import { context_provider } from "neko-helper/src";
+import { context_provider } from "neko-context";
 import path from "path";
 import fs from "fs/promises";
-import config from "config";
-import { Migration } from "neko-sql/src/Migration";
+import { config } from "neko-config";
+import { Migration } from "neko-sql";
 import * as t from "typanion";
 
 export class MigrateRollbackCommand extends Command {
@@ -21,7 +21,7 @@ export class MigrateRollbackCommand extends Command {
       const db = database();
       const schema = db.getSchema();
 
-      const migrationsDir = config.get<string>("migration.path");
+      const migrationsDir = config.get("migration.path");
       let files: string[] = [];
 
       const dirEntries = await fs.readdir(migrationsDir);
@@ -37,8 +37,8 @@ export class MigrateRollbackCommand extends Command {
         const class_to_migrate = migration.filename;
         this.context.stdout.write(`rolling back ${class_to_migrate}`);
 
-        const ClassToMigrate = require(
-          path.join(migrationsDir, class_to_migrate),
+        const ClassToMigrate = (
+          await import(path.join(migrationsDir, class_to_migrate))
         ).default;
 
         const c: Migration = new ClassToMigrate();

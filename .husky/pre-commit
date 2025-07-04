@@ -20,6 +20,9 @@ fi
 
 # Run tests only in the changed workspaces
 for WORKSPACE in $CHANGED_WORKSPACES; do
-  echo "Running tests for workspace: $WORKSPACE"
-  yarn workspace "$(basename "$WORKSPACE")" run test
+
+  # Get the package name for the workspace location
+  PACKAGE_NAME=$(yarn workspaces info --json | tail -n +2 | head -n -1 | jq -r 'to_entries[] | select(.value.location == "pashmak") | .key')
+  echo "Running tests for workspace: $PACKAGE_NAME ($WORKSPACE)"
+  yarn workspace $PACKAGE_NAME test
 done

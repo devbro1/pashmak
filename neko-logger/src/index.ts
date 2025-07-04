@@ -1,4 +1,3 @@
-import { info } from 'console';
 import pino, { LoggerOptions } from 'pino';
 
 export type MapObject = Record<string, object | string | number | undefined>;
@@ -11,7 +10,7 @@ export class Logger {
   constructor(
     options: LoggerOptions<never, boolean> & {
       extrasFunction?: (message: LogMessage) => LogMessage;
-    }
+    } = {}
   ) {
     this.logger = pino(options);
 

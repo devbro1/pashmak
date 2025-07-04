@@ -1,21 +1,12 @@
-import { cli, db as database } from "@root/facades";
+import { cli, db as database, logger } from "../../../facades";
 import { Command, Option } from "clipanion";
-import { Blueprint } from "neko-sql/src/Blueprint";
-import { context_provider } from "neko-helper/src";
+import { Blueprint } from "neko-sql";
+import { context_provider } from "neko-context";
 import path from "path";
 import fs from "fs/promises";
-import config from "config";
-import { Migration } from "neko-sql/src/Migration";
-import { logger } from "@root/facades";
+import { config } from "neko-config";
+import { Migration } from "neko-sql";
 
-/*
-pashmak make migration <FILENAME>
-pashmak migrate 
-pashmak migrate status # return status of existing migrations in db
-pashmak migrate rollback
-pashmak migrate refresh # doing all roll back then migrate
-pashmak migrate fresh # removing all tables then migrate
-*/
 export class MigrateCommand extends Command {
   static paths = [[`migrate`]];
 
@@ -57,11 +48,13 @@ export class MigrateCommand extends Command {
         });
       }
 
-      const migrationsDir = config.get<string>("migration.path");
+      const migrationsDir = config.get("migration.path");
       let files: string[] = [];
 
       const dirEntries = await fs.readdir(migrationsDir);
-      files = dirEntries.filter((entry) => entry.endsWith(".ts")).sort();
+      files = dirEntries
+        .filter((entry) => entry.endsWith(".ts") || entry.endsWith(".js"))
+        .sort();
       let batch_number = await db.runQuery({
         sql: "select max(batch) as next_batch from migrations",
         bindings: [],
@@ -79,10 +72,11 @@ export class MigrateCommand extends Command {
         (file) => !completed_migrations.includes(file),
       );
 
+      let migrated_count = 0;
       for (const class_to_migrate of pending_migrations) {
         logger().info(`migrating up ${class_to_migrate}`);
-        const ClassToMigrate = require(
-          path.join(migrationsDir, class_to_migrate),
+        const ClassToMigrate = (
+          await import(path.join(migrationsDir, class_to_migrate))
         ).default;
         const c: Migration = new ClassToMigrate();
         await c.up(db.getSchema());
@@ -90,7 +84,15 @@ export class MigrateCommand extends Command {
           sql: "insert into migrations (filename, batch) values ($1,$2)",
           bindings: [class_to_migrate, batch_number],
         });
+        migrated_count++;
       }
+
+      if (migrated_count === 0) {
+        logger().warn("no migrations to run!");
+        return;
+      }
+
+      logger().info(`migrated ${migrated_count} migrations successfully!`);
     });
   }
 }

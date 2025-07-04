@@ -1,9 +1,9 @@
-import { cli } from "@root/facades";
+import { cli } from "../../../facades";
 import { Command, Option } from "clipanion";
 import { Case } from "change-case-all";
 import path from "path";
 import * as fs from "fs/promises";
-import config from "config";
+import { config } from "neko-config";
 import * as handlebars from "handlebars";
 
 /*

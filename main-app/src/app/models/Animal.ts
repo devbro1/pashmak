@@ -1,4 +1,4 @@
-import { BaseModel, Attribute } from "neko-orm/src";
+import { BaseModel, Attribute } from "neko-orm";
 
 export class Animal extends BaseModel {
   @Attribute({ primaryKey: true })

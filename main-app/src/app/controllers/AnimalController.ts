@@ -1,15 +1,8 @@
-import {
-  BaseController,
-  Controller,
-  Get,
-  Post,
-} from "neko-router/src/Controller";
-import { authenticate, logResponseMiddleware } from "@root/middlewares";
-import { db, storage, logger } from "@root/facades";
-import { ctx } from "neko-helper/src";
-import { Request, Response } from "neko-router/src/types";
+import { authenticate, logResponseMiddleware } from "../../middlewares";
+import { db, storage, logger } from "@devbro/pashmak/facades";
+import { ctx } from "neko-helper";
 import { Animal } from "../models/Animal";
-import { Model, Param } from "@root/helpers";
+import { Request, Response, Model, Param, ValidatedRequest, BaseController, Controller, Get, Post } from "@devbro/pashmak/router";
 
 @Controller("/api/v1/animals", { middlewares: [authenticate] })
 export class AnimalController extends BaseController {

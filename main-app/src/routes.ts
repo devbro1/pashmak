@@ -1,10 +1,9 @@
-import { Request, Response } from "neko-router/src/types";
-import { router as routerFunc, db as dbf } from "./facades";
-import { sleep } from "neko-helper/src";
+import { Request, Response } from "neko-router";
+import { router as routerFunc, db as dbf } from "@devbro/pashmak/facades";
+import { sleep } from "neko-helper";
 import { CatController } from "./app/controllers/CatController";
 import { AnimalController } from "./app/controllers/AnimalController";
 import { loggerMiddleware, logResponseMiddleware } from "./middlewares";
-import { AuthController } from "./app/controllers/AuthController";
 
 const router = routerFunc();
 
@@ -71,4 +70,4 @@ router
 
 router.addController(CatController);
 router.addController(AnimalController);
-router.addController(AuthController);
+await import("./app/controllers/AuthController");

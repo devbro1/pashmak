@@ -1,9 +1,8 @@
 import { Command, Option } from "clipanion";
-import { cli } from "@root/facades";
 import { generateKeyPairSync } from "crypto";
 import fs from "fs/promises";
 import path from "path";
-import { logger } from "@root/facades";
+import { logger, cli } from "../../facades";
 
 export class KeyGenerateCommand extends Command {
   static paths = [[`key`, "generate"]];
