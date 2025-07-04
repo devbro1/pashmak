@@ -42,7 +42,8 @@
     "test": "jest",
     "format": "eslint . --fix --ext ts,tsx --report-unused-disable-directives --max-warnings 0 ",
     "prepare": "husky",
-    "prettier": "prettier --write ."
+    "prettier": "prettier --write .",
+    "clean": "rm -rf dist"
   },
   "author": "Farzad Meow Khalafi",
   "license": "MIT",

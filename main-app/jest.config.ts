@@ -1,7 +1,9 @@
 module.exports = {
-  preset: "ts-jest",
+  preset: "ts-jest/presets/default-esm",
+  extensionsToTreatAsEsm: ['.ts'],
+  globals: {},
   transform: {
-    "^.+\\.(ts|tsx)?$": ['ts-jest', { tsconfig: '<rootDir>/tsconfig.json' }],
+    "^.+\\.(ts|tsx)?$": ['ts-jest', { useESM: true, tsconfig: '<rootDir>/tsconfig.json' }],
     "^.+\\.(js|jsx)$": "babel-jest",
   },
   moduleNameMapper: {

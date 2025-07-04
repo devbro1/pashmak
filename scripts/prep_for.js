@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const isDev = process.argv.includes("--dev");
+
 const folders = [
   "neko-sql",
   "neko-orm",

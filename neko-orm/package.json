@@ -20,7 +20,8 @@
     "test": "jest",
     "format": "eslint . --fix --ext ts,tsx --report-unused-disable-directives --max-warnings 0 ",
     "prepare": "husky",
-    "prettier": "prettier --write ."
+    "prettier": "prettier --write .",
+    "clean": "rm -rf dist"
   },
   "author": "Farzad Meow Khalafi",
   "license": "MIT",
@@ -66,5 +67,8 @@
   "bugs": {
     "url": "https://github.com/devbro1/sql-generator/issues"
   },
-  "homepage": "https://devbro1.github.io/sql-generator/"
+  "homepage": "https://devbro1.github.io/sql-generator/",
+  "tags": {
+    "needsCompile": true
+  }
 }

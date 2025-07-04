@@ -12,13 +12,14 @@
   "scripts": {
     "build": "tsup",
     "papa": "tsx dist/index.js",
-    "test": "jest",
+    "test": "jest --module=esnext",
     "format": "eslint . --fix --ext ts,tsx --report-unused-disable-directives --max-warnings 0 ",
     "prepare": "husky",
     "prettier": "prettier --write .",
     "dev": "nodemon --watch src --ext ts,tsx,json --signal SIGTERM --exec \"clear && tsx -r tsconfig-paths/register src/index.ts start --all | npx pino-pretty\"",
     "pashm": "tsx --transpile-only -r tsconfig-paths/register src/index.ts",
-    "pashmak": "tsx -r tsconfig-paths/register src/index.ts"
+    "pashmak": "tsx -r tsconfig-paths/register src/index.ts",
+    "clean": "rm -rf dist"
   },
   "author": "Farzad Meow Khalafi",
   "license": "MIT",
@@ -58,5 +59,8 @@
   "bugs": {
     "url": "https://github.com/devbro1/sql-generator/issues"
   },
-  "homepage": "https://devbro1.github.io/sql-generator/"
+  "homepage": "https://devbro1.github.io/sql-generator/",
+  "tags": {
+    "needsCompile": true
+  }
 }
