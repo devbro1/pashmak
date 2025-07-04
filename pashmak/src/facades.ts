@@ -1,4 +1,4 @@
-import { Router } from "neko-router";
+import { Router } from "./router";
 import { Schedule, Scheduler } from "neko-scheduler";
 import { createSingleton, ctxSafe } from "neko-helper";
 import { ctx } from "neko-helper";
@@ -6,8 +6,8 @@ import { Connection } from "neko-sql";
 import { Storage, StorageFactory } from "neko-storage";
 import { config } from "neko-config";
 import { Cli } from "clipanion";
-import { HttpServer } from "neko-http";
-import { HttpError } from "http-errors";
+import { HttpServer } from "./http";
+import { HttpError } from "./http";
 import * as yup from "yup";
 import { Logger } from "neko-logger";
 
