@@ -29,6 +29,6 @@ jobs:
       - run: yarn build:all
       - name: publish to npm
         run: |
-          ls -alt ~/
-          cat ~/.npmrc
+          ls -alt .
+          cat ./.npmrc
           yarn publish_to_npm
