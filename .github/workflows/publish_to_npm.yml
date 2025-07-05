@@ -28,8 +28,9 @@ jobs:
       - run: yarn
       - run: yarn build:all
       - name: publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           ls -alt .
-          cat /home/runner/work/_temp/.npmrc
-          cat /home/runner/work/_temp/.npmrc > ./.npmrc
+          echo //registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN > ~/.npmrc
           yarn publish_to_npm
