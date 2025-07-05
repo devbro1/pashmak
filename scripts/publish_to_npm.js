@@ -29,8 +29,6 @@ for (const wc of wcs) {
 
   console.log(`Publishing ${wc} from ${remote_version} to ${local_version}...`);
   try {
-    let a = execSync("env").toString();
-    console.log("Environment variables:", a);
     execSync(
       `cd ${workspaces[wc].location} && npm_config_registry= npm publish --access public`,
       {

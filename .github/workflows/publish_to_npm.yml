@@ -31,7 +31,5 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          grep -irl registry.yarnpkg.com ~/
-          env
           echo //registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN > ~/.npmrc
           yarn publish_to_npm
