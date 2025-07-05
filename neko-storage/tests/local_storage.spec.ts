@@ -3,7 +3,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
 import * as os from 'os';
-import { sleep } from 'neko-helper';
+import { sleep } from '@devbro/neko-helper';
 
 describe('LocalStorage', () => {
   const basePath = path.resolve(os.tmpdir(), `test-storage-${randomUUID()}`);

@@ -1,61 +1,20 @@
-# sql-generator
+# pashmak
 
 > [!CAUTION]
-> Still in Alpha. Not good for production yet!!! I expect various things to change
+> Still in Alpha. Stable to use but not battle tested for production yet!!! I expect various things to change including backward compatibility.
 
-Inspired by laravel, this is my attempt to create a create an ORM for javascript and nodejs that has all the features.
+Inspired by laravel, Pashmak is a typescript focused, ESM only framework. Pashmak was created to provide a simple and elegant way to build web applications, APIs, and services using modern JavaScript and TypeScript features. It is ideal for rapid prototyping and development of web applications, RESTful APIs, and microservices.
 
-for documentation please check [documentations](https://devbro1.github.io/sql-generator/)
+Pashmak is designed with developers in mind. It aims to provide a clean and intuitive API so developers can focus on writing business logic rather than dealing with boilerplate code.
 
-## Quick Example
+for documentation please check [documentations](https://devbro1.github.io/pashmak/)
 
-```javascript
-import { Query } from "@devbro1/sql-generator";
+## Quick start
 
-let query = new Query({
-  client: "postgresql",
-  connection: {
-    host: "my.database-server.com",
-    port: 5432,
-    database: "database-name",
-    user: "database-user",
-    password: "secretpassword!!",
-  },
-});
+-- TODO
 
-const qb = query
-  .select(["product_id", query.raw("SUM(quantity) AS total_quantity")])
-  .from("sales")
-  .where("col1", "=", "value")
-  .orWhere("col2", "=", "value2")
-  .groupBy(query.raw("product_id"));
+### Installation
 
-console.log(qb.toFullSQL());
-const result = await qb.get();
-
-console.log(result);
-```
-
-## report bugs or suggestions
-
-for bugs or suggestions please submit issues in github:
-[github issues](https://github.com/devbro1/sql-generator/issues)
-
-Please consider adding sample codes that I can test.
-
-## wanna help?
-
-wanna help? just submit a PR with new features, test cases, documentation improvements, or etc.
-If you want to help with money or coffee, please consider donating to your local animal shelter or men's shelters.
-
-### random useful commands
-
-```
-clear; jest --findRelatedTests tests/select/join.spec.ts
-```
-
-create a new typescript workspace
-
-```
-
+```bash
+npm install @devbro/pashmak
 ```

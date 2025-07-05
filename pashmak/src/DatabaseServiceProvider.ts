@@ -1,11 +1,11 @@
-import { Middleware } from "neko-router";
-import { Request, Response } from "neko-router";
-import { PostgresqlConnection } from "neko-sql";
+import { Middleware } from "@devbro/neko-router";
+import { Request, Response } from "@devbro/neko-router";
+import { PostgresqlConnection } from "@devbro/neko-sql";
 import { PoolConfig } from "pg";
-import { Connection } from "neko-sql";
-import { BaseModel } from "neko-orm";
-import { ctx } from "neko-helper";
-import { config } from "neko-config";
+import { Connection } from "@devbro/neko-sql";
+import { BaseModel } from "@devbro/neko-orm";
+import { ctx } from "@devbro/neko-context";
+import { config } from "@devbro/neko-config";
 
 export class DatabaseServiceProvider extends Middleware {
   async call(

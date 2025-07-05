@@ -1,6 +1,6 @@
 import { authenticate, logResponseMiddleware } from "../../middlewares";
 import { db, storage, logger } from "@devbro/pashmak/facades";
-import { ctx } from "@devbro/pashmak/helper";
+import { ctx } from "@devbro/pashmak/context";
 import { Animal } from "../models/Animal";
 import {
   Request,

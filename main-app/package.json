@@ -55,15 +55,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/devbro1/sql-generator.git"
+    "url": "git+ssh://git@github.com/devbro1/pashmak.git"
   },
   "keywords": [
-    "sql-generator"
+    "pashmak"
   ],
   "bugs": {
-    "url": "https://github.com/devbro1/sql-generator/issues"
+    "url": "https://github.com/devbro1/pashmak/issues"
   },
-  "homepage": "https://devbro1.github.io/sql-generator/",
+  "homepage": "https://devbro1.github.io/pashmak/",
   "tags": {
     "needsCompile": true
   }

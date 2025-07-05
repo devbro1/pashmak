@@ -94,16 +94,18 @@
     "dotenv": "^16.5.0",
     "handlebars": "^4.7.8",
     "jsonwebtoken": "^9.0.2",
-    "neko-config": "0.1.0",
-    "neko-context": "0.1.0",
-    "neko-helper": "0.1.0",
-    "neko-http": "0.1.0",
-    "neko-orm": "0.1.0",
-    "neko-sql": "0.1.7",
+    "@devbro/neko-config": "0.1.0",
+    "@devbro/neko-context": "0.1.0",
+    "@devbro/neko-helper": "0.1.0",
+    "@devbro/neko-http": "0.1.0",
+    "@devbro/neko-orm": "0.1.0",
+    "@devbro/neko-sql": "0.1.0",
     "pg-pool": "3.10.0",
     "ts-jest": "^29.3.4",
     "tsconfig-paths": "^4.2.0",
-    "yup": "^1.6.1"
+    "yup": "^1.6.1",
+    "@types/pluralize": "^0.0.33",
+    "pluralize": "^8.0.0"
   },
   "directories": {
     "doc": "docs",
@@ -111,13 +113,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/devbro1/sql-generator.git"
+    "url": "git+ssh://git@github.com/devbro1/pashmak.git"
   },
   "keywords": [
-    "sql-generator"
+    "pashmak"
   ],
   "bugs": {
-    "url": "https://github.com/devbro1/sql-generator/issues"
+    "url": "https://github.com/devbro1/pashmak/issues"
   },
-  "homepage": "https://devbro1.github.io/sql-generator/"
+  "homepage": "https://devbro1.github.io/pashmak/",
+  "tags": {
+    "needsCompile": true,
+    "canPublishToNpm": true
+  }
 }

@@ -1,11 +1,11 @@
 import { describe, expect, test } from '@jest/globals';
-import { PostgresqlConnection } from 'neko-sql';
-import { Connection } from 'neko-sql';
+import { PostgresqlConnection } from '@devbro/neko-sql';
+import { Connection } from '@devbro/neko-sql';
 import { execSync } from 'child_process';
 import { Country, Job, Region } from '../fixtures/models';
 import { BaseModel } from '../../src';
 import { faker } from '@faker-js/faker';
-import { sleep } from 'neko-helper';
+import { sleep } from '@devbro/neko-helper';
 
 describe('raw queries', () => {
   let conn: Connection;

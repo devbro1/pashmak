@@ -39,8 +39,8 @@ Sometimes you want to globally add some details to all your LogMessages. to do t
 extraFunctions in your config:
 
 ```ts
-import { ctxSafe } from "neko-helper/src";
-import { LogMessage } from "neko-logger/src";
+import { ctxSafe } from "@devbro/pashmak/helper";
+import { LogMessage } from "@devbro/pashmak/logger";
 
 export default {
   extrasFunction: (message: LogMessage) => {

@@ -1,9 +1,9 @@
-import { Query } from 'neko-sql';
+import { Query } from '@devbro/neko-sql';
 import { BaseModel } from '../baseModel';
 import { Case } from 'change-case-all';
 import { assocationOptions, RelationFactoryOptionsType } from './types';
 import { RelationshipManager } from './RelationshipManager';
-import { Parameter } from 'neko-sql';
+import { Parameter } from '@devbro/neko-sql';
 
 export class RelationshipManagerMtoM<
   Source extends BaseModel,

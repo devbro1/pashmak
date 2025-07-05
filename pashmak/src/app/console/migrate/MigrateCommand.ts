@@ -1,11 +1,11 @@
 import { cli, db as database, logger } from "../../../facades";
 import { Command, Option } from "clipanion";
-import { Blueprint } from "neko-sql";
-import { context_provider } from "neko-context";
+import { Blueprint } from "@devbro/neko-sql";
+import { context_provider } from "@devbro/neko-context";
 import path from "path";
 import fs from "fs/promises";
-import { config } from "neko-config";
-import { Migration } from "neko-sql";
+import { config } from "@devbro/neko-config";
+import { Migration } from "@devbro/neko-sql";
 
 export class MigrateCommand extends Command {
   static paths = [[`migrate`]];

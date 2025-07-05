@@ -3,7 +3,7 @@ import { Command, Option } from "clipanion";
 import { Case } from "change-case-all";
 import path from "path";
 import * as fs from "fs/promises";
-import { config } from "neko-config";
+import { config } from "@devbro/neko-config";
 import handlebars from "handlebars";
 import { fileURLToPath } from "url";
 import pluralize from "pluralize";

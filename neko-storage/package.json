@@ -1,7 +1,7 @@
 {
-  "name": "neko-storage",
+  "name": "@devbro/neko-storage",
   "version": "0.1.0",
-  "description": "file storage implementation",
+  "description": "abstracted file storage implementation",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -38,11 +38,11 @@
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
     "tsup": "^8.0.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "@types/mime-types": "^2.1.4"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.817.0",
-    "@types/mime-types": "^2.1.4",
     "mime-types": "^3.0.1"
   },
   "directories": {
@@ -54,6 +54,8 @@
     "url": "git+ssh://git@github.com/devbro1/pashmak.git"
   },
   "keywords": [
+    "@devbro/neko-storage",
+    "devbro",
     "neko-storage",
     "file storage",
     "file management"
@@ -63,6 +65,7 @@
   },
   "homepage": "https://devbro1.github.io/pashmak/",
   "tags": {
-    "needsCompile": true
+    "needsCompile": true,
+    "canPublishToNpm": true
   }
 }

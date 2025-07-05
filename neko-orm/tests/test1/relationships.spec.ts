@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { PostgresqlConnection, Connection } from 'neko-sql';
+import { PostgresqlConnection, Connection } from '@devbro/neko-sql';
 import { execSync } from 'child_process';
 import { User, Profile, Post, Comment, Image, Tag, Viewer } from '../fixtures/models_blog';
 import { BaseModel } from '../../src';

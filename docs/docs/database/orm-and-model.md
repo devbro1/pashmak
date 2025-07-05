@@ -9,7 +9,7 @@ The aim is to make accessing database easier and more friendly using objects.
 to create a new model:
 
 ```typescript
-import { BaseModel, Attribute } from "neko-orm/src";
+import { BaseModel, Attribute } from "@devbro/pashmak/orm";
 
 export class User extends BaseModel {
   protected guarded: string[] = ["password"];

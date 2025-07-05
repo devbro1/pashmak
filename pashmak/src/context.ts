@@ -1,1 +1,1 @@
-export * from "neko-context";
+export * from "@devbro/neko-context";

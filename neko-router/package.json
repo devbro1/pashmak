@@ -1,5 +1,5 @@
 {
-  "name": "neko-router",
+  "name": "@devbro/neko-router",
   "version": "0.1.0",
   "description": "general purpose router for URI to controller selection",
   "main": "./dist/index.js",
@@ -40,32 +40,24 @@
     "tsup": "^8.0.2",
     "typescript": "^5.3.3"
   },
-  "dependencies": {
-    "@types/pluralize": "^0.0.33",
-    "@types/sqlstring": "^2.3.2",
-    "luxon": "^3.4.4",
-    "neko-sql": "0.1.7",
-    "pluralize": "^8.0.0",
-    "sqlstring": "^2.3.3",
-    "sync-threads": "^1.0.1",
-    "synckit": "^0.9.0"
-  },
+  "dependencies": {},
   "directories": {
     "doc": "docs",
     "test": "tests"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/devbro1/sql-generator.git"
+    "url": "git+ssh://git@github.com/devbro1/pashmak.git"
   },
   "keywords": [
-    "sql-generator"
+    "pashmak"
   ],
   "bugs": {
-    "url": "https://github.com/devbro1/sql-generator/issues"
+    "url": "https://github.com/devbro1/pashmak/issues"
   },
-  "homepage": "https://devbro1.github.io/sql-generator/",
+  "homepage": "https://devbro1.github.io/pashmak/",
   "tags": {
-    "needsCompile": true
+    "needsCompile": true,
+    "canPublishToNpm": true
   }
 }
