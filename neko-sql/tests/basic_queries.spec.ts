@@ -20,7 +20,7 @@ describe('raw queries', () => {
 
     console.log('creating test database', db_config.database);
     execSync(
-      `psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} postgres -c "CREATE DATABASE ${db_config.database}"`
+      `PGPASSWORD=${db_config.password} psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} postgres -c "CREATE DATABASE ${db_config.database}"`
     );
     console.log('load database schema and data');
     execSync(
