@@ -65,6 +65,6 @@
   "homepage": "https://devbro1.github.io/pashmak/",
   "tags": {
     "needsCompile": true,
-    "canBeUsedInBrowser": true
+    "canBeUsedInBrowser": false
   }
 }
