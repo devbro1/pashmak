@@ -43,7 +43,7 @@ describe('data manipulations', () => {
     await conn?.disconnect();
     await PostgresqlConnection.pool.end();
     execSync(
-      `psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} postgres -c "DROP DATABASE ${db_config.database}"`
+      `PGPASSWORD=${db_config.password} psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} postgres -c "DROP DATABASE ${db_config.database}"`
     );
   });
 
