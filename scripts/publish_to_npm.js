@@ -31,9 +31,12 @@ for (const wc of wcs) {
   try {
     let a = execSync("env").toString();
     console.log("Environment variables:", a);
-    execSync(`cd ${workspaces[wc].location} && npm publish --access public`, {
-      cwd: workspacePath,
-    });
+    execSync(
+      `cd ${workspaces[wc].location} && npm_config_registry= npm publish --access public`,
+      {
+        cwd: workspacePath,
+      },
+    );
     console.log(`Successfully published ${wc}`);
   } catch (error) {
     console.error(`Failed to publish ${wc}:`, error.message);
