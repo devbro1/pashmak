@@ -20,7 +20,7 @@ for (const wc of wcs) {
 
   let local_version = workspaces[wc].packageJson.version;
 
-  if (remote_version !== local_version) {
+  if (remote_version === local_version) {
     console.log(
       `Skipping ${wc} as the local version matches the remote version.`,
     );
