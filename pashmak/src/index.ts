@@ -1,9 +1,9 @@
 import dotenv from "dotenv";
-import { context_provider } from "neko-context";
-import { Middleware } from "neko-router";
-import { runNext } from "neko-helper";
-import { Request, Response } from "neko-router";
-import { config } from "neko-config";
+import { context_provider } from "@devbro/neko-context";
+import { Middleware } from "@devbro/neko-router";
+import { runNext } from "@devbro/neko-helper";
+import { Request, Response } from "@devbro/neko-router";
+import { config } from "@devbro/neko-config";
 
 export { config };
 export async function bootstrap(options: { root_dir: string }): Promise<void> {

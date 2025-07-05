@@ -1,5 +1,10 @@
-import { Request, Response } from 'neko-router';
-import { Middleware } from 'neko-router';
+import { Request, Response, Middleware } from '@devbro/neko-router';
+
+/**
+ * create a singleton using the function provided.
+ * @param func - a function that will be called to create the instance.
+ * @returns A function that return a singleton instance of the type T for a given label.
+ */
 export function createSingleton<T>(
   func: (...args: any[]) => T
 ): (label?: string, ...args: any[]) => T {

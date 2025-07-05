@@ -11,9 +11,17 @@ export class KeyGenerateCommand extends Command {
     category: `Main`,
     description: `generate keys`,
     details: `
-      TODO
+      This command generates RSA key pair for JWT signing.
+      Use --rotate flag to preserve old public key.
     `,
-    examples: [],
+    examples: [
+      [`Generate new keys`, `key generate`],
+      [`Rotate existing keys`, `key generate --rotate`],
+    ],
+  });
+
+  rotate = Option.Boolean(`--rotate`, false, {
+    description: `Rotate existing keys (backup old keys before replacement)`,
   });
 
   async execute() {
@@ -31,6 +39,8 @@ export class KeyGenerateCommand extends Command {
     });
 
     let envfile = await fs.readFile(path.join(process.cwd(), ".env"), "utf-8");
+    let old_public_key = envfile.match(/^jwt_secret_public=(.*)/m);
+
     envfile = this.addEnvParam(
       envfile,
       "jwt_secret_public",
@@ -41,6 +51,14 @@ export class KeyGenerateCommand extends Command {
       "jwt_secret_private",
       this.stripPemHeaders(privateKey),
     );
+
+    if (this.rotate && old_public_key && old_public_key[1]) {
+      envfile = this.addEnvParam(
+        envfile,
+        "jwt_secret_public_retired",
+        old_public_key[1],
+      );
+    }
 
     await fs.writeFile(path.join(process.cwd(), ".env"), envfile, "utf-8");
   }

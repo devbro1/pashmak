@@ -1,5 +1,5 @@
-import { Migration } from "neko-sql";
-import { Schema, Blueprint } from "neko-sql";
+import { Migration } from "@devbro/pashmak/sql";
+import { Schema, Blueprint } from "@devbro/pashmak/sql";
 import { User } from "../../app/models/User";
 
 export default class Users extends Migration {

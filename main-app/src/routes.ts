@@ -1,6 +1,6 @@
-import { Request, Response } from "neko-router";
+import { Request, Response } from "@devbro/pashmak/router";
 import { router as routerFunc, db as dbf } from "@devbro/pashmak/facades";
-import { sleep } from "neko-helper";
+import { sleep } from "@devbro/pashmak/helper";
 import { CatController } from "./app/controllers/CatController";
 import { AnimalController } from "./app/controllers/AnimalController";
 import { loggerMiddleware, logResponseMiddleware } from "./middlewares";

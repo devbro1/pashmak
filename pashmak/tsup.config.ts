@@ -9,4 +9,5 @@ export default defineConfig({
   clean: true,
   bundle: false,
   skipNodeModulesBundle: true,
+  onSuccess: 'node scripts/copy-tpl.ts',
 });

@@ -3,17 +3,9 @@ import { Command, Option } from "clipanion";
 import { Case } from "change-case-all";
 import path from "path";
 import * as fs from "fs/promises";
-import { config } from "neko-config";
-import * as handlebars from "handlebars";
+import { config } from "@devbro/neko-config";
+import handlebars from "handlebars";
 
-/*
-pashmak make migration <FILENAME>
-pashmak migrate 
-pashmak migrate status # return status of existing migrations in db
-pashmak migrate rollback
-pashmak migrate refresh # doing all roll back then migrate
-pashmak migrate fresh # removing all tables then migrate
-*/
 export class MakeMigrateCommand extends Command {
   static paths = [
     [`make`, `migrate`],

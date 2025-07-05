@@ -23,7 +23,7 @@ describe('data manipulations', () => {
   beforeAll(async () => {
     console.log('creating test database', db_config.database);
     execSync(
-      `psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} postgres -c "CREATE DATABASE ${db_config.database}"`
+      `PGPASSWORD=${db_config.password} psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} postgres -c "CREATE DATABASE ${db_config.database}"`
     );
 
     conn = new PostgresqlConnection(db_config);
@@ -43,7 +43,7 @@ describe('data manipulations', () => {
     await conn?.disconnect();
     await PostgresqlConnection.pool.end();
     execSync(
-      `psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} postgres -c "DROP DATABASE ${db_config.database}"`
+      `PGPASSWORD=${db_config.password} psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} postgres -c "DROP DATABASE ${db_config.database}"`
     );
   });
 

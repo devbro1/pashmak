@@ -1,5 +1,5 @@
-import { BaseModel, Attribute } from "neko-orm";
-import { encryptPassword, isBcryptHash } from "neko-helper";
+import { BaseModel, Attribute } from "@devbro/pashmak/orm";
+import { encryptPassword, isBcryptHash } from "@devbro/pashmak/helper";
 
 export class User extends BaseModel {
   protected guarded: string[] = ["password"];

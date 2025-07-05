@@ -1,15 +1,15 @@
 import { Router } from "./router";
-import { Schedule, Scheduler } from "neko-scheduler";
-import { createSingleton, ctxSafe } from "neko-helper";
-import { ctx } from "neko-helper";
-import { Connection } from "neko-sql";
-import { Storage, StorageFactory } from "neko-storage";
-import { config } from "neko-config";
+import { Schedule, Scheduler } from "@devbro/neko-scheduler";
+import { createSingleton } from "@devbro/neko-helper";
+import { ctx, ctxSafe } from "@devbro/neko-context";
+import { Connection } from "@devbro/neko-sql";
+import { Storage, StorageFactory } from "@devbro/neko-storage";
+import { config } from "@devbro/neko-config";
 import { Cli } from "clipanion";
 import { HttpServer } from "./http";
 import { HttpError } from "./http";
 import * as yup from "yup";
-import { Logger } from "neko-logger";
+import { Logger } from "@devbro/neko-logger";
 
 export const router = createSingleton<Router>(() => new Router());
 export const scheduler = createSingleton<Scheduler>(() => {
@@ -81,8 +81,12 @@ export const httpServer = createSingleton<HttpServer>(() => {
 });
 
 export const logger = createSingleton<Logger>((label) => {
-  let logger_config: any = config.get(["loggers", label].join("."));
-  let rc = new Logger(logger_config);
+  const logger_config: any = config.get(["loggers", label].join("."));
+  const rc = new Logger(logger_config);
+  rc.setExtrasFunction((message: any) => {
+    message.requestId = ctxSafe()?.get("requestId") || "N/A";
+    return message;
+  });
 
   return rc;
 });

@@ -1,7 +1,7 @@
 {
-  "name": "neko-scheduler",
+  "name": "@devbro/neko-scheduler",
   "version": "0.1.0",
-  "description": "cron implementation",
+  "description": "scheduling/cron implementation with context support",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -45,13 +45,8 @@
   },
   "dependencies": {
     "@types/pluralize": "^0.0.33",
-    "@types/sqlstring": "^2.3.2",
     "cron": "^4.3.0",
-    "luxon": "^3.4.4",
-    "pluralize": "^8.0.0",
-    "sqlstring": "^2.3.3",
-    "sync-threads": "^1.0.1",
-    "synckit": "^0.9.0"
+    "pluralize": "^8.0.0"
   },
   "directories": {
     "doc": "docs",
@@ -59,16 +54,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/devbro1/sql-generator.git"
+    "url": "git+ssh://git@github.com/devbro1/pashmak.git"
   },
   "keywords": [
-    "sql-generator"
+    "pashmak"
   ],
   "bugs": {
-    "url": "https://github.com/devbro1/sql-generator/issues"
+    "url": "https://github.com/devbro1/pashmak/issues"
   },
-  "homepage": "https://devbro1.github.io/sql-generator/",
+  "homepage": "https://devbro1.github.io/pashmak/",
   "tags": {
-    "needsCompile": true
+    "needsCompile": true,
+    "canPublishToNpm": false
   }
 }

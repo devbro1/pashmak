@@ -9,7 +9,7 @@ Under the hood, we are using [config](https://www.npmjs.com/package/config) libr
 To start place your related configs in `config/default.ts` file and it will be autoloaded.
 
 ```typescript
-import { config } from "neko-config";
+import { config } from "@devbro/pashmak/config";
 
 console.log(config.get("databases"));
 ```
@@ -72,7 +72,7 @@ there is also .env support in case you want to load some configs that way. pleas
 some configs are essential and you want to stop the process without them. you can do this:
 
 ```ts
-import { getEnv } from "neko-helper/src";
+import { getEnv } from "@devbro/pashmak/helper";
 
 export default {
   https_port: getEnv("HTTPS_PORT", 443),

@@ -1,5 +1,5 @@
-import { ctxSafe } from "neko-helper";
-import { LogMessage } from "neko-logger";
+import { ctxSafe } from "@devbro/pashmak/context";
+import { LogMessage } from "@devbro/pashmak/logger";
 
 export default {
   level: process.env.NODE_ENV === "test" ? "silent" : "info",

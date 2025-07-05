@@ -1,14 +1,17 @@
-import {
-  createJwtToken,
-  decodeJwtToken,
-} from "../../helpers";
+import { createJwtToken, decodeJwtToken } from "../../helpers";
 import * as yup from "yup";
 import { User } from "../models/User";
 import { HttpBadRequestError } from "@devbro/pashmak/http";
-import { compareBcrypt } from "neko-helper";
-import { config } from "neko-config";
+import { compareBcrypt } from "@devbro/pashmak/helper";
+import { config } from "@devbro/pashmak/config";
 import { JwtPayload } from "jsonwebtoken";
-import { ValidatedRequest, BaseController, Controller, Get, Post } from "@devbro/pashmak/router";
+import {
+  ValidatedRequest,
+  BaseController,
+  Controller,
+  Get,
+  Post,
+} from "@devbro/pashmak/router";
 import { router } from "@devbro/pashmak/facades";
 
 @Controller("/api/v1/auth")

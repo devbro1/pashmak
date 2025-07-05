@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { PostgresqlConnection, Connection } from 'neko-sql';
+import { PostgresqlConnection, Connection } from '@devbro/neko-sql';
 import { execSync } from 'child_process';
 import { User, Profile, Post, Comment, Image, Tag, Viewer } from '../fixtures/models_blog';
 import { BaseModel } from '../../src';
@@ -18,10 +18,10 @@ describe('relationships', () => {
       port: parseInt(process.env.DB_PORT || '5432'),
     };
     execSync(
-      `psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} postgres -c "CREATE DATABASE ${db_config.database}"`
+      `PGPASSWORD=${db_config.password} psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} postgres -c "CREATE DATABASE ${db_config.database}"`
     );
     execSync(
-      `psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} -f ./tests/fixtures/load_blog_db_pg.sql ${db_config.database}`
+      `PGPASSWORD=${db_config.password} psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} -f ./tests/fixtures/load_blog_db_pg.sql ${db_config.database}`
     );
     conn = new PostgresqlConnection(db_config);
     await conn.connect();

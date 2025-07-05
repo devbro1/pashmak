@@ -1,4 +1,4 @@
-import { Query } from 'neko-sql';
+import { Query } from '@devbro/neko-sql';
 import { BaseModel } from '../baseModel';
 
 export type assocationOptions = {

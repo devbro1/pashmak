@@ -1,12 +1,11 @@
 import path from "path";
 import os from "os";
-import { getEnv } from "neko-helper";
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { getEnv } from "@devbro/pashmak/helper";
+import { dirname } from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
 
 export default {
   databases: await import("./databases"),
@@ -34,7 +33,7 @@ export default {
       "-----BEGIN PUBLIC KEY-----\n" +
       process.env.jwt_secret_public +
       "\n-----END PUBLIC KEY-----\n",
-      public_retired:
+    public_retired:
       "-----BEGIN PUBLIC KEY-----\n" +
       process.env.jwt_secret_public_retired +
       "\n-----END PUBLIC KEY-----\n",

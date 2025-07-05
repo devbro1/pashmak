@@ -1,11 +1,11 @@
 import { describe, expect, test } from '@jest/globals';
-import { PostgresqlConnection } from 'neko-sql';
-import { Connection } from 'neko-sql';
+import { PostgresqlConnection } from '@devbro/neko-sql';
+import { Connection } from '@devbro/neko-sql';
 import { execSync } from 'child_process';
 import { Country, Job, Region } from '../fixtures/models';
 import { BaseModel } from '../../src';
 import { faker } from '@faker-js/faker';
-import { sleep } from 'neko-helper';
+import { sleep } from '@devbro/neko-helper';
 
 describe('raw queries', () => {
   let conn: Connection;
@@ -20,10 +20,10 @@ describe('raw queries', () => {
       port: parseInt(process.env.DB_PORT || '5432'),
     };
     execSync(
-      `psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} postgres -c "CREATE DATABASE ${db_config.database}"`
+      `PGPASSWORD=${db_config.password} psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} postgres -c "CREATE DATABASE ${db_config.database}"`
     );
     execSync(
-      `psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} -f ./tests/fixtures/load_hr_db_pg.sql ${db_config.database}`
+      `PGPASSWORD=${db_config.password} psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} -f ./tests/fixtures/load_hr_db_pg.sql ${db_config.database}`
     );
     conn = new PostgresqlConnection(db_config);
     await conn.connect();

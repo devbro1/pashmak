@@ -2,7 +2,6 @@ import "@/initialize";
 
 import { describe, expect, test } from "vitest";
 import supertest from "supertest";
-import { Request, Response } from "neko-router";
 import { httpServer } from "@devbro/pashmak/facades";
 
 describe("basic tests", () => {
