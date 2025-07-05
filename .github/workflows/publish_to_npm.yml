@@ -30,9 +30,6 @@ jobs:
       - name: publish to npm
         run: |
           ls -alt .
-          env
-          find ~/ -name ".npmrc"
           cat /home/runner/work/_temp/.npmrc
-          cat /home/runner/.nvm/.npmrc
-          cat /home/runner/work/_temp/.npmrc > ~/.npmrc
+          cat /home/runner/work/_temp/.npmrc > ./.npmrc
           yarn publish_to_npm
