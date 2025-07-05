@@ -1,7 +1,7 @@
 import { Router } from "./router";
 import { Schedule, Scheduler } from "@devbro/neko-scheduler";
 import { createSingleton } from "@devbro/neko-helper";
-import { ctx } from "@devbro/neko-context";
+import { ctx, ctxSafe } from "@devbro/neko-context";
 import { Connection } from "@devbro/neko-sql";
 import { Storage, StorageFactory } from "@devbro/neko-storage";
 import { config } from "@devbro/neko-config";
@@ -81,8 +81,12 @@ export const httpServer = createSingleton<HttpServer>(() => {
 });
 
 export const logger = createSingleton<Logger>((label) => {
-  let logger_config: any = config.get(["loggers", label].join("."));
-  let rc = new Logger(logger_config);
+  const logger_config: any = config.get(["loggers", label].join("."));
+  const rc = new Logger(logger_config);
+  rc.setExtrasFunction((message: any) => {
+    message.requestId = ctxSafe()?.get("requestId") || "N/A";
+    return message;
+  });
 
   return rc;
 });

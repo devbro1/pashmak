@@ -12,7 +12,14 @@ export class Logger {
       extrasFunction?: (message: LogMessage) => LogMessage;
     } = {}
   ) {
-    this.logger = pino(options);
+    this.logger = pino({
+      formatters: {
+        level(label, number) {
+          return { level: label }; // use label (e.g., 'info', 'error') or number (e.g., 30, 50)
+        },
+      },
+      ...options,
+    });
 
     if (options.extrasFunction) {
       this.extraFunc = options.extrasFunction;
