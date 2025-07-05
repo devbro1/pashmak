@@ -2,7 +2,7 @@ name: Publish Package to npmjs
 on:
   push:
     branches:
-      - master2
+      - master
 jobs:
   run-tests:
     uses: ./.github/workflows/test.yml
