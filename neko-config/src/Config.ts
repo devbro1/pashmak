@@ -5,7 +5,7 @@ export class Config {
   private static instance: Config;
   private configs: Record<string, any>;
 
-  private constructor() {
+  constructor() {
     this.configs = {};
   }
 
