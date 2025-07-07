@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import { context_provider } from "@devbro/neko-context";
 import { Middleware } from "@devbro/neko-router";
-import { runNext } from "@devbro/neko-helper";
+import { runNext } from "@devbro/neko-router";
 import { Request, Response } from "@devbro/neko-router";
 import { config } from "@devbro/neko-config";
 

@@ -52,7 +52,8 @@
   },
   "dependencies": {
     "formidable": "^3.5.4",
-    "@devbro/neko-router": "0.1.0"
+    "@devbro/neko-context": "^0.1.0",
+    "@devbro/neko-router": "^0.1.0"
   },
   "directories": {
     "doc": "docs",
@@ -71,6 +72,6 @@
   "homepage": "https://devbro1.github.io/pashmak/",
   "tags": {
     "needsCompile": true,
-    "canPublishToNpm": false
+    "canPublishToNpm": true
   }
 }

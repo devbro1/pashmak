@@ -24,7 +24,7 @@
     "neko-scheduler",
     "neko-sql",
     "neko-storage",
-    "main-app",
+    "test-app",
     "pashmak"
   ]
 }
