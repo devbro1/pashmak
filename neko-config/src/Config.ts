@@ -29,6 +29,11 @@ export class Config {
     }
   }
 
+  public getOrFail(key: string, default_value: any = undefined): any {
+    const results = JSONPath({ path: key, json: this.configs });
+    return results.length > 0 ? results[0] : default_value;
+  }
+
   public has(key: string): boolean {
     try {
       const results = JSONPath({ path: key, json: this.configs });
