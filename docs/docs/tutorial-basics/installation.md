@@ -13,3 +13,10 @@ npm install
 
 npm run dev
 ```
+
+to do a complete build and then running you can:
+
+```
+npm run build
+npm run start start --all
+```
