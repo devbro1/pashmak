@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-context",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "neko context is a lightweight context management library for JavaScript and TypeScript applications, designed to simplify state management and dependency injection.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

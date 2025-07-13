@@ -6,6 +6,9 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "type": "module",
+  "bin": {
+    "pashmak": "./dist/pashmak_cli.js"
+  },
   "files": [
     "dist"
   ],
@@ -68,7 +71,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && chmod +x dist/pashmak_cli.js",
     "test": "jest",
     "format": "eslint . --fix --ext ts,tsx --report-unused-disable-directives --max-warnings 0 ",
     "prepare": "husky",
@@ -126,6 +129,6 @@
   "homepage": "https://devbro1.github.io/pashmak/",
   "tags": {
     "needsCompile": true,
-    "canPublishToNpm": false
+    "canPublishToNpm": true
   }
 }

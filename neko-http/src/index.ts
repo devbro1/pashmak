@@ -1,18 +1,25 @@
-import { IncomingMessage, RequestListener, ServerResponse, createServer } from 'http';
+import { IncomingMessage, ServerResponse, createServer } from 'node:http';
 import { createServer as createServerSecured } from 'https';
 import { Route, Router } from '@devbro/neko-router';
-import { HttpNotFoundError, HttpUnsupportedMediaTypeError } from './errors';
+import { HttpError, HttpNotFoundError, HttpUnsupportedMediaTypeError } from './errors';
 import { Request } from '@devbro/neko-router';
 import { context_provider, ctx } from '@devbro/neko-context';
 import formidable from 'formidable';
 // @ts-ignore
 import { firstValues } from 'formidable/src/helpers/firstValues.js';
-import { config } from '@devbro/neko-config';
 export * from './errors';
 
 export class HttpServer {
   private https_certs: undefined | { key: string; cert: string } = undefined;
-  constructor() {}
+  private uploadPath: string;
+
+  constructor(
+    options: {
+      uploadPath?: string;
+    } = { uploadPath: '/tmp/uploads' }
+  ) {
+    this.uploadPath = options?.uploadPath || '/tmp/uploads';
+  }
   private requestId: number = 1;
 
   private router: Router | undefined;
@@ -32,6 +39,17 @@ export class HttpServer {
   }
 
   private async errorHandler(err: Error, req: IncomingMessage, res: ServerResponse): Promise<void> {
+    if (err instanceof HttpError) {
+      res.writeHead(err.statusCode, { 'Content-Type': 'application/json' });
+      res.end(
+        JSON.stringify({
+          message: err.message,
+          code: err.code,
+        })
+      );
+      return;
+    }
+
     res.writeHead(500, { 'Content-Type': 'text/plain' });
     res.end('Internal Server Error');
   }
@@ -59,7 +77,7 @@ export class HttpServer {
         ) {
           const form = formidable({
             multiples: true,
-            uploadDir: config.get('file_upload_path'),
+            uploadDir: this.uploadPath,
             keepExtensions: true,
           });
 
@@ -72,7 +90,7 @@ export class HttpServer {
         } else {
           let body = '';
 
-          req.on('data', (chunk) => {
+          req.on('data', (chunk: any) => {
             body += chunk.toString(); // Convert Buffer to string
           });
 

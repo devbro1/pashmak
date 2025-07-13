@@ -1,57 +1,89 @@
 ---
-sidebar_position: 5
+sidebar_position: 4
 ---
 
 # Router
 
-Documents are **groups of pages** connected through:
+Router facade is the backbone of http server to connect different routes to your controllers.
 
-- a **sidebar**
-- **previous/next navigation**
-- **versioning**
+```ts
+import { Request, Response } from "@devbro/pashmak/router";
+import { router } from "@devbro/pashmak/facades";
 
-## Create your first Doc
+import { CatController } from "./app/controllers/CatController";
+import { AnimalController } from "./app/controllers/AnimalController";
+import { loggerMiddleware, logResponseMiddleware } from "./middlewares";
 
-Create a Markdown file at `docs/hello.md`:
+router.addGlobalMiddleware(loggerMiddleware);
 
-```md title="docs/hello.md"
-# Hello
+router().addRoute(
+  ["GET", "HEAD"],
+  "/api/v1/countries",
+  async (req: any, res: any) => {
+    return { yey: "GET countries" };
+  },
+);
 
-This is my **first Docusaurus document**!
+router.addRoute("GET", "/api/v1/countries", async (req: any, res: any) => {
+  return { yey: "GET countries" };
+});
+
+router
+  .addRoute(["GET", "HEAD"], "/api/v1/regions", async (req: any, res: any) => {
+    return { yey: "GET regions" };
+  })
+  .addMiddleware(logResponseMiddleware);
+
+router.addController(CatController);
+router.addController(AnimalController);
 ```
 
-A new document is now available at [http://localhost:3000/docs/hello](http://localhost:3000/docs/hello).
+router manages both middlewares and controlers.
 
-## Configure the Sidebar
+controller can be either a Controller class or an async function that gets a request and response object.
 
-Docusaurus automatically **creates a sidebar** from the `docs` folder.
+## functional controller
 
-Add metadata to customize the sidebar label and position:
+basic format of a functional controller is:
 
-```md title="docs/hello.md" {1-4}
----
-sidebar_label: "Hi!"
-sidebar_position: 3
----
-
-# Hello
-
-This is my **first Docusaurus document**!
-```
-
-It is also possible to create your sidebar explicitly in `sidebars.js`:
-
-```js title="sidebars.js"
-export default {
-  tutorialSidebar: [
-    "intro",
-    // highlight-next-line
-    "hello",
-    {
-      type: "category",
-      label: "Tutorial",
-      items: ["tutorial-basics/create-a-document"],
-    },
-  ],
+```ts
+async (req: Request, res: Response) => {
+  return { message: "GET regions" };
 };
+```
+
+if you want to do more complex returns you can directly modify Response.
+
+> [!CAUTION]
+> Response and Request objects are NOT the standard objects defined as part of node, make sure to import them from @pashmak.
+
+```ts
+import { Request, Response } from "@devbro/pashmak/router";
+
+async (req: Request, res: Response) => {
+  res.writeHead(418, { "Content-Type": "text/plain" });
+  res.end("Can you guess what I am?");
+};
+```
+
+## Error handling
+
+Router is able to handle error by default. If you throw any error of type `HttpError`, httpserver can render them as json right away. If error is of any other type, server will return a generic 500 error.
+
+```ts
+import { Request, Response } from "@devbro/pashmak/router";
+import { HttpError, HTTPUnauthorizedError } from "@devbro/pashmak/http";
+async (req: Request, res: Response) => {
+  throw new HTTPUnauthorizedError();
+};
+```
+
+if you want to have your own custom error handler you can:
+
+```ts
+import { server } from '@devbro/pashmak/facades';
+
+server().setErrorHandler(async (err: Error, req: any, res: any) => {
+  // ???
+}
 ```
