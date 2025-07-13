@@ -1,4 +1,4 @@
-import { IncomingMessage, ServerResponse, createServer } from 'http';
+import { IncomingMessage, ServerResponse, createServer } from 'node:http';
 import { createServer as createServerSecured } from 'https';
 import { Route, Router } from '@devbro/neko-router';
 import { HttpError, HttpNotFoundError, HttpUnsupportedMediaTypeError } from './errors';

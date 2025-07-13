@@ -22,7 +22,7 @@
     "qdev": "tsx -r tsconfig-paths/register src/index.ts",
     "clean": "rm -rf dist"
   },
-  "author": "Farzad Meow Khalafi",
+  "author": "???",
   "license": "MIT",
   "devDependencies": {
     "@swc/core": "^1.12.9",
@@ -31,9 +31,7 @@
     "@types/supertest": "^6.0.2",
     "@types/yup": "^0.32.0",
     "nodemon": "^3.1.10",
-    "pino-pretty": "^13.0.0",
     "supertest": "^6.3.3",
-    "ts-node": "^10.9.2",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
@@ -41,12 +39,9 @@
   "dependencies": {
     "@devbro/pashmak": "0.1.0",
     "bcryptjs": "^3.0.2",
-    "change-case-all": "^2.1.0",
     "clipanion": "^4.0.0-rc.4",
     "dotenv": "^16.5.0",
-    "handlebars": "^4.7.8",
     "jsonwebtoken": "^9.0.2",
-    "pg-pool": "3.10.0",
     "tsconfig-paths": "^4.2.0",
     "yup": "^1.6.1"
   },
