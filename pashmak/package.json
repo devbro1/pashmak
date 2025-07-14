@@ -1,13 +1,13 @@
 {
   "name": "@devbro/pashmak",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "testing application for the entire repo",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "type": "module",
   "bin": {
-    "pashmak": "./dist/pashmak_cli.js"
+    "pashmak": "./dist/bin/pashmak_cli.js"
   },
   "files": [
     "dist"
@@ -71,7 +71,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsup && chmod +x dist/pashmak_cli.js",
+    "build": "tsup ",
     "test": "jest",
     "format": "eslint . --fix --ext ts,tsx --report-unused-disable-directives --max-warnings 0 ",
     "prepare": "husky",

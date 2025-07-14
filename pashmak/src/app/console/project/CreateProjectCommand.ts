@@ -6,7 +6,6 @@ import * as fs from "fs/promises";
 import { fileURLToPath } from "url";
 import handlebars from "handlebars";
 import { execSync } from "child_process";
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export class CreateProjectCommand extends Command {
   static paths = [[`create`, `project`]];
@@ -20,23 +19,33 @@ export class CreateProjectCommand extends Command {
     `,
     examples: [
       [
-        `Create a new project in the current directory`,
-        `create project my-project`,
+        `Create a new project in specified directory`,
+        `create project --path /path/to/my-project --git`,
       ],
       [
-        `Create a new project at a specific path`,
-        `create project my-project --path /path/to/projects`,
+        `Create a new project at a specific path with git initialized`,
+        `create project --path /path/to/my-project --git`,
       ],
     ],
   });
 
-  projectPath = Option.String(`--path`, process.cwd(), {
-    description: `Path where the project should be created`,
-  });
+  projectPath = Option.String("--path", { required: true });
 
   git = Option.Boolean(`--git`, false, {
     description: `Initialize a git repository in the new project`,
   });
+
+  async folderExists(folderPath: string): Promise<boolean> {
+    try {
+      const stats = await fs.stat(folderPath);
+      return stats.isDirectory();
+    } catch (error: any) {
+      if (error.code === "ENOENT") {
+        return false; // Folder does not exist
+      }
+      throw error; // Other errors (e.g., permission issues)
+    }
+  }
 
   async execute() {
     // Create the project directory path by joining the specified path and project name
@@ -53,8 +62,20 @@ export class CreateProjectCommand extends Command {
     await fs.mkdir(projectPath, { recursive: true });
     console.log(`Created project directory at: ${projectPath}`);
 
+    let dirname = __dirname;
+    if (!dirname) {
+      dirname = path.dirname(fileURLToPath(import.meta.url));
+    }
+
+    let basePath = path.join(dirname, `./base_project`);
+    if ((await this.folderExists(basePath)) === false) {
+      // we are running a compiled code that was bundled and the code is running from ./dist/bin/ folder.
+      basePath = path.join(dirname, `../app/console/project/base_project`);
+    }
+
+    console.log(`Using base project path: ${basePath}`);
     //copy content of ./base_project to the new project directory
-    const baseProjectPath = path.join(__dirname, `./base_project`);
+    const baseProjectPath = basePath;
 
     await this.processTplFolder(baseProjectPath, projectPath, {});
     console.log(`Copied base project files to: ${projectPath}`);
@@ -96,7 +117,9 @@ export class CreateProjectCommand extends Command {
       } else if (file.name.endsWith(".tpl")) {
         await this.processTplFile(srcPath, destPath, {});
       } else {
-        throw new Error("unexpected non tpl file");
+        throw new Error(
+          "unexpected non tpl file: " + srcPath + " " + file.name,
+        );
       }
     }
   }
@@ -109,5 +132,3 @@ export class CreateProjectCommand extends Command {
     await fs.writeFile(dest, template);
   }
 }
-
-cli().register(CreateProjectCommand);

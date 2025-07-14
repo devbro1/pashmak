@@ -4,3 +4,8 @@ export * from "./DefaultCommand";
 export * from "./KeyGenerateCommand";
 export * from "./generate";
 export * from "./project/CreateProjectCommand";
+
+import { cli } from "../../facades";
+import { CreateProjectCommand } from "./project/CreateProjectCommand";
+
+cli().register(CreateProjectCommand);
