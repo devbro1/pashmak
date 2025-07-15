@@ -1,13 +1,13 @@
 {
   "name": "@devbro/pashmak",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "testing application for the entire repo",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "type": "module",
   "bin": {
-    "pashmak": "./dist/bin/pashmak_cli.js"
+    "pashmak": "./dist/bin/pashmak_cli.cjs"
   },
   "files": [
     "dist"
