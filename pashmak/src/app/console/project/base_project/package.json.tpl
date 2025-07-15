@@ -34,14 +34,16 @@
     "supertest": "^6.3.3",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
+    "pino-pretty": "^13.0.0",
+    "husky": "^9.1.7",
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@devbro/pashmak": "0.1.0",
+    "@devbro/pashmak": "^0.1.0",
     "bcryptjs": "^3.0.2",
     "clipanion": "^4.0.0-rc.4",
     "dotenv": "^16.5.0",
-    "jsonwebtoken": "^9.0.2",
+    "jsonwebtoken": "^9.0.0",
     "tsconfig-paths": "^4.2.0",
     "yup": "^1.6.1"
   },

@@ -22,11 +22,6 @@ export async function bootstrap(options: { root_dir: string }): Promise<void> {
   console.log("Loading Database Provider ...");
   const { DatabaseServiceProvider } = await import("./DatabaseServiceProvider");
 
-  console.log("Registering service providers...");
-  await import(`${options.root_dir}/app/console`);
-  await import(`${options.root_dir}/routes`);
-  await import(`${options.root_dir}/schedules`);
-
   console.log("Setting up pre-loader for context provider...");
   context_provider.setPreLoader(async (f: Function) => {
     const middlewares: Middleware[] = [];
