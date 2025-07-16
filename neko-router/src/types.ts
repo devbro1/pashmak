@@ -3,7 +3,7 @@ import { Middleware } from './Middleware';
 
 export type Request = IncomingMessage & {
   params: any;
-  method: string;
+  method: HttpMethod;
   headers?: Record<string, string>;
   body?: any;
   raw_body?: any;
@@ -32,3 +32,5 @@ export type MiddlewareProvider =
   | typeof Middleware
   | Middleware
   | ((request: Request, response: Response, next: () => Promise<void>) => Promise<void>);
+
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS';

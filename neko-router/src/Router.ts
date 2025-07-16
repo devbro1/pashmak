@@ -3,16 +3,21 @@ import { BaseController } from './Controller';
 import { Middleware } from './Middleware';
 import { MiddlewareFactory } from './MiddlewareFactory';
 import { Route } from './Route';
-import { HandlerType, MiddlewareProvider } from './types';
+import { HandlerType, HttpMethod, MiddlewareProvider } from './types';
 import { LexerToken, Request, Response } from './types';
 import path from 'path';
 
 export class Router {
+  private middlewares: MiddlewareProvider[] = [];
   routes: Route[] = [];
-  addRoute(methods: string[], path: string, handler: HandlerType) {
+  addRoute(methods: HttpMethod[], path: string, handler: HandlerType) {
     const route: Route = new Route(methods, path, handler);
     this.routes.push(route);
     return route;
+  }
+
+  getMiddlewares() {
+    return [...this.middlewares];
   }
 
   addController(controller: typeof BaseController) {
@@ -27,7 +32,6 @@ export class Router {
     }
   }
 
-  private middlewares: MiddlewareProvider[] = [];
   addGlobalMiddleware(middlewares: MiddlewareProvider | MiddlewareProvider[]) {
     this.middlewares = this.middlewares.concat(middlewares);
   }
@@ -39,6 +43,17 @@ export class Router {
       }
     }
     return undefined;
+  }
+
+  resolveMultiple(request: Request): Route[] {
+    const rc: Route[] = [];
+    const url = new URL(request.url || '/', 'http://localhost');
+    for (const route of this.routes) {
+      if (route.testPath(url.pathname)) {
+        rc.push(route);
+      }
+    }
+    return rc;
   }
 
   getCompiledRoute(request: Request, response: Response) {
@@ -53,6 +68,6 @@ export class Router {
 
     request.query = Object.fromEntries(match.url.searchParams.entries());
     request.params = match.params;
-    return new CompiledRoute(route, match, request, response, this.middlewares);
+    return new CompiledRoute(route, request, response, this.middlewares);
   }
 }

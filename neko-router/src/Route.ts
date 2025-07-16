@@ -1,13 +1,13 @@
 import { Middleware } from './Middleware';
 import { MiddlewareFactory } from './MiddlewareFactory';
-import { HandlerType, MiddlewareProvider } from './types';
+import { HandlerType, HttpMethod, MiddlewareProvider } from './types';
 import { LexerToken, Request, Response } from './types';
 
 export class Route {
   private middlewares: MiddlewareProvider[] = [];
   private urlRegex: RegExp;
   constructor(
-    public methods: string[],
+    public methods: HttpMethod[],
     public path: string,
     public handler: HandlerType
   ) {
@@ -84,12 +84,15 @@ export class Route {
    * @returns return true if route is a match for this request
    */
   test(request: Request) {
-    if (this.methods.indexOf(request.method) === -1) {
+    if (this.methods.indexOf(request.method as HttpMethod) === -1) {
       return false;
     }
     const url = new URL(request.url || '/', 'http://localhost');
+    return this.testPath(url.pathname);
+  }
 
-    return this.urlRegex.test(url.pathname);
+  testPath(pathname: string) {
+    return this.urlRegex.test(pathname);
   }
 
   /**
@@ -98,7 +101,7 @@ export class Route {
    * @returns object cotaining details of match including matched params
    */
   match(request: Request) {
-    if (this.methods.indexOf(request.method) === -1) {
+    if (this.methods.indexOf(request.method as HttpMethod) === -1) {
       return false;
     }
 
