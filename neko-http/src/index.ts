@@ -121,7 +121,7 @@ export class HttpServer {
     const routes = this.router?.resolveMultiple(req);
 
     if (routes?.length === 0 || routes === undefined) {
-      throw new HttpNotFoundError(`Route ${req.url} not found`);
+      return;
     }
 
     let methods: HttpMethod[] = [];
@@ -163,7 +163,7 @@ export class HttpServer {
           }
 
           if (compiled_route === undefined) {
-            throw new HttpNotFoundError(`Route ${req.url} not found`);
+            throw new HttpNotFoundError(`Route ${req.method} ${req.url} not found`);
           }
           await compiled_route?.run();
         } catch (err) {
