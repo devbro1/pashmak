@@ -5,6 +5,7 @@ import path from "path";
 import * as fs from "fs/promises";
 import { config } from "@devbro/neko-config";
 import handlebars from "handlebars";
+import { fileURLToPath } from "url";
 
 export class MakeMigrateCommand extends Command {
   static paths = [
@@ -29,9 +30,14 @@ export class MakeMigrateCommand extends Command {
 
     await fs.mkdir(config.get("migration.path"), { recursive: true });
 
+    let dirname = typeof __dirname === "string" ? __dirname : undefined;
+    if (!dirname) {
+      dirname = path.dirname(fileURLToPath(import.meta.url));
+    }
+
     const compiledTemplate = handlebars.compile(
       (
-        await fs.readFile(path.join(__dirname, "./make_migration.tpl"))
+        await fs.readFile(path.join(dirname, "./make_migration.tpl"))
       ).toString(),
     );
     const template = await compiledTemplate({

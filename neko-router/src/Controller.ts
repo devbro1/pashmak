@@ -1,9 +1,9 @@
-import { ControllerDecoratorOptions, MiddlewareProvider } from './types';
+import { ControllerDecoratorOptions, HttpMethod, MiddlewareProvider } from './types';
 import { Middleware } from './Middleware';
 
 export class BaseController {
   static routes: {
-    methods: string[];
+    methods: HttpMethod[];
     path: string;
     handler: string;
     middlewares: MiddlewareProvider[];
@@ -25,7 +25,7 @@ export function Controller(path: string, options: ControllerDecoratorOptions = {
 }
 
 function createHttpDecorator(data: {
-  methods: string[];
+  methods: HttpMethod[];
   path: string;
   middlewares: MiddlewareProvider[];
 }): MethodDecorator {
@@ -105,6 +105,16 @@ export function Delete(
 ): MethodDecorator {
   return createHttpDecorator({
     methods: ['DELETE'],
+    path: data.path || '/',
+    middlewares: data.middlewares || [],
+  });
+}
+
+export function Options(
+  data: { path?: string; middlewares?: MiddlewareProvider[] } = {}
+): MethodDecorator {
+  return createHttpDecorator({
+    methods: ['OPTIONS'],
     path: data.path || '/',
     middlewares: data.middlewares || [],
   });

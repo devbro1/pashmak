@@ -7,7 +7,6 @@ import { LexerToken, Request, Response } from './types';
 export class CompiledRoute {
   constructor(
     public route: Route,
-    public match: any,
     public request: Request,
     public response: Response,
     public globalMiddlewares: MiddlewareProvider[] = []

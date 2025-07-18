@@ -1,6 +1,6 @@
 import { IncomingMessage, ServerResponse, createServer } from 'node:http';
 import { createServer as createServerSecured } from 'https';
-import { Route, Router } from '@devbro/neko-router';
+import { CompiledRoute, HttpMethod, Route, Router } from '@devbro/neko-router';
 import { HttpError, HttpNotFoundError, HttpUnsupportedMediaTypeError } from './errors';
 import { Request } from '@devbro/neko-router';
 import { context_provider, ctx } from '@devbro/neko-context';
@@ -11,15 +11,13 @@ export * from './errors';
 
 export class HttpServer {
   private https_certs: undefined | { key: string; cert: string } = undefined;
-  private uploadPath: string;
 
   constructor(
-    options: {
+    private options: {
       uploadPath?: string;
-    } = { uploadPath: '/tmp/uploads' }
-  ) {
-    this.uploadPath = options?.uploadPath || '/tmp/uploads';
-  }
+      handleOptionsMethod?: boolean;
+    } = { uploadPath: '/tmp/uploads', handleOptionsMethod: true }
+  ) {}
   private requestId: number = 1;
 
   private router: Router | undefined;
@@ -77,7 +75,7 @@ export class HttpServer {
         ) {
           const form = formidable({
             multiples: true,
-            uploadDir: this.uploadPath,
+            uploadDir: this.options.uploadPath,
             keepExtensions: true,
           });
 
@@ -111,6 +109,44 @@ export class HttpServer {
     });
   }
 
+  async handleOptionsRequest(
+    req: Request,
+    res: ServerResponse
+  ): Promise<CompiledRoute | undefined> {
+    if (this.options.handleOptionsMethod === false) {
+      return undefined;
+    }
+
+    //get all routes regardless of method
+    const routes = this.router?.resolveMultiple(req);
+
+    if (routes?.length === 0 || routes === undefined) {
+      return;
+    }
+
+    let methods: HttpMethod[] = [];
+    for (const route of routes || []) {
+      methods = methods.concat(route.methods);
+    }
+
+    //remove duplicates
+    methods = Array.from(new Set(methods));
+
+    let r: Route = new Route(
+      ['OPTIONS'],
+      req.url || '/',
+      async (req: Request, res: ServerResponse) => {
+        res.statusCode = 204; // No Content
+        res.setHeader('Access-Control-Allow-Methods', methods.join(', '));
+        return;
+      }
+    );
+
+    let cr = new CompiledRoute(r, req, res, this.router?.getMiddlewares() || []);
+
+    return cr;
+  }
+
   async handle(req: IncomingMessage, res: ServerResponse) {
     try {
       await context_provider.run(async () => {
@@ -119,14 +155,15 @@ export class HttpServer {
           ctx().set('request', req);
           ctx().set('response', res);
           ctx().set('requestId', this.generateRequestId(req, res));
-          const r: Route | undefined = this.router?.resolve(req as any);
-          if (r === undefined) {
-            throw new HttpNotFoundError(`Route ${req.url} not found`);
+
+          let compiled_route = this.router?.getCompiledRoute(req as Request, res);
+
+          if (req.method === 'OPTIONS' && compiled_route === undefined) {
+            compiled_route = await this.handleOptionsRequest(req as Request, res);
           }
 
-          const compiled_route = this.router?.getCompiledRoute(req as Request, res);
           if (compiled_route === undefined) {
-            throw new HttpNotFoundError();
+            throw new HttpNotFoundError(`Route ${req.method} ${req.url} not found`);
           }
           await compiled_route?.run();
         } catch (err) {
