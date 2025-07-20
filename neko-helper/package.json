@@ -41,7 +41,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@devbro/neko-router": "0.1.0"
+    "@devbro/neko-router": "0.1.*"
   },
   "directories": {
     "test": "tests"

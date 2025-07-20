@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-orm",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "straight forward ORM for those that love simple things",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -45,7 +45,7 @@
     "change-case-all": "^2.1.0",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
-    "@devbro/neko-sql": "0.1.0",
+    "@devbro/neko-sql": "0.1.*",
     "pluralize": "^8.0.0"
   },
   "directories": {

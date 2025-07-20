@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-http",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "all in one http server",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -52,8 +52,8 @@
   },
   "dependencies": {
     "formidable": "^3.5.4",
-    "@devbro/neko-context": "^0.1.0",
-    "@devbro/neko-router": "^0.1.0"
+    "@devbro/neko-context": "^0.1.*",
+    "@devbro/neko-router": "^0.1.*"
   },
   "directories": {
     "doc": "docs",
