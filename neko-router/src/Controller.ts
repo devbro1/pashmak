@@ -2,12 +2,12 @@ import { ControllerDecoratorOptions, HttpMethod, MiddlewareProvider } from './ty
 import { Middleware } from './Middleware';
 
 export class BaseController {
-  static routes: {
+  declare static routes: {
     methods: HttpMethod[];
     path: string;
     handler: string;
     middlewares: MiddlewareProvider[];
-  }[] = [];
+  }[];
   static basePath: string = '';
   static baseMiddlewares: MiddlewareProvider[];
 
@@ -30,10 +30,9 @@ function createHttpDecorator(data: {
   middlewares: MiddlewareProvider[];
 }): MethodDecorator {
   return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
-    if (!target.constructor.routes) {
-      target.constructor.routes = [];
-    }
-    target.constructor.routes.push({
+    const ctor = target.constructor;
+    if (!ctor.routes) ctor.routes = [];
+    ctor.routes.push({
       methods: data.methods,
       path: data.path,
       handler: propertyKey,
@@ -126,6 +125,6 @@ export function createParamDecorator(func: () => Promise<any> | (() => any)): Pa
     propertyKey: string | symbol | undefined,
     parameterIndex: number
   ) {
-    Reflect.set(target, `${propertyKey?.toString()}:${parameterIndex}:custom`, func);
+    Reflect.set(target.constructor, `${propertyKey?.toString()}:${parameterIndex}:custom`, func);
   };
 }

@@ -80,6 +80,12 @@ export class AuthController extends BaseController {
       scope: "*",
     };
   }
+
+  @Get({ path: "/logout" })
+  async logout() {
+    // Invalidate the token on the client side, no server-side action needed
+    return { message: "Logged out successfully" };
+  }
 }
 
 router().addController(AuthController);

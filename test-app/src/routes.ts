@@ -68,6 +68,15 @@ router
   )
   .addMiddleware(logResponseMiddleware);
 
+router.addRoute(
+  ["GET", "HEAD"],
+  "/api/v1/test",
+  async (req: Request, res: Response) => {
+    console.log(router.routes);
+    return {};
+  },
+);
+
 router.addController(CatController);
 router.addController(AnimalController);
 await import("./app/controllers/AuthController");
