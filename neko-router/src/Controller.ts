@@ -40,7 +40,7 @@ function createHttpDecorator(data: {
     });
 
     const originalMethod = descriptor.value!;
-    const paramKeys = Reflect.ownKeys(target);
+    const paramKeys = Reflect.ownKeys(target.constructor);
 
     descriptor.value = async function (...args: any[]) {
       const paramCustomKeys = paramKeys.filter(
@@ -48,7 +48,7 @@ function createHttpDecorator(data: {
       );
       for (const paramKey of paramCustomKeys) {
         const paramIndex = parseInt((paramKey as string).split(':')[1]);
-        let method = Reflect.get(target, paramKey.toString());
+        let method = Reflect.get(target.constructor, paramKey.toString());
         if (typeof paramIndex === 'number' && typeof method === 'function') {
           args[paramIndex] = await method();
         }
