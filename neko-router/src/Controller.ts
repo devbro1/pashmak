@@ -41,10 +41,12 @@ function createHttpDecorator(data: {
 
     const originalMethod = descriptor.value!;
     const paramKeys = Reflect.ownKeys(target.constructor);
+    const methodName = propertyKey.toString();
 
     descriptor.value = async function (...args: any[]) {
       const paramCustomKeys = paramKeys.filter(
-        (key) => typeof key === 'string' && key.endsWith(':custom')
+        (key) =>
+          typeof key === 'string' && key.startsWith(`${methodName}:`) && key.endsWith(':custom')
       );
       for (const paramKey of paramCustomKeys) {
         const paramIndex = parseInt((paramKey as string).split(':')[1]);

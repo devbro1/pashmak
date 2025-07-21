@@ -3,10 +3,16 @@ import { Middleware, Router } from '../src';
 import { Request, Response } from '../src/types';
 import { BaseController, Get, Post, Controller, createParamDecorator } from '../src';
 
-export function ValidatedRequestBody(): ParameterDecorator {
+function ValidatedRequestBody(): ParameterDecorator {
   return createParamDecorator(async () => {
     throw new Error('This is a placeholder for ValidatedRequestBody decorator');
     // return { message: 'Validated request body' };
+  });
+}
+
+function QuickData(val: any): ParameterDecorator {
+  return createParamDecorator(async () => {
+    return val;
   });
 }
 
@@ -52,6 +58,7 @@ class CityController extends BaseController {
   create(@ValidatedRequestBody() body: Request) {
     return body;
   }
+
   @Get({ path: '/:id' })
   showById() {
     return 'GET cities by id';
