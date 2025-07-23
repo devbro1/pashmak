@@ -66,7 +66,6 @@ export class Router {
       return undefined;
     }
 
-    request.query = Object.fromEntries(match.url.searchParams.entries());
     request.params = match.params;
     return new CompiledRoute(route, request, response, this.middlewares);
   }
