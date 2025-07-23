@@ -150,7 +150,7 @@ export class BaseModel {
     return this.findByPrimaryKey<T>({ id });
   }
 
-  public static async findOne<T extends typeof BaseModel>(conditions: object) {
+  public static async findOne<T extends BaseModel>(conditions: object): Promise<T | undefined> {
     let self = new this();
     let q: Query = await self.getQuery();
 
@@ -165,9 +165,8 @@ export class BaseModel {
     }
 
     self.fillAndMutate(r[0]);
-
     self.exists = true;
-    return self;
+    return self as T;
   }
 
   public static async findorFail<T extends typeof BaseModel>(id: number) {
