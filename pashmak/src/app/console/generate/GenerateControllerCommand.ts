@@ -8,8 +8,6 @@ import handlebars from "handlebars";
 import { fileURLToPath } from "url";
 import pluralize from "pluralize";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
 export class GenerateControllerCommand extends Command {
   static paths = [
     [`make`, `controller`],
@@ -35,8 +33,13 @@ export class GenerateControllerCommand extends Command {
 
     await fs.mkdir(config.get("migration.path"), { recursive: true });
 
+    let dirname = __dirname;
+    if (!dirname) {
+      dirname = path.dirname(fileURLToPath(import.meta.url));
+    }
+
     const compiledTemplate = handlebars.compile(
-      (await fs.readFile(path.join(__dirname, "./controller.tpl"))).toString(),
+      (await fs.readFile(path.join(dirname, "./controller.tpl"))).toString(),
     );
     const template = await compiledTemplate({
       className: Case.pascal(this.name),

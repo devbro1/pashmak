@@ -5,7 +5,7 @@ export class Config {
   private static instance: Config;
   private configs: Record<string, any>;
 
-  private constructor() {
+  constructor() {
     this.configs = {};
   }
 
@@ -27,6 +27,11 @@ export class Config {
     } catch (error) {
       return default_value;
     }
+  }
+
+  public getOrFail(key: string, default_value: any = undefined): any {
+    const results = JSONPath({ path: key, json: this.configs });
+    return results.length > 0 ? results[0] : default_value;
   }
 
   public has(key: string): boolean {

@@ -1,9 +1,9 @@
-# neko-context
+# @devbro/neko-context
 
 think react context but for backend. If you need to run multiple threads without sharing memory, this is the way to go.
 
 ```ts
-import { ctx, ctxsafe, context_provider } from '@devbro/pashmak/neko-context';
+import { ctx, ctxsafe, context_provider } from '@devbro/neko-context';
 
 class Animal {
   constructor(public name: string) {}

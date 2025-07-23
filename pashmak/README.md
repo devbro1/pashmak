@@ -1,12 +1,11 @@
-## available commands:
+# @devbro/pashmak
 
-- dev: to run server with nodemon
-- fast-pashmak: run pashmak `--transpile-only` which will skip type check and speed up load time of ts-node
-- pashmak: main command to be used for general purpose commands you need to run
+framework for boring developers.
 
-## pashmak command
+## how to use
 
-- start --all: to start everything
-- migrate: to do all new migrations
-- migrate --fresh: to migrate from scratch, destructive!
-- migrate rollback: to undo last successful migration
+-- TODO: more details coming soon, or check test-app under repo for basic setup
+
+## official docs
+
+https://devbro1.github.io/pashmak/

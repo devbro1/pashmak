@@ -1,13 +1,13 @@
-import { ControllerDecoratorOptions, MiddlewareProvider } from './types';
+import { ControllerDecoratorOptions, HttpMethod, MiddlewareProvider } from './types';
 import { Middleware } from './Middleware';
 
 export class BaseController {
-  static routes: {
-    methods: string[];
+  declare static routes: {
+    methods: HttpMethod[];
     path: string;
     handler: string;
     middlewares: MiddlewareProvider[];
-  }[] = [];
+  }[];
   static basePath: string = '';
   static baseMiddlewares: MiddlewareProvider[];
 
@@ -25,15 +25,14 @@ export function Controller(path: string, options: ControllerDecoratorOptions = {
 }
 
 function createHttpDecorator(data: {
-  methods: string[];
+  methods: HttpMethod[];
   path: string;
   middlewares: MiddlewareProvider[];
 }): MethodDecorator {
   return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
-    if (!target.constructor.routes) {
-      target.constructor.routes = [];
-    }
-    target.constructor.routes.push({
+    const ctor = target.constructor;
+    if (!ctor.routes) ctor.routes = [];
+    ctor.routes.push({
       methods: data.methods,
       path: data.path,
       handler: propertyKey,
@@ -41,15 +40,17 @@ function createHttpDecorator(data: {
     });
 
     const originalMethod = descriptor.value!;
-    const paramKeys = Reflect.ownKeys(target);
+    const paramKeys = Reflect.ownKeys(target.constructor);
+    const methodName = propertyKey.toString();
 
     descriptor.value = async function (...args: any[]) {
       const paramCustomKeys = paramKeys.filter(
-        (key) => typeof key === 'string' && key.endsWith(':custom')
+        (key) =>
+          typeof key === 'string' && key.startsWith(`${methodName}:`) && key.endsWith(':custom')
       );
       for (const paramKey of paramCustomKeys) {
         const paramIndex = parseInt((paramKey as string).split(':')[1]);
-        let method = Reflect.get(target, paramKey.toString());
+        let method = Reflect.get(target.constructor, paramKey.toString());
         if (typeof paramIndex === 'number' && typeof method === 'function') {
           args[paramIndex] = await method();
         }
@@ -110,12 +111,22 @@ export function Delete(
   });
 }
 
+export function Options(
+  data: { path?: string; middlewares?: MiddlewareProvider[] } = {}
+): MethodDecorator {
+  return createHttpDecorator({
+    methods: ['OPTIONS'],
+    path: data.path || '/',
+    middlewares: data.middlewares || [],
+  });
+}
+
 export function createParamDecorator(func: () => Promise<any> | (() => any)): ParameterDecorator {
   return function MyParamDecorator(
     target: Object,
     propertyKey: string | symbol | undefined,
     parameterIndex: number
   ) {
-    Reflect.set(target, `${propertyKey?.toString()}:${parameterIndex}:custom`, func);
+    Reflect.set(target.constructor, `${propertyKey?.toString()}:${parameterIndex}:custom`, func);
   };
 }

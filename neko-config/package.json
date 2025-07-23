@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-config",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "neko config helps with loading and managing configuration files in a structured way",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

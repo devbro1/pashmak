@@ -22,7 +22,7 @@ function HomepageHeader() {
             className="button button--secondary button--lg"
             to="/docs/intro"
           >
-            Docusaurus Tutorial - 5min ⏱️
+            Start using Pashmak in 10 minutes ⏱️
           </Link>
         </div>
       </div>

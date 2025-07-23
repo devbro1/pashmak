@@ -1,0 +1,3 @@
+jwt_secret_public_retired=
+jwt_secret_public=
+jwt_secret_private=

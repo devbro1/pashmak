@@ -5,48 +5,51 @@ import styles from "./styles.module.css";
 
 type FeatureItem = {
   title: string;
-  Svg: React.ComponentType<React.ComponentProps<"svg">>;
+  Svg?: React.ComponentType<React.ComponentProps<"svg">>;
   description: ReactNode;
+  imgUrl?: string;
 };
 
 const FeatureList: FeatureItem[] = [
   {
     title: "Easy to Use",
-    Svg: require("@site/static/img/undraw_docusaurus_mountain.svg").default,
+    imgUrl: "img/pashmak_calm.png",
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        Pashmak is designed from the ground up to be an effective and simple
+        framework for projects of all sizes, providing a great developer
+        experience with minimal setup and configuration.
       </>
     ),
   },
   {
-    title: "Focus on What Matters",
-    Svg: require("@site/static/img/undraw_docusaurus_tree.svg").default,
+    title: "TypeScript and ESM at Core",
+    imgUrl: "img/pashmak_w_shirt.png",
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        Pashmak was created with heavy focus on TypeScript and ESM, making it
+        easy to write type-safe code and leverage modern JavaScript features.
       </>
     ),
   },
   {
-    title: "Powered by React",
-    Svg: require("@site/static/img/undraw_docusaurus_react.svg").default,
+    title: "Simplified dependencies",
+    imgUrl: "img/pashmak_w_laptop.png",
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        Pashmak aims to provide a minimal set of dependencies, allowing you to
+        build your application without unnecessary bloat. It uses only essential
+        neko libraries ensuring a efficient framework.
       </>
     ),
   },
 ];
 
-function Feature({ title, Svg, description }: FeatureItem) {
+function Feature({ title, imgUrl, description }: FeatureItem) {
   return (
     <div className={clsx("col col--4")}>
       <div className="text--center">
-        <Svg className={styles.featureSvg} role="img" />
+        <img src={imgUrl} className={styles.featureImage} alt={title} />
       </div>
       <div className="text--center padding-horiz--md">
         <Heading as="h3">{title}</Heading>

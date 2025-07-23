@@ -14,7 +14,7 @@ import os from "os";
 
 export default {
   engine: "local",
-  basePath: path.join("../storage", "/main-app-storage/"),
+  basePath: path.join("../storage", "/app-storage/"),
 };
 
 export const temp = {

@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Configuration
 
-Under the hood, we are using [config](https://www.npmjs.com/package/config) library to help with managing configuration.
+Under the hood, we are using [neko-config](https://www.npmjs.com/package/@devbro/neko-config) library to help with managing configuration.
 
 To start place your related configs in `config/default.ts` file and it will be autoloaded.
 
@@ -13,8 +13,6 @@ import { config } from "@devbro/pashmak/config";
 
 console.log(config.get("databases"));
 ```
-
-one major behavior is that if you request a config that is not defined, it will throw an error. It is by design to make sure there is no typo and all configs are defined correctly.
 
 it may become needed to load some values from envvars. to do this, use this approach:
 
@@ -27,7 +25,7 @@ export default {
 
 ## More configurations
 
-There can be multiple features that depends on configurations to run successfully such as database, file, caching, and etc. To make maintaining configurations for each of these features, it is strongly suggested to keep their configurations in separate files and import(`require()`) them into default config. the main configuration for each of these services must be named `default`. for example, if your system is connecting to 3 different databases, the main database must be labelled default, the second and third, can be given any name of your own choosing.
+There can be multiple features that depends on configurations to run successfully such as database, file, caching, and etc. To make maintaining configurations for each of these features, it is strongly suggested to keep their configurations in separate files and import(`await import()`) them into default config. the main configuration for each of these services must be named `default`. for example, if your system is connecting to 3 different databases, the main database must be labelled default, the second and third, can be given any name of your own choosing.
 
 ## custom feature configurations
 
@@ -52,7 +50,7 @@ export default {
 };
 
 // somewhere else in your code
-import config from 'config';
+import config from '@devbro/pashmak/config';
 
 
 if(config.get('payment_system.default.provider') === 'stripe') {
@@ -69,7 +67,7 @@ there is also .env support in case you want to load some configs that way. pleas
 
 ## Force config to exists
 
-some configs are essential and you want to stop the process without them. you can do this:
+some configs are essential and you want to stop the process without them. If these values need to come from envar, you can do this:
 
 ```ts
 import { getEnv } from "@devbro/pashmak/helper";

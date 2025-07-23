@@ -45,7 +45,7 @@ export const httpServer = createSingleton<HttpServer>(() => {
   server.setErrorHandler(async (err: Error, req: any, res: any) => {
     if (err instanceof HttpError) {
       res.writeHead(err.statusCode, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ message: err.message }));
+      res.end(JSON.stringify({ message: err.message, error: err.code }));
       logger().warn({ msg: "HttpError: " + err.message, err });
       return;
     } else if (err instanceof yup.ValidationError) {
