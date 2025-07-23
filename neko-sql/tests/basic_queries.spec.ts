@@ -103,6 +103,7 @@ describe('raw queries', () => {
 
     const result2 = await query.get();
     expect(result2.length).toBe(6);
+    expect(await query.count()).toBe(6);
 
     query.orderBy('job_title', 'desc');
     expect(query.toSql().sql).toBe(

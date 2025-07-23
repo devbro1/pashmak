@@ -47,6 +47,30 @@ export abstract class QueryGrammar {
     return { sql, bindings };
   }
 
+  compileCount(query: Query): CompiledSql {
+    let sql = '';
+    let bindings: Parameter[] = [];
+
+    for (const part of this.sqlParts) {
+      // @ts-ignore
+      let parts = query.parts[part];
+      if (part === 'select') {
+        parts = ['count(*) as count'];
+      }
+      // @ts-ignore
+      const funcName: keyof this = 'compile' + toUpperFirst(part);
+      // @ts-ignore
+      const r = this[funcName](parts);
+      if (!sql) {
+        sql = r.sql;
+      } else if (r.sql) {
+        sql += ' ' + r.sql;
+      }
+      bindings = [...bindings, ...r.bindings];
+    }
+    return { sql, bindings };
+  }
+
   compileSelect(selects: selectType[]): CompiledSql {
     const rc = selects
       .map((v) => {

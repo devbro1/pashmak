@@ -1,6 +1,14 @@
 import { Connection } from './Connection';
 import { QueryGrammar } from './QueryGrammar';
-import { CompiledSql, JoinCondition, Parameter, selectType, whereType, havingType, joinType } from './types';
+import {
+  CompiledSql,
+  JoinCondition,
+  Parameter,
+  selectType,
+  whereType,
+  havingType,
+  joinType,
+} from './types';
 
 export type QueryParts = {
   select: selectType[];
@@ -56,7 +64,13 @@ export class Query {
     return this;
   }
 
-  whereColumn(column1: string, operation: (typeof this.allowedOperations)[number], column2: string, joinCondition: JoinCondition = 'and', negateCondition: boolean = false): this {
+  whereColumn(
+    column1: string,
+    operation: (typeof this.allowedOperations)[number],
+    column2: string,
+    joinCondition: JoinCondition = 'and',
+    negateCondition: boolean = false
+  ): this {
     this.parts.where.push({
       type: 'operationColumn',
       column1,
@@ -141,6 +155,16 @@ export class Query {
 
   async get() {
     return await this.connection?.runQuery(this.toSql());
+  }
+
+  async count(): Promise<number> {
+    const csql: CompiledSql = this.grammar.compileCount(this);
+    console.log('Count SQL:', csql.sql, 'Bindings:', csql.bindings);
+    const result = await this.connection?.runQuery(csql);
+    if (result && Array.isArray(result) && result.length > 0) {
+      return parseInt(result[0]['count'], 10);
+    }
+    return 0;
   }
 
   async getCursor() {

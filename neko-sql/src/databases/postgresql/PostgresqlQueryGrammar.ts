@@ -53,4 +53,9 @@ export class PostgresqlQueryGrammar extends QueryGrammar {
     this.parameterIndex = 1;
     return super.compileUpsert(query, data, conflictFields, updateFields);
   }
+
+  compileCount(query: Query): CompiledSql {
+    this.parameterIndex = 1;
+    return super.compileCount(query);
+  }
 }
