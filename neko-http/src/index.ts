@@ -5,6 +5,7 @@ import { HttpError, HttpNotFoundError, HttpUnsupportedMediaTypeError } from './e
 import { Request } from '@devbro/neko-router';
 import { context_provider, ctx } from '@devbro/neko-context';
 import formidable from 'formidable';
+import qs from 'qs';
 // @ts-ignore
 import { firstValues } from 'formidable/src/helpers/firstValues.js';
 export * from './errors';
@@ -67,6 +68,12 @@ export class HttpServer {
 
   async preprocessRequest(req: Request): Promise<Request> {
     return new Promise(async (resolve, reject) => {
+      req.query = qs.parse(req.url?.split('?')[1] || '', {
+        ignoreQueryPrefix: true,
+        depth: 10,
+        interpretNumericEntities: true,
+      }) as Record<string, any>;
+
       if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
         if (
           req.headers['content-type']?.includes('multipart/form-data') ||

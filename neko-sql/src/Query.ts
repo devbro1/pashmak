@@ -159,7 +159,6 @@ export class Query {
 
   async count(): Promise<number> {
     const csql: CompiledSql = this.grammar.compileCount(this);
-    console.log('Count SQL:', csql.sql, 'Bindings:', csql.bindings);
     const result = await this.connection?.runQuery(csql);
     if (result && Array.isArray(result) && result.length > 0) {
       return parseInt(result[0]['count'], 10);
