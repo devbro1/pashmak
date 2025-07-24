@@ -33,7 +33,7 @@ export class GenerateControllerCommand extends Command {
 
     await fs.mkdir(config.get("migration.path"), { recursive: true });
 
-    let dirname = __dirname;
+    let dirname = typeof __dirname === "string" ? __dirname : undefined;
     if (!dirname) {
       dirname = path.dirname(fileURLToPath(import.meta.url));
     }
