@@ -3,13 +3,13 @@ import { Schema, Blueprint } from "@devbro/pashmak/sql";
 
 export default class {{className}} extends Migration {
   async up(schema: Schema) {
-    // await schema.createTable("{{className}}", (blueprint: Blueprint) => {
-    //   blueprint.id();
-    //   blueprint.timestamps();
+    // await schema.createTable("{{tableName}}", (table: Blueprint) => {
+    //   table.id();
+    //   table.timestamps();
     // });
   }
 
   async down(schema: Schema) {
-    // await schema.dropTable("{{className}}");
+    // await schema.dropTable("{{tableName}}");
   }
 }

@@ -6,6 +6,7 @@ import * as fs from "fs/promises";
 import { config } from "@devbro/neko-config";
 import handlebars from "handlebars";
 import { fileURLToPath } from "url";
+import { table } from "console";
 
 export class MakeMigrateCommand extends Command {
   static paths = [
@@ -41,7 +42,8 @@ export class MakeMigrateCommand extends Command {
       ).toString(),
     );
     const template = await compiledTemplate({
-      className: Case.pascal(this.name),
+      className: Case.pascal(this.name) + "Migration",
+      tableName: Case.snake(this.name),
     });
 
     await fs.writeFile(

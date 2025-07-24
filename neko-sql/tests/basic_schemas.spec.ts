@@ -74,4 +74,50 @@ describe('raw schemas', () => {
       "create table users (email varchar(255) null default 'ABC',primary key (email))"
     );
   });
+
+  test('foreign key', async () => {
+    let sql: CompiledSql = { sql: '', bindings: [] };
+    const fakeConnection: Connection = {
+      connect: async function (): Promise<boolean> {
+        return true;
+      },
+      runQuery: function (sql2: CompiledSql): Promise<any> {
+        sql = sql2;
+        return Promise.resolve([]);
+      },
+      disconnect: async function (): Promise<boolean> {
+        return true;
+      },
+      getQuery() {
+        return new Query(null, new PostgresqlQueryGrammar());
+      },
+      getSchema() {
+        return new Schema(null, new PostgresqlSchemaGrammar());
+      },
+      beginTransaction: function (): Promise<void> {
+        throw new Error('Function not implemented.');
+      },
+      commit: function (): Promise<void> {
+        throw new Error('Function not implemented.');
+      },
+      rollback: function (): Promise<void> {
+        throw new Error('Function not implemented.');
+      },
+      runCursor: function (sql: CompiledSql): Promise<any> {
+        throw new Error('Function not implemented.');
+      },
+    };
+
+    const schema = new Schema(fakeConnection, new SchemaGrammar());
+    await schema.createTable('users', (table: Blueprint) => {
+      table.id();
+      table.timestamps();
+      table.integer('role_id');
+      table.foreign('role_id').references('id').on('roles').onDelete('cascade').onUpdate('cascade');
+    });
+
+    expect(sql.sql).toBe(
+      'create table users (id serial not null, created_at timestamp not null default CURRENT_TIMESTAMP, updated_at timestamp not null default CURRENT_TIMESTAMP, role_id integer not null,primary key (id),CONSTRAINT (role_id) references roles(id) on delete cascade on update cascade)'
+    );
+  });
 });

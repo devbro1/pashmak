@@ -1,4 +1,4 @@
-import { Blueprint, Column } from './Blueprint';
+import { Blueprint, Column, ForeignKeyConstraint } from './Blueprint';
 import { Expression } from './Expression';
 import { CompiledSql, Parameter } from './types';
 
@@ -12,7 +12,13 @@ export class SchemaGrammar {
       .join(', ');
 
     const primaryKeys = this.compilePrimaryKeys(blueprint.primaryKeys);
-    sql += [columns, primaryKeys].join(',') + ')';
+    let foreignKeys: string[] = [];
+    if (blueprint.foreignKeys.length > 0) {
+      foreignKeys = blueprint.foreignKeys.map((v: ForeignKeyConstraint) => {
+        return this.compileForeignKey(v);
+      });
+    }
+    sql += [columns, primaryKeys, ...foreignKeys].join(',') + ')';
     return sql;
   }
 
@@ -144,5 +150,21 @@ export class SchemaGrammar {
       return value.map((v) => this.doubleQuoteString(v)).join(', ');
     }
     return `"${value.replace(/"/g, '\\"')}"`;
+  }
+
+  protected compileForeignKey(foreignKey: ForeignKeyConstraint): string {
+    //FOREIGN KEY (PersonID) REFERENCES users(id)
+    const rc = [`FOREIGN KEY (${foreignKey.column})`];
+    rc.push(`references ${foreignKey.reference_table.table}(${foreignKey.reference_table.column})`);
+
+    if (foreignKey.onDeleteAction) {
+      rc.push(`on delete ${foreignKey.onDeleteAction}`);
+    }
+
+    if (foreignKey.onUpdateAction) {
+      rc.push(`on update ${foreignKey.onUpdateAction}`);
+    }
+
+    return rc.join(' ');
   }
 }

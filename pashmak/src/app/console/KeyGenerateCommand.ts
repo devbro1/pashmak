@@ -38,7 +38,10 @@ export class KeyGenerateCommand extends Command {
       },
     });
 
-    let envfile = await fs.readFile(path.join(process.cwd(), ".env"), "utf-8");
+    let envfile = "";
+    try {
+      envfile = await fs.readFile(path.join(process.cwd(), ".env"), "utf-8");
+    } catch {}
     let old_public_key = envfile.match(/^jwt_secret_public=(.*)/m);
 
     envfile = this.addEnvParam(
