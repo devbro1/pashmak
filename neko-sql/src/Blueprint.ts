@@ -53,9 +53,44 @@ export class Column {
     return this;
   }
 }
+
+// references('id').on('roles').onDelete('cascade').onUpdate('cascade');
+export class ForeignKeyConstraint {
+  column: string;
+  reference_table: { table: string; column: string };
+  onUpdateAction: 'cascade' | 'set null' | 'restrict' | 'no action' = 'restrict';
+  onDeleteAction: 'cascade' | 'set null' | 'restrict' | 'no action' = 'restrict';
+
+  constructor(column: string) {
+    this.column = column;
+    this.reference_table = { table: '', column: '' };
+  }
+
+  on(table: string) {
+    this.reference_table.table = table;
+    return this;
+  }
+
+  references(column: string) {
+    this.reference_table.column = column;
+    return this;
+  }
+
+  onDelete(action: typeof this.onDeleteAction) {
+    this.onDeleteAction = action;
+    return this;
+  }
+
+  onUpdate(action: typeof this.onUpdateAction) {
+    this.onUpdateAction = action;
+    return this;
+  }
+}
+
 export class Blueprint {
   tableName: string = '';
   columns: Column[] = [];
+  foreignKeys: ForeignKeyConstraint[] = [];
   existingTable: boolean = false;
   primaryKeys: string[] = [];
   constructor() {}
@@ -115,8 +150,12 @@ export class Blueprint {
   }
 
   timestamps() {
-    this.columns.push(new Column('created_at', 'timestamp').default(new Expression('CURRENT_TIMESTAMP')));
-    this.columns.push(new Column('updated_at', 'timestamp').default(new Expression('CURRENT_TIMESTAMP')));
+    this.columns.push(
+      new Column('created_at', 'timestamp').default(new Expression('CURRENT_TIMESTAMP'))
+    );
+    this.columns.push(
+      new Column('updated_at', 'timestamp').default(new Expression('CURRENT_TIMESTAMP'))
+    );
   }
 
   date(columnName: string) {
@@ -127,5 +166,11 @@ export class Blueprint {
 
   primary(keys: string[]) {
     this.primaryKeys = keys;
+  }
+
+  foreign(columnName: string) {
+    const rc = new ForeignKeyConstraint(columnName);
+    this.foreignKeys.push(rc);
+    return rc;
   }
 }
