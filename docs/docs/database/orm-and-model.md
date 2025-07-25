@@ -193,3 +193,55 @@ you can define casters and mutators for an attributes
 })
 declare date_of_birth: Date;
 ```
+
+## Scopes
+
+Scopes is the concept of adding extra limitations to queries used within ORM.
+
+There are two types of scopes you can use Global vs Local.
+
+### Global Scopes
+
+Global scopes are autoloaded by the model on every query request.
+
+```ts
+class Region2 extends GlobalScope {
+  public async apply(query: Query): Promise<Query> {
+    let region_id = ctx().get<User>("authenticated_user").region_id;
+    return query.whereOp("region_id", "=", region_id);
+  }
+}
+
+class HasIinName extends GlobalScope {
+  public async apply(query: Query): Promise<Query> {
+    return query.whereOp("country_name", "ILIKE", "%I%");
+  }
+}
+
+class Country2 extends BaseModel {
+  protected tableName: string = "countries";
+  protected hasTimestamps: boolean = false;
+  scopes = [Region2, HasIinName];
+
+  @Attribute({ primaryKey: true, incrementingPrimaryKey: false })
+  public country_id: number | undefined;
+
+  @Attribute()
+  public country_name: string | undefined;
+
+  @Attribute()
+  public region_id: number | undefined;
+
+  regions(): Region[] {
+    return [];
+  }
+}
+
+let countries = await (await Country2.getQuery()).get();
+```
+
+One advantage of GlobalScope is you can use one for multiple models.
+Main use case for globalScope is use with Authorization logic where you can limit
+access to records before they are loaded from database.
+
+### Local Scope
