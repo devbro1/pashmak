@@ -53,6 +53,13 @@ export class PostgresqlConnection extends ConnectionAbs {
     return new Schema(this, new PostgresqlSchemaGrammar());
   }
 
+  getQueryGrammar(): PostgresqlQueryGrammar {
+    return new PostgresqlQueryGrammar();
+  }
+  getSchemaGrammar(): PostgresqlSchemaGrammar {
+    return new PostgresqlSchemaGrammar();
+  }
+
   async beginTransaction(): Promise<void> {
     if (!this.connection) {
       throw new Error('No active connection to begin a transaction.');

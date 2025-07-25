@@ -245,3 +245,45 @@ Main use case for globalScope is use with Authorization logic where you can limi
 access to records before they are loaded from database.
 
 ### Local Scope
+
+There may be situations that you want easier to read queries OR your query logics are too complicated to rewrite in multiple places.
+so you can use a local scope to inject code into Query of a model
+
+```ts
+class Country extends BaseModel {
+  protected tableName: string = "countries";
+  protected hasTimestamps: boolean = false;
+
+  @Attribute({ primaryKey: true, incrementingPrimaryKey: false })
+  public country_id: number | undefined;
+
+  @Attribute()
+  public country_name: string | undefined;
+
+  @Attribute()
+  public region_id: number | undefined;
+
+  regions(): Region[] {
+    return [];
+  }
+
+  public static getLocalScopesQuery() {
+    return class extends Query {
+      region(region_id: number) {
+        this.whereOp("region_id", "=", region_id);
+        return this;
+      }
+
+      nameLike(name: string) {
+        this.whereOp("country_name", "ILIKE", `%${name}%`);
+        return this;
+      }
+    };
+  }
+}
+
+let result = await (await Country.getQuery())
+  .nameLike("united")
+  .region(2)
+  .get();
+```

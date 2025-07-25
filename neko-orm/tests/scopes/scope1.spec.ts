@@ -12,7 +12,7 @@ describe('global scopes queries', () => {
   let conn: Connection;
 
   beforeAll(async () => {
-    const randName = Math.random().toString(36).substring(7);
+    const randName = Date.now() + '_' + Math.random().toString(36).substring(7);
     const db_config = {
       host: process.env.DB_HOST,
       database: (process.env.DB_NAME || 'test_db') + `_${randName}`,
@@ -52,6 +52,20 @@ describe('global scopes queries', () => {
 
       regions(): Region[] {
         return [];
+      }
+
+      public static getLocalScopesQuery() {
+        return class extends Query {
+          region(region_id: number) {
+            this.whereOp('region_id', '=', region_id);
+            return this;
+          }
+
+          nameLike(name: string) {
+            this.whereOp('country_name', 'ILIKE', `%${name}%`);
+            return this;
+          }
+        };
       }
     }
 
@@ -105,5 +119,16 @@ describe('global scopes queries', () => {
       expect(c.region_id).toBe(2);
       expect(c.country_name?.toLowerCase().includes('i')).toBeTruthy();
     });
+
+    let c1_1 = await (await Country.getQuery()).region(1).get();
+    expect(c1_1.length).toBe(8);
+    let c1_2 = await (await Country.getQuery()).region(2).get();
+    expect(c1_2.length).toBe(5);
+    let c1_3 = await (await Country.getQuery()).region(3).get();
+    expect(c1_3.length).toBe(6);
+    let c1_4 = await (await Country.getQuery()).region(4).get();
+    expect(c1_4.length).toBe(6);
+    let c1_5 = await (await Country.getQuery()).region(5).get();
+    expect(c1_5.length).toBe(0);
   });
 });

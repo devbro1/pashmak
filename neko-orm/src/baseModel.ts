@@ -8,6 +8,7 @@ export type saveObjectOptions = {
   updateTimestamps: boolean;
 };
 export class BaseModel {
+  static getLocalScopesQuery: (() => typeof Query) | undefined;
   [key: string]: any;
   protected tableName: string = '';
   protected fillable: string[] = [];
@@ -227,9 +228,13 @@ export class BaseModel {
     return rc;
   }
 
-  public static async getQuery(): Promise<any> {
+  public static async getQuery(): Promise<ReturnType<typeof this.prototype.getLocalScopesQuery>> {
+    let QueryClass = Query;
+    if (typeof this.getLocalScopesQuery === 'function') {
+      QueryClass = this.getLocalScopesQuery();
+    }
     const conn = await this.getConnection();
-    let rc = conn.getQuery();
+    let rc = new QueryClass(conn, conn.getQueryGrammar());
     const self = new this();
 
     rc.table(self.tableName);
