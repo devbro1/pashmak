@@ -2,13 +2,13 @@ import { Connection } from '@devbro/neko-sql';
 import { Query } from '@devbro/neko-sql';
 import { Parameter } from '@devbro/neko-sql';
 import pluralize from 'pluralize';
-import { format } from 'date-fns-tz';
-import { parse } from 'date-fns';
+import { GlobalScope } from './GlobalScope';
 
 export type saveObjectOptions = {
   updateTimestamps: boolean;
 };
 export class BaseModel {
+  static getLocalScopesQuery: (() => typeof Query) | undefined;
   [key: string]: any;
   protected tableName: string = '';
   protected fillable: string[] = [];
@@ -24,6 +24,7 @@ export class BaseModel {
   protected updatedAtFieldName = 'updated_at';
   protected casters: Record<string, Function> = {};
   protected mutators: Record<string, Function> = {};
+  declare scopes: (typeof GlobalScope)[];
 
   constructor(initialData: any = {}) {
     this.id = undefined;
@@ -217,14 +218,33 @@ export class BaseModel {
     const conn = await BaseModel.getConnection();
     let rc = conn.getQuery();
     rc.table(this.tableName);
+
+    if (this.scopes) {
+      for (const Scope of this.scopes) {
+        const scope = new Scope();
+        rc = await scope.apply(rc, this);
+      }
+    }
     return rc;
   }
 
-  public static async getQuery(): Promise<any> {
-    const conn = await BaseModel.getConnection();
-    let rc = conn.getQuery();
-    let self = new this();
+  public static async getQuery(): Promise<ReturnType<typeof this.prototype.getLocalScopesQuery>> {
+    let QueryClass = Query;
+    if (typeof this.getLocalScopesQuery === 'function') {
+      QueryClass = this.getLocalScopesQuery();
+    }
+    const conn = await this.getConnection();
+    let rc = new QueryClass(conn, conn.getQueryGrammar());
+    const self = new this();
+
     rc.table(self.tableName);
+
+    if (self.scopes) {
+      for (const Scope of self.scopes) {
+        const scope = new Scope();
+        rc = await scope.apply(rc, self);
+      }
+    }
     return rc;
   }
 

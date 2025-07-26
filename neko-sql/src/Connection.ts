@@ -1,6 +1,8 @@
 import { Schema } from './Schema';
 import { Query } from './Query';
 import { CompiledSql } from './types';
+import { QueryGrammar } from './QueryGrammar';
+import { SchemaGrammar } from './SchemaGrammar';
 
 export abstract class Connection {
   abstract connect(): Promise<boolean>;
@@ -12,4 +14,6 @@ export abstract class Connection {
   abstract beginTransaction(): Promise<void>;
   abstract commit(): Promise<void>;
   abstract rollback(): Promise<void>;
+  abstract getQueryGrammar(): QueryGrammar;
+  abstract getSchemaGrammar(): SchemaGrammar;
 }

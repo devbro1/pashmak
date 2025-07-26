@@ -117,7 +117,7 @@ describe('raw schemas', () => {
     });
 
     expect(sql.sql).toBe(
-      'create table users (id serial not null, created_at timestamp not null default CURRENT_TIMESTAMP, updated_at timestamp not null default CURRENT_TIMESTAMP, role_id integer not null,primary key (id),CONSTRAINT (role_id) references roles(id) on delete cascade on update cascade)'
+      'create table users (id serial not null, created_at timestamp not null default CURRENT_TIMESTAMP, updated_at timestamp not null default CURRENT_TIMESTAMP, role_id integer not null,primary key (id),FOREIGN KEY (role_id) references roles(id) on delete cascade on update cascade)'
     );
   });
 });
