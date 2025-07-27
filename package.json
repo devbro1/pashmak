@@ -1,6 +1,6 @@
 {
   "name": "pashmak",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "repository": "git@github.com:devbro1/pashmak.git",
   "author": "Farzad Meow Khalafi <farzadk@gmail.com>",
   "license": "MIT",
@@ -19,6 +19,7 @@
     "neko-helper",
     "neko-http",
     "neko-logger",
+    "neko-mailer",
     "neko-orm",
     "neko-router",
     "neko-scheduler",

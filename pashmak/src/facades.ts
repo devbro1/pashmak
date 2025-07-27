@@ -4,6 +4,14 @@ import { createSingleton } from "@devbro/neko-helper";
 import { ctx, ctxSafe } from "@devbro/neko-context";
 import { Connection } from "@devbro/neko-sql";
 import { Storage, StorageFactory } from "@devbro/neko-storage";
+import {
+  Mailer,
+  Mailable,
+  MailerProvider,
+  FunctionProvider,
+  SESProvider,
+  SMTPProvider,
+} from "@devbro/neko-mailer";
 import { config } from "@devbro/neko-config";
 import { Cli } from "clipanion";
 import { HttpServer } from "./http";
@@ -88,5 +96,32 @@ export const logger = createSingleton<Logger>((label) => {
     return message;
   });
 
+  return rc;
+});
+
+export const mailer = createSingleton((label) => {
+  const mailer_config: any = config.get(["mailer", label].join("."));
+  let provider: MailerProvider | undefined;
+
+  if (mailer_config.provider == "logger") {
+    provider = new FunctionProvider((mail: Mailable) => {
+      logger().info({
+        msg: "Sending email",
+        mail,
+      });
+    });
+  } else if (mailer_config.provider == "SES") {
+    provider = new SESProvider(mailer_config.config);
+  } else if (mailer_config.provider == "SMTP") {
+    provider = new SMTPProvider(mailer_config.config);
+  }
+
+  if (!provider) {
+    throw new Error(
+      `cannot initiate mailer provider: ${mailer_config?.provider}`,
+    );
+  }
+
+  const rc = new Mailer(provider);
   return rc;
 });
