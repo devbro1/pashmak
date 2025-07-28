@@ -10,6 +10,7 @@ const __dirname = dirname(__filename);
 export default {
   databases: await import("./databases"),
   storages: await import("./storages"),
+  mailer: await import("./mailer"),
   port: getEnv("PORT", 3000),
   file_upload_path: path.join(os.tmpdir(), ""),
   migration: {

@@ -68,6 +68,11 @@
       "import": "./dist/orm.js",
       "require": "./dist/orm.js"
     },
+    "./mailer": {
+      "types": "./dist/mailer.d.ts",
+      "import": "./dist/mailer.js",
+      "require": "./dist/mailer.js"
+    },
     "./package.json": "./package.json"
   },
   "scripts": {
@@ -102,6 +107,7 @@
     "@devbro/neko-helper": "0.1.*",
     "@devbro/neko-http": "0.1.*",
     "@devbro/neko-logger": "0.1.*",
+    "@devbro/neko-mailer": "0.1.*",
     "@devbro/neko-orm": "0.1.*",
     "@devbro/neko-scheduler": "0.1.*",
     "@devbro/neko-sql": "0.1.*",
