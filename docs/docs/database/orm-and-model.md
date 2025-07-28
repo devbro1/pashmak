@@ -268,7 +268,11 @@ class Country extends BaseModel {
   }
 
   public static getLocalScopesQuery() {
-    return class extends Query {
+    return class extends LocalScopeQuery<Country> {
+      protected getModel(): new () => Country {
+        return Country;
+      }
+
       region(region_id: number) {
         this.whereOp("region_id", "=", region_id);
         return this;
@@ -286,4 +290,14 @@ let result = await (await Country.getQuery())
   .nameLike("united")
   .region(2)
   .get();
+```
+
+### getLocalScopesQuery class
+
+this class added a few extra localscope functions that can help with casting.
+
+```ts
+let c1_obj = await (await Country.getQuery()).region(1).getObject(); // return an object of type Country or undefined
+
+let c1_objs = await (await Country.getQuery()).region(1).getObjects(); // return an array of type Country, or array will be empty if none match
 ```
