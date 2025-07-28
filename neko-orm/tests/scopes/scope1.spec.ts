@@ -7,6 +7,7 @@ import { Attribute, BaseModel } from '../../src';
 import { faker } from '@faker-js/faker';
 import { sleep } from '@devbro/neko-helper';
 import { GlobalScope } from '../../src/GlobalScope';
+import { LocalScopeQuery } from '../../src/LocalScopeQuery';
 
 describe('global scopes queries', () => {
   let conn: Connection;
@@ -55,7 +56,11 @@ describe('global scopes queries', () => {
       }
 
       public static getLocalScopesQuery() {
-        return class extends Query {
+        return class extends LocalScopeQuery<Country> {
+          protected getModel(): new () => Country {
+            return Country;
+          }
+
           region(region_id: number) {
             this.whereOp('region_id', '=', region_id);
             return this;
@@ -130,5 +135,14 @@ describe('global scopes queries', () => {
     expect(c1_4.length).toBe(6);
     let c1_5 = await (await Country.getQuery()).region(5).get();
     expect(c1_5.length).toBe(0);
+
+    let c1_obj1 = await (await Country.getQuery()).region(1).getObject();
+    expect(c1_obj1 instanceof Country).toBeTruthy();
+
+    let c1_objs = await (await Country.getQuery()).region(1).getObjects();
+    expect(Array.isArray(c1_objs)).toBeTruthy();
+    for (let c of c1_objs) {
+      expect(c instanceof Country).toBeTruthy();
+    }
   });
 });
