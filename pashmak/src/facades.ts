@@ -11,6 +11,7 @@ import {
   FunctionProvider,
   SESProvider,
   SMTPProvider,
+  MemoryProvider,
 } from "@devbro/neko-mailer";
 import { config } from "@devbro/neko-config";
 import { Cli } from "clipanion";
@@ -103,17 +104,19 @@ export const mailer = createSingleton((label) => {
   const mailer_config: any = config.get(["mailer", label].join("."));
   let provider: MailerProvider | undefined;
 
-  if (mailer_config.provider == "logger") {
+  if (mailer_config.provider === "logger") {
     provider = new FunctionProvider((mail: Mailable) => {
       logger().info({
         msg: "Sending email",
         mail,
       });
     });
-  } else if (mailer_config.provider == "SES") {
+  } else if (mailer_config.provider === "SES") {
     provider = new SESProvider(mailer_config.config);
-  } else if (mailer_config.provider == "SMTP") {
+  } else if (mailer_config.provider === "SMTP") {
     provider = new SMTPProvider(mailer_config.config);
+  } else if (mailer_config.provider === "MEMORY") {
+    provider = new MemoryProvider();
   }
 
   if (!provider) {
