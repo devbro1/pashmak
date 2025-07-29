@@ -4,5 +4,6 @@ export * from './Connection';
 export * from './Query';
 export * from './QueryGrammar';
 export * from './Schema';
+export * from './SchemaGrammar';
 export * from './types';
 export * from './Migration';

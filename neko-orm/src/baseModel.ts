@@ -2,6 +2,7 @@ import { Connection } from '@devbro/neko-sql';
 import { Query } from '@devbro/neko-sql';
 import { Parameter } from '@devbro/neko-sql';
 import pluralize from 'pluralize';
+import { snakeCase } from 'change-case-all';
 import { GlobalScope } from './GlobalScope';
 
 export type saveObjectOptions = {
@@ -28,7 +29,7 @@ export class BaseModel {
 
   constructor(initialData: any = {}) {
     this.id = undefined;
-    this.tableName = pluralize(this.constructor.name.toLowerCase());
+    this.tableName = pluralize(snakeCase(this.constructor.name));
     this.fillable = this.constructor.prototype.fillable ?? [];
     this.primaryKey = this.constructor.prototype.primaryKey ?? ['id'];
     this.incrementing = this.constructor.prototype.incrementing ?? true;
