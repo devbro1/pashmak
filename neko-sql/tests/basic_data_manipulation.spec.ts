@@ -1,4 +1,4 @@
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, test, beforeAll, afterAll } from 'vitest';
 import { Connection } from '../src/Connection';
 import { Schema } from '../src/Schema';
 import { CompiledSql } from '../src/types';

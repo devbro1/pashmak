@@ -18,6 +18,16 @@ export class Schema {
     await this.connection?.runQuery({ sql, bindings: [] });
   }
 
+  async alterTable(tableName: string, structMethod: (blueprint: Blueprint) => void) {
+    const blueprint = new Blueprint();
+    blueprint.setTableName(tableName, true);
+    structMethod(blueprint);
+
+    const grammar = new SchemaGrammar();
+    const sql = grammar.toSql(blueprint);
+    await this.connection?.runQuery({ sql, bindings: [] });
+  }
+
   async dropTable(tableName: string) {
     const grammar = new SchemaGrammar();
     await this.connection?.runQuery(grammar.compileDropTable(tableName));
