@@ -79,7 +79,7 @@ export class BaseModel {
 
     for (const key of Object.keys(params)) {
       if (this.casters[key]) {
-        params[key] = this.casters[key](params[key]);
+        params[key] = await this.casters[key](params[key]);
       }
     }
 
@@ -129,10 +129,10 @@ export class BaseModel {
       throw new Error('No record found');
     }
 
-    this.fillAndMutate(r[0]);
+    await this.fillAndMutate(r[0]);
   }
 
-  fillAndMutate(r: object) {
+  async fillAndMutate(r: object) {
     for (const k in r) {
       // @ts-ignore
       this[k] = r[k];
@@ -142,7 +142,7 @@ export class BaseModel {
       }
 
       if (this.mutators[k]) {
-        this[k] = this.mutators[k](this[k]);
+        this[k] = await this.mutators[k](this[k]);
       }
     }
   }
@@ -165,7 +165,7 @@ export class BaseModel {
       return undefined;
     }
 
-    self.fillAndMutate(r[0]);
+    await self.fillAndMutate(r[0]);
     self.exists = true;
     return self as T;
   }
@@ -195,7 +195,7 @@ export class BaseModel {
       return undefined;
     }
 
-    self.fillAndMutate(r[0]);
+    await self.fillAndMutate(r[0]);
     self.exists = true;
 
     return self;

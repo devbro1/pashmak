@@ -40,9 +40,7 @@
     "tsup": "^8.0.2",
     "typescript": "^5.3.3"
   },
-  "dependencies": {
-    "@devbro/neko-router": "0.1.*"
-  },
+  "dependencies": {},
   "directories": {
     "test": "tests"
   },
