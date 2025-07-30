@@ -2,6 +2,7 @@ import { Connection } from '@devbro/neko-sql';
 import { Query } from '@devbro/neko-sql';
 import { Parameter } from '@devbro/neko-sql';
 import pluralize from 'pluralize';
+import { snakeCase } from 'change-case-all';
 import { GlobalScope } from './GlobalScope';
 
 export type saveObjectOptions = {
@@ -28,7 +29,7 @@ export class BaseModel {
 
   constructor(initialData: any = {}) {
     this.id = undefined;
-    this.tableName = pluralize(this.constructor.name.toLowerCase());
+    this.tableName = pluralize(snakeCase(this.constructor.name));
     this.fillable = this.constructor.prototype.fillable ?? [];
     this.primaryKey = this.constructor.prototype.primaryKey ?? ['id'];
     this.incrementing = this.constructor.prototype.incrementing ?? true;
@@ -79,7 +80,7 @@ export class BaseModel {
 
     for (const key of Object.keys(params)) {
       if (this.casters[key]) {
-        params[key] = this.casters[key](params[key]);
+        params[key] = await this.casters[key](params[key]);
       }
     }
 
@@ -129,10 +130,10 @@ export class BaseModel {
       throw new Error('No record found');
     }
 
-    this.fillAndMutate(r[0]);
+    await this.fillAndMutate(r[0]);
   }
 
-  fillAndMutate(r: object) {
+  async fillAndMutate(r: object) {
     for (const k in r) {
       // @ts-ignore
       this[k] = r[k];
@@ -142,7 +143,7 @@ export class BaseModel {
       }
 
       if (this.mutators[k]) {
-        this[k] = this.mutators[k](this[k]);
+        this[k] = await this.mutators[k](this[k]);
       }
     }
   }
@@ -165,7 +166,7 @@ export class BaseModel {
       return undefined;
     }
 
-    self.fillAndMutate(r[0]);
+    await self.fillAndMutate(r[0]);
     self.exists = true;
     return self as T;
   }
@@ -195,7 +196,7 @@ export class BaseModel {
       return undefined;
     }
 
-    self.fillAndMutate(r[0]);
+    await self.fillAndMutate(r[0]);
     self.exists = true;
 
     return self;

@@ -1,6 +1,6 @@
 import pino, { LoggerOptions } from 'pino';
 
-export type MapObject = Record<string, object | string | number | undefined>;
+export type MapObject = Record<string, object | string | number | boolean | undefined>;
 export type LogLevel = 'info' | 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
 export type LogMessage = MapObject & { msg: string };
 export class Logger {

@@ -90,6 +90,7 @@ export class ForeignKeyConstraint {
 export class Blueprint {
   tableName: string = '';
   columns: Column[] = [];
+  drop_coumns: string[] = [];
   foreignKeys: ForeignKeyConstraint[] = [];
   existingTable: boolean = false;
   primaryKeys: string[] = [];
@@ -172,5 +173,9 @@ export class Blueprint {
     const rc = new ForeignKeyConstraint(columnName);
     this.foreignKeys.push(rc);
     return rc;
+  }
+
+  dropColumn(columnName: string) {
+    this.drop_coumns.push(columnName);
   }
 }

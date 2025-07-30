@@ -1,6 +1,6 @@
 {
   "name": "@devbro/pashmak",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "testing application for the entire repo",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -72,6 +72,11 @@
       "types": "./dist/mailer.d.ts",
       "import": "./dist/mailer.js",
       "require": "./dist/mailer.js"
+    },
+    "./middlewares": {
+      "types": "./dist/middlewares.d.ts",
+      "import": "./dist/middlewares.js",
+      "require": "./dist/middlewares.js"
     },
     "./package.json": "./package.json"
   },

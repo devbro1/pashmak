@@ -1,4 +1,4 @@
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, test, beforeAll, afterAll } from 'vitest';
 import { Query } from '../src/Query';
 import { QueryGrammar } from '../src/QueryGrammar';
 import { PostgresqlConnection } from '../src/databases/postgresql/PostgresqlConnection';

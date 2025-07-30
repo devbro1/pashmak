@@ -4,6 +4,16 @@ import { CompiledSql, Parameter } from './types';
 
 export class SchemaGrammar {
   toSql(blueprint: Blueprint): string {
+    if (!blueprint.existingTable) {
+      return this.compileCreateTable(blueprint).sql;
+    } else if (blueprint.existingTable) {
+      return this.compileAlterTable(blueprint).sql;
+    }
+
+    throw new Error('bad blueprint to compile: ' + blueprint.tableName);
+  }
+
+  compileCreateTable(blueprint: Blueprint): CompiledSql {
     let sql = 'create table ' + blueprint.tableName + ' (';
     const columns = blueprint.columns
       .map((v: Column) => {
@@ -19,7 +29,22 @@ export class SchemaGrammar {
       });
     }
     sql += [columns, primaryKeys, ...foreignKeys].join(',') + ')';
-    return sql;
+    return { sql, bindings: [] };
+  }
+
+  compileAlterTable(blueprint: Blueprint): CompiledSql {
+    let sql: string[] = ['alter table ' + blueprint.tableName];
+    const add_columns = blueprint.columns.map((v: Column) => {
+      return 'add column ' + this.compileColumn(v);
+    });
+
+    const drop_columns = blueprint.drop_coumns.map((v: string) => {
+      return 'drop column ' + v;
+    });
+
+    sql = sql.concat([[...add_columns, ...drop_columns].join(', ')]);
+
+    return { sql: sql.join(' '), bindings: [] };
   }
 
   compileColumn(column: Column): string {
