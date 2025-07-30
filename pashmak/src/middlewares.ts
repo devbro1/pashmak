@@ -1,5 +1,5 @@
-import { Request, Response } from "@devbro/pashmak/router";
-import { logger, db } from "@devbro/pashmak/facades";
+import { Request, Response } from "@devbro/neko-router";
+import { logger, db } from "./facades";
 
 export function cors(
   options: { allowedOrigins?: (string | RegExp)[] } = {},
