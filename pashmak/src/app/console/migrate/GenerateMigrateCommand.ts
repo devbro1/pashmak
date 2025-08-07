@@ -53,4 +53,4 @@ export class GenerateMigrateCommand extends Command {
   }
 }
 
-cli().register(MakeMigrateCommand);
+cli().register(GenerateMigrateCommand);
