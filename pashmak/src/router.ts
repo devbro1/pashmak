@@ -27,10 +27,14 @@ export function Param(paramName: string): ParameterDecorator {
 }
 
 export function ValidatedRequest(
-  validationRules: yup.ObjectSchema<any>,
+  validationRules: yup.ObjectSchema<any> | (() => yup.ObjectSchema<any>),
 ): ParameterDecorator {
   return createParamDecorator(async () => {
-    const rc = await validationRules
+    const rc = await (
+      typeof validationRules === "function"
+        ? validationRules()
+        : validationRules
+    )
       .noUnknown()
       .validate(ctx().get<Request>("request").body, { abortEarly: false });
 

@@ -8,10 +8,10 @@ import handlebars from "handlebars";
 import { fileURLToPath } from "url";
 import { table } from "console";
 
-export class MakeMigrateCommand extends Command {
+export class GenerateMigrateCommand extends Command {
   static paths = [
-    [`make`, `migrate`],
-    ["make", "migration"],
+    [`generate`, `migrate`],
+    ["generate", "migration"],
   ];
 
   name = Option.String({ required: true });
