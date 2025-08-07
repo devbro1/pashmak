@@ -43,6 +43,7 @@ export class GenerateControllerCommand extends Command {
     );
     const template = await compiledTemplate({
       className: Case.pascal(this.name),
+      classNameLower: Case.snake(this.name),
       routeName: Case.kebab(pluralize(this.name)),
     });
 

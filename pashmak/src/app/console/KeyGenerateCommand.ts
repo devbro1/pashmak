@@ -5,7 +5,7 @@ import path from "path";
 import { logger, cli } from "../../facades";
 
 export class KeyGenerateCommand extends Command {
-  static paths = [[`key`, "generate"]];
+  static paths = [[`generate`, "key"]];
 
   static usage = Command.Usage({
     category: `Main`,
@@ -15,8 +15,8 @@ export class KeyGenerateCommand extends Command {
       Use --rotate flag to preserve old public key.
     `,
     examples: [
-      [`Generate new keys`, `key generate`],
-      [`Rotate existing keys`, `key generate --rotate`],
+      [`Generate new keys`, `generate key`],
+      [`Rotate existing keys`, `generate key --rotate`],
     ],
   });
 
