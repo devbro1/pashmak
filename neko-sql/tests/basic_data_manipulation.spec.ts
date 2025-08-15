@@ -1,13 +1,13 @@
 import { describe, expect, test, beforeAll, afterAll } from 'vitest';
-import { Connection } from '../src/Connection';
-import { Schema } from '../src/Schema';
-import { CompiledSql } from '../src/types';
-import { Blueprint } from '../src/Blueprint';
-import { SchemaGrammar } from '../src/SchemaGrammar';
-import { PostgresqlConnection } from '../src/databases/postgresql/PostgresqlConnection';
+import { Connection } from '../src/Connection.mjs';
+import { Schema } from '../src/Schema.mjs';
+import { CompiledSql } from '../src/types.mjs';
+import { Blueprint } from '../src/Blueprint.mjs';
+import { SchemaGrammar } from '../src/SchemaGrammar.mjs';
+import { PostgresqlConnection } from '../src/databases/postgresql/PostgresqlConnection.mjs';
 import { execSync } from 'child_process';
-import { PostgresqlQueryGrammar } from '../src/databases/postgresql/PostgresqlQueryGrammar';
-import { Query } from '../src/Query';
+import { PostgresqlQueryGrammar } from '../src/databases/postgresql/PostgresqlQueryGrammar.mjs';
+import { Query } from '../src/Query.mjs';
 import { faker } from '@faker-js/faker';
 
 let conn: Connection | null;

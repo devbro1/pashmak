@@ -1,6 +1,6 @@
-export * from './patternEnforcer';
-export * from './time';
-export * from './crypto';
+export * from './patternEnforcer.mjs';
+export * from './time.mjs';
+export * from './crypto.mjs';
 
 export function getEnv(key: string, ...defaultValue: any[]) {
   let rc = process.env[key] ?? defaultValue[0];

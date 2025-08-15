@@ -1,6 +1,6 @@
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, test } from 'vitest';
 import { Middleware, Router } from '../src';
-import { Request, Response } from '../src/types';
+import { Request, Response } from '../src/types.mjs';
 
 class m1 extends Middleware {
   protected constructor(params: any) {

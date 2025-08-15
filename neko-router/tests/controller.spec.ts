@@ -1,7 +1,7 @@
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, test } from 'vitest';
 import { Middleware, Router } from '../src';
-import { Request, Response } from '../src/types';
-import { BaseController, Get, Controller } from '../src/Controller';
+import { Request, Response } from '../src/types.mjs';
+import { BaseController, Get, Controller } from '../src/Controller.mjs';
 
 @Controller('/api/v1/countries')
 class CountryController extends BaseController {

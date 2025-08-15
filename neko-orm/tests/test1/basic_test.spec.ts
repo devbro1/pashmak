@@ -1,4 +1,4 @@
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, test } from 'vitest';
 import { PostgresqlConnection } from '@devbro/neko-sql';
 import { Connection } from '@devbro/neko-sql';
 import { execSync } from 'child_process';

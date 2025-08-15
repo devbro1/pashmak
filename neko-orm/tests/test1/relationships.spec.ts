@@ -1,4 +1,4 @@
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, test } from 'vitest';
 import { PostgresqlConnection, Connection } from '@devbro/neko-sql';
 import { execSync } from 'child_process';
 import { User, Profile, Post, Comment, Image, Tag, Viewer } from '../fixtures/models_blog';
@@ -66,14 +66,14 @@ describe('relationships', () => {
     await user1.profile().associate(profile1);
     expect((await user1.profile().get())!.id).toBe(profile1.id);
 
-    await user2.profile().dessociate(profile2);
+    await user2.profile().dissociate(profile2);
     expect(await user2.profile().get()).toBeUndefined();
 
     await user3.profile().associate(profile3, { sync: false });
     expect(await user3.profile().get()).toBeUndefined();
     await profile3.save();
     expect((await user3.profile().get())!.id).toBe(profile3.id);
-    await user3.profile().dessociate(profile3, { sync: false });
+    await user3.profile().dissociate(profile3, { sync: false });
     expect(await user3.profile().get()).toBeDefined();
     await profile3.save();
     expect(await user3.profile().get()).toBeUndefined();
@@ -81,7 +81,7 @@ describe('relationships', () => {
     expect(await profile3.user().get()).toBeUndefined();
     await profile3.user().associate(user3);
     expect((await profile3.user().get())!.id).toBe(user3.id);
-    await profile3.user().dessociate(user3);
+    await profile3.user().dissociate(user3);
     expect(await profile3.user().get()).toBeUndefined();
   });
 
@@ -119,7 +119,7 @@ describe('relationships', () => {
     expect((await post2.author().get())!.id).toBe(user1.id);
     expect((await post3.author().get())!.id).toBe(user2.id);
 
-    await user1.posts().dessociate(post2);
+    await user1.posts().dissociate(post2);
     expect((await user1.posts().toArray()).length).toBe(1);
     expect(await post2.author().get()).toBeUndefined();
     await post2.refresh();
@@ -168,7 +168,7 @@ describe('relationships', () => {
     expect((await viewer3.posts().toArray()).length).toBe(1);
 
     await viewer3.posts().associate(post3);
-    await viewer2.posts().dessociate(post1);
+    await viewer2.posts().dissociate(post1);
 
     expect((await post1.viewers().toArray()).length).toBe(1);
     expect((await post2.viewers().toArray()).length).toBe(2);
@@ -279,18 +279,18 @@ describe('relationships', () => {
     expect((await image1.comments().toArray()).length).toBe(1);
     await comment3.save();
     expect((await image1.comments().toArray()).length).toBe(2);
-    image1.comments().dessociate(comment3, { sync: false });
+    image1.comments().dissociate(comment3, { sync: false });
     expect((await image1.comments().toArray()).length).toBe(2);
     await comment3.refresh();
     expect(comment3.commentable_type).toBe('image');
     expect(comment3.commentable_id).toBe(image1.id);
-    image1.comments().dessociate(comment3, { sync: false });
+    image1.comments().dissociate(comment3, { sync: false });
     await comment3.save();
     expect(comment3.commentable_type).toBeUndefined();
     expect(comment3.commentable_id).toBeUndefined();
 
     expect((await image1.comments().toArray()).length).toBe(1);
-    image1.comments().dessociate(comment1);
+    image1.comments().dissociate(comment1);
     expect((await image1.comments().toArray()).length).toBe(0);
   });
 
@@ -334,7 +334,7 @@ describe('relationships', () => {
     expect((await post1.tags().toArray()).length).toBe(2);
     expect((await image1.tags().toArray()).length).toBe(2);
 
-    await post1.tags().dessociate(tag2);
+    await post1.tags().dissociate(tag2);
     expect((await post1.tags().toArray()).length).toBe(1);
     expect((await image1.tags().toArray()).length).toBe(2);
   });

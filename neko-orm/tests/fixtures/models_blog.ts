@@ -1,5 +1,5 @@
 import { Attribute } from '../../src';
-import { BaseModel } from '../../src/baseModel';
+import { BaseModel } from '../../src/baseModel.mjs';
 import { RelationshipFactory } from '../../src/relationships/RelationshipFactory';
 import { Query } from '@devbro/neko-sql';
 

@@ -17,7 +17,9 @@
   },
   "scripts": {
     "build": "tsup",
-    "test": "jest",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage",
     "format": "eslint . --fix --ext ts,tsx --report-unused-disable-directives --max-warnings 0 ",
     "prepare": "husky",
     "prettier": "prettier --write .",

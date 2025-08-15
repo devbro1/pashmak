@@ -1,6 +1,6 @@
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, test } from 'vitest';
 import { Middleware, Router } from '../src';
-import { Request, Response } from '../src/types';
+import { Request, Response } from '../src/types.mjs';
 import { BaseController, Get, Post, Controller, createParamDecorator } from '../src';
 
 function ValidatedRequestBody(): ParameterDecorator {

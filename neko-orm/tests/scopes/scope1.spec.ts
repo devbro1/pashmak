@@ -1,4 +1,4 @@
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, test } from 'vitest';
 import { PostgresqlConnection, Query } from '@devbro/neko-sql';
 import { Connection } from '@devbro/neko-sql';
 import { execSync } from 'child_process';
@@ -6,8 +6,8 @@ import { Country, Job, Region } from '../fixtures/models';
 import { Attribute, BaseModel } from '../../src';
 import { faker } from '@faker-js/faker';
 import { sleep } from '@devbro/neko-helper';
-import { GlobalScope } from '../../src/GlobalScope';
-import { LocalScopeQuery } from '../../src/LocalScopeQuery';
+import { GlobalScope } from '../../src/GlobalScope.mjs';
+import { LocalScopeQuery } from '../../src/LocalScopeQuery.mjs';
 
 describe('global scopes queries', () => {
   let conn: Connection;

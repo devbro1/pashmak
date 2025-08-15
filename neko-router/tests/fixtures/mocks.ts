@@ -1,24 +1,23 @@
 import { IncomingMessage, ServerResponse } from 'http';
+import { vi } from 'vitest';
 
-export function createMockResponse(): jest.Mocked<
-  ServerResponse<IncomingMessage> & { body: string }
-> {
+export function createMockResponse(): ServerResponse<IncomingMessage> & { body: string } {
   class MyMock {
     statusCode = 200;
     statusMessage = 'OK';
     body = '';
-    setHeader = jest.fn();
-    getHeader = jest.fn();
-    writeHead = jest.fn().mockReturnThis();
-    write = jest.fn((chunk: any) => {
+    setHeader = vi.fn();
+    getHeader = vi.fn();
+    writeHead = vi.fn().mockReturnThis();
+    write = vi.fn((chunk: any) => {
       this.body += chunk.toString();
       return true;
     });
-    end = jest.fn((chunk?: any) => {
+    end = vi.fn((chunk?: any) => {
       if (chunk) this.body += chunk.toString();
       return this;
     });
   }
 
-  return new MyMock() as unknown as jest.Mocked<ServerResponse<IncomingMessage> & { body: string }>;
+  return new MyMock() as unknown as ServerResponse<IncomingMessage> & { body: string };
 }

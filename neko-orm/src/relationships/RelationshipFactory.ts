@@ -1,12 +1,12 @@
 import { Query } from '@devbro/neko-sql';
-import { BaseModel } from '../baseModel';
+import { BaseModel } from '../baseModel.mjs';
 import { Case, snakeCase } from 'change-case-all';
-import { RelationshipManager1to1 } from './RelationshipManager1to1';
-import { RelationshipManager1toM } from './RelationshipManager1toM';
-import { RelationshipManagerMto1 } from './RelationshipManagerMto1';
-import { RelationshipManagerMtoM } from './RelationshipManagerMtoM';
-import { RelationFactoryOptionsType } from './types';
-import { RelationshipManager } from './RelationshipManager';
+import { RelationshipManager1to1 } from './RelationshipManager1to1.mjs';
+import { RelationshipManager1toM } from './RelationshipManager1toM.mjs';
+import { RelationshipManagerMto1 } from './RelationshipManagerMto1.mjs';
+import { RelationshipManagerMtoM } from './RelationshipManagerMtoM.mjs';
+import { RelationFactoryOptionsType } from './types.mjs';
+import { RelationshipManager } from './RelationshipManager.mjs';
 
 export class RelationshipFactory {
   static populateOptions(options: Partial<RelationFactoryOptionsType>): RelationFactoryOptionsType {

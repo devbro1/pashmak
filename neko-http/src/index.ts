@@ -1,14 +1,14 @@
 import { IncomingMessage, ServerResponse, createServer } from 'node:http';
 import { createServer as createServerSecured } from 'https';
 import { CompiledRoute, HttpMethod, Route, Router } from '@devbro/neko-router';
-import { HttpError, HttpNotFoundError, HttpUnsupportedMediaTypeError } from './errors';
+import { HttpError, HttpNotFoundError, HttpUnsupportedMediaTypeError } from './errors.mjs';
 import { Request } from '@devbro/neko-router';
 import { context_provider, ctx } from '@devbro/neko-context';
 import formidable from 'formidable';
 import qs from 'qs';
 // @ts-ignore
 import { firstValues } from 'formidable/src/helpers/firstValues.js';
-export * from './errors';
+export * from './errors.mjs';
 
 export class HttpServer {
   private https_certs: undefined | { key: string; cert: string } = undefined;

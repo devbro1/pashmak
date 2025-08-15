@@ -1,9 +1,9 @@
-import { Connection } from '../src/Connection';
-import { Schema } from '../src/Schema';
-import { CompiledSql } from '../src/types';
-import { SchemaGrammar } from '../src/SchemaGrammar';
-import { Query } from '../src/Query';
-import { PostgresqlQueryGrammar } from '../src/databases/postgresql/PostgresqlQueryGrammar';
+import { Connection } from '../src/Connection.mjs';
+import { Schema } from '../src/Schema.mjs';
+import { CompiledSql } from '../src/types.mjs';
+import { SchemaGrammar } from '../src/SchemaGrammar.mjs';
+import { Query } from '../src/Query.mjs';
+import { PostgresqlQueryGrammar } from '../src/databases/postgresql/PostgresqlQueryGrammar.mjs';
 import { PostgresqlSchemaGrammar, QueryGrammar } from '../src';
 
 class FakeConnection extends Connection {

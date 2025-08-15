@@ -1,3 +1,3 @@
-export * from './baseModel';
-export * from './decorators';
-export * from './relationships';
+export * from './baseModel.mjs';
+export * from './decorators.mjs';
+export * from './relationships/index.mjs';

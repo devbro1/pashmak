@@ -7492,6 +7492,11 @@ esast-util-from-js@^2.0.0:
     esast-util-from-estree "^2.0.0"
     vfile-message "^4.0.0"
 
+esbuild-plugin-file-path-extensions@^2.1.4:
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/esbuild-plugin-file-path-extensions/-/esbuild-plugin-file-path-extensions-2.1.4.tgz#cad9d1d3133e95146eeabd76fdf3956a66f6348b"
+  integrity sha512-lNjylaAsJMprYg28zjUyBivP3y0ms9b7RJZ5tdhDUFLa3sCbqZw4wDnbFUSmnyZYWhCYDPxxp7KkXM2TXGw3PQ==
+
 esbuild@^0.25.0, esbuild@~0.25.0:
   version "0.25.6"
   resolved "https://registry.yarnpkg.com/esbuild/-/esbuild-0.25.6.tgz#9b82a3db2fa131aec069ab040fd57ed0a880cdcd"

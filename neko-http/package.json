@@ -1,10 +1,11 @@
 {
   "name": "@devbro/neko-http",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "all in one http server",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "type": "module",
   "files": [
     "dist"
   ],
@@ -22,7 +23,9 @@
   },
   "scripts": {
     "build": "tsup",
-    "test": "jest",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage",
     "format": "eslint . --fix --ext ts,tsx --report-unused-disable-directives --max-warnings 0 ",
     "prepare": "husky",
     "prettier": "prettier --write .",
@@ -48,7 +51,8 @@
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
     "tsup": "^8.0.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "@devbro/neko-context": "^0.1.*",
