@@ -1,6 +1,6 @@
-import { Mailable } from "../Mailable.mts";
-import { MailerProvider } from "../MailerProvider.mts";
-import { prepareEmails } from "../helper.mts";
+import { Mailable } from "../Mailable.mjs";
+import { MailerProvider } from "../MailerProvider.mjs";
+import { prepareEmails } from "../helper.mjs";
 
 export class MemoryProvider implements MailerProvider {
   private defaultFrom: string = "";

@@ -1,11 +1,11 @@
-import { Mailable } from "../Mailable.mts";
-import { MailerProvider } from "../MailerProvider.mts";
+import { Mailable } from "../Mailable.mjs";
+import { MailerProvider } from "../MailerProvider.mjs";
 import {
   SESClient,
   SESClientConfig,
   SendEmailCommand,
 } from "@aws-sdk/client-ses";
-import { prepareEmails } from "../helper.mts";
+import { prepareEmails } from "../helper.mjs";
 
 export class SESProvider implements MailerProvider {
   private sesClient: SESClient;

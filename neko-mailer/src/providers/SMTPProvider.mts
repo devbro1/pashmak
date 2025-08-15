@@ -1,7 +1,7 @@
-import { Mailable } from "../Mailable.mts";
-import { MailerProvider } from "../MailerProvider.mts";
+import { Mailable } from "../Mailable.mjs";
+import { MailerProvider } from "../MailerProvider.mjs";
 import nodemailer from "nodemailer";
-import { prepareEmails } from "../helper.mts";
+import { prepareEmails } from "../helper.mjs";
 
 export class SMTPProvider implements MailerProvider {
   private defaultFrom: string = "";
