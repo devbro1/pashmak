@@ -6,13 +6,13 @@ export class Country extends BaseModel {
   protected hasTimestamps: boolean = false;
 
   @Attribute({ primaryKey: true, incrementingPrimaryKey: false })
-  public country_id: number | undefined;
+  declare country_id: number;
 
   @Attribute()
-  public country_name: string | undefined;
+  declare country_name: string;
 
   @Attribute()
-  public region_id: number | undefined;
+  declare region_id: number;
 
   regions(): Region[] {
     return [];
