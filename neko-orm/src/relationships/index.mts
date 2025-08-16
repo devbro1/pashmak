@@ -4,5 +4,5 @@ export * from './RelationshipManagerMto1.mjs';
 export * from './RelationshipManagerMtoM.mjs';
 export * from './RelationshipManager.mjs';
 export * from './RelationshipManagerPolymorphic1toM.mjs';
-export * from './RelationshipFactory';
+export * from './RelationshipFactory.mjs';
 export * from './types.mjs';

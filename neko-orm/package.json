@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-orm",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "straight forward ORM for those that love simple things",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -17,7 +17,7 @@
   },
   "scripts": {
     "build": "tsup",
-        "test": "vitest run",
+    "test": "vitest run",
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
     "format": "eslint . --fix --ext ts,tsx --report-unused-disable-directives --max-warnings 0 ",
