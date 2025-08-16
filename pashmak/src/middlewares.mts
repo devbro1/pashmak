@@ -1,5 +1,5 @@
 import { Request, Response } from "@devbro/neko-router";
-import { logger, db } from "./facades";
+import { logger, db } from "./facades.mjs";
 
 export function cors(
   options: { allowedOrigins?: (string | RegExp)[] } = {},

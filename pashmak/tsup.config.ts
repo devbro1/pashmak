@@ -2,7 +2,7 @@ import { defineConfig } from "tsup";
 
 export default defineConfig([
   {
-    entry: ["src/**/*.ts"],
+    entry: ["src/**/*.ts", "src/**/*.mts"],
     format: ["esm"], // Build for commonJS and ESmodules
     dts: true, // Generate declaration file (.d.ts)
     splitting: false,
@@ -13,7 +13,7 @@ export default defineConfig([
     onSuccess: "node scripts/copy-tpl.js",
   },
   {
-    entry: ["src/bin/*.ts"],
+    entry: ["src/**/*.ts", "src/**/*.mts"],
     outDir: "dist/bin",
     format: ["cjs"], // Build for commonJS and ESmodules
     dts: false, // Generate declaration file (.d.ts)

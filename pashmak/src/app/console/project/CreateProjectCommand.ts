@@ -61,7 +61,7 @@ export class CreateProjectCommand extends Command {
     await fs.mkdir(projectPath, { recursive: true });
     console.log(`Created project directory at: ${projectPath}`);
 
-    let dirname =
+    const dirname =
       typeof __dirname === "undefined"
         ? path.dirname(fileURLToPath(import.meta.url))
         : __dirname;

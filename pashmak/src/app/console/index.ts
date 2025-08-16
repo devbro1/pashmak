@@ -5,7 +5,7 @@ export * from "./KeyGenerateCommand";
 export * from "./generate";
 export * from "./project/CreateProjectCommand";
 
-import { cli } from "../../facades";
+import { cli } from "../../facades.mjs";
 import { CreateProjectCommand } from "./project/CreateProjectCommand";
 
 cli().register(CreateProjectCommand);

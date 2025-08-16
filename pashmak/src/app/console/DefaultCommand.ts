@@ -1,5 +1,5 @@
 import { Command, Option } from "clipanion";
-import { cli } from "../../facades";
+import { cli } from "../../facades.mjs";
 
 export class DefaultCommand extends Command {
   static usage = Command.Usage({
@@ -24,7 +24,7 @@ export class DefaultCommand extends Command {
 
     console.log("Available commands:");
     for (const cmd of paths) {
-      if(cmd) {
+      if (cmd) {
         console.log(cmd);
       }
     }

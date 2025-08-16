@@ -1,4 +1,4 @@
-import { cli, db as database, logger } from "../../../facades";
+import { cli, db as database, logger } from "../../../facades.mjs";
 import { Command, Option } from "clipanion";
 import { Blueprint } from "@devbro/neko-sql";
 import { context_provider } from "@devbro/neko-context";

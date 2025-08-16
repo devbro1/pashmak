@@ -1,7 +1,7 @@
 import { Command, Option } from "clipanion";
 import { config } from "@devbro/neko-config";
 
-import { cli, httpServer, logger, scheduler } from "../../facades";
+import { cli, httpServer, logger, scheduler } from "../../facades.mjs";
 import { PostgresqlConnection } from "@devbro/neko-sql";
 
 export class StartCommand extends Command {

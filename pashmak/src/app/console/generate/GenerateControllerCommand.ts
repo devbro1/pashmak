@@ -1,4 +1,4 @@
-import { cli } from "../../../facades";
+import { cli } from "../../../facades.mjs";
 import { Command, Option } from "clipanion";
 import { Case } from "change-case-all";
 import path from "path";

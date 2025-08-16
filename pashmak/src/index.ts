@@ -20,7 +20,9 @@ export async function bootstrap(options: { root_dir: string }): Promise<void> {
   console.log("Loading application modules...");
   await import(`./app/console`);
   console.log("Loading Database Provider ...");
-  const { DatabaseServiceProvider } = await import("./DatabaseServiceProvider");
+  const { DatabaseServiceProvider } = await import(
+    "./DatabaseServiceProvider.mjs"
+  );
 
   console.log("Setting up pre-loader for context provider...");
   context_provider.setPreLoader(async (f: Function) => {
