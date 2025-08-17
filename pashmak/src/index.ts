@@ -18,7 +18,7 @@ export async function bootstrap(options: { root_dir: string }): Promise<void> {
   config.load(a);
 
   console.log("Loading application modules...");
-  await import(`./app/console`);
+  await import(`./app/console/index.mjs`);
   console.log("Loading Database Provider ...");
   const { DatabaseServiceProvider } = await import(
     "./DatabaseServiceProvider.mjs"

@@ -3,13 +3,13 @@
 import { Cli } from "clipanion";
 
 const [node, app, ...args] = process.argv;
-let cli = new Cli({
+const cli = new Cli({
   binaryLabel: `Pashmak CLI`,
   binaryName: `${node} ${app}`,
   binaryVersion: `1.0.0`,
 });
 
-import { CreateProjectCommand } from "../app/console/project/CreateProjectCommand";
+import { CreateProjectCommand } from "../app/console/project/CreateProjectCommand.mjs";
 
 cli.register(CreateProjectCommand);
 
