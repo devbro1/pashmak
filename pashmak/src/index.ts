@@ -1,4 +1,3 @@
-import dotenv from "dotenv";
 import { context_provider } from "@devbro/neko-context";
 import { Middleware } from "@devbro/neko-router";
 import { runNext } from "@devbro/neko-router";
@@ -13,7 +12,6 @@ export async function bootstrap(options: {
   // This function is used to bootstrap the application.
   // It can be used to initialize the application, load configuration, etc.
   // Currently, it does nothing but can be extended in the future.
-  dotenv.config();
 
   console.log("Bootstrapping application...");
   console.log(`Root directory: ${options.root_dir}`);
