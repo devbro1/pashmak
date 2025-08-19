@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 
 await bootstrap({
   root_dir: dirname(fileURLToPath(import.meta.url)),
+  config_data: {},
 });
 
 console.log("Registering service providers...");
