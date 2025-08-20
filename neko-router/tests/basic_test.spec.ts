@@ -51,6 +51,14 @@ describe('Router tests', () => {
       }
     );
 
+    router.addRoute(['GET'], '/api/v1/dates', async (req: Request, res: Response) => {
+      let d1 = new Date('2023-10-01T00:00:00Z');
+      let d2 = new Date('2024-04-04T04:04:04Z');
+      return {
+        data: [d1, d2],
+      };
+    });
+
     let req = { url: '/api/v1/countries', method: 'GET' } as Request;
     let resolved = router.resolve(req);
     expect(resolved).toBeDefined();
@@ -79,6 +87,12 @@ describe('Router tests', () => {
     resolved = router.resolve({ url: '/api/v1/countries', method: 'POST' } as Request);
     expect(resolved).toBeDefined();
     expect(resolved?.getMiddlewares().length).toBe(2);
+
+    resolved = router.resolve({ url: '/api/v1/dates', method: 'GET' } as Request);
+    expect(resolved).toBeDefined();
+    expect(await resolved!.handler({}, {})).toEqual({
+      data: [new Date('2023-10-01T00:00:00.000Z'), new Date('2024-04-04T04:04:04.000Z')],
+    });
   });
 
   test('global middlewares', async () => {

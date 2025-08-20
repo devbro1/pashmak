@@ -53,6 +53,11 @@ export class CompiledRoute {
         return traverse(value.toJson());
       }
 
+      // to handle Date and other built-in types
+      if (typeof value.toJSON === 'function') {
+        return traverse(value.toJSON());
+      }
+
       if (Array.isArray(value)) {
         return value.map(traverse);
       }
