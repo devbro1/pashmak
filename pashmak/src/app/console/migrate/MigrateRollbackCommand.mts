@@ -35,6 +35,7 @@ export class MigrateRollbackCommand extends Command {
 
       const count = 0;
       for (const migration of migrations) {
+        await db.beginTransaction();
         const class_to_migrate = migration.filename;
         this.context.stdout.write(`rolling back ${class_to_migrate}`);
 
@@ -48,6 +49,7 @@ export class MigrateRollbackCommand extends Command {
           sql: "delete from migrations where id = $1",
           bindings: [migration.id],
         });
+        await db.commit();
       }
     });
   }
