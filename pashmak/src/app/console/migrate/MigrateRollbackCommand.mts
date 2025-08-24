@@ -13,6 +13,7 @@ export class MigrateRollbackCommand extends Command {
   steps = Option.String(`--steps`, {
     description: `how many migrations to rollback`,
     validator: t.isNumber(),
+    default: 1
   });
 
   async execute() {
@@ -28,8 +29,8 @@ export class MigrateRollbackCommand extends Command {
       files = dirEntries.filter((entry) => entry.endsWith(".ts")).sort();
 
       const migrations = await db.runQuery({
-        sql: "select * from migrations order by created_at DESC",
-        bindings: [],
+        sql: "select * from migrations order by created_at DESC limit $1",
+        bindings: [this.steps],
       });
 
       const count = 0;
