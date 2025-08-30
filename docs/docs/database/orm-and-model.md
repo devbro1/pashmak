@@ -189,7 +189,7 @@ you can define casters and mutators for an attributes
 ```ts
 @attributes({
   caster: (val: Date) => val.toISOString(),
-  mutator: (val: string) => paraseStringToDate(val),
+  mutator: (val: string) => parseStringToDate(val),
 })
 declare date_of_birth: Date;
 ```
