@@ -13,7 +13,7 @@ export function Model(
   return createParamDecorator(async () => {
     let rc = await model.find(ctx().get<Request>("request").params[paramName]);
     if (!rc) {
-      throw new HttpNotFoundError("Object not found");
+      throw new HttpNotFoundError("Object not found", "OBJECT_NOT_FOUND");
     }
 
     return rc;

@@ -1,3 +1,4 @@
+import { Stream } from 'stream';
 import { Middleware } from './Middleware.mjs';
 import { MiddlewareFactory } from './MiddlewareFactory.mjs';
 import { Route } from './Route.mjs';
@@ -85,7 +86,7 @@ export class CompiledRoute {
     return String(obj);
   }
 
-  processResponseBody(res: Response, controller_rc: any) {
+  async processResponseBody(res: Response, controller_rc: any) {
     if (controller_rc && res.writableEnded) {
       throw new Error('cannot write to response, response has already ended');
     }
@@ -96,7 +97,11 @@ export class CompiledRoute {
 
     if (controller_rc) {
       const header_content_type = res.getHeader('Content-Type');
-      if (!header_content_type && typeof controller_rc === 'object') {
+      if (controller_rc instanceof Stream) {
+        await this.writeAsync(res, controller_rc);
+      } else if (Buffer.isBuffer(controller_rc)) {
+        await this.writeAsync(res, controller_rc);
+      } else if (!header_content_type && typeof controller_rc === 'object') {
         res.setHeader('Content-Type', 'application/json');
       } else if (!header_content_type) {
         res.setHeader('Content-Type', 'text/plain');
@@ -108,6 +113,21 @@ export class CompiledRoute {
       res.statusCode = [200].includes(res.statusCode) ? 204 : res.statusCode;
       res.end();
     }
+  }
+
+  async writeAsync(res: any, chunk: any) {
+    return new Promise((resolve, reject) => {
+      const ok = res.write(chunk, (err: any) => {
+        if (err) reject(err);
+      });
+      if (ok) {
+        // write went through immediately
+        resolve(0);
+      } else {
+        // wait for 'drain' when buffer is flushed
+        res.once('drain', resolve);
+      }
+    });
   }
 
   async runMiddlewares(middlewares: Middleware[], req: Request, res: Response) {

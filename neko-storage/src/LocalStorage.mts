@@ -49,8 +49,11 @@ export class LocalStorage extends Storage {
     }
   }
 
-  async put(path: string, content: string | object | Stream | Buffer): Promise<boolean> {
-    const fullPath = this.getFullPath(path);
+  async put(filepath: string, content: string | object | Stream | Buffer): Promise<boolean> {
+    const fullPath = this.getFullPath(filepath);
+
+    const dir = path.dirname(fullPath);
+    await fs.mkdir(dir, { recursive: true });
 
     if (typeof content === 'string' || content instanceof Buffer) {
       await fs.writeFile(fullPath, content);

@@ -10,7 +10,9 @@ import { Migration } from "@devbro/neko-sql";
 export class MigrateCommand extends Command {
   static paths = [[`migrate`]];
 
-  fresh = Option.Boolean("--fresh", false);
+  fresh = Option.Boolean(`--fresh`, false, {
+    description: `whether to drop all tables before running migrations`,
+  });
 
   async execute() {
     await context_provider.run(async () => {

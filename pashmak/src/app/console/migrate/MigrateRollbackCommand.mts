@@ -10,7 +10,7 @@ import * as t from "typanion";
 export class MigrateRollbackCommand extends Command {
   static paths = [[`migrate`, "rollback"]];
 
-  steps = Option.String(`--steps`, {
+  steps = Option.String(`--steps`, "1", {
     description: `how many migrations to rollback`,
     validator: t.isNumber(),
   });
@@ -47,6 +47,7 @@ export class MigrateRollbackCommand extends Command {
           sql: "delete from migrations where id = $1",
           bindings: [migration.id],
         });
+        if (count >= this.steps) break;
       }
     });
   }
