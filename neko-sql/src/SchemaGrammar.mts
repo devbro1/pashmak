@@ -111,6 +111,9 @@ export class SchemaGrammar {
     if (value instanceof Expression) {
       return value.toCompiledSql().sql;
     }
+    if (Array.isArray(value)) {
+      return "'{" + value.join(',') + "}'";
+    }
 
     return "'" + value.replace("'", "\\'") + "'";
   }
