@@ -30,7 +30,7 @@ export class Logger {
     this.extraFunc = func;
   }
 
-  logMessage(level: LogLevel, message: string | LogMessage) {
+  logMessage(level: LogLevel, message: string | LogMessage, details: object = {}) {
     let finalMessage: LogMessage;
 
     if (typeof message === 'string') {
@@ -38,6 +38,7 @@ export class Logger {
     } else {
       finalMessage = message;
     }
+    finalMessage = { ...finalMessage, ...details };
 
     if (this.extraFunc) {
       finalMessage = this.extraFunc(finalMessage);
@@ -45,27 +46,27 @@ export class Logger {
     this.logger[level](finalMessage);
   }
 
-  trace(message: string | LogMessage) {
-    this.logMessage('trace', message);
+  trace(message: string | LogMessage, details: object = {}) {
+    this.logMessage('trace', message, details);
   }
 
-  debug(message: string | LogMessage) {
-    this.logMessage('debug', message);
+  debug(message: string | LogMessage, details: object = {}) {
+    this.logMessage('debug', message, details);
   }
 
-  info(message: string | LogMessage) {
-    this.logMessage('info', message);
+  info(message: string | LogMessage, details: object = {}) {
+    this.logMessage('info', message, details);
   }
 
-  warn(message: string | LogMessage) {
-    this.logMessage('warn', message);
+  warn(message: string | LogMessage, details: object = {}) {
+    this.logMessage('warn', message, details);
   }
 
-  error(message: string | LogMessage) {
-    this.logMessage('error', message);
+  error(message: string | LogMessage, details: object = {}) {
+    this.logMessage('error', message, details);
   }
 
-  fatal(message: string | LogMessage) {
-    this.logMessage('fatal', message);
+  fatal(message: string | LogMessage, details: object = {}) {
+    this.logMessage('fatal', message, details);
   }
 }

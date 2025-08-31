@@ -24,7 +24,9 @@ these would produce proper log messages in json format to stdout.
 if you need to capture more details in your logs, you can always pass an object instead:
 
 ```ts
-loggeer().info({ msg: "my message", err: error });
+logger().info({ msg: "my message", err: error });
+// or
+logger().info("my message", { err: error });
 ```
 
 ## multiple loggers

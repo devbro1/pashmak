@@ -136,6 +136,13 @@ export abstract class QueryGrammar {
   }
 
   compileWhereOperation(w: whereOp): CompiledSql {
+    if (w.operation.toLowerCase() === 'in' && Array.isArray(w.value)) {
+      return {
+        sql: `${w.column} = ANY(${this.getVariablePlaceholder()})`,
+        bindings: [w.value],
+      };
+    }
+
     return {
       sql: `${w.column} ${w.operation} ${this.getVariablePlaceholder()}`,
       bindings: [w.value],

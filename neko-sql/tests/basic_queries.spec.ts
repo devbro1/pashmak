@@ -130,4 +130,15 @@ describe('raw queries', () => {
     expect(result4[1].job_id).toBe(1);
     expect(result4[2].job_id).toBe(9);
   });
+
+  test('select where in X', async () => {
+    const query = new Query(conn, new PostgresqlQueryGrammar());
+    query.table('regions');
+    query.whereOp('region_id', 'in', [1, 2]);
+    console.log(query.toSql());
+    const result = await query.get();
+    expect(result.length).toBe(2);
+    expect(result[0].region_name).toBe('Europe');
+    expect(result[1].region_name).toBe('Americas');
+  });
 });
