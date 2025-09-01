@@ -29,6 +29,7 @@ class m2 extends Middleware {
     await next();
   }
 }
+
 describe('Router tests', () => {
   test('basic testing', async () => {
     const router: Router = new Router();

@@ -118,6 +118,11 @@ export class Route {
     };
   }
 
+  prependMiddleware(middlewares: MiddlewareProvider | MiddlewareProvider[]) {
+    this.middlewares = ([] as MiddlewareProvider[]).concat(middlewares, this.middlewares);
+    return this;
+  }
+
   addMiddleware(middlewares: MiddlewareProvider | MiddlewareProvider[]) {
     this.middlewares = this.middlewares.concat(middlewares);
     return this;

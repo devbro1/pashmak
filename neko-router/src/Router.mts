@@ -6,6 +6,7 @@ import { Route } from './Route.mjs';
 import { HandlerType, HttpMethod, MiddlewareProvider } from './types.mjs';
 import { LexerToken, Request, Response } from './types.mjs';
 import path from 'path';
+import urlJoin from 'url-join';
 
 export class Router {
   private middlewares: MiddlewareProvider[] = [];
@@ -29,6 +30,15 @@ export class Router {
         // @ts-ignore
         return await controllerInstance[route.handler]();
       }).addMiddleware([...controller.baseMiddlewares, ...route.middlewares]);
+    }
+  }
+
+  addRouter(path: string, router: Router) {
+    for (const route of router.routes) {
+      let path2 = urlJoin('/', path, route.path);
+      this.addRoute(route.methods, path2, route.handler)
+        .addMiddleware(router.getMiddlewares())
+        .addMiddleware(route.getMiddlewares());
     }
   }
 

@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-router",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "general purpose router for URI to controller selection",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -41,7 +41,9 @@
     "typescript": "^5.3.3",
     "vitest": "^3.2.4"
   },
-  "dependencies": {},
+  "dependencies": {
+    "url-join": "^5.0.0"
+  },
   "directories": {
     "doc": "docs",
     "test": "tests"
