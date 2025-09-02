@@ -1,4 +1,4 @@
-import { cli, db as database } from "../../../facades.mjs";
+import { cli, db as database, logger } from "../../../facades.mjs";
 import { Command, Option } from "clipanion";
 import { context_provider } from "@devbro/neko-context";
 import path from "path";
@@ -28,14 +28,13 @@ export class MigrateRollbackCommand extends Command {
       files = dirEntries.filter((entry) => entry.endsWith(".ts")).sort();
 
       const migrations = await db.runQuery({
-        sql: "select * from migrations order by created_at DESC",
-        bindings: [],
+        sql: "select * from migrations order by created_at DESC limit $1",
+        bindings: [this.steps],
       });
 
-      const count = 0;
       for (const migration of migrations) {
         const class_to_migrate = migration.filename;
-        this.context.stdout.write(`rolling back ${class_to_migrate}`);
+        logger().info(`rolling back ${class_to_migrate}`);
 
         const ClassToMigrate = (
           await import(path.join(migrationsDir, class_to_migrate))
@@ -47,7 +46,6 @@ export class MigrateRollbackCommand extends Command {
           sql: "delete from migrations where id = $1",
           bindings: [migration.id],
         });
-        if (count >= this.steps) break;
       }
     });
   }
