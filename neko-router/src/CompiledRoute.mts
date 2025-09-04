@@ -99,6 +99,7 @@ export class CompiledRoute {
       const header_content_type = res.getHeader('Content-Type');
       if (controller_rc instanceof Stream || Buffer.isBuffer(controller_rc)) {
         await this.writeAsync(res, controller_rc);
+        res.end();
       } else if (!header_content_type && typeof controller_rc === 'object') {
         res.setHeader('Content-Type', 'application/json');
         res.end(this.convertToString(controller_rc));

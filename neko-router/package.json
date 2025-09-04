@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-router",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "general purpose router for URI to controller selection",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
