@@ -37,7 +37,7 @@ export class Route {
         i = start;
       } else if (char === '*') {
         let start = i + 1;
-        while (start < path.length && /[a-zA-Z0-9_]/.test(path[start])) {
+        while (start < path.length && /[a-zA-Z0-9_\.]/.test(path[start])) {
           start++;
         }
         tokens.push({ type: 'WILDCARD', value: path.slice(i + 1, start) });
