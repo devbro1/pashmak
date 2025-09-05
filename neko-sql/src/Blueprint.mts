@@ -165,6 +165,16 @@ export class Blueprint {
     return rc;
   }
 
+  timestamp(columnName: string) {
+    const rc = new Column(columnName, 'timestamp');
+    this.columns.push(rc);
+    return rc;
+  }
+
+  datetime(columnName: string) {
+    return this.timestamp(columnName);
+  }
+
   primary(keys: string[]) {
     this.primaryKeys = keys;
   }
