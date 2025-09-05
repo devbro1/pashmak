@@ -97,17 +97,18 @@ export class CompiledRoute {
 
     if (controller_rc) {
       const header_content_type = res.getHeader('Content-Type');
-      if (controller_rc instanceof Stream) {
+      if (controller_rc instanceof Stream || Buffer.isBuffer(controller_rc)) {
         await this.writeAsync(res, controller_rc);
-      } else if (Buffer.isBuffer(controller_rc)) {
-        await this.writeAsync(res, controller_rc);
+        res.end();
       } else if (!header_content_type && typeof controller_rc === 'object') {
         res.setHeader('Content-Type', 'application/json');
+        res.end(this.convertToString(controller_rc));
       } else if (!header_content_type) {
         res.setHeader('Content-Type', 'text/plain');
+        res.end(this.convertToString(controller_rc));
+      } else {
+        res.end(this.convertToString(controller_rc));
       }
-
-      res.end(this.convertToString(controller_rc));
       return;
     } else {
       res.statusCode = [200].includes(res.statusCode) ? 204 : res.statusCode;

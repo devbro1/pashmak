@@ -87,3 +87,35 @@ server().setErrorHandler(async (err: Error, req: any, res: any) => {
   // ???
 }
 ```
+
+## Nesting Routers
+
+There will be situations where we need to simplify our routers using prefix or having
+middlewares that are applied to subset of routes. The simple solution is to create a new
+router and use addRouter to add it to main router.
+
+```ts
+import { router } from "@devbro/pashmak/facades";
+import { Router } from "@devbro/pashmak/router"; // Capital Class Name
+
+router().addRoute(
+  ["GET", "HEAD"],
+  "/api/v1/meow",
+  async (req: any, res: any) => {
+    return { message: "meow meow!" };
+  },
+);
+
+let authnedRouter = new Router();
+
+// add routes
+authnedRouter.addController(OrganizationController);
+authnedRouter.addController(UserController);
+
+// add middlewares
+authnedRouter.addGlobalMiddleware([authenticate]);
+
+router().addRouter("/api/v1", authnedRouter);
+// or
+router().addRouter("", authnedRouter); // prefix can be empty string
+```
