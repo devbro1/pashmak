@@ -11,7 +11,11 @@ export class MigrateCommand extends Command {
   static paths = [[`migrate`]];
 
   fresh = Option.Boolean(`--fresh`, false, {
-    description: `whether to drop all tables before running migrations`,
+    description: `whether to delete and recreate database`,
+  });
+
+  refresh = Option.Boolean(`--refresh`, false, {
+    description: `whether to drop all tables before running migrations by using rollback function`,
   });
 
   async execute() {
@@ -21,23 +25,46 @@ export class MigrateCommand extends Command {
       const schema = db.getSchema();
 
       if (this.fresh) {
-        logger().info("dropping all tables!!");
-        let retry = true;
-        let retry_count = 0;
-        while (retry && retry_count < 10) {
-          retry = false;
-          retry_count++;
-          const tables = await schema.tables();
-          for (const table of tables) {
-            logger().info(`dropping table ${table.name}`);
-            try {
-              await schema.dropTable(table.name);
-            } catch {
-              logger().info(`failed to drop ${table.name}`);
-              retry = true;
-            }
+        throw new Error("not implemented");
+      }
+
+      if (this.refresh) {
+        logger().info("reverting all migrations!!");
+        // read all migrations and undo them all
+        const existing_migrations = await db.runQuery({
+          sql: "select * from migrations order by created_at DESC",
+          bindings: [],
+        });
+
+        const migrationsDir = config.get("migration.path");
+
+        for (const migration_record of existing_migrations) {
+          logger().info(`rolling back ${migration_record.filename}`);
+          try {
+            const MigrationClass = (
+              await import(path.join(migrationsDir, migration_record.filename))
+            ).default;
+            const migrationInstance: Migration = new MigrationClass();
+
+            // Call the down method to rollback the migration
+            await migrationInstance.down(db.getSchema());
+
+            // Remove the migration record from the migrations table
+            await db.runQuery({
+              sql: "delete from migrations where filename = $1",
+              bindings: [migration_record.filename],
+            });
+          } catch (error) {
+            logger().error(
+              `Failed to rollback migration ${migration_record.filename}: ${error}`,
+            );
+            throw error;
           }
         }
+
+        logger().info(
+          `rolled back ${existing_migrations.length} migrations successfully!`,
+        );
       }
 
       //create migration table if not exists

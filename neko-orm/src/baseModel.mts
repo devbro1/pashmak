@@ -25,7 +25,7 @@ export class BaseModel {
   protected updatedAtFieldName = 'updated_at';
   protected casters: Record<string, Function> = {};
   protected mutators: Record<string, Function> = {};
-  declare scopes: (typeof GlobalScope)[];
+  declare scopes: (typeof GlobalScope)[]; // list of global scope classes that will be applied
 
   constructor(initialData: any = {}) {
     this.id = undefined;
@@ -229,7 +229,10 @@ export class BaseModel {
     return rc;
   }
 
-  public static async getQuery(): Promise<ReturnType<typeof this.prototype.getLocalScopesQuery>> {
+  public static async getQuery(
+    options: { withGlobalScopes: boolean } = { withGlobalScopes: true }
+  ): Promise<ReturnType<typeof this.prototype.getLocalScopesQuery>> {
+    const opts = { ...options, withGlobalScopes: true };
     let QueryClass = Query;
     if (typeof this.getLocalScopesQuery === 'function') {
       QueryClass = this.getLocalScopesQuery();
@@ -240,7 +243,7 @@ export class BaseModel {
 
     rc.table(self.tableName);
 
-    if (self.scopes) {
+    if (options.withGlobalScopes === true && self.scopes) {
       for (const Scope of self.scopes) {
         const scope = new Scope();
         rc = await scope.apply(rc, self);
