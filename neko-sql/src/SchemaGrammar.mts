@@ -62,6 +62,8 @@ export class SchemaGrammar {
       rc.push('text');
     } else if (column.properties.type === 'timestamp') {
       rc.push('timestamp');
+    } else if (column.properties.type === 'timestampz') {
+      rc.push('timestamp with time zone');
     } else if (column.properties.type === 'serial') {
       rc.push('serial');
     } else if (column.properties.type === 'float') {
