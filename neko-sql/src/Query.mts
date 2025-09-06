@@ -209,6 +209,7 @@ export class Query {
         joinCondition: 'and',
         negateCondition: false,
         type: 'operationColumn',
+        // @ts-ignore
         operation: '=',
         ...cond,
       });
