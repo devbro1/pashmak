@@ -33,6 +33,11 @@ export class Schema {
     await this.connection?.runQuery(grammar.compileDropTable(tableName));
   }
 
+  async dropTableIfExists(tableName: string) {
+    const grammar = new SchemaGrammar();
+    await this.connection?.runQuery(grammar.compileDropTableIfExists(tableName));
+  }
+
   async tables() {
     const grammar = new SchemaGrammar();
     return await this.connection?.runQuery(grammar.compileTables());
@@ -41,13 +46,5 @@ export class Schema {
   async tableExists(table_name: string): Promise<boolean> {
     const grammar = new SchemaGrammar();
     return (await this.connection?.runQuery(grammar.compileTableExists(table_name)))[0]['exists'];
-  }
-
-  async dropTableIfExists(tableName: string): Promise<void> {
-    if (await this.tableExists(tableName)) {
-      await this.dropTable(tableName);
-    }
-
-    return;
   }
 }

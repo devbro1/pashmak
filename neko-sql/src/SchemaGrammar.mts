@@ -153,6 +153,10 @@ export class SchemaGrammar {
     return { sql: `drop table ${this.doubleQuoteString(tableName)}`, bindings: [] };
   }
 
+  compileDropTableIfExists(tableName: string): CompiledSql {
+    return { sql: `drop table if exists ${this.doubleQuoteString(tableName)}`, bindings: [] };
+  }
+
   protected compileSchemaWhereClause(
     schema: string | string[] | undefined,
     column: string

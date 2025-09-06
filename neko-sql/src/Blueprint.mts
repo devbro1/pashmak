@@ -12,6 +12,7 @@ export type ColumnPropertiesType = {
     | 'text'
     | 'date'
     | 'timestamp'
+    | 'timestampz'
     | 'serial';
   length: number;
   nullable: boolean;
@@ -171,8 +172,18 @@ export class Blueprint {
     return rc;
   }
 
+  timestampTz(columnName: string) {
+    const rc = new Column(columnName, 'timestampz');
+    this.columns.push(rc);
+    return rc;
+  }
+
   datetime(columnName: string) {
     return this.timestamp(columnName);
+  }
+
+  datetimeTz(columnName: string) {
+    return this.timestampTz(columnName);
   }
 
   primary(keys: string[]) {

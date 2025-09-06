@@ -202,8 +202,18 @@ export class Query {
     return await this.connection?.runQuery(csql);
   }
 
-  innerJoin(table: string, condtions: whereType[]): this {
-    this.parts.join.push({ type: 'inner', table, conditions: condtions });
+  innerJoin(table: string, conditions: whereType[] | { column1: string; column2: string }[]): this {
+    let conditions_corrected: whereType[] = [];
+    for (const cond of conditions) {
+      conditions_corrected.push({
+        joinCondition: 'and',
+        negateCondition: false,
+        type: 'operationColumn',
+        operation: '=',
+        ...cond,
+      });
+    }
+    this.parts.join.push({ type: 'inner', table, conditions: conditions_corrected });
     return this;
   }
 
