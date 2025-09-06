@@ -10,6 +10,7 @@ import {
   havingType,
   whereOpColumn,
   joinType,
+  whereNested,
 } from './types.mjs';
 
 function toUpperFirst(str: string) {
@@ -133,6 +134,16 @@ export abstract class QueryGrammar {
       sql = 'where ' + sql.substring(' or '.length);
     }
     return { sql, bindings };
+  }
+
+  compileWhereNested(w: whereNested): CompiledSql {
+    const subQuery = w.query;
+    const { sql, bindings } = subQuery.grammar.compileWhere(subQuery.parts.where);
+    let sql2 = sql.replace(/^where /, '');
+    return {
+      sql: `(${sql2})`,
+      bindings,
+    };
   }
 
   compileWhereOperation(w: whereOp): CompiledSql {

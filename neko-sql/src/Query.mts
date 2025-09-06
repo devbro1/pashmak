@@ -37,12 +37,28 @@ export class Query {
   };
 
   constructor(
-    private readonly connection: Connection | null,
-    private readonly grammar: QueryGrammar
+    public readonly connection: Connection | null,
+    public readonly grammar: QueryGrammar
   ) {}
 
   table(tableName: string): this {
     this.parts.table = tableName;
+    return this;
+  }
+
+  whereNested(
+    func: (q: Query) => void,
+    joinCondition: JoinCondition = 'and',
+    negateCondition: boolean = false
+  ) {
+    const subQuery = new Query(this.connection, this.grammar);
+    func(subQuery);
+    this.parts.where.push({
+      type: 'nested',
+      query: subQuery,
+      joinCondition,
+      negateCondition,
+    });
     return this;
   }
 

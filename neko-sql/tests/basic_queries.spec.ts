@@ -141,4 +141,44 @@ describe('raw queries', () => {
     expect(result[0].region_name).toBe('Europe');
     expect(result[1].region_name).toBe('Americas');
   });
+
+  test('select where nested', async () => {
+    const query = new Query(conn, new PostgresqlQueryGrammar());
+    query.table('regions');
+    query.whereOp('region_id', '=', 1);
+    query.whereNested((q) => {
+      q.whereOp('region_id', '=', 2, 'or');
+      q.whereOp('region_name', 'ilike', 'E%', 'or');
+    });
+
+    expect(query.toSql().sql).toBe(
+      'select * from regions where region_id = $1 and (region_id = $2 or region_name ilike $3)'
+    );
+    expect(query.toSql().bindings).toStrictEqual([1, 2, 'E%']);
+
+    const result = await query.get();
+    expect(result.length).toBe(1);
+    expect(result[0].region_name).toBe('Europe');
+
+    const query2 = new Query(conn, new PostgresqlQueryGrammar());
+    query2.table('regions');
+    query2.whereOp('region_id', '=', 1);
+    query2.whereNested((q) => {
+      q.whereOp('region_id', '=', 2, 'or');
+      q.whereOp('region_name', 'ilike', 'E%', 'or');
+      q.whereNested(
+        (q2) => {
+          q2.whereOp('region_id', '=', 3, 'or');
+          q2.whereOp('region_name', 'ilike', 'F%', 'or');
+        },
+        'or',
+        true
+      );
+    });
+    console.log(query2.toSql());
+    expect(query2.toSql().sql).toBe(
+      'select * from regions where region_id = $1 and (region_id = $2 or region_name ilike $3 or not (region_id = $4 or region_name ilike $5))'
+    );
+    expect(query2.toSql().bindings).toStrictEqual([1, 2, 'E%', 3, 'F%']);
+  });
 });
