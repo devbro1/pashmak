@@ -9,7 +9,8 @@ import {
 } from "@devbro/neko-mailer";
 import { logger } from "./facades.mts";
 import { QueueConnection } from "@devbro/neko-queue";
-import { DatabaseTransport, MemoryTransport } from "@devbro/neko-queue";
+import { MemoryTransport } from "@devbro/neko-queue";
+import { DatabaseTransport } from "./queue.mjs";
 
 export class FlexibleFactory<T> {
   registry: Map<string, any> = new Map();
