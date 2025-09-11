@@ -7,7 +7,7 @@ import {
   SMTPProvider,
   MemoryProvider,
 } from "@devbro/neko-mailer";
-import { logger } from "./facades.mts";
+import { logger } from "./facades.mjs";
 import { QueueConnection } from "@devbro/neko-queue";
 import { MemoryTransport } from "@devbro/neko-queue";
 import { DatabaseTransport } from "./queue.mjs";

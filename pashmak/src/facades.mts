@@ -11,8 +11,7 @@ import { HttpServer } from "./http.mjs";
 import { HttpError } from "./http.mjs";
 import * as yup from "yup";
 import { Logger } from "@devbro/neko-logger";
-import { MailerFactory, QueueFactory } from "./factories.mts";
-import { QueueConnection } from "@devbro/neko-queue";
+import { MailerFactory, QueueFactory } from "./factories.mjs";
 
 export const router = createSingleton<Router>(() => new Router());
 export const scheduler = createSingleton<Scheduler>(() => {
