@@ -101,7 +101,7 @@ export class Blueprint {
     this.existingTable = existingTable;
   }
 
-  Boolean(columnName: string) {
+  boolean(columnName: string) {
     const rc = new Column(columnName, 'boolean');
     this.columns.push(rc);
     return rc;

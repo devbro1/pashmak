@@ -106,11 +106,11 @@ export const mailer = createSingleton((label) => {
   return rc;
 });
 
-export const queue = createSingleton(async (label) => {
+export const queue = createSingleton((label) => {
   const queue_config: any = config.get(["queues", label].join("."));
   if (!queue_config) {
     throw new Error(`Queue configuration for '${label}' not found`);
   }
-  const rc = await QueueFactory.create(queue_config.type, queue_config);
+  const rc = QueueFactory.create(queue_config.type, queue_config);
   return rc;
 });

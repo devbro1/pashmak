@@ -4,6 +4,7 @@ export * from "./DefaultCommand.mjs";
 export * from "./KeyGenerateCommand.mjs";
 export * from "./generate/index.mjs";
 export * from "./project/CreateProjectCommand.mjs";
+export * from "./queue/GenerateQueueMigrateCommand.mjs";
 
 import { cli } from "../../facades.mjs";
 import { CreateProjectCommand } from "./project/CreateProjectCommand.mjs";

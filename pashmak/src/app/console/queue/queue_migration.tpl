@@ -10,6 +10,7 @@ export default class {{className}} extends Migration {
       table.text('message');
       table.datetimeTz('last_tried_at').nullable(true);
       table.text('process_message').default('');
+      table.Boolean('processed').default(false);
     });
   }
 

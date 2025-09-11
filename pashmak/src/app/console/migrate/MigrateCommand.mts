@@ -122,6 +122,7 @@ export class MigrateCommand extends Command {
       }
 
       logger().info(`migrated ${migrated_count} migrations successfully!`);
+      return;
     });
   }
 }

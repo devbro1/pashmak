@@ -8,10 +8,10 @@ import handlebars from "handlebars";
 import { fileURLToPath } from "url";
 import { table } from "console";
 
-export class GenerateMigrateCommand extends Command {
+export class GenerateQueueMigrateCommand extends Command {
   static paths = [[`generate`, `queue`, "migration"]];
 
-  name = Option.String({ required: true });
+  name = "queue_messages";
 
   async execute() {
     const date = new Date();
@@ -50,4 +50,4 @@ export class GenerateMigrateCommand extends Command {
   }
 }
 
-cli().register(GenerateMigrateCommand);
+cli().register(GenerateQueueMigrateCommand);

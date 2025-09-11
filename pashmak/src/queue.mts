@@ -6,6 +6,7 @@ import { Query } from "@devbro/neko-sql";
 export class DatabaseTransport implements QueueTransportInterface {
   listenInterval = 60000; // default to 1 minute
   messageLimit = 100; // default to 100 messages per fetch
+  private activeIntervals: Set<NodeJS.Timeout> = new Set();
 
   constructor(private db_config: any) {}
 
@@ -42,7 +43,7 @@ export class DatabaseTransport implements QueueTransportInterface {
   ): Promise<void> {
     // create a promise that runs every minute
     return new Promise(async (resolve, reject) => {
-      setInterval(async () => {
+      const intervalId = setInterval(async () => {
         const conn = new PostgresqlConnection(this.db_config);
         try {
           await conn.connect();
@@ -77,10 +78,26 @@ export class DatabaseTransport implements QueueTransportInterface {
                 });
             }
           }
+        } catch (error) {
+          // If there's an error with the interval itself, remove it from tracking
+          this.activeIntervals.delete(intervalId);
+          reject(error);
         } finally {
           await conn.disconnect();
         }
       }, this.listenInterval);
+
+      // Track this interval
+      this.activeIntervals.add(intervalId);
     });
+  }
+
+  async stopListening(): Promise<void> {
+    // Clear all active intervals
+    for (const intervalId of this.activeIntervals) {
+      clearInterval(intervalId);
+    }
+    // Clear the set
+    this.activeIntervals.clear();
   }
 }
