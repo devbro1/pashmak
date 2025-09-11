@@ -22,6 +22,7 @@
     "neko-logger",
     "neko-mailer",
     "neko-orm",
+    "neko-queue",
     "neko-router",
     "neko-scheduler",
     "neko-sql",
