@@ -4,21 +4,15 @@ import { createSingleton } from "@devbro/neko-helper";
 import { ctx, ctxSafe } from "@devbro/neko-context";
 import { Connection } from "@devbro/neko-sql";
 import { Storage, StorageFactory } from "@devbro/neko-storage";
-import {
-  Mailer,
-  Mailable,
-  MailerProvider,
-  FunctionProvider,
-  SESProvider,
-  SMTPProvider,
-  MemoryProvider,
-} from "@devbro/neko-mailer";
+import { Mailer, MailerProvider } from "@devbro/neko-mailer";
 import { config } from "@devbro/neko-config";
 import { Cli } from "clipanion";
 import { HttpServer } from "./http.mjs";
 import { HttpError } from "./http.mjs";
 import * as yup from "yup";
 import { Logger } from "@devbro/neko-logger";
+import { MailerFactory, QueueFactory } from "./factories.mts";
+import { QueueConnection } from "@devbro/neko-queue";
 
 export const router = createSingleton<Router>(() => new Router());
 export const scheduler = createSingleton<Scheduler>(() => {
@@ -100,31 +94,26 @@ export const logger = createSingleton<Logger>((label) => {
   return rc;
 });
 
-export const mailer = createSingleton((label) => {
+export const mailer = createSingleton(async (label) => {
   const mailer_config: any = config.get(["mailer", label].join("."));
-  let provider: MailerProvider | undefined;
 
-  if (mailer_config.provider === "logger") {
-    provider = new FunctionProvider((mail: Mailable) => {
-      logger().info({
-        msg: "Sending email",
-        mail,
-      });
-    });
-  } else if (mailer_config.provider === "SES") {
-    provider = new SESProvider(mailer_config.config);
-  } else if (mailer_config.provider === "SMTP") {
-    provider = new SMTPProvider(mailer_config.config);
-  } else if (mailer_config.provider === "MEMORY") {
-    provider = new MemoryProvider();
-  }
-
-  if (!provider) {
-    throw new Error(
-      `cannot initiate mailer provider: ${mailer_config?.provider}`,
+  let provider: MailerProvider | undefined =
+    await MailerFactory.create<MailerProvider>(
+      mailer_config.provider,
+      mailer_config.config,
     );
-  }
 
   const rc = new Mailer(provider);
   return rc;
 });
+
+export const queue = createSingleton<QueueConnection<any>>(
+  (label = "default") => {
+    const queue_config: any = config.get(["queues", label].join("."));
+    if (!queue_config) {
+      throw new Error(`Queue configuration for '${label}' not found`);
+    }
+    const rc = QueueFactory.create(queue_config.type, queue_config);
+    return rc;
+  },
+);

@@ -1,6 +1,6 @@
 {
   "name": "@devbro/pashmak",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "testing application for the entire repo",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -67,6 +67,11 @@
       "import": "./dist/orm.mjs",
       "require": "./dist/orm.js"
     },
+    "./queue": {
+      "types": "./dist/queue.d.ts",
+      "import": "./dist/queue.mjs",
+      "require": "./dist/queue.js"
+    },
     "./mailer": {
       "types": "./dist/mailer.d.ts",
       "import": "./dist/mailer.mjs",
@@ -113,6 +118,7 @@
     "@devbro/neko-http": "0.1.*",
     "@devbro/neko-logger": "0.1.*",
     "@devbro/neko-mailer": "0.1.*",
+    "@devbro/neko-queue": "0.1.*",
     "@devbro/neko-orm": "0.1.*",
     "@devbro/neko-scheduler": "0.1.*",
     "@devbro/neko-sql": "0.1.*",
