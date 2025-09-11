@@ -94,11 +94,11 @@ export const logger = createSingleton<Logger>((label) => {
   return rc;
 });
 
-export const mailer = createSingleton(async (label) => {
+export const mailer = createSingleton((label) => {
   const mailer_config: any = config.get(["mailer", label].join("."));
 
   let provider: MailerProvider | undefined =
-    await MailerFactory.create<MailerProvider>(
+    MailerFactory.create<MailerProvider>(
       mailer_config.provider,
       mailer_config.config,
     );
@@ -107,13 +107,11 @@ export const mailer = createSingleton(async (label) => {
   return rc;
 });
 
-export const queue = createSingleton<QueueConnection<any>>(
-  (label = "default") => {
-    const queue_config: any = config.get(["queues", label].join("."));
-    if (!queue_config) {
-      throw new Error(`Queue configuration for '${label}' not found`);
-    }
-    const rc = QueueFactory.create(queue_config.type, queue_config);
-    return rc;
-  },
-);
+export const queue = createSingleton(async (label) => {
+  const queue_config: any = config.get(["queues", label].join("."));
+  if (!queue_config) {
+    throw new Error(`Queue configuration for '${label}' not found`);
+  }
+  const rc = await QueueFactory.create(queue_config.type, queue_config);
+  return rc;
+});

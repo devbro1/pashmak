@@ -39,8 +39,8 @@ export class MailerFactory {
     MailerFactory.instance.register(key, factory);
   }
 
-  static async create<T>(key: string, ...args: any[]): Promise<MailerProvider> {
-    return await MailerFactory.instance.create(key, ...args);
+  static create<T>(key: string, ...args: any[]): MailerProvider {
+    return MailerFactory.instance.create(key, ...args);
   }
 }
 
@@ -74,8 +74,8 @@ export class QueueFactory {
     QueueFactory.instance.register(key, factory);
   }
 
-  static async create<T>(key: string, ...args: any[]): Promise<T> {
-    return await QueueFactory.instance.create(key, ...args);
+  static create<T>(key: string, ...args: any[]): QueueConnection<any> {
+    return QueueFactory.instance.create(key, ...args);
   }
 }
 
