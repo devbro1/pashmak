@@ -74,6 +74,8 @@ export class HttpServer {
         interpretNumericEntities: true,
       }) as Record<string, any>;
 
+      req.raw_body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+
       if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
         if (
           req.headers['content-type']?.includes('multipart/form-data') ||
