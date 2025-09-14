@@ -13,7 +13,9 @@ export type ColumnPropertiesType = {
     | 'date'
     | 'timestamp'
     | 'timestampz'
-    | 'serial';
+    | 'serial'
+    | 'json'
+    | 'jsonb';
   length: number;
   nullable: boolean;
   unique: boolean;
@@ -122,6 +124,18 @@ export class Blueprint {
 
   text(columnName: string) {
     const rc = new Column(columnName, 'text');
+    this.columns.push(rc);
+    return rc;
+  }
+
+  json(columnName: string) {
+    const rc = new Column(columnName, 'json');
+    this.columns.push(rc);
+    return rc;
+  }
+
+  jsonb(columnName: string) {
+    const rc = new Column(columnName, 'jsonb');
     this.columns.push(rc);
     return rc;
   }

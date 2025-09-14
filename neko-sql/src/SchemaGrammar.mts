@@ -72,6 +72,10 @@ export class SchemaGrammar {
       rc.push('double precision');
     } else if (column.properties.type === 'date') {
       rc.push('date');
+    } else if (column.properties.type === 'json') {
+      rc.push('json');
+    } else if (column.properties.type === 'jsonb') {
+      rc.push('jsonb');
     } else {
       throw new Error('Unknown column type: ' + column.properties.type);
     }
