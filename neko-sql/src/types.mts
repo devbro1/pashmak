@@ -23,7 +23,7 @@ export type CompiledSql = { sql: string; bindings: Parameter[] };
 export type havingType = whereBasic & (whereOp | whereRaw);
 
 export type joinType = {
-  type: 'inner' | 'left' | 'right' | 'full';
+  type: 'inner' | 'left' | 'right' | 'full' | 'cross';
   table: string;
   conditions: whereType[];
 };
