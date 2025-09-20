@@ -20,8 +20,10 @@ export class User extends BaseModel {
   @Attribute()
   declare username: string;
 
-  @Attribute()
-  active: boolean = true;
+  @Attribute({
+    default: true,
+  })
+  declare active: boolean;
 
   @Attribute()
   declare password: string;
@@ -30,9 +32,23 @@ export class User extends BaseModel {
 
 every attribute that comes from database must get a @Attribute() decorator. It will tell the model what needs to be loaded or saved to database.
 
-## primary key
+## Primary Key
 
 every model will need a unique identified that you mark using `primaryKey:true`. If the value of your primary key is auto-calculated in the database during insert, then `incrementingPrimaryKey: true` will let model know to get the newly generated id after create.
+
+## Default Value
+
+If you need to set default value for an attribute, you will need to do so through @Attribute decorator. If you assign default value directly, then expect unexpected behavior where default value overrides actual value during model constructor.
+
+```ts
+@Attribute({
+  default: "hello",
+})
+declare var1: string;
+
+@Attribute()
+public var2: string = "bad"; // ❌ if you do this, then new Model({var2: "new_val" }) will not work
+```
 
 ## guarded
 
