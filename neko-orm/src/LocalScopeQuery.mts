@@ -12,16 +12,17 @@ export abstract class LocalScopeQuery<T extends BaseModel> extends Query {
     }
 
     data = data[0];
-    const obj = new (this.getModel())();
-    return obj.newInstance(data, true);
+    // @ts-ignore
+    return this.getModel().newInstance(data, true);
   }
 
   async getObjects() {
     let rc: T[] = [];
     let data = await this.get();
-    const temp_obj = new (this.getModel())();
+    const temp_obj = this.getModel();
 
     rc = data.map((item: any) => {
+      // @ts-ignore
       return temp_obj.newInstance(item, true);
     });
 

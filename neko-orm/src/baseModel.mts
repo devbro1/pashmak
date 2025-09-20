@@ -27,7 +27,6 @@ export class BaseModel {
   protected mutators: Record<string, Function> = {};
   declare scopes: (typeof GlobalScope)[]; // list of global scope classes that will be applied
 
-  protected default_values = {};
   constructor(initialData: any = {}) {
     this.id = undefined;
     this.tableName = pluralize(snakeCase(this.constructor.name));
