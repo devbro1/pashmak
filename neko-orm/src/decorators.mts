@@ -13,6 +13,7 @@ type AttributeOptions = {
   incrementingPrimaryKey?: boolean;
   caster?: Function;
   mutator?: Function;
+  default?: any;
 };
 
 export function Attribute(options: AttributeOptions = {}) {
@@ -35,6 +36,7 @@ export function Attribute(options: AttributeOptions = {}) {
       target.constructor.prototype.fillable.push(propertyKey);
     }
 
+    target.constructor.prototype.default_values = target.constructor.prototype.default_values || {};
     target.constructor.prototype.casters = target.constructor.prototype.casters || {};
     target.constructor.prototype.mutators = target.constructor.prototype.mutators || {};
 
@@ -43,6 +45,10 @@ export function Attribute(options: AttributeOptions = {}) {
     }
     if (options.mutator) {
       target.constructor.prototype.mutators[propertyKey] = options.mutator;
+    }
+
+    if (options.default) {
+      target.constructor.prototype.default_values[propertyKey] = options.default;
     }
 
     Object.defineProperty(target, propertyKey, {

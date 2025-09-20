@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { PostgresqlConnection } from '@devbro/neko-sql';
 import { Connection } from '@devbro/neko-sql';
 import { execSync } from 'child_process';
-import { Country, Job, Region } from '../fixtures/models';
+import { Country, Job, Region, JobV2 } from '../fixtures/models';
 import { BaseModel } from '../../src';
 import { faker } from '@faker-js/faker';
 import { sleep } from '@devbro/neko-helper';
@@ -123,5 +123,16 @@ describe('raw queries', () => {
     expect(r1.created_at.toISOString()).toBe(first_created);
     expect(r1.created_at.constructor.name).toBe('Date');
     expect(r1.updated_at.constructor.name).toBe('Date');
+  });
+
+  test('default value', async () => {
+    let a = new JobV2();
+    expect(a.max_salary).toBe(444);
+
+    let b = new JobV2({
+      max_salary: 555,
+    });
+
+    expect(b.max_salary).toBe(555);
   });
 });
