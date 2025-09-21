@@ -144,5 +144,16 @@ describe('global scopes queries', () => {
     for (let c of c1_objs) {
       expect(c instanceof Country).toBeTruthy();
     }
+
+    let c = await Country2.findOne({ country_id: 'AR' });
+    expect(c).toBeInstanceOf(Country2);
+    expect(c?.region_id).toBe(2);
+    expect(c?.country_id).toBe('AR');
+
+    c = await Country2.findOne({ country_id: 'AU' });
+    expect(c).toBeUndefined();
+
+    c = await Country2.findOne({ country_id: 'AU' }, { withGlobalScopes: false });
+    expect(c).toBeInstanceOf(Country2);
   });
 });

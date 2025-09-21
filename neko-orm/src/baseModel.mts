@@ -4,6 +4,7 @@ import { Parameter } from '@devbro/neko-sql';
 import pluralize from 'pluralize';
 import { snakeCase } from 'change-case-all';
 import { GlobalScope } from './GlobalScope.mjs';
+import { LocalScopeQuery } from './LocalScopeQuery.mjs';
 
 export type saveObjectOptions = {
   updateTimestamps: boolean;
@@ -26,6 +27,7 @@ export class BaseModel {
   protected casters: Record<string, Function> = {};
   protected mutators: Record<string, Function> = {};
   declare scopes: (typeof GlobalScope)[]; // list of global scope classes that will be applied
+  public localScope: LocalScopeQuery<BaseModel> | undefined;
 
   constructor(initialData: any = {}) {
     this.id = undefined;
@@ -151,13 +153,19 @@ export class BaseModel {
     }
   }
 
-  public static async find<T extends typeof BaseModel>(id: number) {
-    return this.findByPrimaryKey<T>({ id });
+  public static async find<T extends typeof BaseModel>(
+    id: number,
+    options = { withGlobalScopes: true }
+  ): Promise<InstanceType<T> | undefined> {
+    return this.findByPrimaryKey<T>({ id }, options);
   }
 
-  public static async findOne<T extends BaseModel>(conditions: object): Promise<T | undefined> {
+  public static async findOne<T extends BaseModel>(
+    conditions: object,
+    options = { withGlobalScopes: true }
+  ): Promise<T | undefined> {
     let self = new this();
-    let q: Query = await self.getQuery();
+    let q: Query = await self.getQuery(options);
 
     for (const [key, value] of Object.entries(conditions)) {
       q.whereOp(key, '=', value);
@@ -174,8 +182,11 @@ export class BaseModel {
     return self as T;
   }
 
-  public static async findorFail<T extends typeof BaseModel>(id: number) {
-    const rc = this.find<T>(id);
+  public static async findorFail<T extends typeof BaseModel>(
+    id: number,
+    options = { withGlobalScopes: true }
+  ): Promise<InstanceType<T>> {
+    const rc = this.find<T>(id, options);
     if (!rc) {
       throw new Error('Not found');
     }
@@ -183,10 +194,13 @@ export class BaseModel {
   }
 
   public static async findByPrimaryKey<T extends typeof BaseModel>(
-    keys: Record<string, Parameter>
+    keys: Record<string, Parameter>,
+    options = { withGlobalScopes: true }
   ): Promise<any> {
     let self = new this();
-    let q: Query = await self.getQuery();
+    console.log('options', options, keys);
+    let q: Query = await self.getQuery(options);
+    console.log('q', q.toSql());
 
     q.select([...self.primaryKey, ...self.fillable]);
     for (const key of self.primaryKey) {
@@ -218,17 +232,18 @@ export class BaseModel {
     return BaseModel.connection;
   }
 
-  public async getQuery(): Promise<Query> {
+  public async getQuery(options = { withGlobalScopes: true }): Promise<Query> {
     const conn = await BaseModel.getConnection();
     let rc = conn.getQuery();
     rc.table(this.tableName);
 
-    if (this.scopes) {
+    if (this.scopes && options.withGlobalScopes === true) {
       for (const Scope of this.scopes) {
         const scope = new Scope();
         rc = await scope.apply(rc, this);
       }
     }
+
     return rc;
   }
 

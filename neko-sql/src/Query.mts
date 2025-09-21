@@ -221,7 +221,7 @@ export class Query {
   join(
     table: string,
     type: joinType['type'],
-    conditions: whereType[] | { column1: string; column2: string }[]
+    conditions: (whereType | { column1: string; column2: string })[]
   ): this {
     let conditions_corrected: whereType[] = [];
     for (const cond of conditions) {
@@ -238,23 +238,23 @@ export class Query {
     return this;
   }
 
-  innerJoin(table: string, conditions: whereType[] | { column1: string; column2: string }[]): this {
+  innerJoin(table: string, conditions: (whereType | { column1: string; column2: string })[]): this {
     return this.join(table, 'inner', conditions);
   }
 
-  leftJoin(table: string, conditions: whereType[] | { column1: string; column2: string }[]): this {
+  leftJoin(table: string, conditions: (whereType | { column1: string; column2: string })[]): this {
     return this.join(table, 'left', conditions);
   }
 
-  rightJoin(table: string, conditions: whereType[] | { column1: string; column2: string }[]): this {
+  rightJoin(table: string, conditions: (whereType | { column1: string; column2: string })[]): this {
     return this.join(table, 'right', conditions);
   }
 
-  fullJoin(table: string, conditions: whereType[] | { column1: string; column2: string }[]): this {
+  fullJoin(table: string, conditions: (whereType | { column1: string; column2: string })[]): this {
     return this.join(table, 'full', conditions);
   }
 
-  crossJoin(table: string, conditions: whereType[] | { column1: string; column2: string }[]): this {
+  crossJoin(table: string, conditions: (whereType | { column1: string; column2: string })[]): this {
     return this.join(table, 'cross', conditions);
   }
 }
