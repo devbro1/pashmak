@@ -186,7 +186,7 @@ export class BaseModel {
     id: number,
     options = { withGlobalScopes: true }
   ): Promise<InstanceType<T>> {
-    const rc = this.find<T>(id, options);
+    const rc = await this.find<T>(id, options);
     if (!rc) {
       throw new Error('Not found');
     }
