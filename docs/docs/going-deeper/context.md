@@ -1,20 +1,23 @@
 ---
-sidebar_position: 3
+sidebar_position: 1
 ---
 
 # Context
 
-One major feature is context, it allows for separating processes safely without sharing sensetive data between them.
+One major feature in Pashmak is context. It allows for separating processes safely without sharing sensitive data between them. It also leaves flexibility to share resources among different processes.
 
 contextualized processes:
 
 - http requests
 - cli command
 - cron jobs
+- queue jobs
 
 ## creating your own context
 
 ```ts
+import { ctx } from "@devbro/pashmak/context";
+
 ctx().set("context_key", my_object);
 
 ctx().get < MyObject > get("context_key");
@@ -41,3 +44,5 @@ test("context test", async () => {
   });
 });
 ```
+
+If you ever get an error that context has not started it means you are trying to access context outside of a context provider run block. Just wrap your code in `context_provider.run(???)`

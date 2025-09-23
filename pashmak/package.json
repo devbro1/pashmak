@@ -52,6 +52,11 @@
       "import": "./dist/context.mjs",
       "require": "./dist/context.js"
     },
+    "./factories": {
+      "types": "./dist/factories.d.ts",
+      "import": "./dist/factories.mjs",
+      "require": "./dist/factories.js"
+    },
     "./helper": {
       "types": "./dist/helper.d.ts",
       "import": "./dist/helper.mjs",

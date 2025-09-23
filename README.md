@@ -18,3 +18,10 @@ for documentation please check [documentations](https://devbro1.github.io/pashma
 ```bash
 npm install @devbro/pashmak
 ```
+
+### basic commands
+
+```bash
+# start docs dev env
+yarn workspace docs dev
+```

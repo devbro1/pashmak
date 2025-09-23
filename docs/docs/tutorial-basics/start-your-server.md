@@ -7,17 +7,23 @@ sidebar_position: 6
 to start a server and all related services run:
 
 ```
-pashmak start --all
+yarn pdev start --all
 ```
 
 If you want to run only scheduler, use `--scheduler` flag
 
 ```
-pashmak start --scheduler
+yarn pdev start --scheduler
 ```
 
 If you want to run only http server, use `--http` flag
 
 ```
-pashmak start --http
+yarn pdev start --http
+```
+
+If you want to run only queues, use `--queues` flag
+
+```
+yarn pdev start --queues
 ```
