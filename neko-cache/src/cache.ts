@@ -1,5 +1,9 @@
 import { CacheProviderInterface } from './CacheProviderInterface.mjs';
 
+export type cacheOptions = {
+  ttl?: number;
+};
+
 export class Cache {
   constructor(private provider: CacheProviderInterface) {}
 
@@ -17,5 +21,22 @@ export class Cache {
 
   async has(key: string): Promise<boolean> {
     return this.provider.has(key);
+  }
+
+  async remember<T>(
+    key: string,
+    callback: () => Promise<T>,
+    options: cacheOptions = {}
+  ): Promise<T> {
+    options.ttl = options.ttl ?? 3600; // default TTL 1 hour
+
+    const cached = await this.get<T>(key);
+    if (cached) {
+      return cached;
+    }
+
+    const result = await callback();
+    await this.put(key, result, options.ttl);
+    return result;
   }
 }
