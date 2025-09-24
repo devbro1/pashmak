@@ -45,7 +45,8 @@
     "@types/pluralize": "^0.0.33"
   },
   "dependencies": {
-    "pluralize": "^8.0.0"
+    "redis": "^4.6.0",
+    "memcached": "^2.2.2"
   },
   "directories": {
     "doc": "docs",

@@ -11,6 +11,12 @@ import { logger } from "./facades.mjs";
 import { QueueConnection } from "@devbro/neko-queue";
 import { MemoryTransport } from "@devbro/neko-queue";
 import { DatabaseTransport } from "./queue.mjs";
+import {
+  CacheProviderInterface,
+  MemoryCacheProvider,
+  RedisCacheProvider,
+  FileCacheProvider,
+} from "@devbro/neko-cache";
 
 export class FlexibleFactory<T> {
   registry: Map<string, any> = new Map();
@@ -87,4 +93,33 @@ QueueFactory.register("database", (opt) => {
 QueueFactory.register("memory", (opt) => {
   let transport = new MemoryTransport(opt);
   return new QueueConnection(transport);
+});
+
+// CACHE
+export class CacheProviderFactory {
+  static instance: FlexibleFactory<CacheProviderInterface> =
+    new FlexibleFactory<CacheProviderInterface>();
+
+  static register<T>(
+    key: string,
+    factory: (...args: any[]) => CacheProviderInterface,
+  ): void {
+    CacheProviderFactory.instance.register(key, factory);
+  }
+
+  static create<T>(key: string, ...args: any[]): CacheProviderInterface {
+    return CacheProviderFactory.instance.create(key, ...args);
+  }
+}
+
+CacheProviderFactory.register("memory", (opt) => {
+  return new MemoryCacheProvider(opt);
+});
+
+CacheProviderFactory.register("redis", (opt) => {
+  return new RedisCacheProvider(opt);
+});
+
+CacheProviderFactory.register("file", (opt) => {
+  return new FileCacheProvider(opt);
 });
