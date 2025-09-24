@@ -3,6 +3,7 @@ export * from './time.mjs';
 export * from './crypto.mjs';
 export * from './eventEmitter.mjs';
 export * from './FlexibleFactory.mjs';
+export * from './types.mjs';
 
 export function getEnv(key: string, ...defaultValue: any[]) {
   let rc = process.env[key] ?? defaultValue[0];

@@ -11,7 +11,12 @@ import { HttpServer } from "./http.mjs";
 import { HttpError } from "./http.mjs";
 import * as yup from "yup";
 import { Logger } from "@devbro/neko-logger";
-import { MailerFactory, QueueFactory } from "./factories.mjs";
+import {
+  CacheProviderFactory,
+  MailerFactory,
+  QueueFactory,
+} from "./factories.mjs";
+import { Cache, CacheProviderInterface } from "@devbro/neko-cache";
 
 export const router = createSingleton<Router>(() => new Router());
 export const scheduler = createSingleton<Scheduler>(() => {
@@ -113,4 +118,17 @@ export const queue = createSingleton((label) => {
   }
   const rc = QueueFactory.create(queue_config.type, queue_config);
   return rc;
+});
+
+export const cache = createSingleton((label) => {
+  const cache_config: any = config.get(["caches", label].join("."));
+  if (!cache_config) {
+    throw new Error(`Cache configuration for '${label}' not found`);
+  }
+  const provider = CacheProviderFactory.create<CacheProviderInterface>(
+    cache_config.type,
+    cache_config.config,
+  );
+
+  return new Cache(provider);
 });
