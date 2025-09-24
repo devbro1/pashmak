@@ -1,6 +1,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { CacheProviderInterface } from '../CacheProviderInterface.mjs';
+import { JSONObject, JSONValue } from '@devbro/neko-helper';
 
 export interface FileCacheConfig {
   cacheDirectory?: string;
@@ -18,7 +19,7 @@ export class FileCacheProvider implements CacheProviderInterface {
   private config: FileCacheConfig = {
     cacheDirectory: path.join(process.cwd(), 'cache'),
     defaultTTL: 3600 * 1000,
-    cleanupInterval: 300000,
+    cleanupInterval: 300 * 1000,
   };
 
   private cleanupTimer?: NodeJS.Timeout;
@@ -85,7 +86,7 @@ export class FileCacheProvider implements CacheProviderInterface {
     }
   }
 
-  async get(key: string): Promise<any> {
+  async get(key: string): Promise<JSONObject | JSONValue | undefined> {
     const filePath = this.getFilePath(key);
 
     try {
@@ -104,7 +105,7 @@ export class FileCacheProvider implements CacheProviderInterface {
     }
   }
 
-  async put(key: string, value: any, ttl?: number): Promise<void> {
+  async put(key: string, value: JSONObject | JSONValue, ttl?: number): Promise<void> {
     const filePath = this.getFilePath(key);
     const now = Date.now();
     const effectiveTTL = ttl ?? this.config.defaultTTL!;

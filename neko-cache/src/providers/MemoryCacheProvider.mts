@@ -1,3 +1,4 @@
+import { JSONObject, JSONValue } from '@devbro/neko-helper';
 import { CacheProviderInterface } from '../CacheProviderInterface.mjs';
 
 export interface MemoryCacheConfig {
@@ -75,17 +76,17 @@ export class MemoryCacheProvider implements CacheProviderInterface {
     }
   }
 
-  async get(key: string): Promise<any> {
+  async get(key: string): Promise<JSONObject | JSONValue | undefined> {
     const item = this.cache.get(key);
 
     if (!item) {
-      return null;
+      return undefined;
     }
 
     // Check if item has expired
     if (item.expiresAt && item.expiresAt < Date.now()) {
       this.cache.delete(key);
-      return null;
+      return undefined;
     }
 
     // Update last accessed time for LRU
@@ -94,7 +95,7 @@ export class MemoryCacheProvider implements CacheProviderInterface {
     return item.value;
   }
 
-  async put(key: string, value: any, ttl?: number): Promise<void> {
+  async put(key: string, value: JSONObject | JSONValue, ttl?: number): Promise<void> {
     const now = Date.now();
     const effectiveTTL = ttl ?? this.config.defaultTTL!;
 

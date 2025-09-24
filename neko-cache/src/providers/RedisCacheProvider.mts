@@ -1,5 +1,6 @@
 import { createClient, RedisClientOptions, RedisClientType } from 'redis';
 import { CacheProviderInterface } from '../CacheProviderInterface.mjs';
+import { JSONValue, JSONObject } from '@devbro/neko-helper';
 
 export class RedisCacheProvider implements CacheProviderInterface {
   private client: RedisClientType;
@@ -7,10 +8,12 @@ export class RedisCacheProvider implements CacheProviderInterface {
 
   constructor(private config: RedisClientOptions) {
     this.client = this.createRedisClient();
+    this.client.connect();
   }
 
   private createRedisClient(): any {
-    return createClient(this.config);
+    let rc = createClient(this.config);
+    return rc;
   }
 
   private async ensureConnection(): Promise<void> {
@@ -19,14 +22,20 @@ export class RedisCacheProvider implements CacheProviderInterface {
     }
   }
 
-  async get(key: string): Promise<any> {
+  async get(key: string): Promise<JSONValue | JSONObject | undefined> {
     await this.ensureConnection();
-    return this.client.get(key);
+    let rc = this.client.get(key);
+    return rc.then((value) => {
+      if (value === null || value === undefined) {
+        return undefined;
+      }
+      return JSON.parse(value);
+    });
   }
 
-  async put(key: string, value: any, ttl?: number): Promise<void> {
+  async put(key: string, value: JSONValue | JSONObject, ttl?: number): Promise<void> {
     await this.ensureConnection();
-    const serializedValue = typeof value === 'string' ? value : JSON.stringify(value);
+    const serializedValue = JSON.stringify(value);
     ttl = ttl ?? this.defaultTTL;
     if (ttl && ttl > 0) {
       await this.client.setEx(key, ttl, serializedValue);

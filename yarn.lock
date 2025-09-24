@@ -5011,6 +5011,13 @@
   resolved "https://registry.yarnpkg.com/@types/mdx/-/mdx-2.0.13.tgz#68f6877043d377092890ff5b298152b0a21671bd"
   integrity sha512-+OWZQfAYyio6YkJb3HLxDrvnx6SWWDbC0zVPfBRzUk0/nqoDyf6dNxQi3eArPe8rJ473nobTMQ/8Zk+LxJ+Yuw==
 
+"@types/memcached@^2.2.10":
+  version "2.2.10"
+  resolved "https://registry.yarnpkg.com/@types/memcached/-/memcached-2.2.10.tgz#113f9e3a451d6b5e0a3822e06d9feb52e63e954a"
+  integrity sha512-AM9smvZN55Gzs2wRrqeMHVP7KE8KWgCJO/XL5yCly2xF6EKa4YlbpK+cLSAH4NG/Ah64HrlegmGqW8kYws7Vxg==
+  dependencies:
+    "@types/node" "*"
+
 "@types/methods@^1.1.4":
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/@types/methods/-/methods-1.1.4.tgz#d3b7ac30ac47c91054ea951ce9eed07b1051e547"
