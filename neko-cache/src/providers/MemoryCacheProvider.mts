@@ -18,8 +18,8 @@ export class MemoryCacheProvider implements CacheProviderInterface {
   private cache = new Map<string, CacheItem>();
   private config: MemoryCacheConfig = {
     maxSize: 1000,
-    defaultTTL: 3600 * 1000,
-    cleanupInterval: 600 * 1000, // 10 minutes
+    defaultTTL: 3600,
+    cleanupInterval: 600, // 10 minutes
   };
 
   private cleanupTimer?: NodeJS.Timeout;
@@ -34,7 +34,7 @@ export class MemoryCacheProvider implements CacheProviderInterface {
     if (this.config.cleanupInterval! > 0) {
       this.cleanupTimer = setInterval(() => {
         this.cleanupExpiredEntries();
-      }, this.config.cleanupInterval!);
+      }, this.config.cleanupInterval! * 1000);
     }
   }
 

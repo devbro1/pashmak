@@ -126,8 +126,8 @@ export const cache = createSingleton((label) => {
     throw new Error(`Cache configuration for '${label}' not found`);
   }
   const provider = CacheProviderFactory.create<CacheProviderInterface>(
-    cache_config.provider,
-    cache_config,
+    cache_config.type,
+    cache_config.config,
   );
 
   return new Cache(provider);
