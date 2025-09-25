@@ -16,6 +16,7 @@ import {
   MemoryCacheProvider,
   RedisCacheProvider,
   FileCacheProvider,
+  DisabledCacheProvider,
 } from "@devbro/neko-cache";
 
 export class FlexibleFactory<T> {
@@ -122,4 +123,8 @@ CacheProviderFactory.register("redis", (opt) => {
 
 CacheProviderFactory.register("file", (opt) => {
   return new FileCacheProvider(opt);
+});
+
+CacheProviderFactory.register("disabled", (opt) => {
+  return new DisabledCacheProvider();
 });

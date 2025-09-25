@@ -18,10 +18,12 @@ export async function cacheQuery(
   options.cache_label = options.cache_label ?? "default";
   const sql = q.toSql();
 
-  const key = crypto
-    .createHash("md5")
-    .update(`sql_cache:${sql.sql}:${sql.bindings.join(",")}`)
-    .digest("hex");
+  const key =
+    "sql_cache:" +
+    crypto
+      .createHash("md5")
+      .update(`${sql.sql}:${sql.bindings.join(",")}`)
+      .digest("hex");
   const cachedResult = (await cache(options.cache_label).get(key)) as
     | string
     | undefined;
