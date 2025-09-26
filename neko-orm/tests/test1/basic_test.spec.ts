@@ -7,16 +7,25 @@ import { BaseModel } from '../../src';
 import { faker } from '@faker-js/faker';
 import { sleep } from '@devbro/neko-helper';
 
-describe('raw queries', () => {
+// Check if database environment is configured
+const isDatabaseConfigured = process.env.DB_HOST && process.env.DB_USER && process.env.DB_PASSWORD;
+
+console.log('Database config check for orm basic_test:', { 
+  configured: isDatabaseConfigured,
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'testuser'
+});
+
+describe.skipIf(!isDatabaseConfigured)('raw queries', () => {
   let conn: Connection;
 
   beforeAll(async () => {
     const randName = Math.random().toString(36).substring(7);
     const db_config = {
-      host: process.env.DB_HOST,
+      host: process.env.DB_HOST || 'localhost',
       database: (process.env.DB_NAME || 'test_db') + `_${randName}`,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
+      user: process.env.DB_USER || 'testuser',
+      password: process.env.DB_PASSWORD || 'testpassword',
       port: parseInt(process.env.DB_PORT || '5432'),
     };
     execSync(

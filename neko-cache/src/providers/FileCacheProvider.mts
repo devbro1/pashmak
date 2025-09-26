@@ -1,4 +1,5 @@
 import * as fs from 'fs/promises';
+import * as fsSync from 'fs';
 import * as path from 'path';
 import { CacheProviderInterface } from '../CacheProviderInterface.mjs';
 import { JSONObject, JSONValue } from '@devbro/neko-helper';
@@ -27,8 +28,17 @@ export class FileCacheProvider implements CacheProviderInterface {
   constructor(config: FileCacheConfig = {}) {
     this.config = { ...this.config, ...config };
 
-    this.ensureCacheDirectory();
+    // Create directory synchronously to avoid race conditions
+    this.ensureCacheDirectorySync();
     this.startCleanupTimer();
+  }
+
+  private ensureCacheDirectorySync(): void {
+    try {
+      fsSync.accessSync(this.config.cacheDirectory!);
+    } catch {
+      fsSync.mkdirSync(this.config.cacheDirectory!, { recursive: true });
+    }
   }
 
   private async ensureCacheDirectory(): Promise<void> {
