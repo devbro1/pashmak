@@ -8,10 +8,13 @@ export * from "@devbro/neko-router";
 
 export function Model(
   model: typeof BaseModel,
-  paramName: string,
+  param_name: string = "id",
+  model_field: string = "id",
 ): ParameterDecorator {
   return createParamDecorator(async () => {
-    let rc = await model.find(ctx().get<Request>("request").params[paramName]);
+    let rc = await model.findOne({
+      [model_field]: ctx().get<Request>("request").params[param_name],
+    });
     if (!rc) {
       throw new HttpNotFoundError("Object not found", "OBJECT_NOT_FOUND");
     }
@@ -20,9 +23,9 @@ export function Model(
   });
 }
 
-export function Param(paramName: string): ParameterDecorator {
+export function Param(param_name: string): ParameterDecorator {
   return createParamDecorator(() => {
-    return ctx().get<Request>("request").params[paramName];
+    return ctx().get<Request>("request").params[param_name] || undefined;
   });
 }
 

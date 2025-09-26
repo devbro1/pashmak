@@ -6,9 +6,9 @@ sidebar_position: 5
 
 Pashmak can accept both function and class controllers
 
-# functional Controllers
+## functional Controllers
 
-# Class Controllers
+## Class Controllers
 
 ```ts
 import { db, storage, logger } from "@devbro/pashmak/facades";
@@ -47,7 +47,7 @@ export class CatController extends BaseController {
   }
 
   @Put("/:id")
-  async update(@Param("id") id) {
+  async update(@Param("id") id, @Model(CatModel, "id", "id") cat: CatModel) {
     return "success";
   }
 
@@ -73,7 +73,25 @@ export class CatController extends BaseController {
 }
 ```
 
-### order of middleware execution
+### class decorators
+
+#### @Model(<ModelClass>, <param_name>, <model_field>)
+
+automatically fetches a model instance based on a route parameter and injects it into the controller method.
+
+`param_name` is optional and defaults to "id". it is the param name in the url.
+`model_field` is optional and defaults to "id". it is the field in the model to be matched against the param value.
+
+#### @Param(<param_name>)
+
+extracts a specific parameter from the request URL and injects it into the controller method. If param was not defined in url, it will be undefined.
+
+#### @ValidatedRequest(<validation_schema>)
+
+validates the incoming request data against a defined schema and injects the validated data into the controller.
+validation_schema can be a yup `yup.ObjectSchema` or a function that returns `yup.ObjectSchema`.
+
+## order of middleware execution
 
 the order is as followed:
 
