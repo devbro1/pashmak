@@ -33,4 +33,20 @@ describe('alter table schemas', () => {
 
     expect(fakeConnection.getLastSql().sql).toBe('alter table users drop column email');
   });
+
+  test('add column with separate index', async () => {
+    const fakeConnection = new FakeConnection();
+
+    const schema = new Schema(fakeConnection, new SchemaGrammar());
+    await schema.alterTable('users', (table: Blueprint) => {
+      table.string('email', 250);
+      table.string('first_name').default('');
+      table.index('email');
+      table.unique('first_name');
+    });
+
+    expect(fakeConnection.getLastSql().sql).toBe(
+      "alter table users add column email varchar(250) not null, add column first_name varchar(255) not null default ''; create index users_email_index on users (email); create unique index users_first_name_unique on users (first_name)"
+    );
+  });
 });
