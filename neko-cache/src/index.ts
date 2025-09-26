@@ -1,3 +1,3 @@
-export * from './cache';
+export * from './cache.mjs';
 export * from './CacheProviderInterface.mjs';
 export * from './providers/index.mjs';
