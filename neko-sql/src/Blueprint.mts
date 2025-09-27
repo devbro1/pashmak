@@ -62,7 +62,7 @@ export class IndexConstraint {
   columns: string[];
   indexName: string | undefined = undefined;
   unique: boolean = false;
-  _type: string | undefined = undefined;
+  _type: 'gin' | 'btree' | 'hash' | 'gist' | 'spgist' | 'brin' | undefined = undefined;
 
   constructor(columns: string | string[]) {
     this.columns = Array.isArray(columns) ? columns : [columns];
@@ -78,7 +78,7 @@ export class IndexConstraint {
     return this;
   }
 
-  type(type: 'gin' | 'btree' | 'hash' | 'gist' | 'spgist' | 'brin') {
+  type(type: typeof this._type) {
     this._type = type;
     return this;
   }
