@@ -1,4 +1,4 @@
-import { Blueprint, Column, ForeignKeyConstraint } from './Blueprint.mjs';
+import { Blueprint, Column, ForeignKeyConstraint, IndexConstraint } from './Blueprint.mjs';
 import { Expression } from './Expression.mjs';
 import { CompiledSql, Parameter } from './types.mjs';
 
@@ -29,7 +29,21 @@ export class SchemaGrammar {
       });
     }
     sql += [columns, primaryKeys, ...foreignKeys].join(',') + ')';
-    return { sql, bindings: [] };
+
+    const compiledSql = { sql, bindings: [] };
+
+    // If there are indexes to create, we need to return multiple statements
+    if (blueprint.indexes.length > 0) {
+      const indexSqls = blueprint.indexes.map((index: IndexConstraint) => {
+        return this.compileIndex(blueprint.tableName, index);
+      });
+      return {
+        sql: [compiledSql.sql, ...indexSqls.map((idx) => idx.sql)].join('; '),
+        bindings: compiledSql.bindings,
+      };
+    }
+
+    return compiledSql;
   }
 
   compileAlterTable(blueprint: Blueprint): CompiledSql {
@@ -42,9 +56,32 @@ export class SchemaGrammar {
       return 'drop column ' + v;
     });
 
-    sql = sql.concat([[...add_columns, ...drop_columns].join(', ')]);
+    const alterStatements = [...add_columns, ...drop_columns];
+    if (alterStatements.length > 0) {
+      sql = sql.concat([alterStatements.join(', ')]);
+    }
 
-    return { sql: sql.join(' '), bindings: [] };
+    // Handle case where only indexes are being added without column changes
+    let compiledSql: CompiledSql;
+    if (alterStatements.length > 0) {
+      compiledSql = { sql: sql.join(' '), bindings: [] };
+    } else {
+      // No column changes, just need the base alter table statement for consistency
+      compiledSql = { sql: sql.join(' ') + ' ', bindings: [] };
+    }
+
+    // If there are indexes to create in alter table, add them as separate statements
+    if (blueprint.indexes.length > 0) {
+      const indexSqls = blueprint.indexes.map((index: IndexConstraint) => {
+        return this.compileIndex(blueprint.tableName, index);
+      });
+      return {
+        sql: [compiledSql.sql, ...indexSqls.map((idx) => idx.sql)].join('; '),
+        bindings: compiledSql.bindings,
+      };
+    }
+
+    return compiledSql;
   }
 
   compileColumn(column: Column): string {
@@ -204,5 +241,17 @@ export class SchemaGrammar {
     }
 
     return rc.join(' ');
+  }
+
+  protected compileIndex(tableName: string, index: IndexConstraint): CompiledSql {
+    const indexName =
+      index.indexName ||
+      `${tableName}_${index.columns.join('_')}_${index.unique ? 'unique' : 'index'}`;
+    const uniqueKeyword = index.unique ? 'unique ' : '';
+    const indexType = index._type ? ` using ${index._type}` : '';
+
+    const sql = `create ${uniqueKeyword}index ${indexName} on ${tableName}${indexType} (${index.columns.join(', ')})`;
+
+    return { sql, bindings: [] };
   }
 }

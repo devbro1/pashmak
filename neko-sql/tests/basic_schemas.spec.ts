@@ -24,7 +24,7 @@ describe('raw schemas', () => {
       table.string('first_name').default('');
       table.string('last_name').nullable(true);
       table.float('balance').default(0);
-      table.Boolean('active').default(true);
+      table.boolean('active').default(true);
       table.integer('age');
       table.double('height');
       table.char('blood_type');

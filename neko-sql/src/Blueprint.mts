@@ -57,6 +57,33 @@ export class Column {
   }
 }
 
+// Index constraint for creating database indexes
+export class IndexConstraint {
+  columns: string[];
+  indexName: string | undefined = undefined;
+  unique: boolean = false;
+  _type: 'gin' | 'btree' | 'hash' | 'gist' | 'spgist' | 'brin' | undefined = undefined;
+
+  constructor(columns: string | string[]) {
+    this.columns = Array.isArray(columns) ? columns : [columns];
+  }
+
+  name(indexName: string) {
+    this.indexName = indexName;
+    return this;
+  }
+
+  setUnique(unique: boolean = true) {
+    this.unique = unique;
+    return this;
+  }
+
+  type(type: typeof this._type) {
+    this._type = type;
+    return this;
+  }
+}
+
 // references('id').on('roles').onDelete('cascade').onUpdate('cascade');
 export class ForeignKeyConstraint {
   column: string;
@@ -95,6 +122,7 @@ export class Blueprint {
   columns: Column[] = [];
   drop_coumns: string[] = [];
   foreignKeys: ForeignKeyConstraint[] = [];
+  indexes: IndexConstraint[] = [];
   existingTable: boolean = false;
   primaryKeys: string[] = [];
   constructor() {}
@@ -212,5 +240,23 @@ export class Blueprint {
 
   dropColumn(columnName: string) {
     this.drop_coumns.push(columnName);
+  }
+
+  index(columns: string | string[], indexName?: string) {
+    const indexConstraint = new IndexConstraint(columns);
+    if (indexName) {
+      indexConstraint.name(indexName);
+    }
+    this.indexes.push(indexConstraint);
+    return indexConstraint;
+  }
+
+  unique(columns: string | string[], indexName?: string) {
+    const indexConstraint = new IndexConstraint(columns).setUnique(true);
+    if (indexName) {
+      indexConstraint.name(indexName);
+    }
+    this.indexes.push(indexConstraint);
+    return indexConstraint;
   }
 }
