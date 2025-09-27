@@ -29,7 +29,7 @@ export class SchemaGrammar {
       });
     }
     sql += [columns, primaryKeys, ...foreignKeys].join(',') + ')';
-    
+
     const compiledSql = { sql, bindings: [] };
 
     // If there are indexes to create, we need to return multiple statements
@@ -38,8 +38,8 @@ export class SchemaGrammar {
         return this.compileIndex(blueprint.tableName, index);
       });
       return {
-        sql: [compiledSql.sql, ...indexSqls.map(idx => idx.sql)].join('; '),
-        bindings: compiledSql.bindings
+        sql: [compiledSql.sql, ...indexSqls.map((idx) => idx.sql)].join('; '),
+        bindings: compiledSql.bindings,
       };
     }
 
@@ -76,8 +76,8 @@ export class SchemaGrammar {
         return this.compileIndex(blueprint.tableName, index);
       });
       return {
-        sql: [compiledSql.sql, ...indexSqls.map(idx => idx.sql)].join('; '),
-        bindings: compiledSql.bindings
+        sql: [compiledSql.sql, ...indexSqls.map((idx) => idx.sql)].join('; '),
+        bindings: compiledSql.bindings,
       };
     }
 
@@ -244,12 +244,14 @@ export class SchemaGrammar {
   }
 
   protected compileIndex(tableName: string, index: IndexConstraint): CompiledSql {
-    const indexName = index.indexName || `${tableName}_${index.columns.join('_')}_${index.unique ? 'unique' : 'index'}`;
+    const indexName =
+      index.indexName ||
+      `${tableName}_${index.columns.join('_')}_${index.unique ? 'unique' : 'index'}`;
     const uniqueKeyword = index.unique ? 'unique ' : '';
-    const indexType = index.type ? ` using ${index.type}` : '';
-    
+    const indexType = index._type ? ` using ${index._type}` : '';
+
     const sql = `create ${uniqueKeyword}index ${indexName} on ${tableName}${indexType} (${index.columns.join(', ')})`;
-    
+
     return { sql, bindings: [] };
   }
 }

@@ -60,9 +60,9 @@ export class Column {
 // Index constraint for creating database indexes
 export class IndexConstraint {
   columns: string[];
-  indexName: string | null = null;
+  indexName: string | undefined = undefined;
   unique: boolean = false;
-  type: string | null = null;
+  _type: string | undefined = undefined;
 
   constructor(columns: string | string[]) {
     this.columns = Array.isArray(columns) ? columns : [columns];
@@ -78,8 +78,8 @@ export class IndexConstraint {
     return this;
   }
 
-  indexType(type: string) {
-    this.type = type;
+  type(type: 'gin' | 'btree' | 'hash' | 'gist' | 'spgist' | 'brin') {
+    this._type = type;
     return this;
   }
 }
@@ -195,10 +195,10 @@ export class Blueprint {
 
   timestamps() {
     this.columns.push(
-      new Column('created_at', 'timestamp').default(new Expression('CURRENT_TIMESTAMP'))
+      new Column('created_at', 'timestampz').default(new Expression('CURRENT_TIMESTAMP'))
     );
     this.columns.push(
-      new Column('updated_at', 'timestamp').default(new Expression('CURRENT_TIMESTAMP'))
+      new Column('updated_at', 'timestampz').default(new Expression('CURRENT_TIMESTAMP'))
     );
   }
 
