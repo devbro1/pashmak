@@ -101,7 +101,7 @@ export class CacheProviderFactory {
   static instance: FlexibleFactory<CacheProviderInterface> =
     new FlexibleFactory<CacheProviderInterface>();
 
-  static register<T>(
+  static register(
     key: string,
     factory: (...args: any[]) => CacheProviderInterface,
   ): void {

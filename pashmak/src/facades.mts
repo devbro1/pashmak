@@ -101,11 +101,10 @@ export const logger = createSingleton<Logger>((label) => {
 export const mailer = createSingleton((label) => {
   const mailer_config: any = config.get(["mailer", label].join("."));
 
-  let provider: MailerProvider | undefined =
-    MailerFactory.create<MailerProvider>(
-      mailer_config.provider,
-      mailer_config.config,
-    );
+  const provider: MailerProvider = MailerFactory.create(
+    mailer_config.provider,
+    mailer_config.config,
+  );
 
   const rc = new Mailer(provider);
   return rc;
@@ -116,7 +115,7 @@ export const queue = createSingleton((label) => {
   if (!queue_config) {
     throw new Error(`Queue configuration for '${label}' not found`);
   }
-  const rc = QueueFactory.create(queue_config.type, queue_config);
+  const rc = QueueFactory.create(queue_config.provider, queue_config.config);
   return rc;
 });
 
@@ -125,8 +124,8 @@ export const cache = createSingleton((label) => {
   if (!cache_config) {
     throw new Error(`Cache configuration for '${label}' not found`);
   }
-  const provider = CacheProviderFactory.create<CacheProviderInterface>(
-    cache_config.type,
+  const provider = CacheProviderFactory.create(
+    cache_config.provider,
     cache_config.config,
   );
 
