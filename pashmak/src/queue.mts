@@ -2,42 +2,38 @@ export * from "@devbro/neko-queue";
 import { QueueTransportInterface } from "@devbro/neko-queue";
 import { PostgresqlConnection } from "@devbro/neko-sql";
 import { Query } from "@devbro/neko-sql";
-import { db } from "./facades.mjs";
 
-export type DatabaseTransportConfig = {
-  listen_interval: number; // in milliseconds
-  message_limit: number; // number of messages to process at a time
-  max_retries: number; // maximum number of retries for a failed message
-  db_connection: string; // database connection name
+type DatabaseTransportConfig = {
+  queue_table?: string;
 };
 export class DatabaseTransport implements QueueTransportInterface {
-  private config: DatabaseTransportConfig = {
-    listen_interval: 60000,
-    message_limit: 10,
-    max_retries: 5,
-    db_connection: "default",
-  };
-
+  listenInterval = 60000; // default to 1 minute
+  messageLimit = 100; // default to 100 messages per fetch
   private activeIntervals: Set<NodeJS.Timeout> = new Set();
+  private queue_table: string;
 
-  constructor(config: Partial<DatabaseTransportConfig> = {}) {
-    this.config = { ...this.config, ...config };
+  constructor(private db_config: DatabaseTransportConfig) {
+    this.queue_table = db_config.queue_table || "queue_messages";
   }
 
-  setlisten_interval(interval: number): void {
-    this.config.listen_interval = interval;
+  setListenInterval(interval: number): void {
+    this.listenInterval = interval;
   }
 
-  setmessage_limit(limit: number): void {
-    this.config.message_limit = limit;
+  setMessageLimit(limit: number): void {
+    this.messageLimit = limit;
   }
 
   async dispatch(channel: string, message: string): Promise<void> {
-    const conn = db(this.config.db_connection);
+    const conn = new PostgresqlConnection(this.db_config);
     try {
       await conn.connect();
-      const q: Query = conn.getQuery();
-      await q.table("queue_messages").insert({
+      let schema = conn.getSchema();
+      if(await schema.hasTable(this.queue_table) === false) {
+        return;
+      }
+      let q: Query = conn.getQuery();
+      await q.table(this.queue_table).insert({
         channel: channel,
         message: message,
         processed: false,
@@ -56,44 +52,28 @@ export class DatabaseTransport implements QueueTransportInterface {
     callback: (message: string) => Promise<void>,
   ): Promise<void> {
     // create a promise that runs every minute
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       const intervalId = setInterval(async () => {
-        const conn = db(this.config.db_connection);
+        const conn = new PostgresqlConnection(this.db_config);
         try {
           await conn.connect();
-          const q: Query = conn.getQuery();
-          const messages = await q
+          let q: Query = conn.getQuery();
+          let messages = await q
             .table("queue_messages")
             .whereOp("channel", "=", channel)
-            .whereNested((subQ) => {
-              subQ.whereOp("status", "=", "pending", "or");
-              subQ.whereOp("status", "=", "failed", "or");
-            })
-            .whereOp("retried_count", "<", this.config.max_retries)
-            .limit(this.config.message_limit)
+            .whereOp("processed", "=", false)
+            .limit(this.messageLimit)
             .orderBy("last_tried_at", "asc")
             .get();
-          for (const msg of messages) {
+          for (let msg of messages) {
             try {
-              await q
-                .table("queue_messages")
-                .whereOp("id", "=", msg.id)
-                .update({
-                  status: "processing",
-                  retried_count: (msg.retried_count || 0) + 1,
-                  updated_at: new Date(),
-                });
-
               await callback(msg.message);
-
               // mark message as processed
               await q
                 .table("queue_messages")
                 .whereOp("id", "=", msg.id)
                 .update({
-                  status: "processed",
-                  last_tried_at: new Date(),
-                  process_message: "Processed successfully",
+                  processed: true,
                   updated_at: new Date(),
                 });
             } catch (error) {
@@ -101,7 +81,7 @@ export class DatabaseTransport implements QueueTransportInterface {
                 .table("queue_messages")
                 .whereOp("id", "=", msg.id)
                 .update({
-                  status: "failed",
+                  processed: false,
                   last_tried_at: new Date(),
                   process_message:
                     (error as Error).message || "Error processing message",
@@ -115,7 +95,7 @@ export class DatabaseTransport implements QueueTransportInterface {
         } finally {
           await conn.disconnect();
         }
-      }, this.config.listen_interval);
+      }, this.listenInterval);
 
       // Track this interval
       this.activeIntervals.add(intervalId);
