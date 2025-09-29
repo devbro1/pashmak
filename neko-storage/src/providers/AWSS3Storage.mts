@@ -1,5 +1,5 @@
-import { Metadata, StorageConfig } from './types.mjs';
-import { Storage } from './Storage.mjs';
+import { Metadata, StorageConfig } from '../types.mjs';
+import { Storage } from '../Storage.mjs';
 import {
   S3Client,
   HeadObjectCommand,
@@ -10,8 +10,9 @@ import {
 } from '@aws-sdk/client-s3';
 import { ReadStream } from 'fs';
 import Stream, { Readable } from 'stream';
+import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
 
-export class AWSS3Storage extends Storage {
+export class AWSS3Storage implements StorageProviderInterface {
   private s3: S3Client;
 
   constructor(protected config: StorageConfig) {

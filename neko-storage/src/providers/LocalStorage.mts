@@ -3,12 +3,12 @@ import * as fs from 'fs/promises';
 import { createWriteStream, createReadStream, ReadStream } from 'fs';
 import * as path from 'path';
 import * as mime from 'mime-types';
-import { Metadata, StorageConfig } from './types.mjs';
-import { Storage } from './Storage.mjs';
+import { Metadata, StorageConfig } from '../types.mjs';
+import { Storage } from '../Storage.mjs';
+import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
 
-export class LocalStorage extends Storage {
-  constructor(config: StorageConfig) {
-    super(config);
+export class LocalStorage implements StorageProviderInterface {
+  constructor(private config: StorageConfig) {
 
     if (!LocalStorage.canHandle(config)) {
       throw new Error(`storage engine cannot handle this config.`);
