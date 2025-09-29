@@ -19,7 +19,7 @@
     "prepare": "husky",
     "prettier": "prettier --write .",
     "dev": "nodemon --watch src --ext ts,tsx,json --signal SIGTERM --exec \"clear && tsx -r tsconfig-paths/register src/index.ts start --all | npx pino-pretty\"",
-    "pashmak": "tsx -r tsconfig-paths/register src/index.ts",
+    "pdev": "tsx -r tsconfig-paths/register src/index.ts",
     "clean": "rm -rf dist"
   },
   "author": "???",
