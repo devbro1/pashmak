@@ -3,7 +3,7 @@ import { Schedule, Scheduler } from "@devbro/neko-scheduler";
 import { createSingleton } from "@devbro/neko-helper";
 import { ctx, ctxSafe } from "@devbro/neko-context";
 import { Connection } from "@devbro/neko-sql";
-import { Storage, StorageFactory, StorageProviderFactory } from "@devbro/neko-storage";
+import { Storage, StorageProviderFactory } from "@devbro/neko-storage";
 import { Mailer, MailerProvider } from "@devbro/neko-mailer";
 import { config } from "@devbro/neko-config";
 import { Cli } from "clipanion";
@@ -14,9 +14,10 @@ import { Logger } from "@devbro/neko-logger";
 import {
   CacheProviderFactory,
   MailerFactory,
-  QueueFactory,
+  QueueTransportFactory,
 } from "./factories.mjs";
 import { Cache, CacheProviderInterface } from "@devbro/neko-cache";
+import { QueueConnection } from "@devbro/neko-queue";
 
 export const router = createSingleton<Router>(() => new Router());
 export const scheduler = createSingleton<Scheduler>(() => {
@@ -119,7 +120,8 @@ export const queue = createSingleton((label) => {
   if (!queue_config) {
     throw new Error(`Queue configuration for '${label}' not found`);
   }
-  const rc = QueueFactory.create(queue_config.provider, queue_config.config);
+  const provider = QueueTransportFactory.create(queue_config.provider, queue_config.config);
+  const rc = new QueueConnection(provider);
   return rc;
 });
 
