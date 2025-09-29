@@ -2,6 +2,7 @@ export * from "@devbro/neko-queue";
 import { QueueTransportInterface } from "@devbro/neko-queue";
 import { PostgresqlConnection } from "@devbro/neko-sql";
 import { Query } from "@devbro/neko-sql";
+import { logger } from "./facades.mts";
 
 type DatabaseTransportConfig = {
   queue_table?: string;
@@ -89,9 +90,8 @@ export class DatabaseTransport implements QueueTransportInterface {
             }
           }
         } catch (error) {
-          // If there's an error with the interval itself, remove it from tracking
           this.activeIntervals.delete(intervalId);
-          reject(error);
+          logger().error("Error in DatabaseTransport listen interval:", { error });
         } finally {
           await conn.disconnect();
         }
