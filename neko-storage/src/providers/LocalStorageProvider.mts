@@ -7,12 +7,8 @@ import { Metadata, StorageConfig } from '../types.mjs';
 import { Storage } from '../Storage.mjs';
 import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
 
-export class LocalStorage implements StorageProviderInterface {
+export class LocalStorageProvider implements StorageProviderInterface {
   constructor(private config: StorageConfig) {
-
-    if (!LocalStorage.canHandle(config)) {
-      throw new Error(`storage engine cannot handle this config.`);
-    }
     // Ensure the base folder exists
     fs.mkdir(this.config.basePath, { recursive: true }).catch((error) => {
       throw error;
@@ -27,13 +23,6 @@ export class LocalStorage implements StorageProviderInterface {
       mimeType: mime.lookup(fullPath) || 'unknown',
       lastModifiedDate: stats.mtime.toISOString(),
     };
-  }
-
-  static canHandle(config: StorageConfig) {
-    if (config.engine === 'local') {
-      return true;
-    }
-    return false;
   }
 
   getFullPath(filePath: string) {

@@ -18,6 +18,7 @@ import {
   FileCacheProvider,
   DisabledCacheProvider,
 } from "@devbro/neko-cache";
+import { AWSS3StorageProvider, LocalStorageProvider, StorageProviderFactory } from "@devbro/neko-storage";
 
 export class FlexibleFactory<T> {
   registry: Map<string, any> = new Map();
@@ -127,4 +128,12 @@ CacheProviderFactory.register("file", (opt) => {
 
 CacheProviderFactory.register("disabled", (opt) => {
   return new DisabledCacheProvider();
+});
+
+StorageProviderFactory.register("local", (opt) => {
+  return new LocalStorageProvider(opt);
+});
+
+StorageProviderFactory.register("s3", (opt) => {
+  return new AWSS3StorageProvider(opt);
 });

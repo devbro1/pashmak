@@ -3,7 +3,7 @@ import { Schedule, Scheduler } from "@devbro/neko-scheduler";
 import { createSingleton } from "@devbro/neko-helper";
 import { ctx, ctxSafe } from "@devbro/neko-context";
 import { Connection } from "@devbro/neko-sql";
-import { Storage, StorageFactory } from "@devbro/neko-storage";
+import { Storage, StorageFactory, StorageProviderFactory } from "@devbro/neko-storage";
 import { Mailer, MailerProvider } from "@devbro/neko-mailer";
 import { config } from "@devbro/neko-config";
 import { Cli } from "clipanion";
@@ -33,9 +33,13 @@ export const scheduler = createSingleton<Scheduler>(() => {
 export const db = (label = "default") =>
   ctx().getOrThrow<Connection>(["database", label]);
 
-export const storage = createSingleton<Storage>((label: string = "default") =>
-  StorageFactory.create(config.get(["storages", label].join("."))),
-);
+export const storage = createSingleton<Storage>((label: string = "default") => {
+  let storage_config: any = config.get(["storages", label].join("."));
+
+  const provider = StorageProviderFactory.create(storage_config.provider, storage_config.config);
+
+  return new Storage(provider);
+});
 
 export const cli = createSingleton<Cli>(() => {
   const [node, app, ...args] = process.argv;

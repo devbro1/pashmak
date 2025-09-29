@@ -12,21 +12,11 @@ import { ReadStream } from 'fs';
 import Stream, { Readable } from 'stream';
 import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
 
-export class AWSS3Storage implements StorageProviderInterface {
+export class AWSS3StorageProvider implements StorageProviderInterface {
   private s3: S3Client;
 
   constructor(protected config: StorageConfig) {
-    super(config);
-
-    if (!AWSS3Storage.canHandle(config)) {
-      throw new Error(`storage engine cannot handle this config.`);
-    }
-
     this.s3 = new S3Client(this.config?.s3Config || {});
-  }
-
-  static canHandle(config: StorageConfig): boolean {
-    return config.engine === 's3';
   }
 
   async exists(path: string): Promise<boolean> {

@@ -4,7 +4,7 @@ import { Metadata } from './types.mjs';
 import { StorageConfig } from './types.mjs';
 import { StorageProviderInterface } from './StorageProviderInterface.mjs';
 
-export abstract class Storage {
+export class Storage {
   constructor(protected provider: StorageProviderInterface) {}
 
   exists(path: string): Promise<boolean> {
