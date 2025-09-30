@@ -23,7 +23,7 @@ export type QueryParts = {
 };
 
 export class Query {
-  allowedOperations: string[] = ['=', '>', '<', '!=', 'like', 'ilike'];
+  allowedOperations: string[] = ['=', '>', '<', '!=', 'like', 'ilike', 'in'];
   parts: QueryParts = {
     select: ['*'],
     table: '',

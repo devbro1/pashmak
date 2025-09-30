@@ -32,7 +32,7 @@ describe('raw schemas', () => {
     });
 
     expect(fakeConnection.getLastSql().sql).toBe(
-      "create table users (id serial not null, created_at timestamp not null default CURRENT_TIMESTAMP, updated_at timestamp not null default CURRENT_TIMESTAMP, email varchar(250) not null unique, first_name varchar(255) not null default '', last_name varchar(255) null, balance float not null default 0, active boolean not null default true, age integer not null, height double precision not null, blood_type char not null, date_of_birth date not null,primary key (id))"
+      "create table users (id serial not null, created_at timestamp with time zone not null default CURRENT_TIMESTAMP, updated_at timestamp with time zone not null default CURRENT_TIMESTAMP, email varchar(250) not null unique, first_name varchar(255) not null default '', last_name varchar(255) null, balance float not null default 0, active boolean not null default true, age integer not null, height double precision not null, blood_type char not null, date_of_birth date not null,primary key (id))"
     );
 
     await schema.createTable('users', (table: Blueprint) => {
@@ -57,7 +57,7 @@ describe('raw schemas', () => {
     });
 
     expect(fakeConnection.getLastSql().sql).toBe(
-      'create table users (id serial not null, created_at timestamp not null default CURRENT_TIMESTAMP, updated_at timestamp not null default CURRENT_TIMESTAMP, role_id integer not null,primary key (id),FOREIGN KEY (role_id) references roles(id) on delete cascade on update cascade)'
+      `create table users (id serial not null, created_at timestamp with time zone not null default CURRENT_TIMESTAMP, updated_at timestamp with time zone not null default CURRENT_TIMESTAMP, role_id integer not null,primary key (id),FOREIGN KEY (role_id) references roles(id) on delete cascade on update cascade)`
     );
   });
 });
