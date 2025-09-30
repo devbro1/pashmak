@@ -1,4 +1,4 @@
-import { Mailable } from "Mailable.mts";
+import { Mailable } from "Mailable.mjs";
 import { MailerProvider } from "MailerProvider.mjs";
 import { EventEmittorBase } from "@devbro/neko-helper";
 

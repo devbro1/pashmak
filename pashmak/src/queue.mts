@@ -2,7 +2,7 @@ export * from "@devbro/neko-queue";
 import { QueueTransportInterface } from "@devbro/neko-queue";
 import { PostgresqlConnection } from "@devbro/neko-sql";
 import { Query } from "@devbro/neko-sql";
-import { db, logger } from "./facades.mts";
+import { db, logger } from "./facades.mjs";
 
 type DatabaseTransportConfig = {
   queue_table: string;
