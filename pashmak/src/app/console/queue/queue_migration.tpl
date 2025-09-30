@@ -11,7 +11,7 @@ export default class {{className}} extends Migration {
       table.datetimeTz('last_tried_at').nullable(true);
       table.text('process_message').default('');
       table.string('status').default('pending');
-      table.number('retried_count').default(0);
+      table.integer('retried_count').default(0);
     });
   }
 
