@@ -37,7 +37,7 @@ export class DatabaseTransport implements QueueTransportInterface {
     try {
       await conn.connect();
       let schema = conn.getSchema();
-      if(await schema.tableExists(this.config.queue_table) === false) {
+      if ((await schema.tableExists(this.config.queue_table)) === false) {
         return;
       }
       let q: Query = conn.getQuery();
@@ -49,6 +49,8 @@ export class DatabaseTransport implements QueueTransportInterface {
         updated_at: new Date(),
         last_tried_at: null,
         process_message: "",
+        retried_count: 0,
+        status: "pending",
       });
     } finally {
       await conn.disconnect();
@@ -69,7 +71,10 @@ export class DatabaseTransport implements QueueTransportInterface {
           let messages = await q
             .table(this.config.queue_table)
             .whereOp("channel", "=", channel)
-            .whereOp("processed", "=", false)
+            .whereNested((query: Query) => {
+              query.whereOp("status", "=", "pending", "or");
+              query.whereOp("status", "=", "failed", "or");
+            })
             .limit(this.config.message_limit)
             .orderBy("last_tried_at", "asc")
             .get();
@@ -81,16 +86,19 @@ export class DatabaseTransport implements QueueTransportInterface {
                 .table(this.config.queue_table)
                 .whereOp("id", "=", msg.id)
                 .update({
-                  processed: true,
+                  status: "processed",
                   updated_at: new Date(),
+                  last_tried_at: new Date(),
+                  retried_count: (msg.retried_count || 0) + 1,
                 });
             } catch (error) {
               await q
                 .table(this.config.queue_table)
                 .whereOp("id", "=", msg.id)
                 .update({
-                  processed: false,
+                  status: "failed",
                   last_tried_at: new Date(),
+                  retried_count: (msg.retried_count || 0) + 1,
                   process_message:
                     (error as Error).message || "Error processing message",
                 });
@@ -98,7 +106,9 @@ export class DatabaseTransport implements QueueTransportInterface {
           }
         } catch (error) {
           this.activeIntervals.delete(intervalId);
-          logger().error("Error in DatabaseTransport listen interval:", { error });
+          logger().error("Error in DatabaseTransport listen interval:", {
+            error,
+          });
         } finally {
           await conn.disconnect();
         }

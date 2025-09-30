@@ -14,6 +14,7 @@ export interface QueueConnectionInterface<M extends Record<string, QueueMessageI
 
 export interface QueueTransportInterface {
   dispatch(channel: string, message: string): Promise<void>;
-  listen(channel: string, callback: (message: string) => Promise<void>): Promise<void>;
+  registerListener(channel: string, callback: (message: string) => Promise<void>): Promise<void>;
+  startListening(): Promise<void>;
   stopListening(): Promise<void>;
 }
