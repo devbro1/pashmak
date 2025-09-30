@@ -67,7 +67,7 @@ export class DatabaseTransport implements QueueTransportInterface {
           await conn.connect();
           let q: Query = conn.getQuery();
           let messages = await q
-            .table("queue_messages")
+            .table(this.config.queue_table)
             .whereOp("channel", "=", channel)
             .whereOp("processed", "=", false)
             .limit(this.config.message_limit)
@@ -78,7 +78,7 @@ export class DatabaseTransport implements QueueTransportInterface {
               await callback(msg.message);
               // mark message as processed
               await q
-                .table("queue_messages")
+                .table(this.config.queue_table)
                 .whereOp("id", "=", msg.id)
                 .update({
                   processed: true,
@@ -86,7 +86,7 @@ export class DatabaseTransport implements QueueTransportInterface {
                 });
             } catch (error) {
               await q
-                .table("queue_messages")
+                .table(this.config.queue_table)
                 .whereOp("id", "=", msg.id)
                 .update({
                   processed: false,
