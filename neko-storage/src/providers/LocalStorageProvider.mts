@@ -3,16 +3,12 @@ import * as fs from 'fs/promises';
 import { createWriteStream, createReadStream, ReadStream } from 'fs';
 import * as path from 'path';
 import * as mime from 'mime-types';
-import { Metadata, StorageConfig } from './types.mjs';
-import { Storage } from './Storage.mjs';
+import { Metadata, StorageConfig } from '../types.mjs';
+import { Storage } from '../Storage.mjs';
+import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
 
-export class LocalStorage extends Storage {
-  constructor(config: StorageConfig) {
-    super(config);
-
-    if (!LocalStorage.canHandle(config)) {
-      throw new Error(`storage engine cannot handle this config.`);
-    }
+export class LocalStorageProvider implements StorageProviderInterface {
+  constructor(private config: StorageConfig) {
     // Ensure the base folder exists
     fs.mkdir(this.config.basePath, { recursive: true }).catch((error) => {
       throw error;
@@ -27,13 +23,6 @@ export class LocalStorage extends Storage {
       mimeType: mime.lookup(fullPath) || 'unknown',
       lastModifiedDate: stats.mtime.toISOString(),
     };
-  }
-
-  static canHandle(config: StorageConfig) {
-    if (config.engine === 'local') {
-      return true;
-    }
-    return false;
   }
 
   getFullPath(filePath: string) {

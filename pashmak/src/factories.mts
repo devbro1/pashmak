@@ -8,7 +8,7 @@ import {
   MemoryProvider,
 } from "@devbro/neko-mailer";
 import { logger } from "./facades.mjs";
-import { QueueConnection } from "@devbro/neko-queue";
+import { QueueConnection, QueueTransportInterface } from "@devbro/neko-queue";
 import { MemoryTransport } from "@devbro/neko-queue";
 import { DatabaseTransport } from "./queue.mjs";
 import {
@@ -18,6 +18,7 @@ import {
   FileCacheProvider,
   DisabledCacheProvider,
 } from "@devbro/neko-cache";
+import { AWSS3StorageProvider, LocalStorageProvider, StorageProviderFactory } from "@devbro/neko-storage";
 
 export class FlexibleFactory<T> {
   registry: Map<string, any> = new Map();
@@ -60,38 +61,38 @@ MailerFactory.register("logger", (opt) => {
   });
 });
 
-MailerFactory.register("SES", (opt) => {
+MailerFactory.register("ses", (opt) => {
   return new SESProvider(opt);
 });
 
-MailerFactory.register("SMTP", (opt) => {
+MailerFactory.register("smtp", (opt) => {
   return new SMTPProvider(opt);
 });
 
-MailerFactory.register("MEMORY", (opt) => {
+MailerFactory.register("memory", (opt) => {
   return new MemoryProvider();
 });
 
-export class QueueFactory {
+export class QueueTransportFactory {
   static instance: FlexibleFactory<QueueConnection<any>> = new FlexibleFactory<
     QueueConnection<any>
   >();
 
   static register<T>(key: string, factory: (...args: any[]) => T): void {
-    QueueFactory.instance.register(key, factory);
+    QueueTransportFactory.instance.register(key, factory);
   }
 
-  static create<T>(key: string, ...args: any[]): QueueConnection<any> {
-    return QueueFactory.instance.create(key, ...args);
+  static create<T>(key: string, ...args: any[]): QueueTransportInterface {
+    return QueueTransportFactory.instance.create(key, ...args);
   }
 }
 
-QueueFactory.register("database", (opt) => {
+QueueTransportFactory.register("database", (opt) => {
   let transport = new DatabaseTransport(opt);
   return new QueueConnection(transport);
 });
 
-QueueFactory.register("memory", (opt) => {
+QueueTransportFactory.register("memory", (opt) => {
   let transport = new MemoryTransport(opt);
   return new QueueConnection(transport);
 });
@@ -101,7 +102,7 @@ export class CacheProviderFactory {
   static instance: FlexibleFactory<CacheProviderInterface> =
     new FlexibleFactory<CacheProviderInterface>();
 
-  static register<T>(
+  static register(
     key: string,
     factory: (...args: any[]) => CacheProviderInterface,
   ): void {
@@ -127,4 +128,12 @@ CacheProviderFactory.register("file", (opt) => {
 
 CacheProviderFactory.register("disabled", (opt) => {
   return new DisabledCacheProvider();
+});
+
+StorageProviderFactory.register("local", (opt) => {
+  return new LocalStorageProvider(opt);
+});
+
+StorageProviderFactory.register("s3", (opt) => {
+  return new AWSS3StorageProvider(opt);
 });

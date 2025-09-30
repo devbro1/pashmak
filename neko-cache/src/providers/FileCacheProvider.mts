@@ -116,6 +116,7 @@ export class FileCacheProvider implements CacheProviderInterface {
       expiresAt: effectiveTTL > 0 ? now + effectiveTTL * 1000 : undefined,
     };
 
+    this.ensureCacheDirectory();
     await fs.writeFile(filePath, JSON.stringify(item), 'utf-8');
   }
 

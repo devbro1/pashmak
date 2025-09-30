@@ -2,28 +2,46 @@ export * from "@devbro/neko-queue";
 import { QueueTransportInterface } from "@devbro/neko-queue";
 import { PostgresqlConnection } from "@devbro/neko-sql";
 import { Query } from "@devbro/neko-sql";
+import { db, logger } from "./facades.mts";
+
+type DatabaseTransportConfig = {
+  queue_table: string;
+  db_connection: string;
+  listen_interval: number;
+  message_limit: number;
+};
 
 export class DatabaseTransport implements QueueTransportInterface {
-  listenInterval = 60000; // default to 1 minute
-  messageLimit = 100; // default to 100 messages per fetch
   private activeIntervals: Set<NodeJS.Timeout> = new Set();
+  private config: DatabaseTransportConfig = {
+    queue_table: "queue_messages",
+    db_connection: "default",
+    listen_interval: 60, // seconds
+    message_limit: 10, // messages per each fetch
+  };
 
-  constructor(private db_config: any) {}
+  constructor(config: Partial<DatabaseTransportConfig>) {
+    this.config = { ...this.config, ...config };
+  }
 
   setListenInterval(interval: number): void {
-    this.listenInterval = interval;
+    this.config.listen_interval = interval;
   }
 
   setMessageLimit(limit: number): void {
-    this.messageLimit = limit;
+    this.config.message_limit = limit;
   }
 
   async dispatch(channel: string, message: string): Promise<void> {
-    const conn = new PostgresqlConnection(this.db_config);
+    const conn = db(this.config.db_connection);
     try {
       await conn.connect();
+      let schema = conn.getSchema();
+      if(await schema.tableExists(this.config.queue_table) === false) {
+        return;
+      }
       let q: Query = conn.getQuery();
-      await q.table("queue_messages").insert({
+      await q.table(this.config.queue_table).insert({
         channel: channel,
         message: message,
         processed: false,
@@ -44,15 +62,15 @@ export class DatabaseTransport implements QueueTransportInterface {
     // create a promise that runs every minute
     return new Promise(async (resolve, reject) => {
       const intervalId = setInterval(async () => {
-        const conn = new PostgresqlConnection(this.db_config);
+        const conn = db(this.config.db_connection);
         try {
           await conn.connect();
           let q: Query = conn.getQuery();
           let messages = await q
-            .table("queue_messages")
+            .table(this.config.queue_table)
             .whereOp("channel", "=", channel)
             .whereOp("processed", "=", false)
-            .limit(this.messageLimit)
+            .limit(this.config.message_limit)
             .orderBy("last_tried_at", "asc")
             .get();
           for (let msg of messages) {
@@ -60,7 +78,7 @@ export class DatabaseTransport implements QueueTransportInterface {
               await callback(msg.message);
               // mark message as processed
               await q
-                .table("queue_messages")
+                .table(this.config.queue_table)
                 .whereOp("id", "=", msg.id)
                 .update({
                   processed: true,
@@ -68,7 +86,7 @@ export class DatabaseTransport implements QueueTransportInterface {
                 });
             } catch (error) {
               await q
-                .table("queue_messages")
+                .table(this.config.queue_table)
                 .whereOp("id", "=", msg.id)
                 .update({
                   processed: false,
@@ -79,13 +97,12 @@ export class DatabaseTransport implements QueueTransportInterface {
             }
           }
         } catch (error) {
-          // If there's an error with the interval itself, remove it from tracking
           this.activeIntervals.delete(intervalId);
-          reject(error);
+          logger().error("Error in DatabaseTransport listen interval:", { error });
         } finally {
           await conn.disconnect();
         }
-      }, this.listenInterval);
+      }, this.config.listen_interval * 1000);
 
       // Track this interval
       this.activeIntervals.add(intervalId);

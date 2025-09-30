@@ -1,7 +1,11 @@
-import path from "path";
-import os from "os";
+import path from 'path';
+import os from 'os';
 
 export default {
-  engine: "local",
-  basePath: path.join(os.tmpdir(), "/app-storage/"),
+  storages: {
+    default: {
+      engine: 'local',
+      basePath: path.join(os.tmpdir(), '/app-storage/'),
+    },
+  },
 };
