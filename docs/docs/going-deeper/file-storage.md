@@ -112,3 +112,6 @@ if false is returned, it can be either because file did not exists, or delete pr
 ```ts
 await storage().delete("path/to/file.txt");
 ```
+
+## Registering your own Provider
+TODO: add how to do it

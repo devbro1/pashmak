@@ -223,3 +223,6 @@ const users = await cacheQuery(q);
 const users2 = await cacheQuery(q, { ttl: 600 }); // uses cache('default')
 const users3 = await cacheQuery(q, { ttl: 600, cache_label: "my_redis_cache" }); // uses cache('my_redis_cache')
 ```
+
+## Registering your own Provider
+TODO: add how to do it

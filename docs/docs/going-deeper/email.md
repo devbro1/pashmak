@@ -142,3 +142,6 @@ export default {
   },
 };
 ```
+
+## Registering your own Provider
+TODO: add how to do it

@@ -94,3 +94,7 @@ uses AWS SQS service to handle messages. You need to provide AWS credentials and
 #### Logger
 
 #### Async
+
+
+## Registering your own Provider
+TODO: add how to do it
