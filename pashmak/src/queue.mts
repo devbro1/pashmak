@@ -3,7 +3,7 @@ import { QueueTransportInterface } from "@devbro/neko-queue";
 import { Query } from "@devbro/neko-sql";
 import { db, logger } from "./facades.mjs";
 import { createRepeater } from "@devbro/neko-helper";
-import { context_provider } from "@devbro/pashmak/context";
+import { context_provider } from "@devbro/neko-context";
 
 type DatabaseTransportConfig = {
   queue_table: string;
