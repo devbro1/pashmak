@@ -67,8 +67,6 @@ export class DatabaseTransport implements QueueTransportInterface {
         logger().error("Error in DatabaseTransport listen interval:", {
           error,
         });
-      } finally {
-        await conn.disconnect();
       }
     });
   };
