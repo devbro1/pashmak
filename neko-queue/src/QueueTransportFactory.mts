@@ -2,15 +2,14 @@ import { FlexibleFactory } from '@devbro/neko-helper';
 import { QueueConnection, QueueTransportInterface } from '.';
 
 export class QueueTransportFactory {
-  static instance: FlexibleFactory<QueueConnection<any>> = new FlexibleFactory<
-    QueueConnection<any>
-  >();
+  static instance: FlexibleFactory<QueueTransportInterface> =
+    new FlexibleFactory<QueueTransportInterface>();
 
-  static register<T>(key: string, factory: (...args: any[]) => T): void {
+  static register(key: string, factory: (...args: any[]) => QueueTransportInterface): void {
     QueueTransportFactory.instance.register(key, factory);
   }
 
-  static create<T>(key: string, ...args: any[]): QueueTransportInterface {
+  static create(key: string, ...args: any[]): QueueTransportInterface {
     return QueueTransportFactory.instance.create(key, ...args);
   }
 }

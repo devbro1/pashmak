@@ -15,6 +15,6 @@ export class FlexibleFactory<T> {
     if (!ctor) {
       throw new Error(`No class registered for key: ${key}`);
     }
-    return new ctor(...args);
+    return ctor(...args);
   }
 }

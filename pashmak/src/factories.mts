@@ -41,15 +41,6 @@ export class FlexibleFactory<T> {
   }
 }
 
-MailerProviderFactory.register("logger", (opt) => {
-  return new FunctionProvider((mail: Mailable) => {
-    logger().info({
-      msg: "Sending email",
-      mail,
-    });
-  });
-});
-
 MailerProviderFactory.register("ses", (opt) => {
   return new SESProvider(opt);
 });
@@ -63,13 +54,11 @@ MailerProviderFactory.register("memory", (opt) => {
 });
 
 QueueTransportFactory.register("database", (opt) => {
-  let transport = new DatabaseTransport(opt);
-  return new QueueConnection(transport);
+  return new DatabaseTransport(opt);
 });
 
 QueueTransportFactory.register("memory", (opt) => {
-  let transport = new MemoryTransport(opt);
-  return new QueueConnection(transport);
+  return new MemoryTransport(opt);
 });
 
 // CACHE
