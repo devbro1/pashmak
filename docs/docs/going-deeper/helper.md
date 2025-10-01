@@ -48,10 +48,15 @@ then you can create the instance by calling the create method with the label of 
 ```ts
 import { FlexibleFactory } from "@devbro/pashmak/helpers";
 
-class MailerFactory extends FlexibleFactory<Mailer> {}
+class MailerProviderFactory extends FlexibleFactory<Mailer> {}
 
-MailerFactory.register("smtp", (config) => new SmtpMailer(config));
-MailerFactory.register("sendgrid", (config) => new SendgridMailer(config));
+MailerProviderFactory.register("smtp", (config) => new SmtpMailer(config));
+MailerProviderFactory.register(
+  "sendgrid",
+  (config) => new SendgridMailer(config),
+);
 
-const mailer = MailerFactory.create("smtp", { host: "smtp.example.com" });
+const mailer = MailerProviderFactory.create("smtp", {
+  host: "smtp.example.com",
+});
 ```
