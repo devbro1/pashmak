@@ -131,11 +131,20 @@ describe('raw queries', () => {
     expect(result4[2].job_id).toBe(9);
   });
 
-  test('select where in X', async () => {
+  test('select where in X::int', async () => {
     const query = new Query(conn, new PostgresqlQueryGrammar());
     query.table('regions');
     query.whereOp('region_id', 'in', [1, 2]);
-    console.log(query.toSql());
+    const result = await query.get();
+    expect(result.length).toBe(2);
+    expect(result[0].region_name).toBe('Europe');
+    expect(result[1].region_name).toBe('Americas');
+  });
+
+  test('select where in X::string', async () => {
+    const query = new Query(conn, new PostgresqlQueryGrammar());
+    query.table('regions');
+    query.whereOp('region_name', 'in', ['Europe', 'Americas']);
     const result = await query.get();
     expect(result.length).toBe(2);
     expect(result[0].region_name).toBe('Europe');

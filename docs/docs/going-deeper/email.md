@@ -104,7 +104,7 @@ await mailer().send(mail);
 ## Creating a custom provider
 
 Let's say you want to create a custom provider for your email service. You can do so by creating a class that implements the MailProvider interface.
-then register the provider with `MailerFactory` then reference it in your config:
+then register the provider with `MailerProviderFactory` then reference it in your config:
 
 ```ts
 import { Mailable } from "../Mailable.mjs";
@@ -124,9 +124,9 @@ export class MeowProvider implements MailerProvider {
 ```ts
 // initialize.ts
 
-import { MailerFactory } from "@devbro/pashmak/factories";
+import { MailerProviderFactory } from "@devbro/pashmak/factories";
 
-MailerFactory.register("MeowMailer", (config) => {
+MailerProviderFactory.register("MeowMailer", (config) => {
   return new MeowProvider(config);
 });
 ```
@@ -144,4 +144,5 @@ export default {
 ```
 
 ## Registering your own Provider
+
 TODO: add how to do it

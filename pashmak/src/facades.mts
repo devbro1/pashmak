@@ -4,20 +4,20 @@ import { createSingleton } from "@devbro/neko-helper";
 import { ctx, ctxSafe } from "@devbro/neko-context";
 import { Connection } from "@devbro/neko-sql";
 import { Storage, StorageProviderFactory } from "@devbro/neko-storage";
-import { Mailer, MailerProvider } from "@devbro/neko-mailer";
+import {
+  Mailer,
+  MailerProvider,
+  MailerProviderFactory,
+} from "@devbro/neko-mailer";
 import { config } from "@devbro/neko-config";
 import { Cli } from "clipanion";
 import { HttpServer } from "./http.mjs";
 import { HttpError } from "./http.mjs";
 import * as yup from "yup";
 import { Logger } from "@devbro/neko-logger";
-import {
-  CacheProviderFactory,
-  MailerFactory,
-  QueueTransportFactory,
-} from "./factories.mjs";
-import { Cache, CacheProviderInterface } from "@devbro/neko-cache";
-import { QueueConnection } from "@devbro/neko-queue";
+import { CacheProviderFactory } from "./factories.mjs";
+import { Cache } from "@devbro/neko-cache";
+import { QueueConnection, QueueTransportFactory } from "@devbro/neko-queue";
 
 export const router = createSingleton<Router>(() => new Router());
 export const scheduler = createSingleton<Scheduler>(() => {
@@ -37,7 +37,10 @@ export const db = (label = "default") =>
 export const storage = createSingleton<Storage>((label: string = "default") => {
   let storage_config: any = config.get(["storages", label].join("."));
 
-  const provider = StorageProviderFactory.create(storage_config.provider, storage_config.config);
+  const provider = StorageProviderFactory.create(
+    storage_config.provider,
+    storage_config.config,
+  );
 
   return new Storage(provider);
 });
@@ -106,7 +109,7 @@ export const logger = createSingleton<Logger>((label) => {
 export const mailer = createSingleton((label) => {
   const mailer_config: any = config.get(["mailer", label].join("."));
 
-  const provider: MailerProvider = MailerFactory.create(
+  const provider: MailerProvider = MailerProviderFactory.create(
     mailer_config.provider,
     mailer_config.config,
   );
@@ -120,7 +123,10 @@ export const queue = createSingleton((label) => {
   if (!queue_config) {
     throw new Error(`Queue configuration for '${label}' not found`);
   }
-  const provider = QueueTransportFactory.create(queue_config.provider, queue_config.config);
+  const provider = QueueTransportFactory.create(
+    queue_config.provider,
+    queue_config.config,
+  );
   const rc = new QueueConnection(provider);
   return rc;
 });

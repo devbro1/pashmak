@@ -1,43 +1,48 @@
 import { QueueTransportInterface } from '../Interfaces.mjs';
+import { createRepeater } from '@devbro/neko-helper';
 
+export type MemoryTransportConfig = {
+  interval: number; // interval in milliseconds to check for messages
+};
 export class MemoryTransport implements QueueTransportInterface {
+  config: MemoryTransportConfig = {
+    interval: 10_000, // check for messages every 10 seconds
+  };
   channels = new Map<string, (message: string) => Promise<void>>();
-  messageQueues = new Map<string, string[]>();
+  messageQueues: { channel: string; message: string }[] = [];
+  repeater: ReturnType<typeof createRepeater>;
 
-  constructor(config = {}) {}
-
-  dispatch(channel: string, message: string): Promise<void> {
-    if (this.channels.has(channel)) {
+  processMessage = async () => {
+    while (this.messageQueues.length > 0) {
+      const { channel, message } = this.messageQueues.shift()!;
       const callback = this.channels.get(channel);
       if (callback) {
-        callback(message);
+        await callback(message);
       }
-    } else {
-      if (!this.messageQueues.has(channel)) {
-        this.messageQueues.set(channel, []);
-      }
-      this.messageQueues.get(channel)?.push(message);
     }
+  };
 
-    return Promise.resolve();
+  constructor(config: Partial<MemoryTransportConfig> = {}) {
+    this.config = { ...this.config, ...config };
+    this.repeater = createRepeater(this.processMessage, this.config.interval);
   }
 
-  listen(channel: string, callback: (message: string) => Promise<void>): Promise<void> {
+  async dispatch(channel: string, message: string): Promise<void> {
+    this.messageQueues.push({ channel, message });
+  }
+
+  async registerListener(
+    channel: string,
+    callback: (message: string) => Promise<void>
+  ): Promise<void> {
     this.channels.set(channel, callback);
-
-    // if we have messages in the queue for this channel, process them
-    if (this.messageQueues.has(channel)) {
-      const queue = this.messageQueues.get(channel) || [];
-      for (const msg of queue) {
-        callback(msg);
-      }
-      this.messageQueues.delete(channel);
-    }
-
-    return Promise.resolve();
   }
 
-  stopListening(): Promise<void> {
-    throw new Error('Method not implemented.');
+  async startListening(): Promise<void> {
+    this.repeater.start();
+  }
+
+  async stopListening(): Promise<void> {
+    this.repeater.stop();
   }
 }

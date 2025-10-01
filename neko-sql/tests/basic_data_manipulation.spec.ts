@@ -21,7 +21,6 @@ const db_config = {
 };
 describe('data manipulations', () => {
   beforeAll(async () => {
-    console.log('creating test database', db_config.database);
     execSync(
       `PGPASSWORD=${db_config.password} psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} postgres -c "CREATE DATABASE ${db_config.database}"`
     );

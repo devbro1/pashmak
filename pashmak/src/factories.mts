@@ -6,10 +6,11 @@ import {
   SESProvider,
   SMTPProvider,
   MemoryProvider,
+  MailerProviderFactory,
 } from "@devbro/neko-mailer";
 import { logger } from "./facades.mjs";
 import { QueueConnection, QueueTransportInterface } from "@devbro/neko-queue";
-import { MemoryTransport } from "@devbro/neko-queue";
+import { MemoryTransport, QueueTransportFactory } from "@devbro/neko-queue";
 import { DatabaseTransport } from "./queue.mjs";
 import {
   CacheProviderInterface,
@@ -18,7 +19,11 @@ import {
   FileCacheProvider,
   DisabledCacheProvider,
 } from "@devbro/neko-cache";
-import { AWSS3StorageProvider, LocalStorageProvider, StorageProviderFactory } from "@devbro/neko-storage";
+import {
+  AWSS3StorageProvider,
+  LocalStorageProvider,
+  StorageProviderFactory,
+} from "@devbro/neko-storage";
 
 export class FlexibleFactory<T> {
   registry: Map<string, any> = new Map();
@@ -36,23 +41,7 @@ export class FlexibleFactory<T> {
   }
 }
 
-export class MailerFactory {
-  static instance: FlexibleFactory<MailerProvider> =
-    new FlexibleFactory<MailerProvider>();
-
-  static register<T>(
-    key: string,
-    factory: (...args: any[]) => MailerProvider,
-  ): void {
-    MailerFactory.instance.register(key, factory);
-  }
-
-  static create<T>(key: string, ...args: any[]): MailerProvider {
-    return MailerFactory.instance.create(key, ...args);
-  }
-}
-
-MailerFactory.register("logger", (opt) => {
+MailerProviderFactory.register("logger", (opt) => {
   return new FunctionProvider((mail: Mailable) => {
     logger().info({
       msg: "Sending email",
@@ -61,31 +50,17 @@ MailerFactory.register("logger", (opt) => {
   });
 });
 
-MailerFactory.register("ses", (opt) => {
+MailerProviderFactory.register("ses", (opt) => {
   return new SESProvider(opt);
 });
 
-MailerFactory.register("smtp", (opt) => {
+MailerProviderFactory.register("smtp", (opt) => {
   return new SMTPProvider(opt);
 });
 
-MailerFactory.register("memory", (opt) => {
+MailerProviderFactory.register("memory", (opt) => {
   return new MemoryProvider();
 });
-
-export class QueueTransportFactory {
-  static instance: FlexibleFactory<QueueConnection<any>> = new FlexibleFactory<
-    QueueConnection<any>
-  >();
-
-  static register<T>(key: string, factory: (...args: any[]) => T): void {
-    QueueTransportFactory.instance.register(key, factory);
-  }
-
-  static create<T>(key: string, ...args: any[]): QueueTransportInterface {
-    return QueueTransportFactory.instance.create(key, ...args);
-  }
-}
 
 QueueTransportFactory.register("database", (opt) => {
   let transport = new DatabaseTransport(opt);

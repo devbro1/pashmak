@@ -26,7 +26,7 @@ describe('index schemas', () => {
     });
 
     expect(fakeConnection.getLastSql().sql).toBe(
-      "create table users (id serial not null, email varchar(255) not null, name varchar(255) not null,primary key (id)); create index users_email_index on users (email)"
+      'create table users (id serial not null, email varchar(255) not null, name varchar(255) not null,primary key (id)); create index users_email_index on users (email)'
     );
   });
 
@@ -41,7 +41,7 @@ describe('index schemas', () => {
     });
 
     expect(fakeConnection.getLastSql().sql).toBe(
-      "create table users (id serial not null, email varchar(255) not null,primary key (id)); create unique index users_email_unique on users (email)"
+      'create table users (id serial not null, email varchar(255) not null,primary key (id)); create unique index users_email_unique on users (email)'
     );
   });
 
@@ -56,7 +56,7 @@ describe('index schemas', () => {
     });
 
     expect(fakeConnection.getLastSql().sql).toBe(
-      "create table users (id serial not null, email varchar(255) not null,primary key (id)); create index custom_email_index on users (email)"
+      'create table users (id serial not null, email varchar(255) not null,primary key (id)); create index custom_email_index on users (email)'
     );
   });
 
@@ -72,7 +72,7 @@ describe('index schemas', () => {
     });
 
     expect(fakeConnection.getLastSql().sql).toBe(
-      "create table users (id serial not null, first_name varchar(255) not null, last_name varchar(255) not null,primary key (id)); create index users_first_name_last_name_index on users (first_name, last_name)"
+      'create table users (id serial not null, first_name varchar(255) not null, last_name varchar(255) not null,primary key (id)); create index users_first_name_last_name_index on users (first_name, last_name)'
     );
   });
 
@@ -89,7 +89,7 @@ describe('index schemas', () => {
     });
 
     expect(fakeConnection.getLastSql().sql).toBe(
-      "create table users (id serial not null, email varchar(255) not null, username varchar(255) not null,primary key (id)); create index users_email_index on users (email); create unique index users_username_unique on users (username)"
+      'create table users (id serial not null, email varchar(255) not null, username varchar(255) not null,primary key (id)); create index users_email_index on users (email); create unique index users_username_unique on users (username)'
     );
   });
 
@@ -103,7 +103,7 @@ describe('index schemas', () => {
     });
 
     expect(fakeConnection.getLastSql().sql).toBe(
-      "alter table users add column phone varchar(255) not null; create index users_phone_index on users (phone)"
+      'alter table users add column phone varchar(255) not null; create index users_phone_index on users (phone)'
     );
   });
 
@@ -116,7 +116,7 @@ describe('index schemas', () => {
     });
 
     expect(fakeConnection.getLastSql().sql).toBe(
-      "alter table users ; create unique index unique_email_constraint on users (email)"
+      'alter table users ; create unique index unique_email_constraint on users (email)'
     );
   });
 
@@ -142,11 +142,11 @@ describe('index schemas', () => {
     await schema.createTable('posts', (table: Blueprint) => {
       table.id();
       table.text('content');
-      table.index('content').indexType('gin');
+      table.index('content').type('gin');
     });
 
     expect(fakeConnection.getLastSql().sql).toBe(
-      "create table posts (id serial not null, content text not null,primary key (id)); create index posts_content_index on posts using gin (content)"
+      'create table posts (id serial not null, content text not null,primary key (id)); create index posts_content_index on posts using gin (content)'
     );
   });
 });
