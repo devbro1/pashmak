@@ -2,7 +2,7 @@ export * from "@devbro/neko-queue";
 import { QueueTransportInterface } from "@devbro/neko-queue";
 import { Query } from "@devbro/neko-sql";
 import { db, logger } from "./facades.mjs";
-import { createRepeater } from "./helper.mts";
+import { createRepeater } from "@devbro/neko-helper";
 
 type DatabaseTransportConfig = {
   queue_table: string;

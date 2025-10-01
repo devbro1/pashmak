@@ -1,6 +1,6 @@
 {
   "name": "@devbro/pashmak",
-  "version": "0.1.21",
+  "version": "0.1.22",
   "description": "testing application for the entire repo",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
