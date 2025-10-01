@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-mailer",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "for sending emails in different ways",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -49,7 +49,7 @@
     "@aws-sdk/client-ses": "^3.848.0",
     "nodemailer": "^7.0.5",
     "tsconfig-paths": "^4.2.0",
-    "@devbro/neko-helper": "^0.1.2"
+    "@devbro/neko-helper": "^0.1.*"
   },
   "directories": {
     "test": "tests"
