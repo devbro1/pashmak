@@ -10,6 +10,7 @@ type DatabaseTransportConfig = {
   db_connection: string;
   listen_interval: number;
   message_limit: number;
+  max_retry_count: number;
 };
 
 export class DatabaseTransport implements QueueTransportInterface {
@@ -18,6 +19,7 @@ export class DatabaseTransport implements QueueTransportInterface {
     db_connection: "default",
     listen_interval: 60, // seconds
     message_limit: 10, // messages per each fetch
+    max_retry_count: 5, // maximum retry count for failed messages
   };
   channels = new Map<string, (message: string) => Promise<void>>();
   messageQueues: { channel: string; message: string }[] = [];
@@ -27,37 +29,52 @@ export class DatabaseTransport implements QueueTransportInterface {
     await context_provider.run(async () => {
       const conn = db(this.config.db_connection);
       try {
-        await conn.connect();
         let q: Query = conn.getQuery();
-        let messages = await q
+        let messages = await conn
+          .getQuery()
           .table(this.config.queue_table)
           .whereOp("channel", "in", Array.from(this.channels.keys()))
           .whereOp("status", "in", ["pending", "failed"])
+          .whereOp("retried_count", "<", this.config.max_retry_count)
           .limit(this.config.message_limit)
           .orderBy("last_tried_at", "asc")
           .get();
         for (let msg of messages) {
           try {
+            await conn
+              .getQuery()
+              .table(this.config.queue_table)
+              .whereOp("id", "=", msg.id)
+              .update({
+                status: "processing",
+                updated_at: new Date(),
+                last_tried_at: new Date(),
+                retried_count: (msg.retried_count || 0) + 1,
+              });
             let callback = this.channels.get(msg.channel)!;
             await callback(msg.message);
             // mark message as processed
-            await q
+            await conn
+              .getQuery()
               .table(this.config.queue_table)
               .whereOp("id", "=", msg.id)
               .update({
                 status: "processed",
                 updated_at: new Date(),
-                last_tried_at: new Date(),
-                retried_count: (msg.retried_count || 0) + 1,
               });
           } catch (error) {
+            logger().error("Error processing message:", {
+              error,
+              message_id: msg.id,
+              channel: msg.channel,
+            });
+
             await q
               .table(this.config.queue_table)
               .whereOp("id", "=", msg.id)
               .update({
                 status: "failed",
-                last_tried_at: new Date(),
-                retried_count: (msg.retried_count || 0) + 1,
+                updated_at: new Date(),
                 process_message:
                   (error as Error).message || "Error processing message",
               });
@@ -81,27 +98,21 @@ export class DatabaseTransport implements QueueTransportInterface {
 
   async dispatch(channel: string, message: string): Promise<void> {
     const conn = db(this.config.db_connection);
-    try {
-      await conn.connect();
-      let schema = conn.getSchema();
-      if ((await schema.tableExists(this.config.queue_table)) === false) {
-        return;
-      }
-      let q: Query = conn.getQuery();
-      await q.table(this.config.queue_table).insert({
-        channel: channel,
-        message: message,
-        processed: false,
-        created_at: new Date(),
-        updated_at: new Date(),
-        last_tried_at: null,
-        process_message: "",
-        retried_count: 0,
-        status: "pending",
-      });
-    } finally {
-      await conn.disconnect();
+    let schema = conn.getSchema();
+    if ((await schema.tableExists(this.config.queue_table)) === false) {
+      return;
     }
+    let q: Query = conn.getQuery();
+    await q.table(this.config.queue_table).insert({
+      channel: channel,
+      message: message,
+      created_at: new Date(),
+      updated_at: new Date(),
+      last_tried_at: null,
+      process_message: "",
+      retried_count: 0,
+      status: "pending",
+    });
   }
 
   async registerListener(

@@ -9,7 +9,7 @@ export class QueueConnection<M extends Record<string, QueueMessageInterface>>
   async dispatch<C extends keyof M>(channel: C, message: M[C]): Promise<void> {
     let mmsg = await message.getMessage();
     let msg: string = typeof mmsg === 'string' ? mmsg : JSON.stringify(mmsg);
-    return this.transport.dispatch(channel as string, msg);
+    return await this.transport.dispatch(channel as string, msg);
   }
 
   listen<C extends keyof M>(channel: C, message_type: { new (...args: any[]): M[C] }) {
@@ -24,10 +24,10 @@ export class QueueConnection<M extends Record<string, QueueMessageInterface>>
   }
 
   async start(): Promise<void> {
-    this.transport.startListening();
+    return await this.transport.startListening();
   }
 
   async stop(): Promise<void> {
-    await this.transport.stopListening();
+    return await this.transport.stopListening();
   }
 }

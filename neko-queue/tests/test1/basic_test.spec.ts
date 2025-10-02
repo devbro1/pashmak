@@ -19,7 +19,6 @@ class TestMessage implements QueueMessageInterface {
   async processMessage(): Promise<void> {
     TestMessage.count++;
     TestMessage.processed_messages.push(this.message);
-    console.log('Processing message:', this.message);
   }
 }
 

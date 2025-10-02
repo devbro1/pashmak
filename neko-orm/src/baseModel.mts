@@ -198,9 +198,7 @@ export class BaseModel {
     options = { withGlobalScopes: true }
   ): Promise<any> {
     let self = new this();
-    console.log('options', options, keys);
     let q: Query = await self.getQuery(options);
-    console.log('q', q.toSql());
 
     q.select([...self.primaryKey, ...self.fillable]);
     for (const key of self.primaryKey) {
