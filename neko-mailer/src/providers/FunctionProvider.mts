@@ -2,10 +2,19 @@ import { Mailable } from "../Mailable.mjs";
 import { MailerProvider } from "../MailerProvider.mjs";
 import { prepareEmails } from "../helper.mjs";
 
+export type FunctionProviderConfig = {
+  default_from: string;
+};
+
 export class FunctionProvider implements MailerProvider {
   private defaultFrom: string = "";
 
-  constructor(private func: Function) {}
+  constructor(
+    private func: Function,
+    private config: FunctionProviderConfig,
+  ) {
+    this.defaultFrom = config.default_from;
+  }
 
   setDefaultFrom(from: string): void {
     this.defaultFrom = from;

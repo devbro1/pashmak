@@ -2,6 +2,10 @@ import { Mailable } from "../Mailable.mjs";
 import { MailerProvider } from "../MailerProvider.mjs";
 import { prepareEmails } from "../helper.mjs";
 
+export type MemoryProviderConfig = {
+  default_from: string;
+};
+
 export class MemoryProvider implements MailerProvider {
   private defaultFrom: string = "";
   public sentEmails: {
@@ -14,7 +18,9 @@ export class MemoryProvider implements MailerProvider {
     html: string;
   }[] = [];
 
-  constructor() {}
+  constructor(private config: Partial<MemoryProviderConfig> = {}) {
+    this.defaultFrom = config.default_from || "";
+  }
 
   setDefaultFrom(from: string): void {
     this.defaultFrom = from;

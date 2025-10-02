@@ -3,12 +3,17 @@ import { MailerProvider } from "../MailerProvider.mjs";
 import nodemailer from "nodemailer";
 import { prepareEmails } from "../helper.mjs";
 
+export type SMTPProviderOptions = {
+  nodemailer_options: nodemailer.TransportOptions;
+  default_from: string;
+};
 export class SMTPProvider implements MailerProvider {
   private defaultFrom: string = "";
   private transporter;
 
-  constructor(options: nodemailer.TransportOptions = {}) {
-    this.transporter = nodemailer.createTransport(options);
+  constructor(options: Partial<SMTPProviderOptions> = {}) {
+    this.transporter = nodemailer.createTransport(options.nodemailer_options);
+    this.defaultFrom = options.default_from || "";
   }
 
   setDefaultFrom(from: string): void {

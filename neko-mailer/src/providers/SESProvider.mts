@@ -7,19 +7,25 @@ import {
 } from "@aws-sdk/client-ses";
 import { prepareEmails } from "../helper.mjs";
 
+export type SESProviderOptions = {
+  sesClientConfig: SESClientConfig;
+  default_from: string;
+};
 export class SESProvider implements MailerProvider {
   private sesClient: SESClient;
   private defaultFrom: string = "";
 
-  constructor(options: SESClientConfig = {}) {
+  constructor(options: Partial<SESProviderOptions> = {}) {
     this.sesClient = new SESClient({
       region: process.env.AWS_REGION || "us-east-1",
       credentials: {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
       },
-      ...options,
+      ...options.sesClientConfig,
     });
+
+    this.defaultFrom = options.default_from || "";
   }
 
   setDefaultFrom(from: string): void {
