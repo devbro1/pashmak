@@ -80,6 +80,16 @@ export class Query {
     return this;
   }
 
+  whereRaw(
+    sql: string,
+    bindings: Parameter[],
+    joinCondition: JoinCondition = 'and',
+    negateCondition: boolean = false
+  ): this {
+    this.parts.where.push({ type: 'raw', sql, bindings, joinCondition, negateCondition });
+    return this;
+  }
+
   whereColumn(
     column1: string,
     operation: (typeof this.allowedOperations)[number],

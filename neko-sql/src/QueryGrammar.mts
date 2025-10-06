@@ -167,6 +167,13 @@ export abstract class QueryGrammar {
     };
   }
 
+  compileWhereRaw(w: whereRaw): CompiledSql {
+    return {
+      sql: w.sql,
+      bindings: w.bindings,
+    };
+  }
+
   compileOrderBy(orderBy: string[]): CompiledSql {
     let rc = '';
     if (orderBy.length) {

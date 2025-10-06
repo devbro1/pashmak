@@ -14,7 +14,7 @@ export type whereOpColumn = {
 export type whereNested = { type: 'nested'; query: Query };
 export type whereRaw = { type: 'raw'; sql: string; bindings: Parameter[] };
 export type whereNull = { type: 'null'; column: string };
-export type whereType = whereBasic & (whereOp | whereOpColumn | whereNested | whereNull);
+export type whereType = whereBasic & (whereOp | whereOpColumn | whereNested | whereNull | whereRaw);
 
 export type Parameter =
   | string
