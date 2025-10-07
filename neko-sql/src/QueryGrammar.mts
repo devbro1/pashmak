@@ -168,8 +168,10 @@ export abstract class QueryGrammar {
   }
 
   compileWhereRaw(w: whereRaw): CompiledSql {
+    let sql = w.sql.replace(/\?/g, () => this.getVariablePlaceholder());
+
     return {
-      sql: w.sql,
+      sql: sql,
       bindings: w.bindings,
     };
   }

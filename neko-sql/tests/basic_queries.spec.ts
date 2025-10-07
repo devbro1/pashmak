@@ -190,4 +190,16 @@ describe('raw queries', () => {
     );
     expect(query2.toSql().bindings).toStrictEqual([1, 2, 'E%', 3, 'F%']);
   });
+
+  test('select whereRaw', async () => {
+    const query = new Query(conn, new PostgresqlQueryGrammar());
+    query.table('regions');
+    query.whereOp('region_id', '=', 1);
+    query.whereRaw('(meow = ? or region_name ilike ?)', [2, 'E%']);
+
+    expect(query.toSql().sql).toBe(
+      'select * from regions where region_id = $1 and (meow = $2 or region_name ilike $3)'
+    );
+    expect(query.toSql().bindings).toStrictEqual([1, 2, 'E%']);
+  });
 });
