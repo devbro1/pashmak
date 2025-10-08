@@ -98,7 +98,6 @@ describe('raw queries', () => {
 
     query.whereOp('job_title', 'ilike', 'P%');
     let sql = query.toSql();
-    console.log(sql);
     expect(sql.sql).toBe('select * from jobs where job_title ilike ?');
     expect(sql.bindings).toStrictEqual(['P%']);
 

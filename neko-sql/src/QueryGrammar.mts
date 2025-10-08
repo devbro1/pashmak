@@ -62,7 +62,6 @@ export abstract class QueryGrammar {
     let parts: (string | number)[] = [];
 
     for (const part of this.sqlParts) {
-      console.log('A', part);
       // @ts-ignore
       let parts2 = query.parts[part];
       if (part === 'select') {
@@ -282,21 +281,27 @@ export abstract class QueryGrammar {
   }
 
   compileInsert(query: Query, data: Record<string, Parameter>): CompiledSql {
-    let sql = 'insert into ' + query.parts.table + ' (';
     let parts = ['insert', 'into', query.parts.table, '('];
     const columns: string[] = [];
     const bindings: Parameter[] = [];
     const values: string[] = [];
 
     for (const [k, v] of Object.entries(data)) {
-      columns.push(k);
-      bindings.push(v);
-      values.push('?');
+      parts.push(k);
+      parts.push(',');
     }
+    parts.pop();
+    parts = parts.concat([')', 'values', '(']);
 
-    sql += columns.join(', ') + ') values (' + values + ')';
+    for (const [k, v] of Object.entries(data)) {
+      parts.push('?');
+      bindings.push(v);
+      parts.push(',');
+    }
+    parts.pop();
+    parts.push(')');
 
-    return { sql, parts, bindings };
+    return { sql: parts.join(' '), parts, bindings };
   }
 
   abstract compileInsertGetId(
@@ -306,23 +311,22 @@ export abstract class QueryGrammar {
   ): CompiledSql;
 
   compileUpdate(query: Query, data: Record<string, Parameter>): CompiledSql {
-    let sql = 'update ' + query.parts.table + ' set ';
     const bindings: Parameter[] = [];
     let parts: (string | number)[] = ['update', query.parts.table, 'set'];
 
     const setParts = [];
     for (const [k, v] of Object.entries(data)) {
+      parts = parts.concat([k, '=', '?', ',']);
       setParts.push(`${k} = ?`);
       bindings.push(v);
     }
-
-    sql += setParts.join(', ');
+    parts.pop();
 
     const where_csql = this.compileWhere(query.parts.where);
-    sql += ' ' + where_csql.sql;
+    parts = parts.concat(where_csql.parts);
     bindings.push(...where_csql.bindings);
 
-    return { sql, parts, bindings };
+    return { sql: parts.join(' '), parts, bindings };
   }
 
   compileDelete(query: Query): CompiledSql {
@@ -340,32 +344,27 @@ export abstract class QueryGrammar {
     conflictFields: string[],
     updateFields: string[]
   ): CompiledSql {
-    let sql = 'insert into ' + query.parts.table + ' (';
-    let parts: (string | number)[] = ['insert', 'into', query.parts.table, '('];
-    const columns: string[] = [];
+    let parts: (string | number)[] = [];
     const bindings: Parameter[] = [];
-    const values: string[] = [];
 
-    for (const [k, v] of Object.entries(data)) {
-      columns.push(k);
-      bindings.push(v);
-      values.push('?');
-    }
+    let isql = this.compileInsert(query, data);
+    parts = isql.parts;
+    bindings.push(...isql.bindings);
 
-    sql += columns.join(', ') + ') values (' + values + ')';
-
-    sql += ' on conflict (' + conflictFields.join(', ') + ') do update set ';
+    parts = parts.concat(['on', 'conflict', '(', ...conflictFields, ')', 'do', 'update', 'set']);
     const setParts = [];
     for (const f of updateFields) {
       setParts.push(`${f} = excluded.${f}`);
+      setParts.push(`,`);
     }
-    sql += setParts.join(', ');
+    setParts.pop();
+    parts = parts.concat(setParts);
 
     const where_csql = this.compileWhere(query.parts.where);
-    sql += ' ' + where_csql.sql;
+    parts = parts.concat(where_csql.parts);
     bindings.push(...where_csql.bindings);
 
-    return { sql, parts, bindings };
+    return { sql: parts.join(' '), parts, bindings };
   }
 
   compileGroupBy(groupBy: string[]): CompiledSql {
