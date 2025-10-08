@@ -36,17 +36,18 @@
     "@typescript-eslint/parser": "^7.1.1",
     "eslint": "8.57.0",
     "husky": "^9.1.7",
-    "vitest": "^3.2.4",
     "pinst": "^3.0.0",
     "prettier": "^3.5.3",
     "ts-node": "^10.9.2",
     "tsup": "^8.0.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "pg": "^8.11.3",
     "pg-cursor": "^2.15.0",
-    "pg-pool": "^3.7.1"
+    "pg-pool": "^3.7.1",
+    "sql-tokenizer": "^1.0.4"
   },
   "directories": {
     "doc": "docs",

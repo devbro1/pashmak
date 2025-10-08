@@ -12,6 +12,7 @@ import {
   joinType,
   whereNested,
 } from './types.mjs';
+import { sqlTokenizer } from 'sql-tokenizer';
 
 function toUpperFirst(str: string) {
   return str.substring(0, 1).toUpperCase() + str.substring(1);
@@ -30,7 +31,13 @@ export abstract class QueryGrammar {
   ];
 
   toSql(query: Query): CompiledSql {
-    let sql = '';
+    let rc = this.toSqlParts(query);
+    rc.sql = this.joinArray(rc.parts);
+    return rc;
+  }
+
+  toSqlParts(query: Query): CompiledSql {
+    let parts: string[] = [];
     let bindings: Parameter[] = [];
 
     for (const part of this.sqlParts) {
@@ -38,110 +45,158 @@ export abstract class QueryGrammar {
       const funcName: keyof this = 'compile' + toUpperFirst(part);
       // @ts-ignore
       const r = this[funcName](query.parts[part]);
-      if (!sql) {
-        sql = r.sql;
-      } else if (r.sql) {
-        sql += ' ' + r.sql;
-      }
       bindings = [...bindings, ...r.bindings];
+      parts = [...parts, ...r.parts];
     }
-    return { sql, bindings };
+
+    return {
+      sql: '',
+      bindings,
+      parts,
+    };
   }
 
   compileCount(query: Query): CompiledSql {
     let sql = '';
     let bindings: Parameter[] = [];
+    let parts: (string | number)[] = [];
 
     for (const part of this.sqlParts) {
+      console.log('A', part);
       // @ts-ignore
-      let parts = query.parts[part];
+      let parts2 = query.parts[part];
       if (part === 'select') {
-        parts = ['count(*) as count'];
+        parts2 = ['count(*) as count'];
       }
       // @ts-ignore
       const funcName: keyof this = 'compile' + toUpperFirst(part);
       // @ts-ignore
-      const r = this[funcName](parts);
-      if (!sql) {
-        sql = r.sql;
-      } else if (r.sql) {
-        sql += ' ' + r.sql;
-      }
+      const r = this[funcName](parts2);
       bindings = [...bindings, ...r.bindings];
+      parts = [...parts, ...r.parts];
     }
-    return { sql, bindings };
+    return { sql, parts, bindings };
   }
 
   compileSelect(selects: selectType[]): CompiledSql {
-    const rc = selects
-      .map((v) => {
-        return v;
-      })
-      .join(', ');
+    const parts = ['select'];
+    selects.map((v) => {
+      parts.push(v);
+      parts.push(',');
+    });
+    parts.pop();
 
-    return { sql: 'select ' + rc, bindings: [] };
+    return { sql: this.joinArray(parts), parts, bindings: [] };
+  }
+
+  joinArray(arr: (string | number)[]): string {
+    let rc = '';
+    let last: string | number = '';
+    for (const a of arr) {
+      if (a === ',') {
+        rc += a;
+      } else if (last === '(' || last === ' ' || a === ')') {
+        rc += a;
+      } else if (a === '') {
+        rc += '';
+      } else {
+        rc += ' ' + a;
+      }
+      last = a;
+    }
+
+    return rc.trim();
   }
 
   compileTable(tableName: string): CompiledSql {
-    let rc = '';
+    let parts = [];
     if (tableName.length) {
-      rc = 'from ' + tableName;
+      parts.push('from');
+      parts.push(tableName);
     }
 
-    return { sql: rc, bindings: [] };
+    return { sql: parts.join(' '), parts, bindings: [] };
   }
 
   compileJoin(joins: joinType[]): CompiledSql {
     let sql = '';
     let bindings: Parameter[] = [];
+    let parts: (string | number)[] = [];
 
     for (const j of joins) {
-      sql += ' ' + j.type + ' join ' + j.table + ' on ';
+      let table = '';
+      let table_bindings: any[] = [];
 
-      const where = this.compileWhere(j.conditions);
-      if (where.sql.startsWith('where ')) {
-        where.sql = where.sql.substring('where '.length);
+      parts.push(j.type);
+      parts.push('join');
+      if (typeof j.table === 'string') {
+        parts.push(j.table);
+      } else {
+        const subQuery = j.table;
+        const { parts: parts2, bindings } = subQuery.toSql();
+        parts = [...parts, '(', ...parts2, ')', 'as', subQuery.parts.alias || 'subquery'];
+        table_bindings = bindings;
       }
 
-      sql += '(';
-      sql += where.sql;
-      sql += ')';
+      parts.push('on');
 
-      bindings = [...bindings, ...where.bindings];
+      const where = this.compileWhere(j.conditions);
+      const where_parts = where.parts;
+      where_parts.shift();
+      parts.push('(');
+      parts = [...parts, ...where_parts];
+      parts.push(')');
+
+      bindings = [...bindings, ...table_bindings, ...where.bindings];
     }
 
-    return { sql, bindings };
+    return { sql, parts, bindings };
   }
 
   compileWhere(wheres: whereType[]): CompiledSql {
     let sql = '';
     let bindings: Parameter[] = [];
+    let parts: (string | number)[] = [];
 
     for (const w of wheres) {
       sql += ' ' + w.joinCondition + ' ';
+      parts.push(w.joinCondition);
       if (w.negateCondition) {
         sql += 'not ';
+        parts.push('not');
       }
       const funcName = 'compileWhere' + toUpperFirst(w.type);
       // @ts-ignore
       const wh = this[funcName](w);
       sql += wh.sql;
+      parts = parts.concat(wh.parts);
       bindings = [...bindings, ...wh.bindings];
     }
+
     if (sql.startsWith(' and ')) {
       sql = 'where ' + sql.substring(' and '.length);
     } else if (sql.startsWith(' or ')) {
       sql = 'where ' + sql.substring(' or '.length);
     }
-    return { sql, bindings };
+
+    if (parts.length > 0) {
+      parts[0] = 'where';
+    }
+    return { sql, parts, bindings };
   }
 
   compileWhereNested(w: whereNested): CompiledSql {
     const subQuery = w.query;
-    const { sql, bindings } = subQuery.grammar.compileWhere(subQuery.parts.where);
+    let parts: (string | number)[] = [];
+    const { sql, parts: parts2, bindings } = subQuery.grammar.compileWhere(subQuery.parts.where);
     let sql2 = sql.replace(/^where /, '');
+    parts2.shift();
+    parts.push('(');
+    parts = parts.concat(parts2);
+    parts.push(')');
     return {
       sql: `(${sql2})`,
+      parts,
       bindings,
     };
   }
@@ -149,13 +204,15 @@ export abstract class QueryGrammar {
   compileWhereOperation(w: whereOp): CompiledSql {
     if (w.operation.toLowerCase() === 'in' && Array.isArray(w.value)) {
       return {
-        sql: `${w.column} = ANY(${this.getVariablePlaceholder()})`,
+        sql: `${w.column} = ANY( ? )`,
+        parts: [w.column, ' = ANY(', '?', ')'],
         bindings: [w.value],
       };
     }
 
     return {
-      sql: `${w.column} ${w.operation} ${this.getVariablePlaceholder()}`,
+      sql: `${w.column} ${w.operation} ?`,
+      parts: [w.column, w.operation, '?'],
       bindings: [w.value],
     };
   }
@@ -163,44 +220,55 @@ export abstract class QueryGrammar {
   compileWhereOperationColumn(w: whereOpColumn): CompiledSql {
     return {
       sql: `${w.column1} ${w.operation} ${w.column2}`,
+      parts: [w.column1, w.operation, w.column2],
       bindings: [],
     };
   }
 
   compileWhereRaw(w: whereRaw): CompiledSql {
-    let sql = w.sql.replace(/\?/g, () => this.getVariablePlaceholder());
+    const tokenize = sqlTokenizer();
 
     return {
-      sql: sql,
+      sql: w.sql,
+      parts: tokenize(w.sql).filter((t: string) => t !== ' '),
       bindings: w.bindings,
     };
   }
 
   compileOrderBy(orderBy: string[]): CompiledSql {
     let rc = '';
+    let parts: (string | number)[] = [];
     if (orderBy.length) {
       rc = 'order by ' + orderBy.join(', ');
+      parts.push('order by');
+      parts = parts.concat(orderBy);
     }
 
-    return { sql: rc, bindings: [] };
+    return { sql: rc, parts, bindings: [] };
   }
 
   compileLimit(limit: number | null): CompiledSql {
     let rc = '';
+    let parts: (string | number)[] = [];
     if (limit !== null) {
       rc = 'limit ' + limit;
+      parts.push('limit');
+      parts.push(limit);
     }
 
-    return { sql: rc, bindings: [] };
+    return { sql: rc, parts, bindings: [] };
   }
 
   compileOffset(offset: number | null): CompiledSql {
     let rc = '';
+    let parts: (string | number)[] = [];
     if (offset !== null) {
       rc = 'offset ' + offset;
+      parts.push('offset');
+      parts.push(offset);
     }
 
-    return { sql: rc, bindings: [] };
+    return { sql: rc, parts, bindings: [] };
   }
 
   abstract getVariablePlaceholder(): string;
@@ -208,12 +276,14 @@ export abstract class QueryGrammar {
   compileWhereNull(w: whereNull): CompiledSql {
     return {
       sql: `${w.column} is null`,
+      parts: [w.column, 'is', 'null'],
       bindings: [],
     };
   }
 
   compileInsert(query: Query, data: Record<string, Parameter>): CompiledSql {
     let sql = 'insert into ' + query.parts.table + ' (';
+    let parts = ['insert', 'into', query.parts.table, '('];
     const columns: string[] = [];
     const bindings: Parameter[] = [];
     const values: string[] = [];
@@ -221,12 +291,12 @@ export abstract class QueryGrammar {
     for (const [k, v] of Object.entries(data)) {
       columns.push(k);
       bindings.push(v);
-      values.push(this.getVariablePlaceholder());
+      values.push('?');
     }
 
     sql += columns.join(', ') + ') values (' + values + ')';
 
-    return { sql, bindings };
+    return { sql, parts, bindings };
   }
 
   abstract compileInsertGetId(
@@ -238,10 +308,11 @@ export abstract class QueryGrammar {
   compileUpdate(query: Query, data: Record<string, Parameter>): CompiledSql {
     let sql = 'update ' + query.parts.table + ' set ';
     const bindings: Parameter[] = [];
+    let parts: (string | number)[] = ['update', query.parts.table, 'set'];
 
     const setParts = [];
     for (const [k, v] of Object.entries(data)) {
-      setParts.push(`${k} = ${this.getVariablePlaceholder()}`);
+      setParts.push(`${k} = ?`);
       bindings.push(v);
     }
 
@@ -251,14 +322,16 @@ export abstract class QueryGrammar {
     sql += ' ' + where_csql.sql;
     bindings.push(...where_csql.bindings);
 
-    return { sql, bindings };
+    return { sql, parts, bindings };
   }
 
   compileDelete(query: Query): CompiledSql {
     let sql = 'delete from ' + query.parts.table;
+    let parts: (string | number)[] = ['delete', 'from', query.parts.table];
     const where_csql = this.compileWhere(query.parts.where);
     sql += ' ' + where_csql.sql;
-    return { sql, bindings: where_csql.bindings };
+    parts = parts.concat(where_csql.parts);
+    return { sql, parts, bindings: where_csql.bindings };
   }
 
   compileUpsert(
@@ -268,6 +341,7 @@ export abstract class QueryGrammar {
     updateFields: string[]
   ): CompiledSql {
     let sql = 'insert into ' + query.parts.table + ' (';
+    let parts: (string | number)[] = ['insert', 'into', query.parts.table, '('];
     const columns: string[] = [];
     const bindings: Parameter[] = [];
     const values: string[] = [];
@@ -275,7 +349,7 @@ export abstract class QueryGrammar {
     for (const [k, v] of Object.entries(data)) {
       columns.push(k);
       bindings.push(v);
-      values.push(this.getVariablePlaceholder());
+      values.push('?');
     }
 
     sql += columns.join(', ') + ') values (' + values + ')';
@@ -291,44 +365,52 @@ export abstract class QueryGrammar {
     sql += ' ' + where_csql.sql;
     bindings.push(...where_csql.bindings);
 
-    return { sql, bindings };
+    return { sql, parts, bindings };
   }
 
   compileGroupBy(groupBy: string[]): CompiledSql {
     let rc = '';
+    let parts = [];
     if (groupBy.length) {
       rc = 'group by ' + groupBy.join(', ');
+      parts.push('group by');
+      parts.concat(groupBy);
     }
 
-    return { sql: rc, bindings: [] };
+    return { sql: rc, parts, bindings: [] };
   }
 
   compileHaving(having: havingType[]): CompiledSql {
     let sql = '';
     let bindings: Parameter[] = [];
+    let parts: (string | number)[] = [];
 
     for (const w of having) {
       sql += ' ' + w.joinCondition + ' ';
+      parts.push(w.joinCondition);
       if (w.negateCondition) {
         sql += 'not ';
+        parts.push('not');
       }
       const funcName = 'compileHaving' + toUpperFirst(w.type);
       // @ts-ignore
       const wh = this[funcName](w);
+      parts.concat(wh.parts);
       sql += wh.sql;
       bindings = [...bindings, ...wh.bindings];
     }
-    if (sql.startsWith(' and ')) {
-      sql = 'having ' + sql.substring(' and '.length);
-    } else if (sql.startsWith(' or ')) {
-      sql = 'having ' + sql.substring(' or '.length);
+
+    if (parts.length > 0) {
+      parts[0] = 'having';
     }
-    return { sql, bindings };
+
+    return { sql: parts.join(' '), parts, bindings };
   }
 
   compileHavingOperation(w: whereOp): CompiledSql {
     return {
-      sql: `${w.column} ${w.operation} ${this.getVariablePlaceholder()}`,
+      sql: `${w.column} ${w.operation} ?`,
+      parts: [w.column, w.operation, '?'],
       bindings: [w.value],
     };
   }
@@ -336,6 +418,7 @@ export abstract class QueryGrammar {
   compileHavingRaw(w: whereRaw): CompiledSql {
     return {
       sql: w.sql,
+      parts: w.sql.split(' '),
       bindings: w.bindings,
     };
   }
