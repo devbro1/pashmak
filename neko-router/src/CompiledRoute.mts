@@ -46,6 +46,10 @@ export class CompiledRoute {
 
   prepareOutputJsonFormat<T>(obj: object | Array<any>): T {
     function traverse(value: any): any {
+      if (value === undefined || value === null) {
+        return null;
+      }
+
       if (!value || typeof value !== 'object') {
         return value;
       }
