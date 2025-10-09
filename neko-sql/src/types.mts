@@ -27,12 +27,12 @@ export type Parameter =
   | number[]
   | string[];
 export type JoinCondition = 'and' | 'or';
-export type CompiledSql = { sql: string; bindings: Parameter[] };
+export type CompiledSql = { sql: string; parts: (string | number)[]; bindings: Parameter[] };
 
 export type havingType = whereBasic & (whereOp | whereRaw);
 
 export type joinType = {
   type: 'inner' | 'left' | 'right' | 'full' | 'cross';
-  table: string;
+  table: string | Query;
   conditions: whereType[];
 };

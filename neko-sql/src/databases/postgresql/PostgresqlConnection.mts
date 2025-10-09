@@ -32,7 +32,14 @@ export class PostgresqlConnection extends ConnectionAbs {
     return true;
   }
   async runQuery(sql: CompiledSql) {
-    const result = await this.connection?.query(sql.sql, sql.bindings);
+    // console.log('SQL:', sql);
+    let counter = 1;
+    let sql2 = sql.sql;
+    if (sql.parts) {
+      sql2 = sql.parts.map((v) => (v === '?' ? '$' + counter++ : v)).join(' ');
+    }
+
+    const result = await this.connection?.query(sql2, sql.bindings);
     return result?.rows;
   }
 

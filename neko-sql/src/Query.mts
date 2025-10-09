@@ -20,6 +20,7 @@ export type QueryParts = {
   orderBy: string[];
   limit: number | null;
   offset: number | null;
+  alias: string | null;
 };
 
 export class Query {
@@ -34,6 +35,7 @@ export class Query {
     orderBy: [],
     limit: null,
     offset: null,
+    alias: null,
   };
 
   constructor(
@@ -180,7 +182,16 @@ export class Query {
   }
 
   async get() {
-    return await this.connection?.runQuery(this.toSql());
+    let sql = this.toSql();
+    return await this.connection?.runQuery(sql);
+  }
+
+  async first() {
+    let rc = await this.connection?.runQuery(this.toSql());
+    if (rc && Array.isArray(rc) && rc.length > 0) {
+      return rc[0];
+    }
+    return undefined;
   }
 
   async count(): Promise<number> {
@@ -229,7 +240,7 @@ export class Query {
   }
 
   join(
-    table: string,
+    table: string | Query,
     type: joinType['type'],
     conditions: (whereType | { column1: string; column2: string })[]
   ): this {
@@ -248,23 +259,43 @@ export class Query {
     return this;
   }
 
-  innerJoin(table: string, conditions: (whereType | { column1: string; column2: string })[]): this {
+  innerJoin(
+    table: Parameters<typeof this.join>[0],
+    conditions: (whereType | { column1: string; column2: string })[]
+  ): this {
     return this.join(table, 'inner', conditions);
   }
 
-  leftJoin(table: string, conditions: (whereType | { column1: string; column2: string })[]): this {
+  leftJoin(
+    table: Parameters<typeof this.join>[0],
+    conditions: (whereType | { column1: string; column2: string })[]
+  ): this {
     return this.join(table, 'left', conditions);
   }
 
-  rightJoin(table: string, conditions: (whereType | { column1: string; column2: string })[]): this {
+  rightJoin(
+    table: Parameters<typeof this.join>[0],
+    conditions: (whereType | { column1: string; column2: string })[]
+  ): this {
     return this.join(table, 'right', conditions);
   }
 
-  fullJoin(table: string, conditions: (whereType | { column1: string; column2: string })[]): this {
+  fullJoin(
+    table: Parameters<typeof this.join>[0],
+    conditions: (whereType | { column1: string; column2: string })[]
+  ): this {
     return this.join(table, 'full', conditions);
   }
 
-  crossJoin(table: string, conditions: (whereType | { column1: string; column2: string })[]): this {
+  crossJoin(
+    table: Parameters<typeof this.join>[0],
+    conditions: (whereType | { column1: string; column2: string })[]
+  ): this {
     return this.join(table, 'cross', conditions);
+  }
+
+  alias(alias: string): this {
+    this.parts.alias = alias;
+    return this;
   }
 }

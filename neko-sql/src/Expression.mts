@@ -1,4 +1,6 @@
 import { CompiledSql } from './types.mjs';
+// @ts-ignore - no type definitions available for sql-tokenizer
+import { sqlTokenizer } from 'sql-tokenizer';
 
 export class Expression {
   constructor(
@@ -7,6 +9,7 @@ export class Expression {
   ) {}
 
   toCompiledSql(): CompiledSql {
-    return { sql: this.sql, bindings: this.bindings };
+    const tokenize = sqlTokenizer(this.sql);
+    return { sql: this.sql, bindings: this.bindings, parts: tokenize(this.sql) };
   }
 }

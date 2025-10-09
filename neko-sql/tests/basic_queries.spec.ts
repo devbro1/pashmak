@@ -47,14 +47,14 @@ describe('raw queries', () => {
 
     r = query.toSql();
 
-    expect(r.sql).toBe('select * from countries where region_id = $1');
+    expect(r.sql).toBe('select * from countries where region_id = ?');
     expect(r.bindings).toStrictEqual([2]);
 
     query.whereOp('country_id', '=', 'BE', 'or', true);
 
     r = query.toSql();
 
-    expect(r.sql).toBe('select * from countries where region_id = $1 or not country_id = $2');
+    expect(r.sql).toBe('select * from countries where region_id = ? or not country_id = ?');
     expect(r.bindings).toStrictEqual([2, 'BE']);
 
     query.select(['country_id', 'country_name']);
@@ -62,7 +62,7 @@ describe('raw queries', () => {
     r = query.toSql();
 
     expect(r.sql).toBe(
-      'select country_id, country_name from countries where region_id = $1 or not country_id = $2 and country_name is null'
+      'select country_id, country_name from countries where region_id = ? or not country_id = ? and country_name is null'
     );
   });
 
@@ -97,9 +97,9 @@ describe('raw queries', () => {
     expect(result1.length).toBe(19);
 
     query.whereOp('job_title', 'ilike', 'P%');
-
-    expect(query.toSql().sql).toBe('select * from jobs where job_title ilike $1');
-    expect(query.toSql().bindings).toStrictEqual(['P%']);
+    let sql = query.toSql();
+    expect(sql.sql).toBe('select * from jobs where job_title ilike ?');
+    expect(sql.bindings).toStrictEqual(['P%']);
 
     const result2 = await query.get();
     expect(result2.length).toBe(6);
@@ -107,7 +107,7 @@ describe('raw queries', () => {
 
     query.orderBy('job_title', 'desc');
     expect(query.toSql().sql).toBe(
-      'select * from jobs where job_title ilike $1 order by job_title desc'
+      'select * from jobs where job_title ilike ? order by job_title desc'
     );
 
     const result3 = await query.get();
@@ -121,7 +121,7 @@ describe('raw queries', () => {
     query.limit(3);
     query.offset(2);
     expect(query.toSql().sql).toBe(
-      'select * from jobs where job_title ilike $1 order by job_title desc limit 3 offset 2'
+      'select * from jobs where job_title ilike ? order by job_title desc limit 3 offset 2'
     );
 
     const result4 = await query.get();
@@ -161,7 +161,7 @@ describe('raw queries', () => {
     });
 
     expect(query.toSql().sql).toBe(
-      'select * from regions where region_id = $1 and (region_id = $2 or region_name ilike $3)'
+      'select * from regions where region_id = ? and (region_id = ? or region_name ilike ?)'
     );
     expect(query.toSql().bindings).toStrictEqual([1, 2, 'E%']);
 
@@ -184,9 +184,9 @@ describe('raw queries', () => {
         true
       );
     });
-    console.log(query2.toSql());
+
     expect(query2.toSql().sql).toBe(
-      'select * from regions where region_id = $1 and (region_id = $2 or region_name ilike $3 or not (region_id = $4 or region_name ilike $5))'
+      'select * from regions where region_id = ? and (region_id = ? or region_name ilike ? or not (region_id = ? or region_name ilike ?))'
     );
     expect(query2.toSql().bindings).toStrictEqual([1, 2, 'E%', 3, 'F%']);
   });
@@ -197,9 +197,37 @@ describe('raw queries', () => {
     query.whereOp('region_id', '=', 1);
     query.whereRaw('(meow = ? or region_name ilike ?)', [2, 'E%']);
 
-    expect(query.toSql().sql).toBe(
-      'select * from regions where region_id = $1 and (meow = $2 or region_name ilike $3)'
+    let sql = query.toSql();
+    expect(sql.sql).toBe(
+      'select * from regions where region_id = ? and (meow = ? or region_name ilike ?)'
     );
-    expect(query.toSql().bindings).toStrictEqual([1, 2, 'E%']);
+    expect(sql.bindings).toStrictEqual([1, 2, 'E%']);
+  });
+
+  test('innerJoin with subquery', async () => {
+    // Create a subquery to get employees from specific departments
+    const subquery = new Query(conn, new PostgresqlQueryGrammar());
+    subquery
+      .table('employees')
+      .select(['employee_id', 'department_id', 'salary'])
+      .whereOp('salary', '>', 5000)
+      .alias('emp_sub');
+
+    // Main query joins departments with the employee subquery
+    const query = new Query(conn, new PostgresqlQueryGrammar());
+    query
+      .table('departments')
+      .select(['departments.department_name', 'emp_sub.employee_id', 'emp_sub.salary'])
+      .whereOp('departments.location_id', '>', 1000)
+      .innerJoin(subquery, [
+        { column1: 'departments.department_id', column2: 'emp_sub.department_id' },
+      ]);
+
+    const expectedSql =
+      'select departments.department_name, emp_sub.employee_id, emp_sub.salary from departments inner join (select employee_id, department_id, salary from employees where salary > ?) as emp_sub on (departments.department_id = emp_sub.department_id) where departments.location_id > ?';
+
+    let sql = query.toSql();
+    expect(sql.sql).toBe(expectedSql);
+    expect(sql.bindings).toStrictEqual([5000, 1000]);
   });
 });
