@@ -19,6 +19,7 @@ scheduler()
     const d = db();
     const r = await d.runQuery({
       sql: "select * from users",
+      parts: [],
       bindings: [],
     });
     logger().info({ msg: "query result", data: r });
@@ -32,6 +33,7 @@ scheduler()
     const d = db();
     const r = await d.runQuery({
       sql: "select * from usersQWEQWE",
+      parts: [],
       bindings: [],
     });
   })

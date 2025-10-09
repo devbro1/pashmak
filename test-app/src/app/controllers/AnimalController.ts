@@ -20,6 +20,7 @@ export class AnimalController extends BaseController {
   async show() {
     const r = await db().runQuery({
       sql: "select * from animals",
+      parts: [],
       bindings: [],
     });
     return {

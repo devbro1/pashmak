@@ -18,7 +18,11 @@ import {
 export class CatController extends BaseController {
   @Get({ middlewares: [logResponseMiddleware] })
   async show() {
-    const r = await db().runQuery({ sql: "select * from cats", bindings: [] });
+    const r = await db().runQuery({
+      sql: "select * from cats",
+      parts: [],
+      bindings: [],
+    });
     return {
       message: "GET cats",
       data: r,
