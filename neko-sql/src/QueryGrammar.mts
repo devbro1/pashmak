@@ -12,6 +12,7 @@ import {
   joinType,
   whereNested,
 } from './types.mjs';
+// @ts-ignore - no type definitions available for sql-tokenizer
 import { sqlTokenizer } from 'sql-tokenizer';
 
 function toUpperFirst(str: string) {
