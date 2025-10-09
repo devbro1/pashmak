@@ -42,6 +42,7 @@ router.addRoute(
       await db.beginTransaction();
       await db.runQuery({
         sql: "insert into cats (name) values ($1)",
+        parts: [],
         bindings: [req?.query?.name as string],
       });
       await db.commit();
