@@ -33,6 +33,7 @@ export class MigrateCommand extends Command {
         // read all migrations and undo them all
         const existing_migrations = await db.runQuery({
           sql: "select * from migrations order by created_at DESC",
+          parts: [],
           bindings: [],
         });
 
@@ -52,6 +53,7 @@ export class MigrateCommand extends Command {
             // Remove the migration record from the migrations table
             await db.runQuery({
               sql: "delete from migrations where filename = $1",
+              parts: [],
               bindings: [migration_record.filename],
             });
           } catch (error) {
@@ -86,6 +88,7 @@ export class MigrateCommand extends Command {
         .sort();
       let batch_number = await db.runQuery({
         sql: "select max(batch) as next_batch from migrations",
+        parts: [],
         bindings: [],
       });
       batch_number = batch_number[0].next_batch || 0;
@@ -93,6 +96,7 @@ export class MigrateCommand extends Command {
 
       const migrations = await db.runQuery({
         sql: "select * from migrations order by created_at ASC",
+        parts: [],
         bindings: [],
       });
 
@@ -111,6 +115,7 @@ export class MigrateCommand extends Command {
         await c.up(db.getSchema());
         await db.runQuery({
           sql: "insert into migrations (filename, batch) values ($1,$2)",
+          parts: [],
           bindings: [class_to_migrate, batch_number],
         });
         migrated_count++;

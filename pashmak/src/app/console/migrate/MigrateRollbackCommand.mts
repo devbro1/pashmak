@@ -29,6 +29,7 @@ export class MigrateRollbackCommand extends Command {
 
       const migrations = await db.runQuery({
         sql: "select * from migrations order by created_at DESC limit $1",
+        parts: [],
         bindings: [this.steps],
       });
 
@@ -44,6 +45,7 @@ export class MigrateRollbackCommand extends Command {
         await c.down(db.getSchema());
         await db.runQuery({
           sql: "delete from migrations where id = $1",
+          parts: [],
           bindings: [migration.id],
         });
       }
