@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-helper",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "general methods and classes for different usecases",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

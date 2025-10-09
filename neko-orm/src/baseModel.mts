@@ -98,6 +98,7 @@ export class BaseModel {
       await q.update(params);
     } else if (this.incrementing) {
       result = await q.insertGetId(params, { primaryKey: this.primaryKey });
+      console.log(result);
       for (const key of this.primaryKey) {
         this[key] = result[0][key];
       }
