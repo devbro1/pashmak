@@ -370,11 +370,11 @@ export abstract class QueryGrammar {
 
   compileGroupBy(groupBy: string[]): CompiledSql {
     let rc = '';
-    let parts = [];
+    let parts: (string | number)[] = [];
     if (groupBy.length) {
       rc = 'group by ' + groupBy.join(', ');
       parts.push('group by');
-      parts.concat(groupBy);
+      parts = parts.concat(groupBy);
     }
 
     return { sql: rc, parts, bindings: [] };
@@ -395,7 +395,7 @@ export abstract class QueryGrammar {
       const funcName = 'compileHaving' + toUpperFirst(w.type);
       // @ts-ignore
       const wh = this[funcName](w);
-      parts.concat(wh.parts);
+      parts = parts.concat(wh.parts);
       sql += wh.sql;
       bindings = [...bindings, ...wh.bindings];
     }
