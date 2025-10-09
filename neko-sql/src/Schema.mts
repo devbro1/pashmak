@@ -15,7 +15,7 @@ export class Schema {
 
     const grammar = new SchemaGrammar();
     const sql = grammar.toSql(blueprint);
-    await this.connection?.runQuery({ sql, bindings: [] });
+    await this.connection?.runQuery({ sql, parts: [], bindings: [] });
   }
 
   async alterTable(tableName: string, structMethod: (blueprint: Blueprint) => void) {
@@ -25,7 +25,7 @@ export class Schema {
 
     const grammar = new SchemaGrammar();
     const sql = grammar.toSql(blueprint);
-    await this.connection?.runQuery({ sql, bindings: [] });
+    await this.connection?.runQuery({ sql, parts: [], bindings: [] });
   }
 
   async dropTable(tableName: string) {

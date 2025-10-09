@@ -35,7 +35,7 @@ export class PostgresqlConnection extends ConnectionAbs {
     // console.log('SQL:', sql);
     let counter = 1;
     let sql2 = sql.sql;
-    if (sql.parts) {
+    if (sql.parts && sql.parts.length > 0) {
       sql2 = sql.parts.map((v) => (v === '?' ? '$' + counter++ : v)).join(' ');
     }
 

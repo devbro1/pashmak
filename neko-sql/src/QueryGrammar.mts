@@ -271,8 +271,6 @@ export abstract class QueryGrammar {
     return { sql: rc, parts, bindings: [] };
   }
 
-  abstract getVariablePlaceholder(): string;
-
   compileWhereNull(w: whereNull): CompiledSql {
     return {
       sql: `${w.column} is null`,

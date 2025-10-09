@@ -30,7 +30,7 @@ export class SchemaGrammar {
     }
     sql += [columns, primaryKeys, ...foreignKeys].join(',') + ')';
 
-    const compiledSql = { sql, bindings: [] };
+    const compiledSql = { sql, parts: [], bindings: [] };
 
     // If there are indexes to create, we need to return multiple statements
     if (blueprint.indexes.length > 0) {
@@ -39,6 +39,7 @@ export class SchemaGrammar {
       });
       return {
         sql: [compiledSql.sql, ...indexSqls.map((idx) => idx.sql)].join('; '),
+        parts: [],
         bindings: compiledSql.bindings,
       };
     }
@@ -64,10 +65,10 @@ export class SchemaGrammar {
     // Handle case where only indexes are being added without column changes
     let compiledSql: CompiledSql;
     if (alterStatements.length > 0) {
-      compiledSql = { sql: sql.join(' '), bindings: [] };
+      compiledSql = { sql: sql.join(' '), parts: [], bindings: [] };
     } else {
       // No column changes, just need the base alter table statement for consistency
-      compiledSql = { sql: sql.join(' ') + ' ', bindings: [] };
+      compiledSql = { sql: sql.join(' ') + ' ', parts: [], bindings: [] };
     }
 
     // If there are indexes to create in alter table, add them as separate statements
@@ -77,6 +78,7 @@ export class SchemaGrammar {
       });
       return {
         sql: [compiledSql.sql, ...indexSqls.map((idx) => idx.sql)].join('; '),
+        parts: [],
         bindings: compiledSql.bindings,
       };
     }
@@ -177,6 +179,7 @@ export class SchemaGrammar {
         "where c.relkind in ('r', 'p') and n.oid = c.relnamespace and " +
         this.compileSchemaWhereClause(schema, 'n.nspname') +
         ' order by n.nspname, c.relname',
+      parts: [],
       bindings: [],
     };
   }
@@ -188,16 +191,21 @@ export class SchemaGrammar {
         'n.nspname = ' +
         (schema ? this.escape(schema) : 'current_schema()') +
         " and c.relname = $1 and c.relkind in ('r', 'p') and n.oid = c.relnamespace)",
+      parts: [],
       bindings: [tableName],
     };
   }
 
   compileDropTable(tableName: string): CompiledSql {
-    return { sql: `drop table ${this.doubleQuoteString(tableName)}`, bindings: [] };
+    return { sql: `drop table ${this.doubleQuoteString(tableName)}`, parts: [], bindings: [] };
   }
 
   compileDropTableIfExists(tableName: string): CompiledSql {
-    return { sql: `drop table if exists ${this.doubleQuoteString(tableName)}`, bindings: [] };
+    return {
+      sql: `drop table if exists ${this.doubleQuoteString(tableName)}`,
+      parts: [],
+      bindings: [],
+    };
   }
 
   protected compileSchemaWhereClause(
@@ -252,6 +260,6 @@ export class SchemaGrammar {
 
     const sql = `create ${uniqueKeyword}index ${indexName} on ${tableName}${indexType} (${index.columns.join(', ')})`;
 
-    return { sql, bindings: [] };
+    return { sql, parts: [], bindings: [] };
   }
 }
