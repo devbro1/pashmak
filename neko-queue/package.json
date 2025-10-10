@@ -29,7 +29,6 @@
   "license": "MIT",
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.600.0",
-    "@devbro/neko-sql": "0.1.*",
     "amqplib": "^0.10.3",
     "redis": "^4.6.8"
   },
