@@ -9,7 +9,13 @@ export class Expression {
   ) {}
 
   toCompiledSql(): CompiledSql {
-    const tokenize = sqlTokenizer(this.sql);
-    return { sql: this.sql, bindings: this.bindings, parts: tokenize(this.sql) };
+    let parts = [];
+    try {
+      const tokenize = sqlTokenizer();
+      parts = tokenize(this.sql);
+    } catch (error) {
+      console.error('Error tokenizing SQL:', error);
+    }
+    return { sql: this.sql, bindings: this.bindings, parts };
   }
 }

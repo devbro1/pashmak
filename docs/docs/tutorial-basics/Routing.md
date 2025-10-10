@@ -119,3 +119,9 @@ router().addRouter("/api/v1", authnedRouter);
 // or
 router().addRouter("", authnedRouter); // prefix can be empty string
 ```
+
+### Handling null/undefined in response
+
+When returning a json response, `undefined` is not considered a valid value.
+As a work around, all values of `undefined` will be converted to `null` during
+response.
