@@ -8,7 +8,7 @@ The `@devbro/neko-sql` package provides a powerful SQL query builder and schema 
 
 ## Features
 
-- **Query Builder**: Fluent API for building SQL queries
+- **Query Builder**: Flexible API for building SQL queries
 - **Schema Builder**: Create and modify database tables
 - **Migrations**: Database version control
 - **Transactions**: ACID-compliant transaction support
@@ -20,7 +20,7 @@ The `@devbro/neko-sql` package provides a powerful SQL query builder and schema 
 Here's a comprehensive example showing all possible query builder methods and their variations:
 
 ```typescript
-import { PostgresqlConnection } from "@devbro/neko-sql";
+import { db } from "@devbro/pashmak/facades";
 
 const connection = new PostgresqlConnection({
   /* config */
@@ -28,6 +28,8 @@ const connection = new PostgresqlConnection({
 await connection.connect();
 
 const query = connection.getQuery();
+// OR
+const query = await db().getQuery();
 
 // 🔷 TABLE SELECTION
 query.table("users"); // Set the table to query
@@ -50,7 +52,7 @@ query.whereOp("deleted", "=", true, "and", true); // NOT condition `not deleted 
 
 // WHERE NULL
 query.whereNull("deleted_at"); // IS NULL
-query.whereNull("deleted_at", "and", true); // IS NOT NULL
+query.whereNull("deleted_at", "and", true); // not deleted_at is null
 
 // WHERE COLUMN COMPARISON
 query.whereColumn("first_name", "=", "last_name"); // Compare columns
@@ -219,18 +221,13 @@ const complexResults = await query
 
 ### Creating a Connection
 
+Currently each request will open its own connection to database, you can then use db facade to gain access to this connection:
+
 ```typescript
-import { PostgresqlConnection } from "@devbro/neko-sql";
+import { db } from "@devbro/pashmak/facades";
 
-const connection = new PostgresqlConnection({
-  host: "localhost",
-  database: "mydb",
-  user: "postgres",
-  password: "password",
-  port: 5432,
-});
-
-await connection.connect();
+const connection = db();
+const q = connection.getQuery();
 ```
 
 ### Connection Methods
@@ -315,11 +312,21 @@ query.whereOp("status", "in", ["active", "pending"]);
 query.whereOp("name", "=", "John").whereOp("name", "=", "Jane", "or");
 ```
 
+If you have multiple operations, the merge type of first one is always ignored.
+
+```typescript
+// WHERE name = 'John' OR name = 'Jane'
+query
+  .whereOp("name", "=", "John", "XYZ")
+  .whereOp("name", "=", "Jane", "or")
+  .whereOp("name", "=", "Jack", "or"); // where name = 'John' or name = 'Jane' or name = 'Jack'
+```
+
 #### NOT Conditions
 
 ```typescript
 // WHERE NOT status = 'deleted'
-query.whereOp("status", "=", "deleted", "and", true);
+query.whereOp("status", "=", "deleted", "and", true); // and not status = `deleted`
 ```
 
 #### Where NULL
@@ -983,7 +990,7 @@ The query builder automatically uses parameterized queries to prevent SQL inject
 query.whereOp("email", "=", userInput);
 
 // ❌ Avoid raw SQL with user input
-query.whereRaw(`email = '${userInput}'`); // Dangerous!
+query.whereRaw(`email = '${userInput}'`); // Dangerous!, you are open to sql injection
 
 // ✅ If you must use raw SQL, use bindings
 query.whereRaw("email = ?", [userInput]);
