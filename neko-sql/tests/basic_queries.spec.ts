@@ -129,6 +129,12 @@ describe('raw queries', () => {
     expect(result4[0].job_id).toBe(12);
     expect(result4[1].job_id).toBe(1);
     expect(result4[2].job_id).toBe(9);
+
+    query.orderBy('min_salary', 'asc');
+    expect(query.toSql().sql).toBe(
+      'select * from jobs where job_title ilike ? order by job_title desc, min_salary asc limit 3 offset 2'
+    );
+    const result5 = await query.get();
   });
 
   test('select where in X::int', async () => {

@@ -14,6 +14,7 @@ import {
 } from './types.mjs';
 // @ts-ignore - no type definitions available for sql-tokenizer
 import { sqlTokenizer } from 'sql-tokenizer';
+import { intersperse } from '@devbro/neko-helper';
 
 function toUpperFirst(str: string) {
   return str.substring(0, 1).toUpperCase() + str.substring(1);
@@ -241,7 +242,7 @@ export abstract class QueryGrammar {
     if (orderBy.length) {
       rc = 'order by ' + orderBy.join(', ');
       parts.push('order by');
-      parts = parts.concat(orderBy);
+      parts = parts.concat(intersperse(orderBy, ','));
     }
 
     return { sql: rc, parts, bindings: [] };
