@@ -75,18 +75,18 @@ export class CatController extends BaseController {
 
 ### class decorators
 
-#### @Model(<ModelClass>, <param_name>, <model_field>)
+#### @Model( ModelClass , param_name , model_field )
 
 automatically fetches a model instance based on a route parameter and injects it into the controller method.
 
 `param_name` is optional and defaults to "id". it is the param name in the url.
 `model_field` is optional and defaults to "id". it is the field in the model to be matched against the param value.
 
-#### @Param(<param_name>)
+#### @Param( param_name )
 
 extracts a specific parameter from the request URL and injects it into the controller method. If param was not defined in url, it will be undefined.
 
-#### @ValidatedRequest(<validation_schema>)
+#### @ValidatedRequest( validation_schema )
 
 validates the incoming request data against a defined schema and injects the validated data into the controller.
 validation_schema can be a yup `yup.ObjectSchema` or a function that returns `yup.ObjectSchema`.
