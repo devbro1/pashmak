@@ -1,4 +1,4 @@
-import { Connection as ConnectionAbs } from '../../Connection.mjs';
+import { connection_events, Connection as ConnectionAbs } from '../../Connection.mjs';
 import { Connection, PoolClient, PoolConfig } from 'pg';
 import { Pool } from 'pg';
 import { CompiledSql } from '../../types.mjs';
@@ -7,8 +7,23 @@ import { PostgresqlQueryGrammar } from './PostgresqlQueryGrammar.mjs';
 import { Schema } from '../../Schema.mjs';
 import { PostgresqlSchemaGrammar } from './PostgresqlSchemaGrammar.mjs';
 import Cursor from 'pg-cursor';
+import { EventManager } from '@devbro/neko-helper';
 
 export class PostgresqlConnection extends ConnectionAbs {
+  private eventManager = new EventManager();
+
+  on(event: connection_events, listener: (...args: any[]) => void): this {
+    this.eventManager.on(event, listener);
+    return this;
+  }
+  off(event: connection_events, listener: (...args: any[]) => void): this {
+    this.eventManager.off(event, listener);
+    return this;
+  }
+  emit(event: connection_events, ...args: any[]): Promise<boolean> {
+    return this.eventManager.emit(event, ...args);
+  }
+
   connection: PoolClient | undefined;
   static pool: Pool;
 
@@ -28,16 +43,18 @@ export class PostgresqlConnection extends ConnectionAbs {
     }
   }
   async connect(): Promise<boolean> {
+    this.eventManager.emit('connect');
     this.connection = await PostgresqlConnection.pool.connect();
     return true;
   }
   async runQuery(sql: CompiledSql) {
-    // console.log('SQL:', sql);
     let counter = 1;
     let sql2 = sql.sql;
     if (sql.parts && sql.parts.length > 0) {
       sql2 = sql.parts.map((v) => (v === '?' ? '$' + counter++ : v)).join(' ');
     }
+
+    this.eventManager.emit('query', sql2, sql.bindings);
 
     const result = await this.connection?.query(sql2, sql.bindings);
     return result?.rows;
@@ -49,6 +66,7 @@ export class PostgresqlConnection extends ConnectionAbs {
 
   async disconnect(): Promise<boolean> {
     await this.connection?.release();
+    this.eventManager.emit('disconnect');
     return true;
   }
 
