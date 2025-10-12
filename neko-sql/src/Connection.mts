@@ -3,8 +3,14 @@ import { Query } from './Query.mjs';
 import { CompiledSql } from './types.mjs';
 import { QueryGrammar } from './QueryGrammar.mjs';
 import { SchemaGrammar } from './SchemaGrammar.mjs';
+import { EventEmittor } from '@devbro/neko-helper';
 
-export abstract class Connection {
+export type connection_events = 'connect' | 'disconnect' | 'query' | 'error';
+export abstract class Connection implements EventEmittor<connection_events[]> {
+  abstract on(event: connection_events, listener: (...args: any[]) => void): this;
+  abstract off(event: connection_events, listener: (...args: any[]) => void): this;
+  abstract emit(event: connection_events, ...args: any[]): Promise<boolean>;
+
   abstract connect(): Promise<boolean>;
   abstract runQuery(sql: CompiledSql): Promise<any>;
   abstract runCursor(sql: CompiledSql): Promise<any>;
