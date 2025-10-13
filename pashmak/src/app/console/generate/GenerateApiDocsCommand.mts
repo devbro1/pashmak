@@ -47,7 +47,7 @@ export class GenerateApiDocsCommand extends Command {
       // Add each HTTP method for this route
       for (const method of route.methods) {
         const lowerMethod = method.toLowerCase();
-        
+
         // Skip HEAD as it's usually auto-generated
         if (lowerMethod === "head") {
           continue;
@@ -99,11 +99,11 @@ export class GenerateApiDocsCommand extends Command {
     await fs.writeFile(
       outputPath,
       JSON.stringify(openApiSpec, null, 2),
-      "utf-8"
+      "utf-8",
     );
 
     this.context.stdout.write(
-      `OpenAPI documentation generated at: ${outputPath}\n`
+      `OpenAPI documentation generated at: ${outputPath}\n`,
     );
     this.context.stdout.write(`Total routes documented: ${routes.length}\n`);
   }
