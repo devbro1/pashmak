@@ -1,6 +1,6 @@
 {
   "name": "@devbro/pashmak",
-  "version": "0.1.33",
+  "version": "0.1.34",
   "description": "testing application for the entire repo",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -41,6 +41,11 @@
       "types": "./dist/config.d.ts",
       "import": "./dist/config.mjs",
       "require": "./dist/config.js"
+    },
+    "./cache": {
+      "types": "./dist/cache.d.ts",
+      "import": "./dist/cache.mjs",
+      "require": "./dist/cache.js"
     },
     "./sql": {
       "types": "./dist/sql.d.ts",
