@@ -68,9 +68,13 @@ export class ContextProvider {
   getStore(): Context {
     const rc = this._asyncLocalStorage.getStore();
     if (!rc) {
-      throw new Error('Context not started');
+      throw new Error('Context has not started');
     }
     return rc;
+  }
+
+  isActive(): boolean {
+    return this._asyncLocalStorage.getStore() !== undefined;
   }
 
   private preloader: Function = async (a: any) => await a();
@@ -90,6 +94,10 @@ export const context_provider = new ContextProvider();
 export function ctx() {
   return context_provider.getStore();
 }
+
+ctx.isActive = function (): boolean {
+  return context_provider.isActive();
+};
 
 /**
  * returns storage of current execution context, unlike ctx() will return undefined instead of throwing an error

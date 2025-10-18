@@ -45,4 +45,13 @@ test("context test", async () => {
 });
 ```
 
-If you ever get an error that context has not started it means you are trying to access context outside of a context provider run block. Just wrap your code in `context_provider.run(???)`
+If you ever get an error that `Context has not started` it means you are trying to access context outside of a context provider run block. Just wrap your code in `context_provider.run(async () => { /* YOUR CODE */ });`
+
+### detect context availability
+
+```ts
+// to detect if the code is running inside a context or not
+if (ctx.isActive()) {
+  ctx().get(KEY);
+}
+```
