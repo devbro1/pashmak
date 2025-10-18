@@ -1,4 +1,6 @@
+import { JSONValue } from '@devbro/neko-helper';
 import { CacheProviderInterface } from './CacheProviderInterface.mjs';
+import { createHash } from 'crypto';
 
 export type cacheOptions = {
   ttl?: number;
@@ -7,24 +9,24 @@ export type cacheOptions = {
 export class Cache {
   constructor(private provider: CacheProviderInterface) {}
 
-  async get<T>(key: string): Promise<T | undefined> {
-    return this.provider.get(key) as Promise<T | undefined>;
+  async get<T>(key: JSONValue): Promise<T | undefined> {
+    return this.provider.get(this.generateKey(key)) as Promise<T | undefined>;
   }
 
-  async put(key: string, value: any, ttl?: number): Promise<void> {
-    return this.provider.put(key, value, ttl);
+  async put(key: JSONValue, value: any, ttl?: number): Promise<void> {
+    return this.provider.put(this.generateKey(key), value, ttl);
   }
 
-  async delete(key: string): Promise<void> {
-    return this.provider.delete(key);
+  async delete(key: JSONValue): Promise<void> {
+    return this.provider.delete(this.generateKey(key));
   }
 
-  async has(key: string): Promise<boolean> {
-    return this.provider.has(key);
+  async has(key: JSONValue): Promise<boolean> {
+    return this.provider.has(this.generateKey(key));
   }
 
   async remember<T>(
-    key: string,
+    key: JSONValue,
     callback: () => Promise<T>,
     options: cacheOptions = {}
   ): Promise<T> {
@@ -38,5 +40,14 @@ export class Cache {
     const result = await callback();
     await this.put(key, result, options.ttl);
     return result;
+  }
+
+  /**
+   * Generates a cache key by serializing and concatenating the provided parts.
+   * @param parts
+   * @returns
+   */
+  generateKey(key: JSONValue): string {
+    return createHash('md5').update(JSON.stringify(key)).digest('hex');
   }
 }
