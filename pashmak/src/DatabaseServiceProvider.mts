@@ -6,7 +6,7 @@ import { Connection } from "@devbro/neko-sql";
 import { BaseModel } from "@devbro/neko-orm";
 import { ctx } from "@devbro/neko-context";
 import { config } from "@devbro/neko-config";
-import { Global } from "./global.mts";
+import { Global } from "./global.mjs";
 
 export class DatabaseServiceProvider extends Middleware {
   async call(
