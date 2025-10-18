@@ -26,21 +26,24 @@ export class DatabaseServiceProvider extends Middleware {
       }
       BaseModel.setConnection(async () => {
         const key = ["database", "default"];
-        let rc: Connection | undefined = ctx().get<Connection>(key);
+        let rc: Connection | undefined;
 
-        if (ctx().has(key)) {
+        try {
           rc = ctx().get<Connection>(key);
-        } else if (Global.has(key)) {
-          rc = Global.get<Connection>(key);
-        } else {
-          rc = await this.getConnection(db_configs["default"]);
-          try {
-            ctx().set(key, rc);
-          } catch {
-            // we are outside of context
+        } catch {
+          // context is not active
+          if (Global.has(key)) {
+            rc = Global.get<Connection>(key);
+          } else {
+            rc = await this.getConnection(db_configs["default"]);
             Global.set(key, rc);
           }
         }
+
+        if (!rc) {
+          throw new Error("unable to start default database connection");
+        }
+
         return rc!;
       });
       await next();
