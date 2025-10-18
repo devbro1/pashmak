@@ -1,6 +1,6 @@
 {
   "name": "@devbro/pashmak",
-  "version": "0.1.29",
+  "version": "0.1.30",
   "description": "testing application for the entire repo",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -56,6 +56,11 @@
       "types": "./dist/factories.d.ts",
       "import": "./dist/factories.mjs",
       "require": "./dist/factories.js"
+    },
+    "./global": {
+      "types": "./dist/global.d.ts",
+      "import": "./dist/global.mjs",
+      "require": "./dist/global.js"
     },
     "./helper": {
       "types": "./dist/helper.d.ts",

@@ -6,6 +6,7 @@ import { Connection } from "@devbro/neko-sql";
 import { BaseModel } from "@devbro/neko-orm";
 import { ctx } from "@devbro/neko-context";
 import { config } from "@devbro/neko-config";
+import { Global } from "./global.mts";
 
 export class DatabaseServiceProvider extends Middleware {
   async call(
@@ -23,9 +24,25 @@ export class DatabaseServiceProvider extends Middleware {
         ctx().set(["database", name], conn);
         conns.push(conn);
       }
-      BaseModel.setConnection(() =>
-        ctx().getOrThrow<Connection>(["database", "default"]),
-      );
+      BaseModel.setConnection(async () => {
+        const key = ["database", "default"];
+        let rc: Connection | undefined = ctx().get<Connection>(key);
+
+        if (ctx().has(key)) {
+          rc = ctx().get<Connection>(key);
+        } else if (Global.has(key)) {
+          rc = Global.get<Connection>(key);
+        } else {
+          rc = await this.getConnection(db_configs["default"]);
+          try {
+            ctx().set(key, rc);
+          } catch {
+            // we are outside of context
+            Global.set(key, rc);
+          }
+        }
+        return rc!;
+      });
       await next();
     } finally {
       for (const conn of conns) {

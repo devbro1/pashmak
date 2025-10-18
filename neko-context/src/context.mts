@@ -31,12 +31,12 @@ export class Context {
     return rc;
   }
 
-  has(key: string) {
-    return key in this._context;
+  has(key: string | string[]): boolean {
+    return this.generateContextKey(key) in this._context;
   }
 
-  delete(key: string) {
-    delete this._context[key];
+  delete(key: string | string[]) {
+    delete this._context[this.generateContextKey(key)];
   }
 
   keys() {
