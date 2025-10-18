@@ -3,6 +3,7 @@ export * from "@devbro/neko-cache";
 import { Query } from "@devbro/neko-sql";
 import { cache } from "./facades.mjs";
 import * as crypto from "crypto";
+import { JSONValue } from "@devbro/neko-helper";
 
 export type CacheQueryOptions = {
   ttl?: number;
@@ -18,20 +19,9 @@ export async function cacheQuery(
   options.cache_label = options.cache_label ?? "default";
   const sql = q.toSql();
 
-  const key =
-    "sql_cache:" +
-    crypto
-      .createHash("md5")
-      .update(`${sql.sql}:${sql.bindings.join(",")}`)
-      .digest("hex");
-  const cachedResult = (await cache(options.cache_label).get(key)) as
-    | string
-    | undefined;
-  if (cachedResult) {
-    return JSON.parse(cachedResult);
-  }
-
-  const rc = await q.get();
-  await cache(options.cache_label).put(key, JSON.stringify(rc), options.ttl);
-  return rc;
+  return await cache(options.cache_label).remember(
+    sql as JSONValue,
+    async () => await q.get(),
+    options,
+  );
 }

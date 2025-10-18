@@ -4615,6 +4615,11 @@
     "@aws-sdk/client-ses" "^3.731.1"
     "@types/node" "*"
 
+"@types/number-to-words@^1.2.3":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@types/number-to-words/-/number-to-words-1.2.3.tgz#8011d16242a3e7b193a0622041be98445548338d"
+  integrity sha512-ruSA/QZ6JQofoEEN2zKmN9oihZmrCBgcw0zEzN0UA9Mw0pU5remTddZmrbHjsa99qz12Uxl82x+XkVpHu87oXw==
+
 "@types/pg-cursor@^2.7.2":
   version "2.7.2"
   resolved "https://registry.yarnpkg.com/@types/pg-cursor/-/pg-cursor-2.7.2.tgz#0b1f80685a48940d48c742c48c10f9a923290e76"
@@ -10261,6 +10266,11 @@ null-loader@^4.0.1:
   dependencies:
     loader-utils "^2.0.0"
     schema-utils "^3.0.0"
+
+number-to-words@^1.2.4:
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/number-to-words/-/number-to-words-1.2.4.tgz#e0f124de9628f8d86c4eeb89bac6c07699264501"
+  integrity sha512-/fYevVkXRcyBiZDg6yzZbm0RuaD6i0qRfn8yr+6D0KgBMOndFPxuW10qCHpzs50nN8qKuv78k8MuotZhcVX6Pw==
 
 nypm@^0.6.0:
   version "0.6.2"
