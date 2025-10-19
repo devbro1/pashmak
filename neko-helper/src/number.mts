@@ -1,4 +1,4 @@
-import { toWords, toWordsOrdinal } from 'number-to-words';
+import numberToWords from 'number-to-words';
 
 /**
  * Abbreviates large numbers with appropriate suffixes (K, M, B, T, etc.).
@@ -267,7 +267,7 @@ export function parse(str: string | number | undefined): number | undefined {
  * ```
  */
 export function spell(num: number): string {
-  return toWords(Math.floor(num));
+  return numberToWords.toWords(Math.floor(num));
 }
 
 /**
@@ -289,5 +289,5 @@ export function spell(num: number): string {
  * ```
  */
 export function spellOrdinal(num: number): string {
-  return toWordsOrdinal(Math.floor(Math.abs(num)));
+  return numberToWords.toWordsOrdinal(Math.floor(Math.abs(num)));
 }
