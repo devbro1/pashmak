@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Arr } from '../src/index.js';
+import { Arr } from '@/index';
 
 describe('Array Utilities', () => {
   describe('intersperse', () => {

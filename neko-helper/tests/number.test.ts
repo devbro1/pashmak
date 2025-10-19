@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Num } from '../src/index.js';
+import { Num } from '@/index';
 
 describe('Number Utilities', () => {
   describe('abbreviate', () => {
