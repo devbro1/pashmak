@@ -1,7 +1,7 @@
 import { Query } from '../../Query.mjs';
 import { QueryGrammar } from '../../QueryGrammar.mjs';
 import { CompiledSql, Parameter } from '../../types.mjs';
-import { intersperse } from '@devbro/neko-helper';
+import { Arr } from '@devbro/neko-helper';
 export class PostgresqlQueryGrammar extends QueryGrammar {
   constructor() {
     super();
@@ -22,7 +22,7 @@ export class PostgresqlQueryGrammar extends QueryGrammar {
   ): CompiledSql {
     const rc = super.compileInsert(query, data);
     rc.sql += ` RETURNING ${options.primaryKey.join(', ')}`;
-    rc.parts = rc.parts.concat(['RETURNING', ...intersperse(options.primaryKey, ',')]);
+    rc.parts = rc.parts.concat(['RETURNING', ...Arr.intersperse(options.primaryKey, ',')]);
     return rc;
   }
 
