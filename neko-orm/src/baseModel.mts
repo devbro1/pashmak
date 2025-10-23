@@ -32,6 +32,7 @@ export class BaseModel {
   declare _fillable: string[];
   declare _primary_keys: string[];
   declare _default_values: Record<string, any>;
+  declare _dirties: Set<string>;
 
   constructor(initialData: any = {}) {
     this.tableName = pluralize(snakeCase(this.constructor.name));
@@ -44,6 +45,7 @@ export class BaseModel {
     this._guarded = this._guarded || [];
     this._incrementing_primary_keys = this._incrementing_primary_keys ?? true;
     this._default_values = this._default_values || {};
+    this._dirties = new Set<string>();
 
     this.scopes = this.scopes || [];
     this._attributes = { ...this._default_values };
@@ -118,6 +120,7 @@ export class BaseModel {
 
     this.exists = true;
 
+    this._dirties.clear();
     await this.refresh();
   }
 
@@ -319,5 +322,22 @@ export class BaseModel {
     let rc = new this(initialData);
     await rc.save();
     return rc as T;
+  }
+
+  /**
+   * Checks if the model or specific attribute(s) have been modified since the last save.
+   *
+   * @param attribute - Optional. A single attribute name, an array of attribute names, or undefined to check all attributes
+   * @returns True if the specified attribute(s) have been modified, false otherwise.
+   *          When called without parameters, returns true if any attribute has been modified.
+   */
+  isDirty(attribute: string | string[] | undefined = undefined): boolean {
+    if (Array.isArray(attribute)) {
+      return attribute.some((attr) => this._dirties.has(attr));
+    }
+    if (attribute) {
+      return this._dirties.has(attribute);
+    }
+    return this._dirties.size > 0;
   }
 }

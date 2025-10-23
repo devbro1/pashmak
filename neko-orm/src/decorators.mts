@@ -29,17 +29,13 @@ export function Attribute(options: AttributeOptions = {}) {
 
     Object.defineProperty(target, propertyKey, {
       get: function () {
-        if (options.getter) {
-          return options.getter(this, this._attributes[propertyKey]);
-        }
-        return this._attributes[propertyKey];
+        return options.getter
+          ? options.getter(this, this._attributes[propertyKey])
+          : this._attributes[propertyKey];
       },
       set(value: any) {
-        if (options.setter) {
-          this._attributes[propertyKey] = options.setter(this, value);
-          return;
-        }
-        this._attributes[propertyKey] = value;
+        this._dirties.add(propertyKey);
+        this._attributes[propertyKey] = options.setter ? options.setter(this, value) : value;
       },
       configurable: true,
       enumerable: true,
