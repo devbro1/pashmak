@@ -54,7 +54,7 @@ export class PostgresqlConnection extends ConnectionAbs {
       sql2 = sql.parts.map((v) => (v === '?' ? '$' + counter++ : v)).join(' ');
     }
 
-    this.eventManager.emit('query', sql2, sql.bindings);
+    this.eventManager.emit('query', { sql: sql2, bindings: sql.bindings });
 
     const result = await this.connection?.query(sql2, sql.bindings);
     return result?.rows;
@@ -109,5 +109,9 @@ export class PostgresqlConnection extends ConnectionAbs {
   static async destroy(): Promise<void> {
     PostgresqlConnection.pool.end();
     return;
+  }
+
+  isConnected(): boolean {
+    return this.connection !== undefined;
   }
 }

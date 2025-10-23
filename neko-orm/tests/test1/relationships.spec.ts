@@ -1,16 +1,17 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, beforeAll, afterAll } from 'vitest';
 import { PostgresqlConnection, Connection } from '@devbro/neko-sql';
 import { execSync } from 'child_process';
 import { User, Profile, Post, Comment, Image, Tag, Viewer } from '../fixtures/models_blog';
 import { BaseModel } from '../../src';
 import { faker } from '@faker-js/faker';
+import { sleep } from '@devbro/neko-helper';
 
 describe('relationships', () => {
   let conn: Connection;
-
+  let db_config: any;
   beforeAll(async () => {
     const randName = Math.random().toString(36).substring(7);
-    const db_config = {
+    db_config = {
       host: process.env.DB_HOST,
       database: (process.env.DB_NAME || 'test_db') + `_${randName}`,
       user: process.env.DB_USER,
@@ -25,6 +26,7 @@ describe('relationships', () => {
     );
     conn = new PostgresqlConnection(db_config);
     await conn.connect();
+    // conn.on('query',(...args) => console.log('final query', args));
     BaseModel.setConnection(() => conn);
 
     console.log('Connected to PostgreSQL database:', db_config.database);
@@ -32,6 +34,10 @@ describe('relationships', () => {
 
   afterAll(async () => {
     await conn?.disconnect();
+    await sleep(1500);
+    execSync(
+      `PGPASSWORD=${db_config.password} psql --host ${db_config.host} --user ${db_config.user} --port ${db_config.port} postgres -c "DROP DATABASE ${db_config.database} with (force)"`
+    );
   });
 
   test('user and profile 1to1', async () => {

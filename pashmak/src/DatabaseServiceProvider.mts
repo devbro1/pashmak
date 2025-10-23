@@ -58,10 +58,10 @@ export class DatabaseServiceProvider extends Middleware {
     return DatabaseServiceProvider.instance;
   }
 
-  async getConnection(db_config: PoolConfig): Promise<PostgresqlConnection> {
+  getConnection(db_config: PoolConfig): Connection {
     const conn = new PostgresqlConnection(db_config);
-    if (!(await conn.connect())) {
-      throw new Error("Failed to connect to the database");
+    if (!conn.isConnected()) {
+      conn.connect();
     }
     return conn;
   }

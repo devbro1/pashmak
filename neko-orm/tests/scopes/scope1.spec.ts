@@ -75,13 +75,13 @@ describe('global scopes queries', () => {
     }
 
     class Region2 extends GlobalScope {
-      public async apply(query: Query): Promise<Query> {
+      public apply(query: Query): Query {
         return query.whereOp('region_id', '=', 2);
       }
     }
 
     class HasIinName extends GlobalScope {
-      public async apply(query: Query): Promise<Query> {
+      public apply(query: Query): Query {
         return query.whereOp('country_name', 'ILIKE', '%I%');
       }
     }

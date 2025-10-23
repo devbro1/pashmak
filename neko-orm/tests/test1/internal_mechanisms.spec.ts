@@ -27,6 +27,7 @@ describe('raw queries', () => {
     expect(conn.sqls[1].sql).toBe(
       'insert into external_links ( age , updated_at , created_at ) values ( ? , ? , ? ) RETURNING id'
     );
+
     expect(conn.sqls[1].bindings[0]).toEqual(20);
     expect(el.age).toBe(444);
   });

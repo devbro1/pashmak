@@ -68,7 +68,7 @@ export class RelationshipManagerMtoM<
   }
   async getBaseQuery(): Promise<Query> {
     let target = new this.targetModel();
-    let q: Query = await this.sourceObject.getQuery();
+    let q: Query = await (this.sourceObject.constructor as typeof BaseModel).getQuery();
     q.select([`${target.getTablename()}.*`]);
 
     q.innerJoin(

@@ -15,32 +15,38 @@ export class BaseModel {
   protected tableName: string = '';
   protected fillable: string[] = [];
   protected primaryKey: string[] = ['id'];
-  protected incrementing: boolean = true;
+  declare _incrementing_primary_keys: boolean;
   public id: number | undefined = undefined;
-  static connection: Connection | (() => Connection) | (() => Promise<Connection>) | undefined;
-  protected exists: boolean = false;
-  protected guarded: string[] = [];
+  static connection: Connection | (() => Connection) | undefined;
+  protected _exists: boolean = false;
+  declare _guarded: string[];
   protected hasTimestamps = true;
   protected timestampFormat = 'yyyy-MM-dd HH:mm:ss.SSS';
   protected createdAtFieldName = 'created_at';
   protected updatedAtFieldName = 'updated_at';
-  protected casters: Record<string, Function> = {};
-  protected mutators: Record<string, Function> = {};
+  declare _casters: Record<string, Function>;
+  declare _mutators: Record<string, Function>;
   declare scopes: (typeof GlobalScope)[]; // list of global scope classes that will be applied
   public localScope: LocalScopeQuery<BaseModel> | undefined;
+  declare _attributes: Record<string, any>;
+  declare _fillable: string[];
+  declare _primary_keys: string[];
+  declare _default_values: Record<string, any>;
 
   constructor(initialData: any = {}) {
-    this.id = undefined;
     this.tableName = pluralize(snakeCase(this.constructor.name));
-    this.fillable = this.constructor.prototype.fillable ?? [];
-    this.primaryKey = this.constructor.prototype.primaryKey ?? ['id'];
-    this.incrementing = this.constructor.prototype.incrementing ?? true;
-    this.casters = this.constructor.prototype.casters ?? {};
-    this.mutators = this.constructor.prototype.mutators ?? {};
 
-    Object.entries(this.default_values || {}).map(([key, value]) => {
-      this[key] = value;
-    });
+    this._attributes = this._attributes || {};
+    this._fillable = this._fillable || [];
+    this._primary_keys = this._primary_keys || ['id'];
+    this._casters = this._casters || {};
+    this._mutators = this._mutators || {};
+    this._guarded = this._guarded || [];
+    this._incrementing_primary_keys = this._incrementing_primary_keys ?? true;
+    this._default_values = this._default_values || {};
+
+    this.scopes = this.scopes || [];
+    this._attributes = { ...this._default_values };
     this.fill(initialData);
   }
 
@@ -64,15 +70,17 @@ export class BaseModel {
     const q: Query = await this.getQuery();
     const params: Record<string, Parameter> = {};
 
-    if (!this.incrementing || this.exists) {
-      for (const key of this.primaryKey) {
+    if (!this._incrementing_primary_keys || this.exists) {
+      for (const key of this._primary_keys) {
         // @ts-ignore
         params[key] = this[key];
       }
     }
 
-    for (const key of this.fillable) {
-      params[key] = this[key];
+    for (const key of this._fillable) {
+      if (!this._primary_keys.includes(key)) {
+        params[key] = this[key];
+      }
     }
 
     // adjust timestamps
@@ -84,25 +92,25 @@ export class BaseModel {
     }
 
     for (const key of Object.keys(params)) {
-      if (this.casters[key]) {
-        params[key] = await this.casters[key](params[key]);
+      if (this._casters[key]) {
+        params[key] = await this._casters[key](params[key]);
       }
     }
 
     let result;
     if (this.exists) {
-      for (const pkey of this.primaryKey) {
+      for (const pkey of this._primary_keys) {
         // @ts-ignore
         q.whereOp(pkey, '=', this[pkey]);
       }
       await q.update(params);
-    } else if (this.incrementing) {
-      result = await q.insertGetId(params, { primaryKey: this.primaryKey });
-      for (const key of this.primaryKey) {
+    } else if (this._incrementing_primary_keys) {
+      result = await q.insertGetId(params, { primaryKey: this._primary_keys });
+      for (const key of this._primary_keys) {
         this[key] = result[0][key];
       }
     } else {
-      for (const key of this.primaryKey) {
+      for (const key of this._primary_keys) {
         params[key] = this[key];
       }
       result = await q.insert(params);
@@ -115,7 +123,7 @@ export class BaseModel {
 
   public async delete() {
     const q: Query = await this.getQuery();
-    for (const pkey of this.primaryKey) {
+    for (const pkey of this._primary_keys) {
       // @ts-ignore
       q.whereOp(pkey, '=', this[pkey]);
     }
@@ -125,7 +133,7 @@ export class BaseModel {
 
   public async refresh() {
     const q: Query = await this.getQuery();
-    for (const pkey of this.primaryKey) {
+    for (const pkey of this._primary_keys) {
       // @ts-ignore
       q.whereOp(pkey, '=', this[pkey]);
     }
@@ -147,8 +155,8 @@ export class BaseModel {
         this[k] = undefined;
       }
 
-      if (this.mutators[k]) {
-        this[k] = await this.mutators[k](this[k]);
+      if (this._mutators[k]) {
+        this[k] = await this._mutators[k](this[k]);
       }
     }
   }
@@ -165,7 +173,7 @@ export class BaseModel {
     options = { withGlobalScopes: true }
   ): Promise<T | undefined> {
     let self = new this();
-    let q: Query = await self.getQuery(options);
+    let q: Query = await (self.constructor as typeof BaseModel).getQuery(options);
 
     for (const [key, value] of Object.entries(conditions)) {
       q.whereOp(key, '=', value);
@@ -198,10 +206,10 @@ export class BaseModel {
     options = { withGlobalScopes: true }
   ): Promise<any> {
     let self = new this();
-    let q: Query = await self.getQuery(options);
+    let q: Query = await (self.constructor as typeof BaseModel).getQuery(options);
 
-    q.select([...self.primaryKey, ...self.fillable]);
-    for (const key of self.primaryKey) {
+    q.select([...self._primary_keys, ...self._fillable]);
+    for (const key of self._primary_keys) {
       q.whereOp(key, '=', keys[key]);
     }
     q.limit(1);
@@ -217,43 +225,47 @@ export class BaseModel {
     return self;
   }
 
-  public static setConnection(conn: Connection | (() => Connection) | (() => Promise<Connection>)) {
+  public static setConnection(conn: Connection | (() => Connection)) {
     BaseModel.connection = conn;
   }
 
-  public static async getConnection(): Promise<Connection> {
+  public static getConnection(): Connection {
     if (typeof BaseModel.connection === 'undefined') {
       throw new Error('Connection is not defined');
     } else if (typeof BaseModel.connection === 'function') {
-      return await BaseModel.connection();
+      return BaseModel.connection();
     }
     return BaseModel.connection;
   }
 
-  public async getQuery(options = { withGlobalScopes: true }): Promise<Query> {
-    const conn = await BaseModel.getConnection();
-    let rc = conn.getQuery();
-    rc.table(this.tableName);
+  // public getQuery(options = { withGlobalScopes: true }): Query {
+  //   const conn = BaseModel.getConnection();
+  //   let rc = conn.getQuery();
+  //   rc.table(this.tableName);
 
-    if (this.scopes && options.withGlobalScopes === true) {
-      for (const Scope of this.scopes) {
-        const scope = new Scope();
-        rc = await scope.apply(rc, this);
-      }
-    }
+  //   if (this.scopes && options.withGlobalScopes === true) {
+  //     for (const Scope of this.scopes) {
+  //       const scope = new Scope();
+  //       rc = scope.apply(rc, this);
+  //     }
+  //   }
 
-    return rc;
+  //   return rc;
+  // }
+
+  public getQuery(): ReturnType<typeof BaseModel.getQuery> {
+    return (this.constructor as typeof BaseModel).getQuery();
   }
 
-  public static async getQuery(
+  public static getQuery(
     options: { withGlobalScopes: boolean } = { withGlobalScopes: true }
-  ): Promise<ReturnType<typeof this.prototype.getLocalScopesQuery>> {
+  ): ReturnType<typeof this.prototype.getLocalScopesQuery> {
     const opts = { ...options, withGlobalScopes: true };
     let QueryClass = Query;
     if (typeof this.getLocalScopesQuery === 'function') {
       QueryClass = this.getLocalScopesQuery();
     }
-    const conn = await this.getConnection();
+    const conn = this.getConnection();
     let rc = new QueryClass(conn, conn.getQueryGrammar());
     const self = new this();
 
@@ -262,14 +274,14 @@ export class BaseModel {
     if (options.withGlobalScopes === true && self.scopes) {
       for (const Scope of self.scopes) {
         const scope = new Scope();
-        rc = await scope.apply(rc, self);
+        rc = scope.apply(rc, self);
       }
     }
     return rc;
   }
 
   public fill(data: Record<string, Parameter>) {
-    for (const key of [...this.primaryKey, ...this.fillable]) {
+    for (const key of [...this._primary_keys, ...this._fillable]) {
       if (key in data) {
         // @ts-ignore
         this[key] = data[key];
@@ -279,8 +291,8 @@ export class BaseModel {
 
   public toJson() {
     const data: Record<string, Parameter> = {};
-    for (const key of [...this.primaryKey, ...this.fillable]) {
-      if (this.guarded.includes(key)) {
+    for (const key of [...this._primary_keys, ...this._fillable]) {
+      if (this._guarded.includes(key)) {
         continue;
       }
 

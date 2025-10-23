@@ -1,4 +1,4 @@
-import { Connection } from '@devbro/neko-sql';
+import { Connection, connection_events } from '@devbro/neko-sql';
 import { Schema } from '@devbro/neko-sql';
 import { CompiledSql } from '@devbro/neko-sql';
 import { SchemaGrammar } from '@devbro/neko-sql';
@@ -7,7 +7,20 @@ import { PostgresqlQueryGrammar } from '@devbro/neko-sql';
 import { PostgresqlSchemaGrammar, QueryGrammar } from '@devbro/neko-sql';
 
 class FakeConnection extends Connection {
-  last_sql: CompiledSql = { sql: '', bindings: [] };
+  on(event: connection_events, listener: (...args: any[]) => void): this {
+    return this;
+  }
+  off(event: connection_events, listener: (...args: any[]) => void): this {
+    return this;
+  }
+  emit(event: connection_events, ...args: any[]): Promise<boolean> {
+    return Promise.resolve(true);
+  }
+  isConnected(): boolean {
+    return true;
+  }
+
+  last_sql: CompiledSql = { sql: '', bindings: [], parts: [] };
   public sqls: CompiledSql[] = [];
   public results: any[] = [];
 
@@ -21,7 +34,6 @@ class FakeConnection extends Connection {
 
   async runQuery(sql2: CompiledSql): Promise<any> {
     this.last_sql = sql2;
-    console.log('SQL:', this.last_sql.sql, 'Bindings:', this.last_sql.bindings);
     this.sqls.push(this.last_sql);
     return Promise.resolve(this.results.shift() ?? []);
   }
@@ -55,11 +67,11 @@ class FakeConnection extends Connection {
   }
 
   getQueryGrammar(): QueryGrammar {
-    throw new Error('Function not implemented.');
+    return new PostgresqlQueryGrammar();
   }
 
   getSchemaGrammar(): SchemaGrammar {
-    throw new Error('Function not implemented.');
+    return new PostgresqlSchemaGrammar();
   }
 }
 
