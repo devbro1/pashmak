@@ -6,24 +6,225 @@ sidebar_position: 4
 
 Set of useful helper functions.
 
-## Encryption Helpers
+## Encryption and Hashing Helpers
+
+All encryption, hashing, and cryptographic utilities are available under the `Enc` namespace:
+
+```ts
+import { Enc } from "@devbro/neko-helper";
+
+// Usage examples
+const hash = Enc.hash.sha256('hello world');
+const encrypted = await Enc.password.encryptPassword('myPassword');
+const token = Enc.jwt.sign({ userId: 123 }, 'secret');
+```
+
+### Hash Functions (Enc.hash)
+
+The `Enc.hash` namespace provides common cryptographic hashing algorithms.
+
+#### Enc.hash.md5(data: string): string
+
+Generates an MD5 hash of the input string.
+
+```ts
+Enc.hash.md5('hello world');
+// Returns: '5eb63bbbe01eeed093cb22bb8f5acdc3'
+```
+
+#### Enc.hash.sha1(data: string): string
+
+Generates a SHA-1 hash of the input string.
+
+```ts
+Enc.hash.sha1('hello world');
+// Returns: '2aae6c35c94fcfb415dbe95f408b9ce91ee846ed'
+```
+
+#### Enc.hash.sha256(data: string): string
+
+Generates a SHA-256 hash of the input string.
+
+```ts
+Enc.hash.sha256('hello world');
+// Returns: 'b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9'
+```
+
+#### Enc.hash.sha512(data: string): string
+
+Generates a SHA-512 hash of the input string.
+
+```ts
+Enc.hash.sha512('hello world');
+// Returns: '309ecc489c12d6eb4cc40f50c902f2b4d0ed77ee511a7c7a9bcd3ca86d4cd86f...'
+```
+
+#### Enc.hash.sha3_256(data: string): string
+
+Generates a SHA3-256 hash of the input string.
+
+```ts
+Enc.hash.sha3_256('hello world');
+// Returns: '644bcc7e564373040999aac89e7622f3ca71fba1d972fd94a31c3bfbf24e3938'
+```
+
+#### Enc.hash.sha3_512(data: string): string
+
+Generates a SHA3-512 hash of the input string.
+
+```ts
+Enc.hash.sha3_512('hello world');
+// Returns: '840006653e9ac9e95117a15c915caab81662918e925de9e004f774ff82d7079a...'
+```
+
+### Password Management (Enc.password)
+
+The `Enc.password` namespace provides bcrypt-based password hashing utilities.
+
+#### Enc.password.isBcryptHash(str: string): boolean
+
+Checks if a string is a valid bcrypt hash. Supports $2a, $2b, and $2y versions.
+
+```ts
+Enc.password.isBcryptHash('$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
+// Returns: true
+
+Enc.password.isBcryptHash('not a hash');
+// Returns: false
+```
+
+#### Enc.password.encryptPassword(password: string, rounds?: number): Promise`<string>`
+
+Encrypts a password using bcrypt. Default rounds is 10.
+
+```ts
+const hash = await Enc.password.encryptPassword('mySecurePassword');
+// Returns: '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy'
+
+// With custom rounds
+const hash = await Enc.password.encryptPassword('myPassword', 12);
+```
+
+#### Enc.password.comparePassword(password: string, hash: string): Promise`<boolean>`
+
+Compares a plain text password with a bcrypt hash.
+
+```ts
+const isMatch = await Enc.password.comparePassword('myPassword', hash);
+// Returns: true or false
+```
+
+### Key Generation (Enc.keys)
+
+The `Enc.keys` namespace provides cryptographic key pair generation.
+
+#### Enc.keys.rsa(modulusLength?: number): { publicKey: string; privateKey: string }
+
+Generates an RSA key pair. Default modulus length is 2048 bits.
+
+```ts
+const { publicKey, privateKey } = Enc.keys.rsa();
+// Returns PEM-formatted keys
+
+// With custom modulus length
+const keys = Enc.keys.rsa(4096);
+```
+
+#### Enc.keys.ed25519(): Promise`<{ publicKey: string; privateKey: string }>`
+
+Generates an Ed25519 key pair for modern cryptography.
+
+```ts
+const { publicKey, privateKey } = await Enc.keys.ed25519();
+// Returns hex-encoded keys (64 characters each)
+```
+
+### JWT Operations (Enc.jwt)
+
+The `Enc.jwt` namespace provides JSON Web Token utilities.
+
+#### Enc.jwt.sign(payload: string | object | Buffer, secret: string, options?: SignOptions): string
+
+Signs a JWT with the provided payload and secret.
+
+```ts
+const token = Enc.jwt.sign({ userId: 123, name: 'John' }, 'mySecret');
+// Returns: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+
+// With expiration
+const token = Enc.jwt.sign({ userId: 123 }, 'secret', { expiresIn: '1h' });
+
+// With algorithm
+const token = Enc.jwt.sign({ data: 'test' }, 'secret', { algorithm: 'HS256' });
+```
+
+#### Enc.jwt.verify(token: string, secret: string, options?: VerifyOptions): string | JwtPayload
+
+Verifies a JWT token and returns the decoded payload. Throws an error if verification fails.
+
+```ts
+try {
+  const payload = Enc.jwt.verify(token, 'mySecret');
+  console.log(payload); // { userId: 123, iat: 1234567890, exp: 1234571490 }
+} catch (err) {
+  console.error('Invalid token');
+}
+```
+
+#### Enc.jwt.decode(token: string, options?: DecodeOptions): null | string | JwtPayload
+
+Decodes a JWT token without verifying its signature.
+
+```ts
+const payload = Enc.jwt.decode(token);
+// Returns decoded payload or null if invalid
+```
+
+### Digital Signatures (Enc.sign)
+
+The `Enc.sign` namespace provides Ed25519 signature operations.
+
+#### Enc.sign.ed25519(privateKey: string, data: string): Promise`<string>`
+
+Signs data using an Ed25519 private key.
+
+```ts
+const { privateKey } = await Enc.keys.ed25519();
+const signature = await Enc.sign.ed25519(privateKey, 'message to sign');
+// Returns: hex-encoded signature (128 characters)
+```
+
+#### Enc.sign.verifyEd25519(publicKey: string, signature: string, data: string): Promise`<boolean>`
+
+Verifies an Ed25519 signature.
+
+```ts
+const { publicKey, privateKey } = await Enc.keys.ed25519();
+const signature = await Enc.sign.ed25519(privateKey, 'message');
+const isValid = await Enc.sign.verifyEd25519(publicKey, signature, 'message');
+// Returns: true or false
+```
+
+### Legacy Functions
+
+For backward compatibility, these functions are still available at the root level:
 
 #### getEnv(key: string, defaultValue?: any): any
 
 Get environment variable value by key. If not found, return defaultValue.
-if defaultValue is not provided, throw an error
+If defaultValue is not provided, throw an error.
 
 #### isBcryptHash(str: string): boolean
 
-Check if a string is a valid bcrypt hash.
+Check if a string is a valid bcrypt hash. **Deprecated: Use `Enc.password.isBcryptHash()` instead.**
 
 #### encryptPassword(password: string): Promise`<string>`
 
-Encrypt a password using bcrypt.
+Encrypt a password using bcrypt. **Deprecated: Use `Enc.password.encryptPassword()` instead.**
 
 #### compareBcrypt(password: string, hash: string): Promise`<boolean>`
 
-Compare a password with a bcrypt hash.
+Compare a password with a bcrypt hash. **Deprecated: Use `Enc.password.comparePassword()` instead.**
 
 ## Time Helpers
 
