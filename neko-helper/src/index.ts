@@ -6,6 +6,7 @@ export * from './FlexibleFactory.mjs';
 export * from './types.mjs';
 export * as Arr from './array.mjs';
 export * as Num from './number.mjs';
+export * as Enc from './enc.mjs';
 
 export function getEnv(key: string, ...defaultValue: any[]) {
   let rc = process.env[key] ?? defaultValue[0];
