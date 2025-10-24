@@ -1,10 +1,14 @@
-import bcrypt from 'bcryptjs';
 import * as jwtLib from 'jsonwebtoken';
 import crypto from 'crypto';
 import * as ed from '@noble/ed25519';
 import { md5 as nobleMd5, sha1 as nobleSha1 } from '@noble/hashes/legacy.js';
 import { sha256 as nobleSha256, sha512 as nobleSha512 } from '@noble/hashes/sha2.js';
 import { sha3_256 as nobleSha3_256, sha3_512 as nobleSha3_512 } from '@noble/hashes/sha3.js';
+import {
+  isBcryptHash as cryptoIsBcryptHash,
+  encryptPassword as cryptoEncryptPassword,
+  compareBcrypt,
+} from './crypto.mjs';
 
 // Setup ed25519 hashing function
 ed.hashes.sha512 = nobleSha512;
@@ -137,7 +141,7 @@ export namespace password {
    * ```
    */
   export function isBcryptHash(str: string): boolean {
-    return typeof str === 'string' && /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/.test(str);
+    return cryptoIsBcryptHash(str);
   }
 
   /**
@@ -154,8 +158,14 @@ export namespace password {
    * ```
    */
   export async function encryptPassword(password: string, rounds: number = 10): Promise<string> {
-    const salt = await bcrypt.genSalt(rounds);
-    return await bcrypt.hash(password, salt);
+    // For custom rounds, we need to generate salt and hash manually
+    if (rounds !== 10) {
+      const bcrypt = (await import('bcryptjs')).default;
+      const salt = await bcrypt.genSalt(rounds);
+      return await bcrypt.hash(password, salt);
+    }
+    // Use existing crypto function for default rounds
+    return cryptoEncryptPassword(password);
   }
 
   /**
@@ -172,7 +182,7 @@ export namespace password {
    * ```
    */
   export async function comparePassword(password: string, hash: string): Promise<boolean> {
-    return await bcrypt.compare(password, hash);
+    return compareBcrypt(password, hash);
   }
 }
 
