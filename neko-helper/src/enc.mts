@@ -16,10 +16,10 @@ ed.hashes.sha512Async = (m: Uint8Array) => Promise.resolve(nobleSha512(m));
 export namespace hash {
   /**
    * Generates an MD5 hash of the input string
-   * 
+   *
    * @param data - The string to hash
    * @returns The MD5 hash as a hexadecimal string
-   * 
+   *
    * @example
    * ```typescript
    * hash.md5('hello world')
@@ -33,10 +33,10 @@ export namespace hash {
 
   /**
    * Generates a SHA-1 hash of the input string
-   * 
+   *
    * @param data - The string to hash
    * @returns The SHA-1 hash as a hexadecimal string
-   * 
+   *
    * @example
    * ```typescript
    * hash.sha1('hello world')
@@ -50,10 +50,10 @@ export namespace hash {
 
   /**
    * Generates a SHA-256 hash of the input string
-   * 
+   *
    * @param data - The string to hash
    * @returns The SHA-256 hash as a hexadecimal string
-   * 
+   *
    * @example
    * ```typescript
    * hash.sha256('hello world')
@@ -67,10 +67,10 @@ export namespace hash {
 
   /**
    * Generates a SHA-512 hash of the input string
-   * 
+   *
    * @param data - The string to hash
    * @returns The SHA-512 hash as a hexadecimal string
-   * 
+   *
    * @example
    * ```typescript
    * hash.sha512('hello world')
@@ -84,10 +84,10 @@ export namespace hash {
 
   /**
    * Generates a SHA3-256 hash of the input string
-   * 
+   *
    * @param data - The string to hash
    * @returns The SHA3-256 hash as a hexadecimal string
-   * 
+   *
    * @example
    * ```typescript
    * hash.sha3_256('hello world')
@@ -101,10 +101,10 @@ export namespace hash {
 
   /**
    * Generates a SHA3-512 hash of the input string
-   * 
+   *
    * @param data - The string to hash
    * @returns The SHA3-512 hash as a hexadecimal string
-   * 
+   *
    * @example
    * ```typescript
    * hash.sha3_512('hello world')
@@ -123,15 +123,15 @@ export namespace hash {
 export namespace password {
   /**
    * Checks if a string is a valid bcrypt hash
-   * 
+   *
    * @param str - The string to check
    * @returns True if the string is a valid bcrypt hash, false otherwise
-   * 
+   *
    * @example
    * ```typescript
    * password.isBcryptHash('$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy')
    * // Returns: true
-   * 
+   *
    * password.isBcryptHash('not a hash')
    * // Returns: false
    * ```
@@ -142,11 +142,11 @@ export namespace password {
 
   /**
    * Encrypts a password using bcrypt
-   * 
+   *
    * @param password - The plain text password to encrypt
    * @param rounds - The number of rounds to use for salt generation (default: 10)
    * @returns A promise that resolves to the encrypted password hash
-   * 
+   *
    * @example
    * ```typescript
    * await password.encryptPassword('mySecurePassword')
@@ -160,11 +160,11 @@ export namespace password {
 
   /**
    * Compares a plain text password with a bcrypt hash
-   * 
+   *
    * @param password - The plain text password to compare
    * @param hash - The bcrypt hash to compare against
    * @returns A promise that resolves to true if the password matches the hash, false otherwise
-   * 
+   *
    * @example
    * ```typescript
    * await password.comparePassword('myPassword', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy')
@@ -182,10 +182,10 @@ export namespace password {
 export namespace keys {
   /**
    * Generates an RSA key pair
-   * 
+   *
    * @param modulusLength - The modulus length in bits (default: 2048)
    * @returns An object containing the public and private keys in PEM format
-   * 
+   *
    * @example
    * ```typescript
    * const { publicKey, privateKey } = keys.rsa()
@@ -209,9 +209,9 @@ export namespace keys {
 
   /**
    * Generates an Ed25519 key pair
-   * 
+   *
    * @returns A promise that resolves to an object containing the public and private keys as hex strings
-   * 
+   *
    * @example
    * ```typescript
    * const { publicKey, privateKey } = await keys.ed25519()
@@ -233,12 +233,12 @@ export namespace keys {
 export namespace jwt {
   /**
    * Signs a JWT with the provided payload and secret
-   * 
+   *
    * @param payload - The payload to encode in the JWT
    * @param secret - The secret key to sign the JWT with
    * @param options - Optional JWT sign options (algorithm, expiresIn, etc.)
    * @returns The signed JWT token
-   * 
+   *
    * @example
    * ```typescript
    * const token = Enc.jwt.sign({ userId: 123 }, 'mySecret', { expiresIn: '1h' })
@@ -255,13 +255,13 @@ export namespace jwt {
 
   /**
    * Verifies a JWT token
-   * 
+   *
    * @param token - The JWT token to verify
    * @param secret - The secret key to verify the JWT with
    * @param options - Optional JWT verify options
    * @returns The decoded payload if verification succeeds
    * @throws Will throw an error if verification fails
-   * 
+   *
    * @example
    * ```typescript
    * try {
@@ -282,11 +282,11 @@ export namespace jwt {
 
   /**
    * Decodes a JWT token without verifying its signature
-   * 
+   *
    * @param token - The JWT token to decode
    * @param options - Optional decode options
    * @returns The decoded payload or null if the token is invalid
-   * 
+   *
    * @example
    * ```typescript
    * const payload = Enc.jwt.decode(token)
@@ -307,11 +307,11 @@ export namespace jwt {
 export namespace sign {
   /**
    * Signs data using Ed25519 private key
-   * 
+   *
    * @param privateKey - The Ed25519 private key as a hex string
    * @param data - The data to sign
    * @returns A promise that resolves to the signature as a hex string
-   * 
+   *
    * @example
    * ```typescript
    * const { privateKey } = await keys.ed25519()
@@ -328,12 +328,12 @@ export namespace sign {
 
   /**
    * Verifies an Ed25519 signature
-   * 
+   *
    * @param publicKey - The Ed25519 public key as a hex string
    * @param signature - The signature to verify as a hex string
    * @param data - The original data that was signed
    * @returns A promise that resolves to true if the signature is valid, false otherwise
-   * 
+   *
    * @example
    * ```typescript
    * const isValid = await sign.verifyEd25519(publicKey, signature, 'message to sign')
