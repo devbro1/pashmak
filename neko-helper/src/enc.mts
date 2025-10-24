@@ -1,4 +1,5 @@
-import * as jwtLib from 'jsonwebtoken';
+import jwtLib from 'jsonwebtoken';
+import type { Secret, SignOptions, VerifyOptions, DecodeOptions, JwtPayload } from 'jsonwebtoken';
 import crypto from 'crypto';
 import * as ed from '@noble/ed25519';
 import { md5 as nobleMd5, sha1 as nobleSha1 } from '@noble/hashes/legacy.js';
@@ -257,8 +258,8 @@ export namespace jwt {
    */
   export function sign(
     payload: string | object | Buffer,
-    secret: jwtLib.Secret,
-    options?: jwtLib.SignOptions
+    secret: Secret,
+    options?: SignOptions
   ): string {
     return jwtLib.sign(payload, secret, options);
   }
@@ -284,9 +285,9 @@ export namespace jwt {
    */
   export function verify(
     token: string,
-    secret: jwtLib.Secret,
-    options?: jwtLib.VerifyOptions
-  ): string | jwtLib.JwtPayload {
+    secret: Secret,
+    options?: VerifyOptions
+  ): string | JwtPayload {
     return jwtLib.verify(token, secret, options);
   }
 
@@ -303,10 +304,7 @@ export namespace jwt {
    * // Returns: { userId: 123, iat: 1234567890, exp: 1234571490 }
    * ```
    */
-  export function decode(
-    token: string,
-    options?: jwtLib.DecodeOptions
-  ): null | string | jwtLib.JwtPayload {
+  export function decode(token: string, options?: DecodeOptions): null | string | JwtPayload {
     return jwtLib.decode(token, options);
   }
 }
