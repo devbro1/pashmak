@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, beforeAll, afterAll } from 'vitest';
 import { PostgresqlConnection } from '@devbro/neko-sql';
 import { Connection } from '@devbro/neko-sql';
 import { execSync } from 'child_process';
@@ -75,7 +75,7 @@ describe('raw queries', () => {
     const job = await Job.find(3);
     expect(job.title).toBe('Administration Assistant');
 
-    const jobs: Job[] = await (await Job.getQuery()).whereOp('min_salary', '>=', 10000).get();
+    const jobs: Job[] = await Job.getQuery().whereOp('min_salary', '>=', 10000).get();
     expect(jobs.length).toBe(3);
 
     const job2 = new Job();
@@ -91,10 +91,12 @@ describe('raw queries', () => {
     let res = await conn.runQuery({
       sql: 'SELECT MAX(region_id) as last_id FROM regions',
       bindings: [],
+      parts: [],
     });
     await conn.runQuery({
       sql: 'SELECT setval($1, $2, false);',
       bindings: ['regions_region_id_seq', res[0].last_id + 1],
+      parts: [],
     });
 
     let r1 = new Region({

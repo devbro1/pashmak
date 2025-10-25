@@ -24,7 +24,7 @@ export class DatabaseServiceProvider extends Middleware {
         ctx().set(["database", name], conn);
         conns.push(conn);
       }
-      BaseModel.setConnection(async () => {
+      BaseModel.setConnection(() => {
         const key = ["database", "default"];
         let rc: Connection | undefined;
 
@@ -33,7 +33,7 @@ export class DatabaseServiceProvider extends Middleware {
         } else if (Global.has(key)) {
           rc = Global.get<Connection>(key);
         } else {
-          rc = await this.getConnection(db_configs["default"]);
+          rc = this.getConnection(db_configs["default"]);
           Global.set(key, rc);
         }
 
@@ -58,10 +58,10 @@ export class DatabaseServiceProvider extends Middleware {
     return DatabaseServiceProvider.instance;
   }
 
-  async getConnection(db_config: PoolConfig): Promise<PostgresqlConnection> {
+  getConnection(db_config: PoolConfig): Connection {
     const conn = new PostgresqlConnection(db_config);
-    if (!(await conn.connect())) {
-      throw new Error("Failed to connect to the database");
+    if (!conn.isConnected()) {
+      conn.connect();
     }
     return conn;
   }

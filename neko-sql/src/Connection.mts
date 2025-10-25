@@ -11,6 +11,7 @@ export abstract class Connection implements EventEmittor<connection_events[]> {
   abstract off(event: connection_events, listener: (...args: any[]) => void): this;
   abstract emit(event: connection_events, ...args: any[]): Promise<boolean>;
 
+  abstract isConnected(): boolean;
   abstract connect(): Promise<boolean>;
   abstract runQuery(sql: CompiledSql): Promise<any>;
   abstract runCursor(sql: CompiledSql): Promise<any>;

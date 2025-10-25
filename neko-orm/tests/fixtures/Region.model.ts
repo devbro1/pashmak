@@ -10,6 +10,11 @@ export class Region extends BaseModel {
     return undefined;
   }
 
+  @Attribute({
+    primaryKey: true,
+  })
+  declare region_id: number;
+
   @Attribute()
   declare created_at: Date;
 

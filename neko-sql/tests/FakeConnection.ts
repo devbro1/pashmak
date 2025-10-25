@@ -50,11 +50,11 @@ class FakeConnection extends Connection {
   }
 
   getQueryGrammar(): QueryGrammar {
-    throw new Error('Function not implemented.');
+    return new PostgresqlQueryGrammar();
   }
 
   getSchemaGrammar(): SchemaGrammar {
-    throw new Error('Function not implemented.');
+    return new PostgresqlSchemaGrammar();
   }
 }
 

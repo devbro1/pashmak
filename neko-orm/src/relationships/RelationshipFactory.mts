@@ -54,8 +54,9 @@ export class RelationshipFactory {
       Object.keys(options2.sourceToTargetKeyAssociation).length === 0
     ) {
       let model_name = Case.snake(options2.targetModel.name);
+      let t_model = new options2.targetModel();
       // @ts-ignore
-      for (const key of options2.targetModel.prototype.primaryKey) {
+      for (const key of t_model._primary_keys) {
         options2.sourceToTargetKeyAssociation[`${model_name}_${key}`] = `${key}`;
       }
     } else if (options2.type === 'belongsToMany') {

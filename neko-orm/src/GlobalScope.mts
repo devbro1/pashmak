@@ -2,7 +2,7 @@ import { Query } from '@devbro/neko-sql';
 import { BaseModel } from './baseModel.mjs';
 
 export class GlobalScope {
-  async apply(query: Query, model: BaseModel): Promise<Query> {
+  apply(query: Query, model: BaseModel): Query {
     return query;
   }
 }

@@ -153,6 +153,55 @@ to mass field parameters in a object
 user.fill({ email: "meow@devbro.com" });
 ```
 
+### isDirty()
+
+The `isDirty()` method checks if the model or specific attribute(s) have been modified since the last save. This is useful for tracking changes before persisting them to the database.
+
+**Usage:**
+
+```ts
+// Check if any attribute has been modified
+if (user.isDirty()) {
+  console.log("User has unsaved changes");
+}
+
+// Check if a specific attribute has been modified
+if (user.isDirty("username")) {
+  console.log("Username has been changed");
+}
+
+// Check if any of multiple attributes have been modified
+if (user.isDirty(["email", "username"])) {
+  console.log("Either email or username has been changed");
+}
+```
+
+**Parameters:**
+
+- `attribute` (optional): Can be:
+  - `undefined` - checks if any attribute is dirty
+  - `string` - checks if a specific attribute is dirty
+  - `string[]` - checks if any of the specified attributes are dirty
+
+**Returns:**
+
+- `boolean` - `true` if the specified attribute(s) have been modified, `false` otherwise
+
+**Example:**
+
+```ts
+let user = await User.find(123);
+console.log(user.isDirty()); // false - no changes yet
+
+user.username = "newusername";
+console.log(user.isDirty()); // true - has unsaved changes
+console.log(user.isDirty("username")); // true - username was changed
+console.log(user.isDirty("email")); // false - email was not changed
+
+await user.save();
+console.log(user.isDirty()); // false - changes have been saved
+```
+
 ### `created_at` and `updated_at` timestamps
 
 every model comes with standard `created_at` and `updated_at` fields. you can use these fields to track when they were created and updated last.
