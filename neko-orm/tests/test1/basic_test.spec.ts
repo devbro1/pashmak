@@ -75,7 +75,7 @@ describe('raw queries', () => {
     const job = await Job.find(3);
     expect(job.title).toBe('Administration Assistant');
 
-    const jobs: Job[] = await (await Job.getQuery()).whereOp('min_salary', '>=', 10000).get();
+    const jobs: Job[] = await Job.getQuery().whereOp('min_salary', '>=', 10000).get();
     expect(jobs.length).toBe(3);
 
     const job2 = new Job();

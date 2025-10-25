@@ -24,7 +24,7 @@ export class DatabaseServiceProvider extends Middleware {
         ctx().set(["database", name], conn);
         conns.push(conn);
       }
-      BaseModel.setConnection(async () => {
+      BaseModel.setConnection(() => {
         const key = ["database", "default"];
         let rc: Connection | undefined;
 
