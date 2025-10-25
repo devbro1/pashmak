@@ -1,6 +1,6 @@
-import { CacheProviderInterface } from "@/CacheProviderInterface.mjs";
-import { JSONValue, JSONObject } from "@devbro/neko-helper";
-import Memcached from "memcached";
+import { CacheProviderInterface } from '@/CacheProviderInterface.mjs';
+import { JSONValue, JSONObject } from '@devbro/neko-helper';
+import Memcached from 'memcached';
 
 export interface MemcachedConfig {
   location?: Memcached.Location;
@@ -22,7 +22,7 @@ export class MemcacheCacheProvider implements CacheProviderInterface {
           reject(err);
           return;
         }
-        
+
         if (data === undefined || data === null) {
           resolve(undefined);
           return;
@@ -79,6 +79,29 @@ export class MemcacheCacheProvider implements CacheProviderInterface {
     });
   }
 
+  async increment(key: string, amount: number = 1): Promise<number> {
+    return new Promise((resolve, reject) => {
+      // Memcached incr are atomic operations
+      this.client.incr(key, amount, (err: any, result: number | boolean) => {
+        if (err) {
+          reject(err);
+          return;
+        }
 
-
+        // If key doesn't exist, result will be false
+        if (result === false) {
+          // Initialize the key with the amount value
+          this.client.set(key, amount.toString(), this.defaultTTL, (setErr: Error | undefined) => {
+            if (setErr) {
+              reject(setErr);
+              return;
+            }
+            resolve(amount);
+          });
+        } else {
+          resolve(result as number);
+        }
+      });
+    });
+  }
 }
