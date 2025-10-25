@@ -28,6 +28,8 @@
   "author": "Farzad Meow Khalafi",
   "license": "MIT",
   "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.14.1",
     "@types/number-to-words": "^1.2.3",
     "@typescript-eslint/eslint-plugin": "^7.1.1",
@@ -42,6 +44,10 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@noble/ed25519": "^3.0.0",
+    "@noble/hashes": "^2.0.1",
+    "bcryptjs": "^3.0.2",
+    "jsonwebtoken": "^9.0.2",
     "number-to-words": "^1.2.4",
     "vitest": "^3.2.4"
   },
