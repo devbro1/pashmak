@@ -54,4 +54,10 @@ export class RedisCacheProvider implements CacheProviderInterface {
     const result = await this.client.exists(key);
     return result === 1;
   }
+
+  async increment(key: string, amount: number = 1): Promise<number> {
+    await this.ensureConnection();
+    // Redis INCRBY is atomic
+    return await this.client.incrBy(key, amount);
+  }
 }

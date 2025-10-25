@@ -134,4 +134,75 @@ export class FileCacheProvider implements CacheProviderInterface {
     const value = await this.get(key);
     return value !== undefined;
   }
+
+  async increment(key: string, amount: number = 1): Promise<number> {
+    const filePath = this.getFilePath(key);
+
+    // Use a lock file to ensure atomicity
+    const lockPath = `${filePath}.lock`;
+
+    // Simple file-based locking mechanism
+    let lockAcquired = false;
+    let retries = 0;
+    const maxRetries = 50;
+
+    while (!lockAcquired && retries < maxRetries) {
+      try {
+        // Try to create lock file exclusively
+        await fs.writeFile(lockPath, '', { flag: 'wx' });
+        lockAcquired = true;
+      } catch {
+        // Lock exists, wait a bit and retry
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        retries++;
+      }
+    }
+
+    if (!lockAcquired) {
+      throw new Error('Failed to acquire lock for increment operation');
+    }
+
+    try {
+      let currentValue = 0;
+      let item: CacheItem | undefined;
+
+      // Read current value
+      try {
+        const content = await fs.readFile(filePath, 'utf-8');
+        const parsedItem = JSON.parse(content);
+
+        // Check if item has expired
+        if (parsedItem.expiresAt && parsedItem.expiresAt < Date.now()) {
+          item = undefined;
+        } else {
+          item = parsedItem;
+          currentValue = typeof parsedItem.value === 'number' ? parsedItem.value : 0;
+        }
+      } catch {
+        // File doesn't exist or is corrupted, start from 0
+      }
+
+      // Calculate new value
+      const newValue = currentValue + amount;
+
+      // Write back with same TTL if it existed
+      const now = Date.now();
+      const newItem: CacheItem = {
+        value: newValue,
+        createdAt: item?.createdAt ?? now,
+        expiresAt: item?.expiresAt,
+      };
+
+      await fs.writeFile(filePath, JSON.stringify(newItem), 'utf-8');
+
+      return newValue;
+    } finally {
+      // Release lock
+      try {
+        await fs.unlink(lockPath);
+      } catch {
+        // Ignore errors when removing lock file
+      }
+    }
+  }
 }

@@ -200,6 +200,10 @@ export class MyCacheProvider implements CacheProviderInterface {
   async has(key: string): Promise<boolean> {
     ???
   }
+
+  async incr(key: string, value: number): Promise<number> {
+    ???
+  }
 }
 
 
@@ -225,4 +229,5 @@ const users3 = await cacheQuery(q, { ttl: 600, cache_label: "my_redis_cache" });
 ```
 
 ## Registering your own Provider
+
 TODO: add how to do it

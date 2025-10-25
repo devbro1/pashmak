@@ -10,8 +10,6 @@ const wcs = orderedWorkspaces.filter(
   (wc) => workspaces[wc].packageJson?.tags?.needsCompile,
 );
 
-console.log("wcs", wcs);
-
 let changedFiles = execSync("git diff --name-only master", {
   cwd: workspacePath,
   // stdio: 'inherit',
@@ -24,7 +22,6 @@ let changed_files = changedFiles
   .filter((f) => f.length > 0);
 
 let wc_locations = Object.entries(workspaces).map(([, wc]) => wc.location);
-console.log("workspaces", wc_locations);
 
 let to_bump = new Set();
 for (const loc of wc_locations) {
@@ -34,7 +31,6 @@ for (const loc of wc_locations) {
 }
 
 for (const loc of to_bump) {
-  console.log(`Bumping version in workspace at ${loc}...`);
   let packageJson = JSON.parse(
     fs.readFileSync(path.join(loc, "package.json"), "utf-8"),
   );

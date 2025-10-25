@@ -131,4 +131,36 @@ export class MemoryCacheProvider implements CacheProviderInterface {
 
     return true;
   }
+
+  async increment(key: string, amount: number = 1): Promise<number> {
+    const item = this.cache.get(key);
+    const now = Date.now();
+
+    let currentValue = 0;
+
+    // Check if item exists and is not expired
+    if (item) {
+      if (item.expiresAt && item.expiresAt < now) {
+        this.cache.delete(key);
+      } else {
+        // Get current value, ensure it's a number
+        currentValue = typeof item.value === 'number' ? item.value : 0;
+      }
+    }
+
+    // Calculate new value
+    const newValue = currentValue + amount;
+
+    // Store the new value with the same TTL if it existed
+    const newItem: CacheItem = {
+      value: newValue,
+      createdAt: item?.createdAt ?? now,
+      lastAccessed: now,
+      expiresAt: item?.expiresAt,
+    };
+
+    this.cache.set(key, newItem);
+
+    return newValue;
+  }
 }

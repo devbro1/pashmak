@@ -16,4 +16,9 @@ export class DisabledCacheProvider implements CacheProviderInterface {
   async has(key: string): Promise<boolean> {
     return false;
   }
+
+  async increment(key: string, amount: number = 1): Promise<number> {
+    // Disabled cache always returns the increment amount as if starting from 0
+    return amount;
+  }
 }
