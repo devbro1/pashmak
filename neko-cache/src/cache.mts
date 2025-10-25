@@ -48,6 +48,9 @@ export class Cache {
    * @returns
    */
   generateKey(key: JSONValue): string {
+    if (typeof key === 'string' && key.length <= 250) {
+      return key;
+    }
     return createHash('md5').update(JSON.stringify(key)).digest('hex');
   }
 }
