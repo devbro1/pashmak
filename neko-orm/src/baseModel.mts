@@ -52,18 +52,49 @@ export class BaseModel {
     this.fill(initialData);
   }
 
+  /**
+   * Gets the table name for this model instance.
+   *
+   * @returns The table name in the database
+   */
   public getTablename(): string {
     return this.tableName;
   }
 
+  /**
+   * Gets the class name of the model (static method).
+   *
+   * @returns The name of the model class
+   */
   static getClassName() {
     return this.name;
   }
 
+  /**
+   * Gets the class name of the model instance.
+   *
+   * @returns The name of the model class
+   */
   public getClassName() {
     return this.constructor.name;
   }
 
+  /**
+   * Saves the model to the database. Creates a new record if the model doesn't exist,
+   * or updates the existing record if it does.
+   *
+   * @param options - Save options
+   * @param options.updateTimestamps - Whether to update timestamp fields (default: true)
+   * @returns A promise that resolves when the save operation is complete
+   *
+   * @example
+   * const user = new User({ name: 'John', email: 'john@example.com' });
+   * await user.save();
+   *
+   * @example
+   * // Save without updating timestamps
+   * await user.save({ updateTimestamps: false });
+   */
   public async save(
     options: saveObjectOptions = {
       updateTimestamps: true,
@@ -72,7 +103,7 @@ export class BaseModel {
     const q: Query = await this.getQuery();
     const params: Record<string, Parameter> = {};
 
-    if (!this._incrementing_primary_keys || this.exists) {
+    if (!this._incrementing_primary_keys || this._exists) {
       for (const key of this._primary_keys) {
         // @ts-ignore
         params[key] = this[key];
@@ -88,7 +119,7 @@ export class BaseModel {
     // adjust timestamps
     if (this.hasTimestamps && options.updateTimestamps) {
       params[this.updatedAtFieldName] = new Date();
-      if (!this.exists || !params[this.createdAtFieldName]) {
+      if (!this._exists || !params[this.createdAtFieldName]) {
         params[this.createdAtFieldName] = params[this.updatedAtFieldName];
       }
     }
@@ -100,7 +131,7 @@ export class BaseModel {
     }
 
     let result;
-    if (this.exists) {
+    if (this._exists) {
       for (const pkey of this._primary_keys) {
         // @ts-ignore
         q.whereOp(pkey, '=', this[pkey]);
@@ -118,12 +149,21 @@ export class BaseModel {
       result = await q.insert(params);
     }
 
-    this.exists = true;
+    this._exists = true;
 
     this._dirties.clear();
     await this.refresh();
   }
 
+  /**
+   * Deletes the model from the database.
+   *
+   * @returns A promise that resolves when the delete operation is complete
+   *
+   * @example
+   * const user = await User.find(1);
+   * await user.delete();
+   */
   public async delete() {
     const q: Query = await this.getQuery();
     for (const pkey of this._primary_keys) {
@@ -131,9 +171,20 @@ export class BaseModel {
       q.whereOp(pkey, '=', this[pkey]);
     }
     await q.delete();
-    this.exists = false;
+    this._exists = false;
   }
 
+  /**
+   * Refreshes the model by reloading its data from the database.
+   *
+   * @returns A promise that resolves when the refresh operation is complete
+   * @throws Error if the record is not found in the database
+   *
+   * @example
+   * const user = await User.find(1);
+   * // ... some time passes and the database record changes
+   * await user.refresh(); // Reloads fresh data from database
+   */
   public async refresh() {
     const q: Query = await this.getQuery();
     for (const pkey of this._primary_keys) {
@@ -149,6 +200,13 @@ export class BaseModel {
     await this.fillAndMutate(r[0]);
   }
 
+  /**
+   * Fills the model attributes and applies mutators to the data.
+   *
+   * @param r - The data object to fill from
+   * @returns A promise that resolves when filling and mutation is complete
+   * @internal
+   */
   async fillAndMutate(r: object) {
     for (const k in r) {
       // @ts-ignore
@@ -164,6 +222,24 @@ export class BaseModel {
     }
   }
 
+  /**
+   * Finds a model by its primary key (usually ID).
+   *
+   * @param id - The primary key value to search for
+   * @param options - Query options
+   * @param options.withGlobalScopes - Whether to apply global scopes (default: true)
+   * @returns A promise that resolves to the model instance or undefined if not found
+   *
+   * @example
+   * const user = await User.find(1);
+   * if (user) {
+   *   console.log(user.name);
+   * }
+   *
+   * @example
+   * // Find without global scopes
+   * const user = await User.find(1, { withGlobalScopes: false });
+   */
   public static async find<T extends typeof BaseModel>(
     id: number,
     options = { withGlobalScopes: true }
@@ -171,6 +247,23 @@ export class BaseModel {
     return this.findByPrimaryKey<T>({ id }, options);
   }
 
+  /**
+   * Finds a single model by the given conditions.
+   *
+   * @param conditions - An object with column-value pairs to match
+   * @param options - Query options
+   * @param options.withGlobalScopes - Whether to apply global scopes (default: true)
+   * @returns A promise that resolves to the model instance or undefined if not found
+   *
+   * @example
+   * const user = await User.findOne({ email: 'john@example.com' });
+   *
+   * @example
+   * const activeUser = await User.findOne(
+   *   { email: 'john@example.com', status: 'active' },
+   *   { withGlobalScopes: false }
+   * );
+   */
   public static async findOne<T extends BaseModel>(
     conditions: object,
     options = { withGlobalScopes: true }
@@ -189,10 +282,27 @@ export class BaseModel {
     }
 
     await self.fillAndMutate(r[0]);
-    self.exists = true;
+    self._exists = true;
     return self as T;
   }
 
+  /**
+   * Finds a model by its primary key or throws an error if not found.
+   *
+   * @param id - The primary key value to search for
+   * @param options - Query options
+   * @param options.withGlobalScopes - Whether to apply global scopes (default: true)
+   * @returns A promise that resolves to the model instance
+   * @throws Error if the model is not found
+   *
+   * @example
+   * try {
+   *   const user = await User.findorFail(1);
+   *   console.log(user.name);
+   * } catch (error) {
+   *   console.error('User not found');
+   * }
+   */
   public static async findorFail<T extends typeof BaseModel>(
     id: number,
     options = { withGlobalScopes: true }
@@ -204,6 +314,25 @@ export class BaseModel {
     return rc;
   }
 
+  /**
+   * Finds a model by its primary key(s). Supports composite primary keys.
+   *
+   * @param keys - An object with primary key column-value pairs
+   * @param options - Query options
+   * @param options.withGlobalScopes - Whether to apply global scopes (default: true)
+   * @returns A promise that resolves to the model instance or undefined if not found
+   *
+   * @example
+   * // Single primary key
+   * const user = await User.findByPrimaryKey({ id: 1 });
+   *
+   * @example
+   * // Composite primary key
+   * const userRole = await UserRole.findByPrimaryKey({
+   *   user_id: 1,
+   *   role_id: 2
+   * });
+   */
   public static async findByPrimaryKey<T extends typeof BaseModel>(
     keys: Record<string, Parameter>,
     options = { withGlobalScopes: true }
@@ -223,15 +352,39 @@ export class BaseModel {
     }
 
     await self.fillAndMutate(r[0]);
-    self.exists = true;
+    self._exists = true;
 
     return self;
   }
 
+  /**
+   * Sets the database connection for all instances of this model class.
+   * Can accept a Connection instance or a factory function.
+   *
+   * @param conn - The connection instance or factory function
+   *
+   * @example
+   * // Set a specific connection
+   * User.setConnection(replicaConnection);
+   *
+   * @example
+   * // Use a connection factory
+   * User.setConnection(() => getReadReplicaConnection());
+   */
   public static setConnection(conn: Connection | (() => Connection)) {
     BaseModel.connection = conn;
   }
 
+  /**
+   * Gets the active database connection for this model class.
+   *
+   * @returns The Connection instance
+   * @throws Error if connection is not defined
+   *
+   * @example
+   * const connection = User.getConnection();
+   * await connection.raw('SELECT 1');
+   */
   public static getConnection(): Connection {
     if (typeof BaseModel.connection === 'undefined') {
       throw new Error('Connection is not defined');
@@ -241,25 +394,39 @@ export class BaseModel {
     return BaseModel.connection;
   }
 
-  // public getQuery(options = { withGlobalScopes: true }): Query {
-  //   const conn = BaseModel.getConnection();
-  //   let rc = conn.getQuery();
-  //   rc.table(this.tableName);
-
-  //   if (this.scopes && options.withGlobalScopes === true) {
-  //     for (const Scope of this.scopes) {
-  //       const scope = new Scope();
-  //       rc = scope.apply(rc, this);
-  //     }
-  //   }
-
-  //   return rc;
-  // }
-
+  /**
+   * Gets a Query instance for this model instance.
+   * Delegates to the static getQuery method.
+   *
+   * @returns A Query instance configured for this model
+   *
+   * @example
+   * const user = new User();
+   * const query = user.getQuery();
+   * await query.where('status', 'active').get();
+   */
   public getQuery(): ReturnType<typeof BaseModel.getQuery> {
     return (this.constructor as typeof BaseModel).getQuery();
   }
 
+  /**
+   * Creates and configures a Query instance for this model class.
+   * Automatically applies table name and global scopes.
+   *
+   * @param options - Query options
+   * @param options.withGlobalScopes - Whether to apply global scopes (default: true)
+   * @returns A Query instance ready for building queries
+   *
+   * @example
+   * // Get query with global scopes
+   * const query = User.getQuery();
+   * const users = await query.where('age', '>', 18).get();
+   *
+   * @example
+   * // Get query without global scopes
+   * const query = User.getQuery({ withGlobalScopes: false });
+   * const allUsers = await query.get();
+   */
   public static getQuery(
     options: { withGlobalScopes: boolean } = { withGlobalScopes: true }
   ): ReturnType<typeof this.prototype.getLocalScopesQuery> {
@@ -283,6 +450,17 @@ export class BaseModel {
     return rc;
   }
 
+  /**
+   * Fills the model instance with data from an object.
+   * Only populates primary keys and fillable attributes.
+   *
+   * @param data - An object with property-value pairs to assign
+   *
+   * @example
+   * const user = new User();
+   * user.fill({ name: 'John', email: 'john@example.com' });
+   * console.log(user.name); // 'John'
+   */
   public fill(data: Record<string, Parameter>) {
     for (const key of [...this._primary_keys, ...this._fillable]) {
       if (key in data) {
@@ -292,6 +470,17 @@ export class BaseModel {
     }
   }
 
+  /**
+   * Converts the model instance to a plain JSON object.
+   * Excludes guarded attributes and formats dates as ISO strings.
+   *
+   * @returns A plain object representation of the model
+   *
+   * @example
+   * const user = await User.find(1);
+   * const json = user.toJson();
+   * console.log(json); // { id: 1, name: 'John', created_at: '2024-01-01T00:00:00.000Z' }
+   */
   public toJson() {
     const data: Record<string, Parameter> = {};
     for (const key of [...this._primary_keys, ...this._fillable]) {
@@ -309,15 +498,43 @@ export class BaseModel {
     return data;
   }
 
+  /**
+   * Creates a new instance of the model with optional initial data.
+   *
+   * @param initialData - Initial data to populate the instance
+   * @param exists - Whether the instance represents an existing database record (default: false)
+   * @returns A new model instance
+   *
+   * @example
+   * const user = User.newInstance({ name: 'John' });
+   * console.log(user._exists); // false
+   *
+   * @example
+   * // Create instance from existing record
+   * const existingUser = User.newInstance({ id: 1, name: 'John' }, true);
+   */
   public static newInstance<T extends BaseModel>(
     initialData: any = {},
     exists: boolean = false
   ): T {
     let rc = new this(initialData);
-    rc.exists = exists;
+    rc._exists = exists;
     return rc as T;
   }
 
+  /**
+   * Creates and saves a new model instance in a single operation.
+   *
+   * @param initialData - Initial data to populate and save
+   * @returns A promise that resolves to the saved model instance
+   *
+   * @example
+   * const user = await User.create({
+   *   name: 'John Doe',
+   *   email: 'john@example.com'
+   * });
+   * console.log(user.id); // Auto-generated ID
+   */
   public static async create<T extends BaseModel>(initialData: any = {}): Promise<T> {
     let rc = new this(initialData);
     await rc.save();
