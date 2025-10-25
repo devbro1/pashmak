@@ -120,7 +120,7 @@ const isMatch = await Enc.password.comparePassword("myPassword", hash);
 
 The `Enc.keys` namespace provides cryptographic key pair generation.
 
-#### Enc.keys.rsa(modulusLength?: number): { publicKey: string; privateKey: string }
+#### Enc.keys.rsa(modulusLength?: number): `{ publicKey: string; privateKey: string }`
 
 Generates an RSA key pair. Default modulus length is 2048 bits.
 
