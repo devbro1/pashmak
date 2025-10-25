@@ -25,6 +25,10 @@ export class Cache {
     return this.provider.has(this.generateKey(key));
   }
 
+  async increment(key: JSONValue, amount: number = 1): Promise<number> {
+    return this.provider.increment(this.generateKey(key), amount);
+  }
+
   async remember<T>(
     key: JSONValue,
     callback: () => Promise<T>,

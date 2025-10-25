@@ -5,4 +5,5 @@ export interface CacheProviderInterface {
   put(key: string, value: JSONObject | JSONValue, ttl?: number): Promise<void>;
   delete(key: string): Promise<void>;
   has(key: string): Promise<boolean>;
+  increment(key: string, amount?: number): Promise<number>;
 }
