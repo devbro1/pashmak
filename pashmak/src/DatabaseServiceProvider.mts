@@ -33,7 +33,7 @@ export class DatabaseServiceProvider extends Middleware {
         } else if (Global.has(key)) {
           rc = Global.get<Connection>(key);
         } else {
-          rc = await this.getConnection(db_configs["default"]);
+          rc = this.getConnection(db_configs["default"]);
           Global.set(key, rc);
         }
 
