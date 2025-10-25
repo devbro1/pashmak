@@ -201,7 +201,7 @@ export class MyCacheProvider implements CacheProviderInterface {
     ???
   }
 
-  async incr(key: string, value: number) Promise<number> {
+  async incr(key: string, value: number): Promise<number> {
     ???
   }
 }
