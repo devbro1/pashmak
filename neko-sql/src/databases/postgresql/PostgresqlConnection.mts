@@ -56,7 +56,10 @@ export class PostgresqlConnection extends ConnectionAbs {
 
     this.eventManager.emit('query', { sql: sql2, bindings: sql.bindings });
 
-    const result = await this.connection?.query(sql2, sql.bindings);
+    if (!this.isConnected()) {
+      await this.connect();
+    }
+    const result = await this.connection!.query(sql2, sql.bindings);
     return result?.rows;
   }
 
@@ -65,7 +68,11 @@ export class PostgresqlConnection extends ConnectionAbs {
   }
 
   async disconnect(): Promise<boolean> {
+    if (this.connection === undefined) {
+      return true;
+    }
     await this.connection?.release();
+    this.connection = undefined;
     this.eventManager.emit('disconnect');
     return true;
   }

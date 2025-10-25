@@ -60,9 +60,6 @@ export class DatabaseServiceProvider extends Middleware {
 
   getConnection(db_config: PoolConfig): Connection {
     const conn = new PostgresqlConnection(db_config);
-    if (!conn.isConnected()) {
-      conn.connect();
-    }
     return conn;
   }
 }

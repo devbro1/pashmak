@@ -12,7 +12,7 @@ export default class Users extends Migration {
       blueprint.string("password");
       blueprint.string("first_name");
       blueprint.string("last_name");
-      blueprint.Boolean("active").default(true);
+      blueprint.boolean("active").default(true);
     });
 
     const user = new User({
