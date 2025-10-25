@@ -1,0 +1,21 @@
+name: Bump package versions
+on:
+  push:
+    branches:
+      - 106-remove-promise-from-await-countrygetquery
+jobs:
+  bump-versions:
+    # needs: [run-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Setup .npmrc file to publish to npm
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24.x"
+          registry-url: "https://registry.npmjs.org"
+      - name: publish to npm
+        run: |
+          yarn bump_versions
+          git add --all
+          git diff --cached
