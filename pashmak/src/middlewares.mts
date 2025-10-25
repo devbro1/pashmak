@@ -43,7 +43,7 @@ export async function dbTransaction(
     await db().beginTransaction();
     await next();
     await db().commit();
-  } finally {
+  } catch {
     await db().rollback();
   }
 }

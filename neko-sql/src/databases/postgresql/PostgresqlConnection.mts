@@ -93,24 +93,15 @@ export class PostgresqlConnection extends ConnectionAbs {
   }
 
   async beginTransaction(): Promise<void> {
-    if (!this.connection) {
-      throw new Error('No active connection to begin a transaction.');
-    }
-    await this.connection.query('BEGIN');
+    await this.runQuery({ sql: 'BEGIN', bindings: [], parts: ['BEGIN'] });
   }
 
   async commit(): Promise<void> {
-    if (!this.connection) {
-      throw new Error('No active connection to commit a transaction.');
-    }
-    await this.connection.query('COMMIT');
+    await this.runQuery({ sql: 'COMMIT', bindings: [], parts: ['COMMIT'] });
   }
 
   async rollback(): Promise<void> {
-    if (!this.connection) {
-      throw new Error('No active connection to rollback a transaction.');
-    }
-    await this.connection.query('ROLLBACK');
+    await this.runQuery({ sql: 'ROLLBACK', bindings: [], parts: ['ROLLBACK'] });
   }
 
   static async destroy(): Promise<void> {
