@@ -243,10 +243,10 @@ mutators can be used to modify the data when we write it to database.
 
 ```mermaid
 graph LR
-  Controller --> Model
+  Controller -->|setter| Model
   Model -->|Caster| Database
   Database -->|Mutator| Model
-  Model --> Controller
+  Model -->|getter| Controller
 ```
 
 you can define casters and mutators for an attributes
