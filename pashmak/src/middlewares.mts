@@ -43,8 +43,9 @@ export async function dbTransaction(
     await db().beginTransaction();
     await next();
     await db().commit();
-  } catch {
+  } catch (err) {
     await db().rollback();
+    throw err;
   }
 }
 
