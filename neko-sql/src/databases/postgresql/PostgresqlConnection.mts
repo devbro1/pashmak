@@ -112,4 +112,18 @@ export class PostgresqlConnection extends ConnectionAbs {
   isConnected(): boolean {
     return this.connection !== undefined;
   }
+
+  async createDatabase(name: string): Promise<void> {
+    if (!this.isConnected()) {
+      await this.connect();
+    }
+    await this.connection!.query(`CREATE DATABASE ${name}`);
+  }
+
+  async dropDatabase(name: string): Promise<void> {
+    if (!this.isConnected()) {
+      await this.connect();
+    }
+    await this.connection!.query(`DROP DATABASE ${name}`);
+  }
 }

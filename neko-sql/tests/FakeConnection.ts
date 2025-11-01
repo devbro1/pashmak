@@ -56,6 +56,14 @@ class FakeConnection extends Connection {
   getSchemaGrammar(): SchemaGrammar {
     return new PostgresqlSchemaGrammar();
   }
+
+  async createDatabase(name: string): Promise<void> {
+    throw new Error('Function not implemented.');
+  }
+
+  async dropDatabase(name: string): Promise<void> {
+    throw new Error('Function not implemented.');
+  }
 }
 
 export { FakeConnection };
