@@ -97,7 +97,7 @@ describe('raw queries', () => {
     expect(result1.length).toBe(19);
 
     query.whereOp('job_title', 'ilike', 'P%');
-    let sql = query.toSql();
+    const sql = query.toSql();
     expect(sql.sql).toBe('select * from jobs where job_title ilike ?');
     expect(sql.bindings).toStrictEqual(['P%']);
 
@@ -203,7 +203,7 @@ describe('raw queries', () => {
     query.whereOp('region_id', '=', 1);
     query.whereRaw('(meow = ? or region_name ilike ?)', [2, 'E%']);
 
-    let sql = query.toSql();
+    const sql = query.toSql();
     expect(sql.sql).toBe(
       'select * from regions where region_id = ? and (meow = ? or region_name ilike ?)'
     );
@@ -232,7 +232,7 @@ describe('raw queries', () => {
     const expectedSql =
       'select departments.department_name, emp_sub.employee_id, emp_sub.salary from departments inner join (select employee_id, department_id, salary from employees where salary > ?) as emp_sub on (departments.department_id = emp_sub.department_id) where departments.location_id > ?';
 
-    let sql = query.toSql();
+    const sql = query.toSql();
     expect(sql.sql).toBe(expectedSql);
     expect(sql.bindings).toStrictEqual([5000, 1000]);
   });

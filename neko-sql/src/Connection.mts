@@ -23,4 +23,6 @@ export abstract class Connection implements EventEmittor<connection_events[]> {
   abstract rollback(): Promise<void>;
   abstract getQueryGrammar(): QueryGrammar;
   abstract getSchemaGrammar(): SchemaGrammar;
+  abstract createDatabase(name: string): Promise<void>;
+  abstract dropDatabase(name: string): Promise<void>;
 }
