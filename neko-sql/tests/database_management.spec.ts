@@ -4,7 +4,9 @@ import { PostgresqlConnection } from '../src/databases/postgresql/PostgresqlConn
 
 describe('database management', () => {
   let conn: Connection | null;
-  const testDbName = 'test_db_management_' + Math.random().toString(36).substring(7);
+  // Use timestamp + random string for better uniqueness in parallel test runs
+  const testDbName =
+    'test_db_mgmt_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
 
   const db_config = {
     host: process.env.DB_HOST,
@@ -52,5 +54,23 @@ describe('database management', () => {
 
     expect(result).toBeDefined();
     expect(result.length).toBe(0);
+  });
+
+  test('createDatabase rejects invalid database names', async () => {
+    // Test invalid names that should be rejected
+    const invalidNames = [
+      'test-db',
+      'test db',
+      'test;db',
+      'test"db',
+      "test'db",
+      '123test', // Can't start with digit
+      'test.db',
+      'test/db',
+    ];
+
+    for (const invalidName of invalidNames) {
+      await expect(conn!.createDatabase(invalidName)).rejects.toThrow(/Invalid database name/);
+    }
   });
 });
