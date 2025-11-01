@@ -124,7 +124,7 @@ export class PostgresqlConnection extends ConnectionAbs {
 
     if (!validIdentifierPattern.test(name)) {
       throw new Error(
-        `Invalid database name: "${name}". Database names must start with a letter or underscore and contain only letters, digits, underscores, and dollar signs.`
+        `Invalid identifier: "${name}". Identifiers must start with a letter or underscore and contain only letters, digits, underscores, and dollar signs.`
       );
     }
 

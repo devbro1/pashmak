@@ -70,7 +70,7 @@ describe('database management', () => {
     ];
 
     for (const invalidName of invalidNames) {
-      await expect(conn!.createDatabase(invalidName)).rejects.toThrow(/Invalid database name/);
+      await expect(conn!.createDatabase(invalidName)).rejects.toThrow(/Invalid identifier/);
     }
   });
 });
