@@ -117,13 +117,17 @@ export class PostgresqlConnection extends ConnectionAbs {
     if (!this.isConnected()) {
       await this.connect();
     }
-    await this.connection!.query(`CREATE DATABASE ${name}`);
+    // Use identifier quoting to prevent SQL injection
+    const escapedName = name.replace(/"/g, '""');
+    await this.connection!.query(`CREATE DATABASE "${escapedName}"`);
   }
 
   async dropDatabase(name: string): Promise<void> {
     if (!this.isConnected()) {
       await this.connect();
     }
-    await this.connection!.query(`DROP DATABASE ${name}`);
+    // Use identifier quoting to prevent SQL injection
+    const escapedName = name.replace(/"/g, '""');
+    await this.connection!.query(`DROP DATABASE "${escapedName}"`);
   }
 }
