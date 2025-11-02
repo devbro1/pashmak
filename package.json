@@ -12,7 +12,8 @@
     "prep_for_dev": "node scripts/prep_for.js --dev",
     "prep_for_release": "node scripts/prep_for.js",
     "publish_to_npm": "node scripts/publish_to_npm.js",
-    "bump_versions": "node scripts/bump_versions.js"
+    "bump_versions": "node scripts/bump_versions.js",
+    "bump": "node scripts/bump_versions.js"
   },
   "workspaces": [
     "docs",
