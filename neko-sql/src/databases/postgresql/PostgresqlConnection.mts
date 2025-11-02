@@ -112,4 +112,78 @@ export class PostgresqlConnection extends ConnectionAbs {
   isConnected(): boolean {
     return this.connection !== undefined;
   }
+
+  /**
+   * Validates and escapes a PostgreSQL identifier (database name, table name, etc.)
+   * Uses a whitelist approach to ensure only safe characters are allowed
+   */
+  private validateAndEscapeIdentifier(name: string): string {
+    // PostgreSQL identifiers can contain: letters, digits, underscores, and dollar signs
+    // They must start with a letter or underscore
+    const validIdentifierPattern = /^[a-zA-Z_][a-zA-Z0-9_$]*$/;
+
+    if (!validIdentifierPattern.test(name)) {
+      throw new Error(
+        `Invalid identifier: "${name}". Identifiers must start with a letter or underscore and contain only letters, digits, underscores, and dollar signs.`
+      );
+    }
+
+    // PostgreSQL reserved keywords that should be quoted
+    const reservedKeywords = new Set([
+      'user',
+      'table',
+      'database',
+      'order',
+      'group',
+      'select',
+      'insert',
+      'update',
+      'delete',
+    ]);
+
+    // Quote the identifier if it's a reserved keyword or contains uppercase letters
+    if (reservedKeywords.has(name.toLowerCase()) || name !== name.toLowerCase()) {
+      // Escape any double quotes in the name
+      const escapedName = name.replace(/"/g, '""');
+      return `"${escapedName}"`;
+    }
+
+    return name;
+  }
+
+  async createDatabase(name: string): Promise<void> {
+    if (!this.isConnected()) {
+      await this.connect();
+    }
+    const safeName = this.validateAndEscapeIdentifier(name);
+    await this.connection!.query(`CREATE DATABASE ${safeName}`);
+  }
+
+  async dropDatabase(name: string): Promise<void> {
+    if (!this.isConnected()) {
+      await this.connect();
+    }
+    const safeName = this.validateAndEscapeIdentifier(name);
+    await this.connection!.query(`DROP DATABASE ${safeName}`);
+  }
+
+  async listDatabases(): Promise<string[]> {
+    if (!this.isConnected()) {
+      await this.connect();
+    }
+    const result = await this.connection!.query(
+      'SELECT datname FROM pg_database WHERE datistemplate = false ORDER BY datname'
+    );
+    return result.rows.map((row: any) => row.datname);
+  }
+
+  async existsDatabase(name: string): Promise<boolean> {
+    if (!this.isConnected()) {
+      await this.connect();
+    }
+    const result = await this.connection!.query('SELECT 1 FROM pg_database WHERE datname = $1', [
+      name,
+    ]);
+    return result.rows.length > 0;
+  }
 }

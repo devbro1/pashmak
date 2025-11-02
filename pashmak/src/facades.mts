@@ -11,8 +11,7 @@ import {
 } from "@devbro/neko-mailer";
 import { config } from "@devbro/neko-config";
 import { Cli } from "clipanion";
-import { HttpServer } from "./http.mjs";
-import { HttpError } from "./http.mjs";
+import { HttpServer, HttpError } from "./http.mjs";
 import * as yup from "yup";
 import { Logger } from "@devbro/neko-logger";
 import { CacheProviderFactory } from "./factories.mjs";
