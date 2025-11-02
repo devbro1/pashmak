@@ -26,12 +26,12 @@ describe('database management', () => {
     await PostgresqlConnection.pool.end();
   });
 
-  test('createDatabase creates a new database', async () => {
+  test('createDatabase and removeDatabase', async () => {
     // Create the database
     await conn!.createDatabase(testDbName);
 
     // Verify the database exists by querying the system catalog
-    const result = await conn!.runQuery({
+    let result = await conn!.runQuery({
       sql: 'SELECT 1 FROM pg_database WHERE datname = $1',
       bindings: [testDbName],
       parts: ['SELECT', '1', 'FROM', 'pg_database', 'WHERE', 'datname', '=', '$1'],
@@ -39,14 +39,12 @@ describe('database management', () => {
 
     expect(result).toBeDefined();
     expect(result.length).toBe(1);
-  });
 
-  test('dropDatabase removes an existing database', async () => {
     // Drop the database
     await conn!.dropDatabase(testDbName);
 
     // Verify the database no longer exists
-    const result = await conn!.runQuery({
+    result = await conn!.runQuery({
       sql: 'SELECT 1 FROM pg_database WHERE datname = $1',
       bindings: [testDbName],
       parts: ['SELECT', '1', 'FROM', 'pg_database', 'WHERE', 'datname', '=', '$1'],
