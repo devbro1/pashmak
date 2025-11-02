@@ -73,4 +73,44 @@ describe('database management', () => {
       await expect(conn!.createDatabase(invalidName)).rejects.toThrow(/Invalid identifier/);
     }
   });
+
+  test('listDatabases returns array of database names', async () => {
+    // Create a test database first
+    const tempDbName =
+      'test_list_db_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+    await conn!.createDatabase(tempDbName);
+
+    // List all databases
+    const databases = await conn!.listDatabases();
+
+    // Verify it returns an array and includes our test database
+    expect(Array.isArray(databases)).toBe(true);
+    expect(databases.length).toBeGreaterThan(0);
+    expect(databases).toContain(tempDbName);
+
+    // Clean up
+    await conn!.dropDatabase(tempDbName);
+  });
+
+  test('existsDatabase returns true for existing database', async () => {
+    // Create a test database first
+    const tempDbName =
+      'test_exists_db_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+    await conn!.createDatabase(tempDbName);
+
+    // Check if it exists
+    const exists = await conn!.existsDatabase(tempDbName);
+    expect(exists).toBe(true);
+
+    // Clean up
+    await conn!.dropDatabase(tempDbName);
+  });
+
+  test('existsDatabase returns false for non-existing database', async () => {
+    const nonExistentDb = 'non_existent_db_' + Date.now();
+
+    // Check if it exists
+    const exists = await conn!.existsDatabase(nonExistentDb);
+    expect(exists).toBe(false);
+  });
 });

@@ -64,6 +64,14 @@ class FakeConnection extends Connection {
   async dropDatabase(name: string): Promise<void> {
     throw new Error('Function not implemented.');
   }
+
+  async listDatabases(): Promise<string[]> {
+    throw new Error('Function not implemented.');
+  }
+
+  async existsDatabase(name: string): Promise<boolean> {
+    throw new Error('Function not implemented.');
+  }
 }
 
 export { FakeConnection };

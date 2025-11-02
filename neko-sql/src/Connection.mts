@@ -25,4 +25,6 @@ export abstract class Connection implements EventEmittor<connection_events[]> {
   abstract getSchemaGrammar(): SchemaGrammar;
   abstract createDatabase(name: string): Promise<void>;
   abstract dropDatabase(name: string): Promise<void>;
+  abstract listDatabases(): Promise<string[]>;
+  abstract existsDatabase(name: string): Promise<boolean>;
 }

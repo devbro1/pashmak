@@ -166,4 +166,24 @@ export class PostgresqlConnection extends ConnectionAbs {
     const safeName = this.validateAndEscapeIdentifier(name);
     await this.connection!.query(`DROP DATABASE ${safeName}`);
   }
+
+  async listDatabases(): Promise<string[]> {
+    if (!this.isConnected()) {
+      await this.connect();
+    }
+    const result = await this.connection!.query(
+      'SELECT datname FROM pg_database WHERE datistemplate = false ORDER BY datname'
+    );
+    return result.rows.map((row: any) => row.datname);
+  }
+
+  async existsDatabase(name: string): Promise<boolean> {
+    if (!this.isConnected()) {
+      await this.connect();
+    }
+    const result = await this.connection!.query('SELECT 1 FROM pg_database WHERE datname = $1', [
+      name,
+    ]);
+    return result.rows.length > 0;
+  }
 }
