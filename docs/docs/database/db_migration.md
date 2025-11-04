@@ -140,6 +140,9 @@ await schema.createTable("products", (table) => {
 
   // Timestamps
   table.timestamps(); // created_at, updated_at
+
+  // raw, whatever custom column you want to create
+  table.raw('area GEOGRAPHY(POLYGON, 4326)');
 });
 ```
 

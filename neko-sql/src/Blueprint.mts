@@ -15,7 +15,8 @@ export type ColumnPropertiesType = {
     | 'timestampz'
     | 'serial'
     | 'json'
-    | 'jsonb';
+    | 'jsonb'
+    | 'raw';
   length: number;
   nullable: boolean;
   unique: boolean;
@@ -146,6 +147,12 @@ export class Blueprint {
   string(columnName: string, length: number = 255) {
     const rc = new Column(columnName, 'string');
     rc.length(length);
+    this.columns.push(rc);
+    return rc;
+  }
+
+  raw(sql: string) {
+    const rc = new Column(sql, 'raw');
     this.columns.push(rc);
     return rc;
   }
