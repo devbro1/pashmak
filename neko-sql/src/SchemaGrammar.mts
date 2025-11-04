@@ -116,7 +116,7 @@ export class SchemaGrammar {
     } else if (column.properties.type === 'jsonb') {
       rc.push('jsonb');
     } else if (column.properties.type === 'raw') {
-      rc.push(column.columnName);
+      return column.columnName;
     } else {
       throw new Error('Unknown column type: ' + column.properties.type);
     }
