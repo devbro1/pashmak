@@ -25,10 +25,12 @@ export class MigrateCommand extends Command {
       const schema = db.getSchema();
 
       if (this.fresh) {
-        throw new Error("not implemented");
+        await db.dropDatabase(config.get("databases.default.database"));
+        await db.createDatabase(config.get("databases.default.database"));
+        logger().info("database dropped and created fresh!");
       }
 
-      if (this.refresh) {
+      if (this.refresh && (await schema.tableExists("migrations"))) {
         logger().info("reverting all migrations!!");
         // read all migrations and undo them all
         const existing_migrations = await db.runQuery({

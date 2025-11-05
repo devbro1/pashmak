@@ -1,5 +1,5 @@
 import { connection_events, Connection as ConnectionAbs } from '../../Connection.mjs';
-import { Connection, PoolClient, PoolConfig } from 'pg';
+import { Client, PoolClient, PoolConfig } from 'pg';
 import { Pool } from 'pg';
 import { CompiledSql } from '../../types.mjs';
 import { Query } from '../../Query.mjs';
@@ -47,7 +47,10 @@ export class PostgresqlConnection extends ConnectionAbs {
     this.connection = await PostgresqlConnection.pool.connect();
     return true;
   }
-  async runQuery(sql: CompiledSql) {
+  async runQuery(sql: CompiledSql | string): Promise<any> {
+    if( typeof sql === 'string') {
+      sql = { sql: sql, bindings: [], parts: [sql] };
+    }
     let counter = 1;
     let sql2 = sql.sql;
     if (sql.parts && sql.parts.length > 0) {
@@ -152,19 +155,33 @@ export class PostgresqlConnection extends ConnectionAbs {
   }
 
   async createDatabase(name: string): Promise<void> {
-    if (!this.isConnected()) {
-      await this.connect();
+    if (this.isConnected()) {
+      throw new Error('Cannot create database while connected.');
     }
+
+    let conn = new Client({
+      ...PostgresqlConnection.pool.options,
+      database: 'postgres',
+    });
+    await conn.connect();
     const safeName = this.validateAndEscapeIdentifier(name);
-    await this.connection!.query(`CREATE DATABASE ${safeName}`);
+    await conn.query(`CREATE DATABASE ${safeName}`);
+    await conn.end();
   }
 
   async dropDatabase(name: string): Promise<void> {
-    if (!this.isConnected()) {
-      await this.connect();
+    if (this.isConnected()) {
+      throw new Error('Cannot drop database while connected.');
     }
+
+    let conn = new Client({
+      ...PostgresqlConnection.pool.options,
+      database: 'postgres', // connect to default 'postgres' database to drop others
+    });
+    await conn.connect();
     const safeName = this.validateAndEscapeIdentifier(name);
-    await this.connection!.query(`DROP DATABASE ${safeName}`);
+    await conn.query(`DROP DATABASE ${safeName}`);
+    await conn.end();
   }
 
   async listDatabases(): Promise<string[]> {

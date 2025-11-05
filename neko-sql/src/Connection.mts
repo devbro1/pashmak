@@ -13,7 +13,7 @@ export abstract class Connection implements EventEmittor<connection_events[]> {
 
   abstract isConnected(): boolean;
   abstract connect(): Promise<boolean>;
-  abstract runQuery(sql: CompiledSql): Promise<any>;
+  abstract runQuery(sql: CompiledSql | string): Promise<any>;
   abstract runCursor(sql: CompiledSql): Promise<any>;
   abstract disconnect(): Promise<boolean>;
   abstract getQuery(): Query;
