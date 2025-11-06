@@ -291,3 +291,78 @@ export function spell(num: number): string {
 export function spellOrdinal(num: number): string {
   return numberToWords.toWordsOrdinal(Math.floor(Math.abs(num)));
 }
+
+/**
+ * Rounds a number or array of numbers to a specified precision.
+ *
+ * Provides flexible rounding capabilities with configurable precision and rounding method.
+ * Supports single numbers or arrays of numbers, returning the same type as the input.
+ * Handles NaN values gracefully by preserving them in the output.
+ *
+ * Precision can be positive (decimal places), zero (nearest integer), or negative
+ * (rounding to tens, hundreds, etc.).
+ *
+ * @param number - The number or array of numbers to round
+ * @param options - Configuration options for rounding behavior
+ * @param options.precision - Number of decimal places to round to (default: 1)
+ *   - Positive: round to decimal places (e.g., 2 = 0.01, 3 = 0.001)
+ *   - Zero: round to nearest integer
+ *   - Negative: round to tens, hundreds, etc. (e.g., -1 = 10, -2 = 100)
+ * @param options.method - Rounding method to use: 'round' (default), 'ceil', or 'floor'
+ * @returns The rounded number or array of numbers, matching the input type
+ *
+ * @example
+ * ```typescript
+ * // Basic rounding with default precision (1 decimal place)
+ * round(3.14159) // 3.1
+ * round(2.718) // 2.7
+ *
+ * // Custom precision
+ * round(3.14159, {precision: 2}) // 3.14
+ * round(3.14159, {precision: 0}) // 3
+ * round(1.23456, {precision: 3}) // 1.235
+ *
+ * // Negative precision (round to tens, hundreds, etc.)
+ * round(1234.5678, {precision: -1}) // 1230
+ * round(1234.5678, {precision: -2}) // 1200
+ * round(1234.5678, {precision: -3}) // 1000
+ *
+ * // Different rounding methods
+ * round(3.14159, {precision: 2, method: 'round'}) // 3.14
+ * round(3.14159, {precision: 2, method: 'ceil'}) // 3.15
+ * round(3.14159, {precision: 2, method: 'floor'}) // 3.14
+ * round(1234, {precision: -1, method: 'ceil'}) // 1240
+ * round(1234, {precision: -1, method: 'floor'}) // 1230
+ *
+ * // Array of numbers
+ * round([3.14159, 2.71828], {precision: 2}) // [3.14, 2.72]
+ * round([1.1, 2.2, 3.3], {precision: 0}) // [1, 2, 3]
+ * round([1234, 5678], {precision: -2}) // [1200, 5700]
+ *
+ * // Handles NaN
+ * round(NaN) // NaN
+ * round([1.5, NaN, 2.7], {precision: 0}) // [2, NaN, 3]
+ * ```
+ */
+export function round(number: number, options?: {precision?: number, method?: 'round' | 'ceil' | 'floor'}): number;
+export function round(number: number[], options?: {precision?: number, method?: 'round' | 'ceil' | 'floor'}): number[];
+export function round(number: number | number[], {precision = 1, method= 'round'}: {precision?: number, method?: 'round' | 'ceil' | 'floor'} = {}): number | number[] {
+  if (Array.isArray(number)) {
+    return number.map(n => {
+      return round(n, {precision, method});
+    });
+  }
+
+  if (isNaN(number)) return NaN;
+
+  const factor = Math.pow(10, precision);
+  switch (method) {
+    case 'ceil':
+      return Math.ceil(number * factor) / factor;
+    case 'floor':
+      return Math.floor(number * factor) / factor;
+    case 'round':
+    default:
+      return Math.round(number * factor) / factor;
+  }
+}
