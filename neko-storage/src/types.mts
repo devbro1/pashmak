@@ -1,6 +1,5 @@
 import { S3ClientConfig } from '@aws-sdk/client-s3';
 import { StorageOptions } from '@google-cloud/storage';
-import { StorageSharedKeyCredential, AnonymousCredential } from '@azure/storage-blob';
 
 export type Metadata = {
   size: number;
@@ -8,11 +7,7 @@ export type Metadata = {
   lastModifiedDate: string;
 };
 
-export type GCPStorageConfig = {
-  projectId?: string;
-  keyFilename?: string;
-  credentials?: any;
-};
+export type GCPStorageConfig = StorageOptions;
 
 export type AzureStorageConfig = {
   accountName: string;

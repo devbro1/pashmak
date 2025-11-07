@@ -50,18 +50,20 @@ export class SFTPStorageProvider implements StorageProviderInterface {
     try {
       const fullPath = this.getFullPath(path);
 
-      let data: Buffer | Stream;
-      if (typeof content === 'string' || content instanceof Buffer) {
-        data = typeof content === 'string' ? Buffer.from(content) : content;
+      let data: string | Buffer | Readable;
+      if (typeof content === 'string') {
+        data = content;
+      } else if (content instanceof Buffer) {
+        data = content;
       } else if (typeof content === 'object' && !(content instanceof Stream)) {
         data = Buffer.from(JSON.stringify(content));
       } else if (content instanceof Stream) {
-        data = content;
+        data = content as Readable;
       } else {
         throw new Error('Unsupported content type');
       }
 
-      await client.put(data as any, fullPath);
+      await client.put(data, fullPath);
       return true;
     } finally {
       await client.end();
@@ -109,9 +111,18 @@ export class SFTPStorageProvider implements StorageProviderInterface {
         return client.end();
       })
       .catch((error) => {
-        client.end();
+        client.end().catch(() => {
+          // Ignore errors when closing client during error handling
+        });
         passThrough.destroy(error);
       });
+
+    // Ensure client is closed when stream is destroyed
+    passThrough.on('close', () => {
+      client.end().catch(() => {
+        // Ignore errors if already closed
+      });
+    });
 
     return passThrough as unknown as ReadStream;
   }

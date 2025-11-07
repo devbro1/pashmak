@@ -116,6 +116,15 @@ export class FTPStorageProvider implements StorageProviderInterface {
         passThrough.destroy(error);
       });
 
+    // Ensure client is closed when stream is destroyed
+    passThrough.on('close', () => {
+      try {
+        client.close();
+      } catch {
+        // Ignore errors if already closed
+      }
+    });
+
     return passThrough as unknown as ReadStream;
   }
 
