@@ -1,5 +1,5 @@
 import { Storage as GCPStorage } from '@google-cloud/storage';
-import { Metadata, StorageConfig } from '../types.mjs';
+import { Metadata, GCPStorageConfig } from '../types.mjs';
 import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
 import { ReadStream } from 'fs';
 import Stream, { Readable } from 'stream';
@@ -9,7 +9,7 @@ export class GCPStorageProvider implements StorageProviderInterface {
   private storage: GCPStorage;
   private bucketName: string;
 
-  constructor(protected config: StorageConfig) {
+  constructor(protected config: GCPStorageConfig) {
     this.storage = new GCPStorage(config.gcpConfig);
     this.bucketName = config.bucket || '';
     if (!this.bucketName) {
