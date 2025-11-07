@@ -48,7 +48,7 @@ export class MailgunProvider implements MailerProvider {
     const response = await fetch(`${this.baseUrl}/messages`, {
       method: "POST",
       headers: {
-        Authorization: `Basic ${Buffer.from(`api:${this.apiKey}`).toString("base64")}`,
+        Authorization: `Basic ${Buffer.from("api:" + this.apiKey).toString("base64")}`,
       },
       body: formData,
     });
