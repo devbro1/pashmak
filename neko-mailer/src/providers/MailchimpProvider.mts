@@ -7,6 +7,13 @@ export type MailchimpProviderOptions = {
   default_from: string;
 };
 
+interface MailchimpRecipient {
+  email: string;
+  status: "sent" | "queued" | "scheduled" | "rejected" | "invalid";
+  reject_reason?: string;
+  _id?: string;
+}
+
 /**
  * Mailchimp Transactional (Mandrill) provider
  * Uses Mailchimp's transactional email API (formerly Mandrill)
@@ -57,11 +64,11 @@ export class MailchimpProvider implements MailerProvider {
       throw new Error(`Mailchimp API error: ${response.status} - ${errorText}`);
     }
 
-    const result = await response.json();
+    const result: MailchimpRecipient[] = await response.json();
     
     // Check if any email was rejected
     if (Array.isArray(result)) {
-      const rejected = result.filter((r: any) => r.status === "rejected" || r.status === "invalid");
+      const rejected = result.filter((r) => r.status === "rejected" || r.status === "invalid");
       if (rejected.length > 0) {
         throw new Error(`Mailchimp rejected emails: ${JSON.stringify(rejected)}`);
       }

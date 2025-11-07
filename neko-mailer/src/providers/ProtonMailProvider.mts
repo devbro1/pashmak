@@ -9,6 +9,7 @@ export type ProtonMailProviderOptions = {
   username: string;
   password: string;
   default_from: string;
+  reject_unauthorized?: boolean; // Whether to verify SSL certificates (default: false for Bridge)
 };
 
 /**
@@ -38,8 +39,9 @@ export class ProtonMailProvider implements MailerProvider {
         pass: password,
       },
       tls: {
-        // ProtonMail Bridge uses self-signed certificates
-        rejectUnauthorized: false,
+        // ProtonMail Bridge uses self-signed certificates by default
+        // Allow users to control certificate validation for security
+        rejectUnauthorized: options.reject_unauthorized ?? false,
       },
     });
   }
