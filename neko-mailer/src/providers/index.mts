@@ -2,3 +2,8 @@ export * from "./MemoryProvider.mjs";
 export * from "./SMTPProvider.mjs";
 export * from "./SESProvider.mjs";
 export * from "./FunctionProvider.mjs";
+export * from "./SendGridProvider.mjs";
+export * from "./MailgunProvider.mjs";
+export * from "./PostmarkProvider.mjs";
+export * from "./ProtonMailProvider.mjs";
+export * from "./MailchimpProvider.mjs";
