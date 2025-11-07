@@ -21,8 +21,8 @@ export class MailgunProvider implements MailerProvider {
     this.defaultFrom = options.default_from || "";
     
     // Mailgun has different endpoints for EU and US
-    const region = options.eu ? "eu" : "us";
-    this.baseUrl = `https://api.${region === "eu" ? "eu." : ""}mailgun.net/v3/${this.domain}`;
+    const subdomain = options.eu ? "eu." : "";
+    this.baseUrl = `https://api.${subdomain}mailgun.net/v3/${this.domain}`;
   }
 
   setDefaultFrom(from: string): void {

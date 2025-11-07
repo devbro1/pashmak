@@ -20,6 +20,10 @@ export class SendGridProvider implements MailerProvider {
     this.defaultFrom = from;
   }
 
+  private mapToEmailObjects(emails: string[]): { email: string }[] | undefined {
+    return emails.length > 0 ? emails.map((email) => ({ email })) : undefined;
+  }
+
   async sendMail(mail: Mailable): Promise<void> {
     const msg = {
       from: mail.from || this.defaultFrom,
@@ -41,8 +45,8 @@ export class SendGridProvider implements MailerProvider {
         personalizations: [
           {
             to: msg.to.map((email) => ({ email })),
-            cc: msg.cc.length > 0 ? msg.cc.map((email) => ({ email })) : undefined,
-            bcc: msg.bcc.length > 0 ? msg.bcc.map((email) => ({ email })) : undefined,
+            cc: this.mapToEmailObjects(msg.cc),
+            bcc: this.mapToEmailObjects(msg.bcc),
             subject: msg.subject,
           },
         ],
