@@ -1,34 +1,27 @@
 import { Client as FTPClient } from 'basic-ftp';
-import { Metadata, StorageConfig } from '../types.mjs';
+import { Metadata, FTPConfig } from '../types.mjs';
 import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
 import { ReadStream } from 'fs';
 import Stream, { Readable, PassThrough } from 'stream';
 import * as mime from 'mime-types';
 
 export class FTPStorageProvider implements StorageProviderInterface {
-  private config: StorageConfig;
-
-  constructor(config: StorageConfig) {
-    if (!config.ftpConfig) {
-      throw new Error('FTP config is required for FTP Storage');
-    }
-    this.config = config;
-  }
+  constructor(private config: FTPConfig) {}
 
   private async getClient(): Promise<FTPClient> {
     const client = new FTPClient();
     await client.access({
-      host: this.config.ftpConfig!.host,
-      port: this.config.ftpConfig!.port || 21,
-      user: this.config.ftpConfig!.user || 'anonymous',
-      password: this.config.ftpConfig!.password || '',
-      secure: this.config.ftpConfig!.secure || false,
+      host: this.config.host,
+      port: this.config.port || 21,
+      user: this.config.user || 'anonymous',
+      password: this.config.password || '',
+      secure: this.config.secure || false,
     });
     return client;
   }
 
   private getFullPath(path: string): string {
-    return this.config.basePath ? `${this.config.basePath}/${path}` : path;
+    return path;
   }
 
   async exists(path: string): Promise<boolean> {

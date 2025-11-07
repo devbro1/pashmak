@@ -1,35 +1,28 @@
 import SFTPClient from 'ssh2-sftp-client';
-import { Metadata, StorageConfig } from '../types.mjs';
+import { Metadata, SFTPConfig } from '../types.mjs';
 import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
 import { ReadStream } from 'fs';
 import Stream, { Readable, PassThrough } from 'stream';
 import * as mime from 'mime-types';
 
 export class SFTPStorageProvider implements StorageProviderInterface {
-  private config: StorageConfig;
-
-  constructor(config: StorageConfig) {
-    if (!config.sftpConfig) {
-      throw new Error('SFTP config is required for SFTP Storage');
-    }
-    this.config = config;
-  }
+  constructor(private config: SFTPConfig) {}
 
   private async getClient(): Promise<SFTPClient> {
     const client = new SFTPClient();
     await client.connect({
-      host: this.config.sftpConfig!.host,
-      port: this.config.sftpConfig!.port || 22,
-      username: this.config.sftpConfig!.username,
-      password: this.config.sftpConfig!.password,
-      privateKey: this.config.sftpConfig!.privateKey,
-      passphrase: this.config.sftpConfig!.passphrase,
+      host: this.config.host,
+      port: this.config.port || 22,
+      username: this.config.username,
+      password: this.config.password,
+      privateKey: this.config.privateKey,
+      passphrase: this.config.passphrase,
     });
     return client;
   }
 
   private getFullPath(path: string): string {
-    return this.config.basePath ? `${this.config.basePath}/${path}` : path;
+    return path;
   }
 
   async exists(path: string): Promise<boolean> {

@@ -7,19 +7,14 @@ import * as mime from 'mime-types';
 
 export class GCPStorageProvider implements StorageProviderInterface {
   private storage: GCPStorage;
-  private bucketName: string;
 
   constructor(protected config: GCPStorageConfig) {
-    this.storage = new GCPStorage(config.gcpConfig);
-    this.bucketName = config.bucket || '';
-    if (!this.bucketName) {
-      throw new Error('Bucket name is required for GCP Storage');
-    }
+    this.storage = new GCPStorage(config);
   }
 
   async exists(path: string): Promise<boolean> {
     try {
-      const file = this.storage.bucket(this.bucketName).file(path);
+      const file = this.storage.bucket(this.config.bucket).file(path);
       const [exists] = await file.exists();
       return exists;
     } catch (error) {
@@ -28,7 +23,7 @@ export class GCPStorageProvider implements StorageProviderInterface {
   }
 
   async put(path: string, content: string | object | Stream | Buffer): Promise<boolean> {
-    const file = this.storage.bucket(this.bucketName).file(path);
+    const file = this.storage.bucket(this.config.bucket).file(path);
 
     let data: string | Buffer | Stream;
     if (typeof content === 'string' || content instanceof Buffer) {
@@ -61,30 +56,30 @@ export class GCPStorageProvider implements StorageProviderInterface {
   }
 
   async getString(path: string): Promise<string> {
-    const file = this.storage.bucket(this.bucketName).file(path);
+    const file = this.storage.bucket(this.config.bucket).file(path);
     const [content] = await file.download();
     return content.toString('utf-8');
   }
 
   async getBuffer(path: string): Promise<Buffer> {
-    const file = this.storage.bucket(this.bucketName).file(path);
+    const file = this.storage.bucket(this.config.bucket).file(path);
     const [content] = await file.download();
     return content;
   }
 
   async getStream(path: string): Promise<ReadStream> {
-    const file = this.storage.bucket(this.bucketName).file(path);
+    const file = this.storage.bucket(this.config.bucket).file(path);
     return file.createReadStream() as unknown as ReadStream;
   }
 
   async delete(path: string): Promise<boolean> {
-    const file = this.storage.bucket(this.bucketName).file(path);
+    const file = this.storage.bucket(this.config.bucket).file(path);
     await file.delete();
     return true;
   }
 
   async metadata(path: string): Promise<Metadata> {
-    const file = this.storage.bucket(this.bucketName).file(path);
+    const file = this.storage.bucket(this.config.bucket).file(path);
     const [metadata] = await file.getMetadata();
 
     return {

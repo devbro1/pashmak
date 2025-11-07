@@ -1,5 +1,5 @@
 import { BlobServiceClient, StorageSharedKeyCredential } from '@azure/storage-blob';
-import { Metadata, StorageConfig } from '../types.mjs';
+import { Metadata, AzureStorageConfig } from '../types.mjs';
 import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
 import { ReadStream } from 'fs';
 import Stream, { Readable } from 'stream';
@@ -7,15 +7,9 @@ import * as mime from 'mime-types';
 
 export class AzureBlobStorageProvider implements StorageProviderInterface {
   private blobServiceClient: BlobServiceClient;
-  private containerName: string;
 
-  constructor(protected config: StorageConfig) {
-    if (!config.azureConfig) {
-      throw new Error('Azure config is required for Azure Blob Storage');
-    }
-
-    const { accountName, accountKey, sasToken, containerName } = config.azureConfig;
-    this.containerName = containerName;
+  constructor(protected config: AzureStorageConfig) {
+    const { accountName, accountKey, sasToken } = config;
 
     if (accountKey) {
       const sharedKeyCredential = new StorageSharedKeyCredential(accountName, accountKey);
@@ -34,7 +28,7 @@ export class AzureBlobStorageProvider implements StorageProviderInterface {
 
   async exists(path: string): Promise<boolean> {
     try {
-      const containerClient = this.blobServiceClient.getContainerClient(this.containerName);
+      const containerClient = this.blobServiceClient.getContainerClient(this.config.containerName);
       const blobClient = containerClient.getBlobClient(path);
       return await blobClient.exists();
     } catch (error) {
@@ -43,7 +37,7 @@ export class AzureBlobStorageProvider implements StorageProviderInterface {
   }
 
   async put(path: string, content: string | object | Stream | Buffer): Promise<boolean> {
-    const containerClient = this.blobServiceClient.getContainerClient(this.containerName);
+    const containerClient = this.blobServiceClient.getContainerClient(this.config.containerName);
     const blockBlobClient = containerClient.getBlockBlobClient(path);
 
     let data: string | Buffer | Stream;
@@ -78,7 +72,7 @@ export class AzureBlobStorageProvider implements StorageProviderInterface {
   }
 
   async getBuffer(path: string): Promise<Buffer> {
-    const containerClient = this.blobServiceClient.getContainerClient(this.containerName);
+    const containerClient = this.blobServiceClient.getContainerClient(this.config.containerName);
     const blobClient = containerClient.getBlobClient(path);
     const downloadResponse = await blobClient.download();
 
@@ -90,7 +84,7 @@ export class AzureBlobStorageProvider implements StorageProviderInterface {
   }
 
   async getStream(path: string): Promise<ReadStream> {
-    const containerClient = this.blobServiceClient.getContainerClient(this.containerName);
+    const containerClient = this.blobServiceClient.getContainerClient(this.config.containerName);
     const blobClient = containerClient.getBlobClient(path);
     const downloadResponse = await blobClient.download();
 
@@ -102,14 +96,14 @@ export class AzureBlobStorageProvider implements StorageProviderInterface {
   }
 
   async delete(path: string): Promise<boolean> {
-    const containerClient = this.blobServiceClient.getContainerClient(this.containerName);
+    const containerClient = this.blobServiceClient.getContainerClient(this.config.containerName);
     const blobClient = containerClient.getBlobClient(path);
     await blobClient.delete();
     return true;
   }
 
   async metadata(path: string): Promise<Metadata> {
-    const containerClient = this.blobServiceClient.getContainerClient(this.containerName);
+    const containerClient = this.blobServiceClient.getContainerClient(this.config.containerName);
     const blobClient = containerClient.getBlobClient(path);
     const properties = await blobClient.getProperties();
 
