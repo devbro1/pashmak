@@ -20,15 +20,10 @@ export class FTPStorageProvider implements StorageProviderInterface {
     return client;
   }
 
-  private getFullPath(path: string): string {
-    return path;
-  }
-
   async exists(path: string): Promise<boolean> {
     const client = await this.getClient();
     try {
-      const fullPath = this.getFullPath(path);
-      await client.size(fullPath);
+      await client.size(path);
       return true;
     } catch (error) {
       return false;
@@ -40,8 +35,6 @@ export class FTPStorageProvider implements StorageProviderInterface {
   async put(path: string, content: string | object | Stream | Buffer): Promise<boolean> {
     const client = await this.getClient();
     try {
-      const fullPath = this.getFullPath(path);
-
       let stream: Stream;
       if (typeof content === 'string' || content instanceof Buffer) {
         const readable = new Readable();
@@ -59,7 +52,7 @@ export class FTPStorageProvider implements StorageProviderInterface {
         throw new Error('Unsupported content type');
       }
 
-      await client.uploadFrom(stream as Readable, fullPath);
+      await client.uploadFrom(stream as Readable, path);
       return true;
     } finally {
       client.close();
@@ -79,7 +72,6 @@ export class FTPStorageProvider implements StorageProviderInterface {
   async getBuffer(path: string): Promise<Buffer> {
     const client = await this.getClient();
     try {
-      const fullPath = this.getFullPath(path);
       const chunks: Buffer[] = [];
       const writable = new PassThrough();
 
@@ -87,7 +79,7 @@ export class FTPStorageProvider implements StorageProviderInterface {
         chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
       });
 
-      await client.downloadTo(writable, fullPath);
+      await client.downloadTo(writable, path);
 
       return Buffer.concat(chunks);
     } finally {
@@ -97,12 +89,11 @@ export class FTPStorageProvider implements StorageProviderInterface {
 
   async getStream(path: string): Promise<ReadStream> {
     const client = await this.getClient();
-    const fullPath = this.getFullPath(path);
     const passThrough = new PassThrough();
 
     // Download to stream and close client when done
     client
-      .downloadTo(passThrough, fullPath)
+      .downloadTo(passThrough, path)
       .then(() => client.close())
       .catch((error) => {
         client.close();
@@ -124,8 +115,7 @@ export class FTPStorageProvider implements StorageProviderInterface {
   async delete(path: string): Promise<boolean> {
     const client = await this.getClient();
     try {
-      const fullPath = this.getFullPath(path);
-      await client.remove(fullPath);
+      await client.remove(path);
       return true;
     } finally {
       client.close();
@@ -135,9 +125,8 @@ export class FTPStorageProvider implements StorageProviderInterface {
   async metadata(path: string): Promise<Metadata> {
     const client = await this.getClient();
     try {
-      const fullPath = this.getFullPath(path);
-      const size = await client.size(fullPath);
-      const lastMod = await client.lastMod(fullPath);
+      const size = await client.size(path);
+      const lastMod = await client.lastMod(path);
 
       return {
         size: size,

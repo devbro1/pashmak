@@ -21,15 +21,10 @@ export class SFTPStorageProvider implements StorageProviderInterface {
     return client;
   }
 
-  private getFullPath(path: string): string {
-    return path;
-  }
-
   async exists(path: string): Promise<boolean> {
     const client = await this.getClient();
     try {
-      const fullPath = this.getFullPath(path);
-      const result = await client.exists(fullPath);
+      const result = await client.exists(path);
       return result !== false;
     } catch (error) {
       return false;
@@ -41,8 +36,6 @@ export class SFTPStorageProvider implements StorageProviderInterface {
   async put(path: string, content: string | object | Stream | Buffer): Promise<boolean> {
     const client = await this.getClient();
     try {
-      const fullPath = this.getFullPath(path);
-
       let data: string | Buffer | Readable;
       if (typeof content === 'string') {
         data = content;
@@ -56,7 +49,7 @@ export class SFTPStorageProvider implements StorageProviderInterface {
         throw new Error('Unsupported content type');
       }
 
-      await client.put(data, fullPath);
+      await client.put(data, path);
       return true;
     } finally {
       await client.end();
@@ -76,8 +69,7 @@ export class SFTPStorageProvider implements StorageProviderInterface {
   async getBuffer(path: string): Promise<Buffer> {
     const client = await this.getClient();
     try {
-      const fullPath = this.getFullPath(path);
-      const buffer = await client.get(fullPath);
+      const buffer = await client.get(path);
       return buffer as Buffer;
     } finally {
       await client.end();
@@ -86,12 +78,11 @@ export class SFTPStorageProvider implements StorageProviderInterface {
 
   async getStream(path: string): Promise<ReadStream> {
     const client = await this.getClient();
-    const fullPath = this.getFullPath(path);
     const passThrough = new PassThrough();
 
     // Get the file as a stream and close client when done
     client
-      .get(fullPath)
+      .get(path)
       .then((data) => {
         if (data instanceof Buffer) {
           const readable = new Readable();
@@ -123,8 +114,7 @@ export class SFTPStorageProvider implements StorageProviderInterface {
   async delete(path: string): Promise<boolean> {
     const client = await this.getClient();
     try {
-      const fullPath = this.getFullPath(path);
-      await client.delete(fullPath);
+      await client.delete(path);
       return true;
     } finally {
       await client.end();
@@ -134,8 +124,7 @@ export class SFTPStorageProvider implements StorageProviderInterface {
   async metadata(path: string): Promise<Metadata> {
     const client = await this.getClient();
     try {
-      const fullPath = this.getFullPath(path);
-      const stats = await client.stat(fullPath);
+      const stats = await client.stat(path);
 
       return {
         size: stats.size || 0,
