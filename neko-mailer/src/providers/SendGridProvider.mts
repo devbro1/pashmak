@@ -24,6 +24,10 @@ export class SendGridProvider implements MailerProvider {
     return emails.length > 0 ? emails.map((email) => ({ email })) : undefined;
   }
 
+  private mapToRequiredEmailObjects(emails: string[]): { email: string }[] {
+    return emails.map((email) => ({ email }));
+  }
+
   async sendMail(mail: Mailable): Promise<void> {
     const msg = {
       from: mail.from || this.defaultFrom,
@@ -44,7 +48,7 @@ export class SendGridProvider implements MailerProvider {
       body: JSON.stringify({
         personalizations: [
           {
-            to: msg.to.map((email) => ({ email })),
+            to: this.mapToRequiredEmailObjects(msg.to),
             cc: this.mapToEmailObjects(msg.cc),
             bcc: this.mapToEmailObjects(msg.bcc),
             subject: msg.subject,

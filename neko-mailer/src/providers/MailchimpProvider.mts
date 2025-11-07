@@ -70,7 +70,8 @@ export class MailchimpProvider implements MailerProvider {
     if (Array.isArray(result)) {
       const rejected = result.filter((r) => r.status === "rejected" || r.status === "invalid");
       if (rejected.length > 0) {
-        throw new Error(`Mailchimp rejected emails: ${JSON.stringify(rejected)}`);
+        const rejectedEmails = rejected.map((r) => `${r.email}: ${r.reject_reason || r.status}`);
+        throw new Error(`Mailchimp rejected ${rejected.length} email(s): ${rejectedEmails.join(", ")}`);
       }
     }
   }
