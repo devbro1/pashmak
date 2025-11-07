@@ -1,4 +1,4 @@
-import { S3ClientConfig } from '@aws-sdk/client-s3';
+import { S3ClientConfig as S3ClientConfig_base } from '@aws-sdk/client-s3';
 import { StorageOptions } from '@google-cloud/storage';
 
 export type Metadata = {
@@ -33,13 +33,17 @@ export type SFTPConfig = {
   passphrase?: string;
 };
 
-export type StorageConfig = {
-  engine: string;
+export type S3ClientConfig = S3ClientConfig_base & { bucket: string };
+export type LocalStorageConfig = {
   basePath: string;
-  bucket?: string;
-  s3Config?: S3ClientConfig;
-  gcpConfig?: GCPStorageConfig;
-  azureConfig?: AzureStorageConfig;
-  ftpConfig?: FTPConfig;
-  sftpConfig?: SFTPConfig;
 };
+export type StorageConfig =
+  | LocalStorageConfig
+  | S3ClientConfig
+  | {
+      s3Config?: S3ClientConfig;
+      gcpConfig?: GCPStorageConfig;
+      azureConfig?: AzureStorageConfig;
+      ftpConfig?: FTPConfig;
+      sftpConfig?: SFTPConfig;
+    };

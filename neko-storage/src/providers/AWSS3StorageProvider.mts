@@ -1,4 +1,4 @@
-import { Metadata, StorageConfig } from '../types.mjs';
+import { Metadata, S3ClientConfig } from '../types.mjs';
 import { Storage } from '../Storage.mjs';
 import {
   S3Client,
@@ -15,13 +15,13 @@ import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
 export class AWSS3StorageProvider implements StorageProviderInterface {
   private s3: S3Client;
 
-  constructor(protected config: StorageConfig) {
-    this.s3 = new S3Client(this.config?.s3Config || {});
+  constructor(protected config: S3ClientConfig) {
+    this.s3 = new S3Client(this.config);
   }
 
   async exists(path: string): Promise<boolean> {
     try {
-      await this.s3.send(new HeadObjectCommand({ Bucket: this.config?.bucket, Key: path }));
+      await this.s3.send(new HeadObjectCommand({ Bucket: this.config.bucket, Key: path }));
       return true;
     } catch (error: any) {
       if (error.name === 'NotFound') {
