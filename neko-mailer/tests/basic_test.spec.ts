@@ -14,20 +14,20 @@ describe("basic tests", () => {
       getHtmlContent = () => "<h1>Hello World</h1>";
     }
 
-    let mails: Mailable[] = [];
-    let p1: MailerProvider = new FunctionProvider((mail: Mailable) => {
+    const mails: Mailable[] = [];
+    const p1: MailerProvider = new FunctionProvider((mail: Mailable) => {
       mails.push(mail);
     });
 
     p1.setDefaultFrom("backup@example.com");
 
-    let mail = new HelloMail();
+    const mail = new HelloMail();
     mail.to = "recipient@example.com";
     mail.from = "hello@example.com";
     mail.cc = ["cc@example.com"];
     mail.bcc = ["bcc@example.com"];
 
-    let mailer: Mailer = new Mailer(p1);
+    const mailer: Mailer = new Mailer(p1);
 
     await mailer.send(mail);
     expect(mails.length).toBe(1);
@@ -36,7 +36,7 @@ describe("basic tests", () => {
     expect(mails[0].cc).toEqual(["cc@example.com"]);
     expect(mails[0].bcc).toEqual(["bcc@example.com"]);
 
-    let mail2 = new HelloMail();
+    const mail2 = new HelloMail();
     mail2.to = "recipient2@example.com";
     mail2.cc = ["cc2@example.com"];
     mail2.bcc = ["bcc2@example.com"];
