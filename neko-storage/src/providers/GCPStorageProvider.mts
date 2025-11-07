@@ -9,7 +9,8 @@ export class GCPStorageProvider implements StorageProviderInterface {
   private storage: GCPStorage;
 
   constructor(protected config: GCPStorageConfig) {
-    this.storage = new GCPStorage(config);
+    const { bucket, ...gcpOptions } = config;
+    this.storage = new GCPStorage(gcpOptions);
   }
 
   async exists(path: string): Promise<boolean> {
