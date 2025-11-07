@@ -46,8 +46,7 @@ export class PostmarkProvider implements MailerProvider {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Postmark API error: ${response.status} - ${errorText}`);
+      throw new Error(`Postmark API error: ${response.status} ${response.statusText}`);
     }
   }
 }

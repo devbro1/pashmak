@@ -60,8 +60,7 @@ export class MailchimpProvider implements MailerProvider {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Mailchimp API error: ${response.status} - ${errorText}`);
+      throw new Error(`Mailchimp API error: ${response.status} ${response.statusText}`);
     }
 
     const result: MailchimpRecipient[] = await response.json();

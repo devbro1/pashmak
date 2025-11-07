@@ -54,8 +54,7 @@ export class MailgunProvider implements MailerProvider {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Mailgun API error: ${response.status} - ${errorText}`);
+      throw new Error(`Mailgun API error: ${response.status} ${response.statusText}`);
     }
   }
 }

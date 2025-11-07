@@ -20,11 +20,10 @@ export class SendGridProvider implements MailerProvider {
     this.defaultFrom = from;
   }
 
-  private mapToEmailObjects(emails: string[]): { email: string }[] | undefined {
-    return emails.length > 0 ? emails.map((email) => ({ email })) : undefined;
-  }
-
-  private mapToRequiredEmailObjects(emails: string[]): { email: string }[] {
+  private mapToEmailObjects(emails: string[], required: boolean = false): { email: string }[] | undefined {
+    if (emails.length === 0 && !required) {
+      return undefined;
+    }
     return emails.map((email) => ({ email }));
   }
 
@@ -48,7 +47,7 @@ export class SendGridProvider implements MailerProvider {
       body: JSON.stringify({
         personalizations: [
           {
-            to: this.mapToRequiredEmailObjects(msg.to),
+            to: this.mapToEmailObjects(msg.to, true),
             cc: this.mapToEmailObjects(msg.cc),
             bcc: this.mapToEmailObjects(msg.bcc),
             subject: msg.subject,
@@ -69,8 +68,7 @@ export class SendGridProvider implements MailerProvider {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`SendGrid API error: ${response.status} - ${errorText}`);
+      throw new Error(`SendGrid API error: ${response.status} ${response.statusText}`);
     }
   }
 }
