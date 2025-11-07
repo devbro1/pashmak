@@ -19,7 +19,7 @@ export class MailgunProvider implements MailerProvider {
     this.apiKey = options.api_key || process.env.MAILGUN_API_KEY || "";
     this.domain = options.domain || process.env.MAILGUN_DOMAIN || "";
     this.defaultFrom = options.default_from || "";
-    
+
     // Mailgun has different endpoints for EU and US
     const subdomain = options.eu ? "eu." : "";
     this.baseUrl = `https://api.${subdomain}mailgun.net/v3/${this.domain}`;
@@ -54,7 +54,9 @@ export class MailgunProvider implements MailerProvider {
     });
 
     if (!response.ok) {
-      throw new Error(`Mailgun API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Mailgun API error: ${response.status} ${response.statusText}`,
+      );
     }
   }
 }

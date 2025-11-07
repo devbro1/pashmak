@@ -12,7 +12,8 @@ export class PostmarkProvider implements MailerProvider {
   private serverToken: string;
 
   constructor(options: Partial<PostmarkProviderOptions> = {}) {
-    this.serverToken = options.server_token || process.env.POSTMARK_SERVER_TOKEN || "";
+    this.serverToken =
+      options.server_token || process.env.POSTMARK_SERVER_TOKEN || "";
     this.defaultFrom = options.default_from || "";
   }
 
@@ -46,7 +47,9 @@ export class PostmarkProvider implements MailerProvider {
     });
 
     if (!response.ok) {
-      throw new Error(`Postmark API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Postmark API error: ${response.status} ${response.statusText}`,
+      );
     }
   }
 }

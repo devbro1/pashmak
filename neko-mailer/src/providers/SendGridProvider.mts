@@ -20,7 +20,10 @@ export class SendGridProvider implements MailerProvider {
     this.defaultFrom = from;
   }
 
-  private mapToEmailObjects(emails: string[], required: boolean = false): { email: string }[] | undefined {
+  private mapToEmailObjects(
+    emails: string[],
+    required: boolean = false,
+  ): { email: string }[] | undefined {
     if (emails.length === 0 && !required) {
       return undefined;
     }
@@ -68,7 +71,9 @@ export class SendGridProvider implements MailerProvider {
     });
 
     if (!response.ok) {
-      throw new Error(`SendGrid API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `SendGrid API error: ${response.status} ${response.statusText}`,
+      );
     }
   }
 }

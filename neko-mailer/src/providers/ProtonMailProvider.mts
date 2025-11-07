@@ -23,10 +23,13 @@ export class ProtonMailProvider implements MailerProvider {
 
   constructor(options: Partial<ProtonMailProviderOptions> = {}) {
     this.defaultFrom = options.default_from || "";
-    
+
     // ProtonMail Bridge default settings
-    const host = options.bridge_host || process.env.PROTONMAIL_BRIDGE_HOST || "127.0.0.1";
-    const port = options.bridge_port || parseInt(process.env.PROTONMAIL_BRIDGE_PORT || "1025");
+    const host =
+      options.bridge_host || process.env.PROTONMAIL_BRIDGE_HOST || "127.0.0.1";
+    const port =
+      options.bridge_port ||
+      parseInt(process.env.PROTONMAIL_BRIDGE_PORT || "1025");
     const username = options.username || process.env.PROTONMAIL_USERNAME || "";
     const password = options.password || process.env.PROTONMAIL_PASSWORD || "";
 
