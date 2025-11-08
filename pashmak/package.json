@@ -1,6 +1,6 @@
 {
   "name": "@devbro/pashmak",
-  "version": "0.1.42",
+  "version": "0.1.43",
   "description": "testing application for the entire repo",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -96,6 +96,11 @@
       "types": "./dist/middlewares.d.ts",
       "import": "./dist/middlewares.mjs",
       "require": "./dist/middlewares.js"
+    },
+    "./storage": {
+      "types": "./dist/storage.d.ts",
+      "import": "./dist/storage.mjs",
+      "require": "./dist/storage.js"
     },
     "./package.json": "./package.json"
   },
