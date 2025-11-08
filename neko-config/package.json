@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-config",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "neko config helps with loading and managing configuration files in a structured way",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -28,6 +28,7 @@
   "author": "Farzad Meow Khalafi",
   "license": "MIT",
   "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.14.1",
     "@typescript-eslint/eslint-plugin": "^7.1.1",
     "@typescript-eslint/parser": "^7.1.1",
@@ -41,6 +42,8 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@devbro/neko-helper": "^0.1.2",
+    "js-yaml": "^4.1.0",
     "jsonpath-plus": "^10.3.0"
   },
   "directories": {

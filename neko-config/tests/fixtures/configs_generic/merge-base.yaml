@@ -1,0 +1,7 @@
+database:
+  username: admin
+  password: secret
+cache:
+  ttl: 3600
+logging:
+  level: debug
