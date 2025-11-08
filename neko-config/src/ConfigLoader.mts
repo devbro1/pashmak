@@ -128,7 +128,10 @@ export function loadConfig(
 
   // Get the caller's directory (skip current function)
   const callerFile = stack[1]?.getFileName();
-  const callerDir = callerFile ? path.dirname(callerFile) : process.cwd();
+  let callerDir = callerFile ? path.dirname(callerFile) : process.cwd();
+  if (callerDir.startsWith('file:')) {
+    callerDir = callerDir.substring(5);
+  }
 
   // Resolve the file path relative to the caller's directory
   const resolvedPath = path.isAbsolute(file_path) ? file_path : path.join(callerDir, file_path);
