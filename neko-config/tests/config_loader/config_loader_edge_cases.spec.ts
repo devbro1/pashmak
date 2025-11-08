@@ -7,9 +7,7 @@ const fixturesPath = path.join(__dirname, '../fixtures/configs_generic');
 describe('ConfigLoader error handling and edge cases', () => {
   describe('Invalid file content', () => {
     test('should throw error for invalid JSON', async () => {
-      await expect(
-        loadConfig(path.join(fixturesPath, 'invalid'))
-      ).rejects.toThrow();
+      await expect(loadConfig(path.join(fixturesPath, 'invalid'))).rejects.toThrow();
     });
   });
 
@@ -21,7 +19,7 @@ describe('ConfigLoader error handling and edge cases', () => {
 
     test('should handle directory with no matching files', async () => {
       const loader = new ConfigLoader(path.join(fixturesPath, 'nonexistent'), {
-        allowed_extensions: ['.txt', '.pdf']
+        allowed_extensions: ['.txt', '.pdf'],
       });
       const config = await loader.load();
       expect(config).toEqual({});
@@ -37,7 +35,7 @@ describe('ConfigLoader error handling and edge cases', () => {
 
     test('should work with partial options', async () => {
       const loader = new ConfigLoader(path.join(fixturesPath, 'app'), {
-        load_only_first_match: true
+        load_only_first_match: true,
       });
       const config = await loader.load();
       expect(config.name).toBe('test-app');
@@ -45,7 +43,7 @@ describe('ConfigLoader error handling and edge cases', () => {
 
     test('should override default node_env', async () => {
       const loader = new ConfigLoader(path.join(fixturesPath, 'databases'), {
-        node_env: 'test'
+        node_env: 'test',
       });
       const config = await loader.load();
       expect(config.db_name).toBe('test_db');
@@ -71,7 +69,7 @@ describe('ConfigLoader error handling and edge cases', () => {
       const config1 = await loadConfig(path.join(fixturesPath, 'app'));
       expect(typeof config1).toBe('object');
       expect(config1).not.toBeNull();
-      
+
       const config2 = await loadConfig(path.join(fixturesPath, 'nonexistent'));
       expect(typeof config2).toBe('object');
       expect(config2).not.toBeNull();
@@ -99,9 +97,9 @@ describe('ConfigLoader error handling and edge cases', () => {
       const promises = [
         loadConfig(path.join(fixturesPath, 'app')),
         loadConfig(path.join(fixturesPath, 'server')),
-        loadConfig(path.join(fixturesPath, 'cache'))
+        loadConfig(path.join(fixturesPath, 'cache')),
       ];
-      
+
       const results = await Promise.all(promises);
       expect(results).toHaveLength(3);
       expect(results[0].name).toBe('test-app');
@@ -132,7 +130,7 @@ describe('ConfigLoader error handling and edge cases', () => {
     test('should return new object on each load', async () => {
       const config1 = await loadConfig(path.join(fixturesPath, 'app'));
       const config2 = await loadConfig(path.join(fixturesPath, 'app'));
-      
+
       // Should have same values but be different objects
       expect(config1).toEqual(config2);
       expect(config1).not.toBe(config2);
@@ -141,7 +139,7 @@ describe('ConfigLoader error handling and edge cases', () => {
     test('modifying returned config should not affect subsequent loads', async () => {
       const config1 = await loadConfig(path.join(fixturesPath, 'app'));
       config1.name = 'modified';
-      
+
       const config2 = await loadConfig(path.join(fixturesPath, 'app'));
       expect(config2.name).toBe('test-app');
     });

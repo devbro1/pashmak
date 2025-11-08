@@ -9,21 +9,21 @@ describe('ConfigLoader advanced features', () => {
     test('should deep merge multiple config files with same base name', async () => {
       const loader = new ConfigLoader(path.join(fixturesPath, 'merge-base'), {
         load_only_first_match: false,
-        allowed_extensions: ['.json', '.yaml']
+        allowed_extensions: ['.json', '.yaml'],
       });
       const config = await loader.load();
-      
+
       // Should merge both JSON and YAML configs
       expect(config.database).toBeDefined();
       expect(config.database.host).toBe('localhost');
       expect(config.database.port).toBe(5432);
       expect(config.database.username).toBe('admin');
       expect(config.database.password).toBe('secret');
-      
+
       expect(config.cache).toBeDefined();
       expect(config.cache.enabled).toBe(true);
       expect(config.cache.ttl).toBe(3600);
-      
+
       expect(config.logging).toBeDefined();
       expect(config.logging.level).toBe('debug');
     });
@@ -31,10 +31,10 @@ describe('ConfigLoader advanced features', () => {
     test('should override values in correct order', async () => {
       const loader = new ConfigLoader(path.join(fixturesPath, 'merge-base'), {
         load_only_first_match: false,
-        allowed_extensions: ['.json', '.yaml']
+        allowed_extensions: ['.json', '.yaml'],
       });
       const config = await loader.load();
-      
+
       // YAML should override JSON since it comes later in extension order
       expect(config.cache.ttl).toBe(3600);
     });
@@ -44,10 +44,10 @@ describe('ConfigLoader advanced features', () => {
     test('should respect extension order in allowed_extensions', async () => {
       const loaderJsonFirst = new ConfigLoader(path.join(fixturesPath, 'merge-base'), {
         allowed_extensions: ['.json', '.yaml'],
-        load_only_first_match: true
+        load_only_first_match: true,
       });
       const configJsonFirst = await loaderJsonFirst.load();
-      
+
       // Should only load JSON
       expect(configJsonFirst.database).toBeDefined();
       expect(configJsonFirst.database.host).toBe('localhost');
@@ -57,10 +57,10 @@ describe('ConfigLoader advanced features', () => {
     test('should load different file when extension order changes', async () => {
       const loaderYamlFirst = new ConfigLoader(path.join(fixturesPath, 'merge-base'), {
         allowed_extensions: ['.yaml', '.json'],
-        load_only_first_match: true
+        load_only_first_match: true,
       });
       const configYamlFirst = await loaderYamlFirst.load();
-      
+
       // Should only load YAML
       expect(configYamlFirst.database).toBeDefined();
       expect(configYamlFirst.database.username).toBe('admin');
@@ -71,12 +71,12 @@ describe('ConfigLoader advanced features', () => {
   describe('Multiple extension types', () => {
     test('should handle all supported extensions', async () => {
       const extensions = ['.json', '.yml', '.yaml', '.js', '.mjs', '.ts', '.mts'];
-      
+
       for (const ext of extensions) {
         const loader = new ConfigLoader(path.join(fixturesPath, 'test'), {
-          allowed_extensions: [ext]
+          allowed_extensions: [ext],
         });
-        
+
         // Should not throw error even if file doesn't exist
         const config = await loader.load();
         expect(config).toBeDefined();

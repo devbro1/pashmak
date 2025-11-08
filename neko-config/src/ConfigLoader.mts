@@ -14,7 +14,10 @@ export class ConfigLoader {
   private load_only_first_match: boolean;
   private node_env: string;
 
-  constructor(private file_path: string, options: Partial<ConfigLoaderOptions> = {}) {
+  constructor(
+    private file_path: string,
+    options: Partial<ConfigLoaderOptions> = {}
+  ) {
     this.allowed_extensions = ['.json', '.yml', '.yaml', '.js', '.mjs', '.ts', '.mts'];
     this.load_only_first_match = false;
     this.node_env = process.env.NODE_ENV || 'development';
@@ -91,12 +94,12 @@ export class ConfigLoader {
     let envConfig = module[envKey] || {};
 
     // resolve any promises in defaultConfig and envConfig
-    let resolver = async (value:any) => {
-      if(value instanceof Promise) {
+    let resolver = async (value: any) => {
+      if (value instanceof Promise) {
         return await value;
       }
       return value;
-    }
+    };
     defaultConfig = await Arr.evaluateAllNodes(defaultConfig, resolver);
     envConfig = await Arr.evaluateAllNodes(envConfig, resolver);
 
@@ -108,27 +111,28 @@ export class ConfigLoader {
 /**
  * Loads configuration from a file path relative to the caller's location.
  * Supports JSON, YAML, and JavaScript/TypeScript modules with environment-specific overrides.
- * 
+ *
  * @param file_path - Path to the config file (relative to caller or absolute)
  * @param options - Configuration options
  * @returns Promise resolving to the loaded configuration object
  */
-export function loadConfig(file_path: string, options: Partial<ConfigLoaderOptions> = {}): Promise<Record<string, any>> {
+export function loadConfig(
+  file_path: string,
+  options: Partial<ConfigLoaderOptions> = {}
+): Promise<Record<string, any>> {
   // Get the caller's file path from the stack trace
   const originalPrepareStackTrace = Error.prepareStackTrace;
   Error.prepareStackTrace = (_, stack) => stack;
   const stack = new Error().stack as unknown as NodeJS.CallSite[];
   Error.prepareStackTrace = originalPrepareStackTrace;
-  
+
   // Get the caller's directory (skip current function)
   const callerFile = stack[1]?.getFileName();
   const callerDir = callerFile ? path.dirname(callerFile) : process.cwd();
-  
+
   // Resolve the file path relative to the caller's directory
-  const resolvedPath = path.isAbsolute(file_path) 
-    ? file_path 
-    : path.join(callerDir, file_path);
-  
+  const resolvedPath = path.isAbsolute(file_path) ? file_path : path.join(callerDir, file_path);
+
   const loader = new ConfigLoader(resolvedPath, options);
   return loader.load();
 }

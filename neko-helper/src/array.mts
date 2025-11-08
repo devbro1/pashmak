@@ -402,7 +402,6 @@ export function deepMerge(
   return result;
 }
 
-
 /**
  * Recursively evaluates all nodes in an object using the provided async function.
  *
@@ -436,7 +435,10 @@ export function deepMerge(
  * // }
  * ```
  */
-export async function evaluateAllNodes<T>(obj: Record<string, any>, func: (node: any) => any): Promise<Record<string, any>> {
+export async function evaluateAllNodes<T>(
+  obj: Record<string, any>,
+  func: (node: any) => any
+): Promise<Record<string, any>> {
   const rc: Record<string, any> = Array.isArray(obj) ? [] : {};
 
   for (const key in obj) {
@@ -444,8 +446,7 @@ export async function evaluateAllNodes<T>(obj: Record<string, any>, func: (node:
 
     if (value instanceof Promise) {
       rc[key] = await func(await value);
-    }
-    else if (value !== null && typeof value === 'object') {
+    } else if (value !== null && typeof value === 'object') {
       rc[key] = await evaluateAllNodes(value, func);
     } else {
       rc[key] = await func(value);
@@ -454,4 +455,3 @@ export async function evaluateAllNodes<T>(obj: Record<string, any>, func: (node:
 
   return rc;
 }
-  

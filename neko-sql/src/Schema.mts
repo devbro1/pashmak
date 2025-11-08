@@ -9,7 +9,7 @@ import { SchemaGrammar } from './SchemaGrammar.mjs';
 export class Schema {
   /**
    * Creates a new Schema instance.
-   * 
+   *
    * @param connection - The database connection to use for schema operations
    * @param grammar - The schema grammar for generating SQL statements
    */
@@ -20,10 +20,10 @@ export class Schema {
 
   /**
    * Creates a new table in the database.
-   * 
+   *
    * @param tableName - The name of the table to create
    * @param structMethod - A callback function that receives a Blueprint to define table structure
-   * 
+   *
    * @example
    * await schema.createTable('users', (table) => {
    *   table.increments('id');
@@ -43,10 +43,10 @@ export class Schema {
 
   /**
    * Modifies an existing table structure.
-   * 
+   *
    * @param tableName - The name of the table to alter
    * @param structMethod - A callback function that receives a Blueprint to define modifications
-   * 
+   *
    * @example
    * await schema.alterTable('users', (table) => {
    *   table.string('phone').nullable();
@@ -64,9 +64,9 @@ export class Schema {
 
   /**
    * Drops (deletes) a table from the database.
-   * 
+   *
    * @param tableName - The name of the table to drop
-   * 
+   *
    * @example
    * await schema.dropTable('old_users');
    */
@@ -77,9 +77,9 @@ export class Schema {
   /**
    * Drops a table from the database if it exists.
    * Safe to call even if the table doesn't exist.
-   * 
+   *
    * @param tableName - The name of the table to drop
-   * 
+   *
    * @example
    * await schema.dropTableIfExists('temp_table');
    */
@@ -89,9 +89,9 @@ export class Schema {
 
   /**
    * Retrieves a list of all tables in the database.
-   * 
+   *
    * @returns A promise that resolves to an array of table information
-   * 
+   *
    * @example
    * const allTables = await schema.tables();
    * console.log(allTables);
@@ -102,16 +102,18 @@ export class Schema {
 
   /**
    * Checks if a table exists in the database.
-   * 
+   *
    * @param table_name - The name of the table to check
    * @returns A promise that resolves to true if the table exists, false otherwise
-   * 
+   *
    * @example
    * if (await schema.tableExists('users')) {
    *   console.log('Users table exists');
    * }
    */
   async tableExists(table_name: string): Promise<boolean> {
-    return (await this.connection?.runQuery(this.grammar.compileTableExists(table_name)))[0]['exists'];
+    return (await this.connection?.runQuery(this.grammar.compileTableExists(table_name)))[0][
+      'exists'
+    ];
   }
 }
