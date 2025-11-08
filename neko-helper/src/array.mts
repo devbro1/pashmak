@@ -325,3 +325,79 @@ export function shuffle<T>(arr: T[]): T[] {
 
   return result;
 }
+
+/**
+ * Creates a deep clone of an object using JSON serialization.
+ *
+ * Performs a deep copy of an object by converting it to JSON and back.
+ * This method is simple but has limitations: it cannot clone functions,
+ * undefined values, symbols, or circular references.
+ *
+ * @param obj - The object to clone
+ * @returns A deep clone of the input object
+ *
+ * @example
+ * ```typescript
+ * deepClone({ a: 1, b: { c: 2 } })
+ * // Returns: { a: 1, b: { c: 2 } } (new object)
+ *
+ * const original = { x: [1, 2, 3], y: { z: 4 } };
+ * const cloned = deepClone(original);
+ * cloned.x.push(4);
+ * // original.x is still [1, 2, 3]
+ * ```
+ */
+export function deepClone(obj: Record<string, any>) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+/**
+ * Deeply merges two objects based on these rules.
+ * - for every given object key:
+ *  - if firstObject has the key but secondObject doesn't, firstObject's value is used
+ *  - if secondObject has the key but firstObject doesn't, secondObject's value is used
+ *  - if both values are primitive, the secondObject's value will be used
+ *  - if both values are objects, they are merged recursively
+ *  - if both values are arrays, secondObject's array will be used
+ *  - if the values are of different types, the second value will be used
+ *
+ * @param firstObj First object to merge from
+ * @param secondObj Second object to merge into
+ * @returns The merged object
+ */
+export function deepMerge(
+  firstObj: Record<string, any>,
+  secondObj: Record<string, any>
+): Record<string, any> {
+  const result: Record<string, any> = deepClone(firstObj);
+
+  for (const key in secondObj) {
+    if (!secondObj.hasOwnProperty(key)) {
+      continue;
+    }
+    const secondValue = secondObj[key];
+    const firstValue = result[key];
+
+    // If firstObj doesn't have the key, use secondObj's value
+    if (!(key in result)) {
+      result[key] = secondValue;
+      continue;
+    }
+
+    // Check if both values are plain objects (not arrays, null, or other objects)
+    const isSecondObject =
+      secondValue !== null && typeof secondValue === 'object' && !Array.isArray(secondValue);
+    const isFirstObject =
+      firstValue !== null && typeof firstValue === 'object' && !Array.isArray(firstValue);
+
+    if (isFirstObject && isSecondObject) {
+      // Both are objects - merge recursively
+      result[key] = deepMerge(firstValue, secondValue);
+    } else {
+      // For primitives, arrays, or mismatched types - use secondObj's value
+      result[key] = secondValue;
+    }
+  }
+
+  return result;
+}
