@@ -77,7 +77,7 @@ export class ConfigLoader {
 
   private loadYAML(filePath: string): Record<string, any> {
     const content = fs.readFileSync(filePath, 'utf-8');
-    const parsed = yaml.load(content);
+    const parsed = yaml.load(content, { schema: yaml.JSON_SCHEMA });
     return (parsed as Record<string, any>) || {};
   }
 
