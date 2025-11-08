@@ -401,3 +401,57 @@ export function deepMerge(
 
   return result;
 }
+
+
+/**
+ * Recursively evaluates all nodes in an object using the provided async function.
+ *
+ * Traverses the object and applies the async function to each non-object value,
+ * returning a new object with the evaluated values. If a value is a Promise,
+ * it will be awaited before applying the function. Objects and arrays are processed
+ * recursively.
+ *
+ * @param obj - The object to evaluate
+ * @param func - The async function to apply to each non-object value
+ * @returns A promise that resolves to the new object with evaluated values
+ *
+ * @example
+ * ```typescript
+ * const input = {
+ *   a: 1,
+ *   b: {
+ *     c: 2,
+ *     d: [3, 4]
+ *   }
+ * };
+ *
+ * const result = await evaluateAllNodes(input, async (value) => value * 2);
+ * // result is:
+ * // {
+ * //   a: 2,
+ * //   b: {
+ * //     c: 4,
+ * //     d: [6, 8]
+ * //   }
+ * // }
+ * ```
+ */
+export async function evaluateAllNodes<T>(obj: Record<string, any>, func: (node: any) => any): Promise<Record<string, any>> {
+  const rc: Record<string, any> = Array.isArray(obj) ? [] : {};
+
+  for (const key in obj) {
+    const value = obj[key];
+
+    if (value instanceof Promise) {
+      rc[key] = await func(await value);
+    }
+    else if (value !== null && typeof value === 'object') {
+      rc[key] = await evaluateAllNodes(value, func);
+    } else {
+      rc[key] = await func(value);
+    }
+  }
+
+  return rc;
+}
+  

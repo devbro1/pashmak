@@ -28,6 +28,7 @@
   "author": "Farzad Meow Khalafi",
   "license": "MIT",
   "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.14.1",
     "@typescript-eslint/eslint-plugin": "^7.1.1",
     "@typescript-eslint/parser": "^7.1.1",
@@ -42,6 +43,7 @@
   },
   "dependencies": {
     "@devbro/neko-helper": "^0.1.2",
+    "js-yaml": "^4.1.0",
     "jsonpath-plus": "^10.3.0"
   },
   "directories": {
