@@ -1,5 +1,5 @@
 export default {
   default: {
-    type: 'database',
+    provider: 'memory',
   },
 };
