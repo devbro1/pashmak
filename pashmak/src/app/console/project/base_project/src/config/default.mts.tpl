@@ -3,14 +3,19 @@ import os from 'os';
 import { getEnv } from '@devbro/pashmak/helper';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { loadConfig } from '@devbro/pashmak/config';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const extends_list = ['databases', 'storages', 'mailer', 'loggers', 'queues', 'caches'];
-
 export default {
-  extends: [...extends_list.map((i) => `./${i}.js`), ...extends_list.map((i) => `./${i}.ts`)],
+  databases: await loadConfig('./databases'),
+  storages: await loadConfig('./storages'),
+  mailer: await loadConfig('./mailer'),
+  loggers: await loadConfig('./loggers'),
+  queues: await loadConfig('./queues'),
+  caches: await loadConfig('./caches'),
+  base_url: getEnv('BASE_URL', 'http://localhost:' + getEnv('PORT', '3000')),
   port: getEnv('PORT', 3000),
   file_upload_path: path.join(os.tmpdir(), ''),
   migration: {
@@ -32,4 +37,13 @@ export default {
   },
   public_path: path.join(__dirname, '../..', 'public'),
   debug_mode: getEnv('APP_DEBUG', false),
+};
+
+export const $test = {
+  // Test environment overrides
+};
+
+export const $prod = {
+  port: getEnv('PORT', 80),
+  debug_mode: false,
 };

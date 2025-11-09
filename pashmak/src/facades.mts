@@ -62,27 +62,6 @@ export const httpServer = createSingleton<HttpServer>(() => {
       res.end(JSON.stringify({ message: err.message, error: err.code }));
       logger().warn({ msg: "HttpError: " + err.message, err });
       return;
-    } else if (err instanceof yup.ValidationError) {
-      res.writeHead(422, { "Content-Type": "application/json" });
-      const errs: any = {};
-      err.inner.forEach((e: yup.ValidationError) => {
-        // Sanitize sensitive fields
-        const sanitizedParams = { ...e.params };
-        if (/passw/i.test(e.path!)) {
-          sanitizedParams.value = "******";
-          sanitizedParams.originalValue = "******";
-        }
-
-        errs[e.path!] = {
-          type: e.type,
-          message: e.message,
-          params: sanitizedParams,
-        };
-      });
-
-      res.end(JSON.stringify({ message: "validation error", errors: errs }));
-      logger().warn({ msg: "ValidationError: " + err.message, err });
-      return;
     } else {
       logger().error({ msg: "Error: " + err.message, err });
     }
