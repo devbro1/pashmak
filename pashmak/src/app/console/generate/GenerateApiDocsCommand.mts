@@ -152,7 +152,7 @@ export class GenerateApiDocsCommand extends Command {
     let final_api_docs = {};
     for (let file_path of files_to_merge) {
       let file_json = JSON.parse(await fs.readFile(file_path, "utf8"));
-      Arr.deepMerge(final_api_docs, file_json);
+      final_api_docs = Arr.deepMerge(final_api_docs, file_json);
     }
 
     await fs.writeFile(
