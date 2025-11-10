@@ -7,12 +7,12 @@ import {
   Response,
   Model,
   Param,
-  ValidatedRequest,
   BaseController,
   Controller,
   Get,
   Post,
 } from "@devbro/pashmak/router";
+import { ValidatedRequest } from "@/helpers/validation";
 
 @Controller("/api/v1/cats")
 export class CatController extends BaseController {

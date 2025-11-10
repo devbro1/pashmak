@@ -1,23 +1,22 @@
 export default {
-  mailer: {
-    default: {
-      provider: 'MEMORY',
+  default: {
+    provider: 'memory',
+    config: {
       default_from: 'no-reply@devbro.com',
     },
   },
-  $prod: {
-    mailer: {
-      default: {
-        provider: 'SES',
-        // credentials are loaded as env vars
-      },
-    },
+};
+
+export const $prod = {
+  default: {
+    provider: 'ses',
+    // credentials are loaded as env vars
   },
-  $test: {
-    mailer: {
-      default: {
-        provider: 'MEMORY',
-      },
-    },
+};
+
+export const $test = {
+  default: {
+    provider: 'memory',
+    // credentials are loaded as env vars
   },
 };

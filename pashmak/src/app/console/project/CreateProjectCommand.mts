@@ -5,6 +5,7 @@ import * as fs from "fs/promises";
 import { fileURLToPath } from "url";
 import handlebars from "handlebars";
 import { execSync } from "child_process";
+import { select, Separator } from "@inquirer/prompts";
 
 export class CreateProjectCommand extends Command {
   static paths = [[`create`, `project`]];
@@ -58,6 +59,29 @@ export class CreateProjectCommand extends Command {
       // Directory doesn't exist, we can proceed
     }
 
+    // ask what library to use for validation: yup or zod or none
+    const validation_library = await select({
+      message: "Select a package you want for validation",
+      choices: [
+        {
+          name: "Yup",
+          value: "yup",
+          description: "https://github.com/jquense/yup",
+        },
+        {
+          name: "Zod",
+          value: "zod",
+          description: "https://zod.dev/",
+        },
+        new Separator(),
+        {
+          name: "None",
+          value: "none",
+          disabled: false,
+        },
+      ],
+    });
+
     await fs.mkdir(projectPath, { recursive: true });
     console.log(`Created project directory at: ${projectPath}`);
 
@@ -76,7 +100,9 @@ export class CreateProjectCommand extends Command {
     //copy content of ./base_project to the new project directory
     const baseProjectPath = basePath;
 
-    await this.processTplFolder(baseProjectPath, projectPath, {});
+    await this.processTplFolder(baseProjectPath, projectPath, {
+      validation_library,
+    });
     console.log(`Copied base project files to: ${projectPath}`);
 
     //modify package.json with foldername
@@ -114,7 +140,7 @@ export class CreateProjectCommand extends Command {
         await fs.mkdir(destPath, { recursive: true });
         await this.processTplFolder(srcPath, destPath, data);
       } else if (file.name.endsWith(".tpl")) {
-        await this.processTplFile(srcPath, destPath, {});
+        await this.processTplFile(srcPath, destPath, data);
       } else {
         throw new Error(
           "unexpected non tpl file: " + srcPath + " " + file.name,
@@ -124,6 +150,8 @@ export class CreateProjectCommand extends Command {
   }
 
   async processTplFile(src: string, dest: string, data: any = {}) {
+    handlebars.registerHelper("eq", (a, b) => a === b);
+
     const compiledTemplate = handlebars.compile(
       (await fs.readFile(src)).toString(),
     );

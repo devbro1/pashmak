@@ -5,14 +5,9 @@ import { HttpBadRequestError } from "@devbro/pashmak/http";
 import { compareBcrypt } from "@devbro/pashmak/helper";
 import { config } from "@devbro/pashmak/config";
 import { JwtPayload } from "jsonwebtoken";
-import {
-  ValidatedRequest,
-  BaseController,
-  Controller,
-  Get,
-  Post,
-} from "@devbro/pashmak/router";
+import { BaseController, Controller, Get, Post } from "@devbro/pashmak/router";
 import { router } from "@devbro/pashmak/facades";
+import { ValidatedRequest } from "@/helpers/validation";
 
 @Controller("/api/v1/auth")
 export class AuthController extends BaseController {

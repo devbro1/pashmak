@@ -1,7 +1,5 @@
 export default {
-  queues: {
-    default: {
-      type: 'database',
-    },
+  default: {
+    provider: 'memory',
   },
 };

@@ -1,7 +1,5 @@
 export default {
-  caches: {
-    default: {
-      type: 'disabled',
-    },
+  default: {
+    type: 'disabled',
   },
 };

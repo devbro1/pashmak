@@ -42,10 +42,15 @@
     "@devbro/pashmak": "0.1.*",
     "bcryptjs": "^3.0.2",
     "clipanion": "^4.0.0-rc.4",
-    "dotenv": "^16.5.0",
     "jsonwebtoken": "^9.0.0",
     "tsconfig-paths": "^4.2.0",
-    "yup": "^1.6.1"
+    {{#if (eq validation_library "yup")}}
+    "yup": "^1.6.1",
+    {{/if}}
+    {{#if (eq validation_library "zod")}}
+    "zod": "^4.1.12",
+    {{/if}}
+    "dotenv": "^16.5.0"
   },
   "directories": {
     "doc": "docs",

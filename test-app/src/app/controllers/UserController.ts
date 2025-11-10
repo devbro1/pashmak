@@ -5,7 +5,6 @@ import {
   Response,
   Model,
   Param,
-  ValidatedRequest,
   BaseController,
   Controller,
   Get,
@@ -13,6 +12,7 @@ import {
   Put,
   Delete,
 } from "@devbro/pashmak/router";
+import { ValidatedRequest } from "@/helpers/validation";
 
 @Controller("/api/v1/users")
 export class UserController extends BaseController {

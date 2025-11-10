@@ -30,22 +30,6 @@ export function Param(param_name: string): ParameterDecorator {
   });
 }
 
-export function ValidatedRequest(
-  validationRules: yup.ObjectSchema<any> | (() => yup.ObjectSchema<any>),
-): ParameterDecorator {
-  return createParamDecorator(async () => {
-    const rc = await (
-      typeof validationRules === "function"
-        ? validationRules()
-        : validationRules
-    )
-      .noUnknown()
-      .validate(ctx().get<Request>("request").body, { abortEarly: false });
-
-    return rc;
-  });
-}
-
 export function ApiDocumentation(req: Request, res: Response) {
   let open_api_url: string = config.get("api_doc_url");
   let html = `<!DOCTYPE html>
