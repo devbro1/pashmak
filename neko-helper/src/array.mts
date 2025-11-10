@@ -358,16 +358,19 @@ export function deepClone(obj: Record<string, any>) {
  *  - if secondObject has the key but firstObject doesn't, secondObject's value is used
  *  - if both values are primitive, the secondObject's value will be used
  *  - if both values are objects, they are merged recursively
- *  - if both values are arrays, secondObject's array will be used
+ *  - if both values are arrays, they are merged based on the arrayMergeStrategy option
  *  - if the values are of different types, the second value will be used
  *
  * @param firstObj First object to merge from
  * @param secondObj Second object to merge into
+ * @param options - Options for merging behavior
+ * @param options.arrayMergeStrategy - Strategy for merging arrays: 'replace' (default) or 'concat'
  * @returns The merged object
  */
 export function deepMerge(
   firstObj: Record<string, any>,
-  secondObj: Record<string, any>
+  secondObj: Record<string, any>,
+  options: { arrayMergeStrategy?: 'replace' | 'concat' } = { arrayMergeStrategy: 'replace' }
 ): Record<string, any> {
   const result: Record<string, any> = deepClone(firstObj);
 
@@ -392,7 +395,15 @@ export function deepMerge(
 
     if (isFirstObject && isSecondObject) {
       // Both are objects - merge recursively
-      result[key] = deepMerge(firstValue, secondValue);
+      result[key] = deepMerge(firstValue, secondValue, options);
+    } else if (Array.isArray(firstValue) && Array.isArray(secondValue)) {
+      // Both are arrays - handle based on strategy
+      if (options.arrayMergeStrategy === 'concat') {
+        result[key] = firstValue.concat(secondValue);
+      } else {
+        // Default to 'replace' strategy
+        result[key] = secondValue;
+      }
     } else {
       // For primitives, arrays, or mismatched types - use secondObj's value
       result[key] = secondValue;
