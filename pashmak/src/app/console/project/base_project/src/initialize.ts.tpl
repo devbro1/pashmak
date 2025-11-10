@@ -8,7 +8,7 @@ import { loadConfig } from '@devbro/pashmak/config';
 import { httpServer, logger, mailer } from '@devbro/pashmak/facades';
 import { startQueueListeners } from '@/app/queues';
 import { HttpError } from '@devbro/pashmak/http';
-{{#if (eq validation_library "yup")}}import * as yup from 'yup';{{/if}}{{#if (eq validation_library "zod")}}import z, { ZodError } from 'zod';{{/if}}
+{{#if (eq validation_library "yup")}}import * as yup from 'yup';{{/if}}{{#if (eq validation_library "zod")}}import { z, ZodError } from 'zod';{{/if}}
 
 import './app/console';
 import './routes';
