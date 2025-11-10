@@ -1,15 +1,9 @@
 import {
-  Mailer,
-  Mailable,
-  MailerProvider,
-  FunctionProvider,
   SESProvider,
   SMTPProvider,
   MemoryProvider,
   MailerProviderFactory,
 } from "@devbro/neko-mailer";
-import { logger } from "./facades.mjs";
-import { QueueConnection, QueueTransportInterface } from "@devbro/neko-queue";
 import { MemoryTransport, QueueTransportFactory } from "@devbro/neko-queue";
 import { DatabaseTransport } from "./queue.mjs";
 import {

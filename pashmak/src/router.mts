@@ -30,9 +30,13 @@ export function Param(param_name: string): ParameterDecorator {
   });
 }
 
-export function ApiDocumentation(open_api_url: string) {
-  return (req: Request, res: Response) => {
-    let html = `<!DOCTYPE html>
+export function ApiDocumentation(
+  open_api_url: string,
+  renderer: "redoc" | "rapidoc" = "redoc",
+) {
+  if (renderer === "redoc") {
+    return (req: Request, res: Response) => {
+      let html = `<!DOCTYPE html>
 <html>
   <head>
     <title>Redoc</title>
@@ -57,7 +61,40 @@ export function ApiDocumentation(open_api_url: string) {
   </body>
 </html>`;
 
-    res.setHeader("Content-Type", "text/html");
-    return html;
-  };
+      res.setHeader("Content-Type", "text/html");
+      return html;
+    };
+  }
+
+  if (renderer === "rapidoc") {
+    return (req: Request, res: Response) => {
+      let html = `<!DOCTYPE html>
+<html>
+  <head>
+    <title>Redoc</title>
+    <!-- needed for adaptive design -->
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
+
+    <!--
+    Redoc doesn't change outer page styles
+    -->
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module" src="https://unpkg.com/rapidoc/dist/rapidoc-min.js"></script>
+    <rapi-doc spec-url="${open_api_url}" theme="dark" render-style="read" show-header="false"></rapi-doc>
+  </body>
+</html>`;
+
+      res.setHeader("Content-Type", "text/html");
+      return html;
+    };
+  }
 }

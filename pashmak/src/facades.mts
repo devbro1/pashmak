@@ -105,8 +105,7 @@ export const queue = createSingleton((label) => {
     queue_config.provider,
     queue_config.config,
   );
-  const rc = new QueueConnection(provider);
-  return rc;
+  return new QueueConnection(provider);
 });
 
 export const cache = createSingleton((label) => {
