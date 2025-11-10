@@ -30,9 +30,9 @@ export function Param(param_name: string): ParameterDecorator {
   });
 }
 
-export function ApiDocumentation(req: Request, res: Response) {
-  let open_api_url: string = config.get("api_doc_url");
-  let html = `<!DOCTYPE html>
+export function ApiDocumentation(open_api_url: string) {
+  return (req: Request, res: Response) => {
+    let html = `<!DOCTYPE html>
 <html>
   <head>
     <title>Redoc</title>
@@ -57,6 +57,7 @@ export function ApiDocumentation(req: Request, res: Response) {
   </body>
 </html>`;
 
-  res.setHeader("Content-Type", "text/html");
-  return html;
+    res.setHeader("Content-Type", "text/html");
+    return html;
+  };
 }
