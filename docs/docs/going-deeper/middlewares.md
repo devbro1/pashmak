@@ -59,3 +59,35 @@ export async function requirePermissionsMiddleware(
 ```
 
 NOTE: It is very important that you call `await next()` otherwise the promise chain will be broken and the request will not be processed.
+
+## How to do random stuff
+
+#### read response body after controller execution
+
+Response object is actually node native `ServerResponse` response object. Within http and router modules, the response body is written by calling `res.end()` method.
+
+```ts
+import { ServerResponse } from "node:http";
+
+return async function logResponse(
+  req: Request,
+  res: Response,
+  next: () => Promise<void>,
+): Promise<void> {
+  const old_end = res.end;
+  let buff_data = "";
+  res.end = function (data: any, ...args: any[]) {
+    if (data) {
+      buff_data += data.toString();
+    }
+    old_end.apply(res, [data, ...args]);
+  };
+
+  await next();
+
+  // now buff_data contains the full response body
+  logger.info("Response Body:", { response_body: buff_data });
+};
+```
+
+This solution should work in most cases. Keep in mind another way to write response body is using `res.write()` method. This method is used to write buffer and streams in case of large data or file responses.
