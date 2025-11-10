@@ -8,7 +8,7 @@ export async function loggerMiddleware(
   next: () => Promise<void>,
 ): Promise<void> {
   logger().info({
-    msg: "available context",
+    msg: "Incoming Http Request",
     keys: ctx().keys(),
     route: req.url,
   });

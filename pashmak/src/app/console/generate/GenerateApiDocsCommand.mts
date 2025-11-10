@@ -1,7 +1,9 @@
 import { cli, router } from "../../../facades.mjs";
-import { Command } from "clipanion";
+import { Command, Option } from "clipanion";
 import path from "path";
 import * as fs from "fs/promises";
+import { config } from "../../../config.mjs";
+import { Arr } from "@devbro/neko-helper";
 
 export class GenerateApiDocsCommand extends Command {
   static paths = [
@@ -9,7 +11,47 @@ export class GenerateApiDocsCommand extends Command {
     [`generate`, `apidocs`],
   ];
 
+  static usage = Command.Usage({
+    category: `Generate`,
+    description: `Generate OpenAPI documentation from routes`,
+    details: `
+      This command generates OpenAPI 3.0 specification documentation by analyzing
+      your application's routes and merging with example files.
+      
+      The generated documentation includes:
+      - All registered routes with their HTTP methods
+      - Path parameters extracted from route definitions
+      - Request body schemas for POST, PUT, and PATCH methods
+      - Response schemas
+      
+      The command will merge files specified in config.api_docs.merge_files
+      and output the final documentation to config.api_docs.output.
+
+      This command depends on config data. make sure your default config contains the following:
+      api_docs: {
+        merge_files: [
+          path.join(__dirname, '../..', 'private', 'openapi_examples.json'),
+          path.join(__dirname, '../..', 'private', 'openapi_base.json'),
+          path.join(__dirname, '../..', 'private', 'openapi_user_changes.json'),
+        ],
+        output: path.join(__dirname, '../..', 'private', 'openapi.json'),
+      }
+    `,
+    examples: [[`Generate API documentation`, `$0 generate apidocs`]],
+  });
+
+  help = Option.Boolean(`--help,-h`, false, {
+    description: `Show help message for this command`,
+  });
+
   async execute() {
+    if (this.help) {
+      this.context.stdout.write(
+        this.constructor.usage?.toString() || "No help available\n",
+      );
+      return 0;
+    }
+
     const rootDir = process.cwd();
 
     this.context.stdout.write(`Generating OpenAPI documentation...\n`);
@@ -91,11 +133,10 @@ export class GenerateApiDocsCommand extends Command {
     }
 
     // Ensure public directory exists
-    const publicDir = path.join(rootDir, "public");
-    await fs.mkdir(publicDir, { recursive: true });
+    await fs.mkdir(config.get("private_path"), { recursive: true });
 
     // Write the OpenAPI spec to public/openapi.json
-    const outputPath = path.join(publicDir, "openapi.json");
+    const outputPath = path.join(config.get("private_path"), "openapi.json");
     await fs.writeFile(
       outputPath,
       JSON.stringify(openApiSpec, null, 2),
@@ -106,6 +147,22 @@ export class GenerateApiDocsCommand extends Command {
       `OpenAPI documentation generated at: ${outputPath}\n`,
     );
     this.context.stdout.write(`Total routes documented: ${routes.length}\n`);
+
+    let files_to_merge: string[] = config.get("api_docs.merge_files");
+    let final_api_docs = {};
+    for (let file_path of files_to_merge) {
+      let file_json = JSON.parse(await fs.readFile(file_path, "utf8"));
+      Arr.deepMerge(final_api_docs, file_json);
+    }
+
+    await fs.writeFile(
+      config.get("api_docs.output"),
+      JSON.stringify(final_api_docs, null, 2),
+    );
+
+    this.context.stdout.write(
+      `wrote final open api document to : ${config.get("api_docs.output")}\n`,
+    );
   }
 
   private extractParameters(routePath: string): any[] {
