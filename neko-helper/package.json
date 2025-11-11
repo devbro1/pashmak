@@ -39,7 +39,7 @@
     "prettier": "^3.5.3",
     "ts-jest": "^29.1.2",
     "tsup": "^8.0.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.8.3"
   },
   "dependencies": {
     "@noble/ed25519": "^3.0.0",

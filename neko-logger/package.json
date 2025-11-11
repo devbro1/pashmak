@@ -35,7 +35,7 @@
     "husky": "^9.1.7",
     "prettier": "^3.5.3",
     "tsup": "^8.0.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.8.3"
   },
   "dependencies": {
     "pino": "^9.7.0"
