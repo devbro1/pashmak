@@ -1,5 +1,4 @@
 import { ControllerDecoratorOptions, HttpMethod, MiddlewareProvider } from './types.mjs';
-import { Middleware } from './Middleware.mjs';
 
 export class BaseController {
   declare static routes: {

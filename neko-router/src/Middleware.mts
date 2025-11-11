@@ -1,4 +1,4 @@
-import { LexerToken, Request, Response } from './types.mjs';
+import { Request, Response } from './types.mjs';
 
 export abstract class Middleware {
   protected constructor(params: any = {}) {}

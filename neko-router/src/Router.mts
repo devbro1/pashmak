@@ -1,10 +1,9 @@
 import { CompiledRoute } from './CompiledRoute.mjs';
 import { BaseController } from './Controller.mjs';
-import { Middleware } from './Middleware.mjs';
 import { MiddlewareFactory } from './MiddlewareFactory.mjs';
 import { Route } from './Route.mjs';
 import { HandlerType, HttpMethod, MiddlewareProvider } from './types.mjs';
-import { LexerToken, Request, Response } from './types.mjs';
+import { Request, Response } from './types.mjs';
 import path from 'path';
 import urlJoin from 'url-join';
 

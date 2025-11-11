@@ -4,7 +4,6 @@ import { createWriteStream, createReadStream, ReadStream } from 'fs';
 import * as path from 'path';
 import * as mime from 'mime-types';
 import { Metadata, LocalStorageConfig } from '../types.mjs';
-import { Storage } from '../Storage.mjs';
 import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
 
 export class LocalStorageProvider implements StorageProviderInterface {

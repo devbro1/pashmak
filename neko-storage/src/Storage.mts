@@ -1,7 +1,6 @@
 import { ReadStream } from 'fs';
 import { Stream } from 'stream';
 import { Metadata } from './types.mjs';
-import { StorageConfig } from './types.mjs';
 import { StorageProviderInterface } from './StorageProviderInterface.mjs';
 
 export class Storage {

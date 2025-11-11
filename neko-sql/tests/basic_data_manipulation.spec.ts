@@ -1,7 +1,6 @@
 import { describe, expect, test, beforeAll, afterAll } from 'vitest';
 import { Connection } from '../src/Connection.mjs';
 import { Schema } from '../src/Schema.mjs';
-import { CompiledSql } from '../src/types.mjs';
 import { Blueprint } from '../src/Blueprint.mjs';
 import { SchemaGrammar } from '../src/SchemaGrammar.mjs';
 import { PostgresqlConnection } from '../src/databases/postgresql/PostgresqlConnection.mjs';

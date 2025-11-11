@@ -1,6 +1,5 @@
 import { Query } from '@devbro/neko-sql';
 import { BaseModel } from '../baseModel.mjs';
-import { Case } from 'change-case-all';
 import { assocationOptions, RelationFactoryOptionsType } from './types.mjs';
 import { RelationshipManager } from './RelationshipManager.mjs';
 

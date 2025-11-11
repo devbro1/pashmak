@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { Middleware, Router } from '../src';
 import { Request, Response } from '../src/types.mjs';
-import { R } from 'vitest/dist/chunks/environment.d.cL3nLXbE.js';
 
 class m1 extends Middleware {
   public static getInstance(params: any): Middleware {

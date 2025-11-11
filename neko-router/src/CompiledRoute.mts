@@ -3,7 +3,7 @@ import { Middleware } from './Middleware.mjs';
 import { MiddlewareFactory } from './MiddlewareFactory.mjs';
 import { Route } from './Route.mjs';
 import { HandlerType, MiddlewareProvider } from './types.mjs';
-import { LexerToken, Request, Response } from './types.mjs';
+import { Request, Response } from './types.mjs';
 
 export class CompiledRoute {
   constructor(

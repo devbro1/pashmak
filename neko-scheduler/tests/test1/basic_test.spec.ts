@@ -1,4 +1,4 @@
-import { Schedule, Scheduler } from '../../src';
+import { Scheduler } from '../../src';
 
 describe('scheduler testing', () => {
   test('basic testing', async () => {
