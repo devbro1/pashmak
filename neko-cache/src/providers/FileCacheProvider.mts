@@ -3,18 +3,34 @@ import * as path from 'path';
 import { CacheProviderInterface } from '../CacheProviderInterface.mjs';
 import { JSONObject, JSONValue } from '@devbro/neko-helper';
 
+/**
+ * Configuration options for the file-based cache provider.
+ */
 export interface FileCacheConfig {
+  /** Directory where cache files are stored (default: './cache') */
   cacheDirectory?: string;
+  /** Default time to live in milliseconds (default: 3600000) */
   defaultTTL?: number;
+  /** Interval in milliseconds for cleanup of expired entries (default: 300000) */
   cleanupInterval?: number;
 }
 
+/**
+ * Represents a cached item stored in a file.
+ */
 interface CacheItem {
+  /** The cached value */
   value: any;
+  /** Timestamp when the item expires (milliseconds since epoch) */
   expiresAt?: number;
+  /** Timestamp when the item was created (milliseconds since epoch) */
   createdAt: number;
 }
 
+/**
+ * File-based cache provider that stores cache entries as JSON files.
+ * Provides persistent caching with automatic cleanup of expired entries.
+ */
 export class FileCacheProvider implements CacheProviderInterface {
   private config: FileCacheConfig = {
     cacheDirectory: path.join(process.cwd(), 'cache'),
@@ -24,6 +40,10 @@ export class FileCacheProvider implements CacheProviderInterface {
 
   private cleanupTimer?: NodeJS.Timeout;
 
+  /**
+   * Creates a new FileCacheProvider instance.
+   * @param config - Configuration options for the cache
+   */
   constructor(config: FileCacheConfig = {}) {
     this.config = { ...this.config, ...config };
 
@@ -31,6 +51,9 @@ export class FileCacheProvider implements CacheProviderInterface {
     this.startCleanupTimer();
   }
 
+  /**
+   * Ensures the cache directory exists, creating it if necessary.
+   */
   private async ensureCacheDirectory(): Promise<void> {
     try {
       await fs.access(this.config.cacheDirectory!);
@@ -39,6 +62,9 @@ export class FileCacheProvider implements CacheProviderInterface {
     }
   }
 
+  /**
+   * Starts the automatic cleanup timer for expired entries.
+   */
   private startCleanupTimer(): void {
     if (this.config.cleanupInterval! > 0) {
       this.cleanupTimer = setInterval(() => {
@@ -47,6 +73,9 @@ export class FileCacheProvider implements CacheProviderInterface {
     }
   }
 
+  /**
+   * Stops the automatic cleanup timer.
+   */
   private stopCleanupTimer(): void {
     if (this.cleanupTimer) {
       clearInterval(this.cleanupTimer);
@@ -54,12 +83,20 @@ export class FileCacheProvider implements CacheProviderInterface {
     }
   }
 
+  /**
+   * Generates a safe file path for the given cache key.
+   * @param key - The cache key
+   * @returns The full file path for the cache entry
+   */
   private getFilePath(key: string): string {
     // Create a safe filename from the key
     const safeKey = key.replace(/[^a-z0-9]/gi, '_');
     return path.join(this.config.cacheDirectory!, `${safeKey}.json`);
   }
 
+  /**
+   * Removes all expired cache entries from the cache directory.
+   */
   private async cleanupExpiredEntries(): Promise<void> {
     try {
       const files = await fs.readdir(this.config.cacheDirectory!);
@@ -86,6 +123,11 @@ export class FileCacheProvider implements CacheProviderInterface {
     }
   }
 
+  /**
+   * Retrieves a value from the cache.
+   * @param key - The cache key
+   * @returns The cached value or undefined if not found or expired
+   */
   async get(key: string): Promise<JSONObject | JSONValue | undefined> {
     const filePath = this.getFilePath(key);
 
@@ -105,6 +147,12 @@ export class FileCacheProvider implements CacheProviderInterface {
     }
   }
 
+  /**
+   * Stores a value in the cache.
+   * @param key - The cache key
+   * @param value - The value to cache
+   * @param ttl - Time to live in seconds (optional)
+   */
   async put(key: string, value: JSONObject | JSONValue, ttl?: number): Promise<void> {
     const filePath = this.getFilePath(key);
     const now = Date.now();
@@ -120,6 +168,10 @@ export class FileCacheProvider implements CacheProviderInterface {
     await fs.writeFile(filePath, JSON.stringify(item), 'utf-8');
   }
 
+  /**
+   * Deletes a value from the cache.
+   * @param key - The cache key to delete
+   */
   async delete(key: string): Promise<void> {
     const filePath = this.getFilePath(key);
 
@@ -130,11 +182,24 @@ export class FileCacheProvider implements CacheProviderInterface {
     }
   }
 
+  /**
+   * Checks if a key exists in the cache and has not expired.
+   * @param key - The cache key to check
+   * @returns True if the key exists and is not expired, false otherwise
+   */
   async has(key: string): Promise<boolean> {
     const value = await this.get(key);
     return value !== undefined;
   }
 
+  /**
+   * Increments a numeric value in the cache atomically using file-based locking.
+   * If the key doesn't exist or is expired, it starts from 0.
+   * @param key - The cache key to increment
+   * @param amount - The amount to increment by (default: 1)
+   * @returns The new value after incrementing
+   * @throws Error if lock cannot be acquired after maximum retries
+   */
   async increment(key: string, amount: number = 1): Promise<number> {
     const filePath = this.getFilePath(key);
 

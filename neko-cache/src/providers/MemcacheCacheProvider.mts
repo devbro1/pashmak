@@ -2,19 +2,37 @@ import { CacheProviderInterface } from '@/CacheProviderInterface.mjs';
 import { JSONValue, JSONObject } from '@devbro/neko-helper';
 import Memcached from 'memcached';
 
+/**
+ * Configuration options for the Memcached cache provider.
+ */
 export interface MemcachedConfig {
+  /** Memcached server location(s) */
   location?: Memcached.Location;
+  /** Additional Memcached options */
   options?: Memcached.options;
 }
 
+/**
+ * Memcached-based cache provider that stores cache entries in a Memcached server.
+ * Provides distributed caching with automatic serialization and expiration.
+ */
 export class MemcacheCacheProvider implements CacheProviderInterface {
   private client: Memcached;
   private defaultTTL: number = 3600; // default TTL in seconds
 
+  /**
+   * Creates a new MemcacheCacheProvider instance.
+   * @param config - Memcached configuration options
+   */
   constructor(private config: MemcachedConfig = {}) {
     this.client = new Memcached(config.location || 'localhost:11211', config.options || {});
   }
 
+  /**
+   * Retrieves a value from the cache.
+   * @param key - The cache key
+   * @returns The cached value or undefined if not found
+   */
   async get(key: string): Promise<JSONValue | JSONObject | undefined> {
     return new Promise((resolve, reject) => {
       this.client.get(key, (err: Error | undefined, data: any) => {
@@ -40,6 +58,12 @@ export class MemcacheCacheProvider implements CacheProviderInterface {
     });
   }
 
+  /**
+   * Stores a value in the cache.
+   * @param key - The cache key
+   * @param value - The value to cache
+   * @param ttl - Time to live in seconds (optional)
+   */
   async put(key: string, value: JSONObject | JSONValue, ttl?: number): Promise<void> {
     return new Promise((resolve, reject) => {
       const serializedValue = JSON.stringify(value);
@@ -55,6 +79,10 @@ export class MemcacheCacheProvider implements CacheProviderInterface {
     });
   }
 
+  /**
+   * Deletes a value from the cache.
+   * @param key - The cache key to delete
+   */
   async delete(key: string): Promise<void> {
     return new Promise((resolve, reject) => {
       this.client.del(key, (err: Error | undefined) => {
@@ -67,6 +95,11 @@ export class MemcacheCacheProvider implements CacheProviderInterface {
     });
   }
 
+  /**
+   * Checks if a key exists in the cache.
+   * @param key - The cache key to check
+   * @returns True if the key exists, false otherwise
+   */
   async has(key: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
       this.client.get(key, (err: Error | undefined, data: any) => {
@@ -79,6 +112,13 @@ export class MemcacheCacheProvider implements CacheProviderInterface {
     });
   }
 
+  /**
+   * Increments a numeric value in the cache atomically using Memcached's native increment.
+   * If the key doesn't exist, it is initialized with the increment amount.
+   * @param key - The cache key to increment
+   * @param amount - The amount to increment by (default: 1)
+   * @returns The new value after incrementing
+   */
   async increment(key: string, amount: number = 1): Promise<number> {
     return new Promise((resolve, reject) => {
       // Memcached incr are atomic operations

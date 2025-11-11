@@ -3,24 +3,37 @@ import { MailerProvider } from "../MailerProvider.mjs";
 import nodemailer from "nodemailer";
 import { prepareEmails } from "../helper.mjs";
 
+/**
+ * Configuration options for the ProtonMailProvider.
+ */
 export type ProtonMailProviderOptions = {
+  /** ProtonMail Bridge host (default: 127.0.0.1) */
   bridge_host?: string;
+  /** ProtonMail Bridge port (default: 1025) */
   bridge_port?: number;
+  /** ProtonMail username */
   username: string;
+  /** ProtonMail password */
   password: string;
+  /** Default sender email address */
   default_from: string;
-  reject_unauthorized?: boolean; // Whether to verify SSL certificates (default: false for Bridge)
+  /** Whether to verify SSL certificates (default: false for Bridge) */
+  reject_unauthorized?: boolean;
 };
 
 /**
- * ProtonMail provider using ProtonMail Bridge for SMTP
- * Requires ProtonMail Bridge to be installed and running
- * https://proton.me/mail/bridge
+ * Mailer provider that sends emails via ProtonMail Bridge SMTP.
+ * Requires ProtonMail Bridge to be installed and running locally.
+ * @see https://proton.me/mail/bridge
  */
 export class ProtonMailProvider implements MailerProvider {
   private defaultFrom: string = "";
   private transporter;
 
+  /**
+   * Creates a new ProtonMailProvider instance.
+   * @param options - Provider configuration options
+   */
   constructor(options: Partial<ProtonMailProviderOptions> = {}) {
     this.defaultFrom = options.default_from || "";
 
@@ -49,10 +62,18 @@ export class ProtonMailProvider implements MailerProvider {
     });
   }
 
+  /**
+   * Sets the default sender email address.
+   * @param from - The default sender email address
+   */
   setDefaultFrom(from: string): void {
     this.defaultFrom = from;
   }
 
+  /**
+   * Sends an email via ProtonMail Bridge SMTP.
+   * @param mail - The email message to send
+   */
   async sendMail(mail: Mailable): Promise<void> {
     await this.transporter.sendMail({
       from: mail.from || this.defaultFrom,

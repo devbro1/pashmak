@@ -7,14 +7,28 @@ import {
 } from "@aws-sdk/client-ses";
 import { prepareEmails } from "../helper.mjs";
 
+/**
+ * Configuration options for the SESProvider.
+ */
 export type SESProviderOptions = {
+  /** AWS SES client configuration */
   sesClientConfig: SESClientConfig;
+  /** Default sender email address */
   default_from: string;
 };
+
+/**
+ * Mailer provider that sends emails via Amazon SES (Simple Email Service).
+ * Supports AWS credentials from environment variables or explicit configuration.
+ */
 export class SESProvider implements MailerProvider {
   private sesClient: SESClient;
   private defaultFrom: string = "";
 
+  /**
+   * Creates a new SESProvider instance.
+   * @param options - Provider configuration options
+   */
   constructor(options: Partial<SESProviderOptions> = {}) {
     this.sesClient = new SESClient({
       region: process.env.AWS_REGION || "us-east-1",
@@ -28,10 +42,18 @@ export class SESProvider implements MailerProvider {
     this.defaultFrom = options.default_from || "";
   }
 
+  /**
+   * Sets the default sender email address.
+   * @param from - The default sender email address
+   */
   setDefaultFrom(from: string): void {
     this.defaultFrom = from;
   }
 
+  /**
+   * Sends an email via Amazon SES.
+   * @param mail - The email message to send
+   */
   async sendMail(mail: Mailable): Promise<void> {
     const command = new SendEmailCommand({
       Source: mail.from || this.defaultFrom,
