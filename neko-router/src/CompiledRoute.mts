@@ -41,7 +41,9 @@ export class CompiledRoute {
   }
 
   async run() {
-    return await this.runMiddlewares(this.middlewares, this.request, this.response);
+    let rc = await this.runMiddlewares(this.middlewares, this.request, this.response);
+    this.response.end();
+    return rc;
   }
 
   prepareOutputJsonFormat<T>(obj: object | Array<any>): T {
@@ -103,20 +105,18 @@ export class CompiledRoute {
       const header_content_type = res.getHeader('Content-Type');
       if (controller_rc instanceof Stream || Buffer.isBuffer(controller_rc)) {
         await this.writeAsync(res, controller_rc);
-        res.end();
       } else if (!header_content_type && typeof controller_rc === 'object') {
         res.setHeader('Content-Type', 'application/json');
-        res.end(this.convertToString(controller_rc));
+        res.write(this.convertToString(controller_rc));
       } else if (!header_content_type) {
         res.setHeader('Content-Type', 'text/plain');
-        res.end(this.convertToString(controller_rc));
+        res.write(this.convertToString(controller_rc));
       } else {
-        res.end(this.convertToString(controller_rc));
+        res.write(this.convertToString(controller_rc));
       }
       return;
     } else {
       res.statusCode = [200].includes(res.statusCode) ? 204 : res.statusCode;
-      res.end();
     }
   }
 
