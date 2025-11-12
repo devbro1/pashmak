@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-orm",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "straight forward ORM for those that love simple things",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

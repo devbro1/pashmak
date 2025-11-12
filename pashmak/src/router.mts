@@ -3,8 +3,6 @@ import { BaseModel } from "@devbro/neko-orm";
 import { Request, Response } from "@devbro/neko-router";
 import { HttpNotFoundError } from "@devbro/neko-http/errors";
 import { createParamDecorator } from "@devbro/neko-router";
-import * as yup from "yup";
-import { config } from "@devbro/neko-config";
 export * from "@devbro/neko-router";
 
 export function Model(
@@ -89,7 +87,9 @@ export function ApiDocumentation(
   </head>
   <body>
     <script type="module" src="https://unpkg.com/rapidoc/dist/rapidoc-min.js"></script>
-    <rapi-doc spec-url="${open_api_url}" theme="dark" render-style="read" show-header="false"></rapi-doc>
+    <rapi-doc spec-url="${open_api_url}" theme="dark" render-style="read" show-header="false"
+      show-method-in-nav-bar="as-colored-text" allow-server-selection="true"
+    ></rapi-doc>
   </body>
 </html>`;
 

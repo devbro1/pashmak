@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-http",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "all in one http server",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
