@@ -1,19 +1,36 @@
 import { JSONObject, JSONValue } from '@devbro/neko-helper';
 import { CacheProviderInterface } from '../CacheProviderInterface.mjs';
 
+/**
+ * Configuration options for the in-memory cache provider.
+ */
 export interface MemoryCacheConfig {
+  /** Maximum number of items to store in cache (default: 1000) */
   maxSize?: number;
+  /** Default time to live in seconds (default: 3600) */
   defaultTTL?: number;
+  /** Interval in seconds to run cleanup of expired entries (default: 600) */
   cleanupInterval?: number;
 }
 
+/**
+ * Represents a cached item with metadata.
+ */
 interface CacheItem {
+  /** The cached value */
   value: any;
+  /** Timestamp when the item expires (milliseconds since epoch) */
   expiresAt?: number;
+  /** Timestamp when the item was created (milliseconds since epoch) */
   createdAt: number;
+  /** Timestamp when the item was last accessed (milliseconds since epoch) */
   lastAccessed: number;
 }
 
+/**
+ * In-memory cache provider with LRU eviction and automatic cleanup.
+ * Stores cache entries in memory with support for TTL and size limits.
+ */
 export class MemoryCacheProvider implements CacheProviderInterface {
   private cache = new Map<string, CacheItem>();
   private config: MemoryCacheConfig = {
@@ -24,12 +41,19 @@ export class MemoryCacheProvider implements CacheProviderInterface {
 
   private cleanupTimer?: NodeJS.Timeout;
 
+  /**
+   * Creates a new MemoryCacheProvider instance.
+   * @param config - Configuration options for the cache
+   */
   constructor(config: MemoryCacheConfig = {}) {
     this.config = { ...this.config, ...config };
 
     this.startCleanupTimer();
   }
 
+  /**
+   * Starts the automatic cleanup timer for expired entries.
+   */
   private startCleanupTimer(): void {
     if (this.config.cleanupInterval! > 0) {
       this.cleanupTimer = setInterval(() => {
@@ -38,6 +62,9 @@ export class MemoryCacheProvider implements CacheProviderInterface {
     }
   }
 
+  /**
+   * Stops the automatic cleanup timer.
+   */
   private stopCleanupTimer(): void {
     if (this.cleanupTimer) {
       clearInterval(this.cleanupTimer);
@@ -45,6 +72,9 @@ export class MemoryCacheProvider implements CacheProviderInterface {
     }
   }
 
+  /**
+   * Removes all expired entries from the cache.
+   */
   private cleanupExpiredEntries(): void {
     const now = Date.now();
 
@@ -55,6 +85,9 @@ export class MemoryCacheProvider implements CacheProviderInterface {
     }
   }
 
+  /**
+   * Evicts the least recently used item if cache size exceeds maximum.
+   */
   private evictLRU(): void {
     if (this.cache.size <= this.config.maxSize!) {
       return;
@@ -76,6 +109,11 @@ export class MemoryCacheProvider implements CacheProviderInterface {
     }
   }
 
+  /**
+   * Retrieves a value from the cache.
+   * @param key - The cache key
+   * @returns The cached value or undefined if not found or expired
+   */
   async get(key: string): Promise<JSONObject | JSONValue | undefined> {
     const item = this.cache.get(key);
 
@@ -95,6 +133,12 @@ export class MemoryCacheProvider implements CacheProviderInterface {
     return item.value;
   }
 
+  /**
+   * Stores a value in the cache.
+   * @param key - The cache key
+   * @param value - The value to cache
+   * @param ttl - Time to live in seconds (optional)
+   */
   async put(key: string, value: JSONObject | JSONValue, ttl?: number): Promise<void> {
     const now = Date.now();
     const effectiveTTL = ttl ?? this.config.defaultTTL!;
@@ -112,10 +156,19 @@ export class MemoryCacheProvider implements CacheProviderInterface {
     this.evictLRU();
   }
 
+  /**
+   * Deletes a value from the cache.
+   * @param key - The cache key to delete
+   */
   async delete(key: string): Promise<void> {
     this.cache.delete(key);
   }
 
+  /**
+   * Checks if a key exists in the cache and has not expired.
+   * @param key - The cache key to check
+   * @returns True if the key exists and is not expired, false otherwise
+   */
   async has(key: string): Promise<boolean> {
     const item = this.cache.get(key);
 
@@ -132,6 +185,13 @@ export class MemoryCacheProvider implements CacheProviderInterface {
     return true;
   }
 
+  /**
+   * Increments a numeric value in the cache atomically.
+   * If the key doesn't exist or is expired, it starts from 0.
+   * @param key - The cache key to increment
+   * @param amount - The amount to increment by (default: 1)
+   * @returns The new value after incrementing
+   */
   async increment(key: string, amount: number = 1): Promise<number> {
     const item = this.cache.get(key);
     const now = Date.now();

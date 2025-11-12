@@ -2,11 +2,19 @@ import { Mailable } from "../Mailable.mjs";
 import { MailerProvider } from "../MailerProvider.mjs";
 import { prepareEmails } from "../helper.mjs";
 
+/**
+ * Configuration options for the MailchimpProvider.
+ */
 export type MailchimpProviderOptions = {
+  /** Mailchimp Transactional API key */
   api_key: string;
+  /** Default sender email address */
   default_from: string;
 };
 
+/**
+ * Represents a recipient's email status in Mailchimp response.
+ */
 interface MailchimpRecipient {
   email: string;
   status: "sent" | "queued" | "scheduled" | "rejected" | "invalid";
@@ -15,22 +23,35 @@ interface MailchimpRecipient {
 }
 
 /**
- * Mailchimp Transactional (Mandrill) provider
- * Uses Mailchimp's transactional email API (formerly Mandrill)
+ * Mailer provider that sends emails via Mailchimp Transactional (formerly Mandrill).
+ * Supports API key from configuration or MAILCHIMP_API_KEY environment variable.
  */
 export class MailchimpProvider implements MailerProvider {
   private defaultFrom: string = "";
   private apiKey: string;
 
+  /**
+   * Creates a new MailchimpProvider instance.
+   * @param options - Provider configuration options
+   */
   constructor(options: Partial<MailchimpProviderOptions> = {}) {
     this.apiKey = options.api_key || process.env.MAILCHIMP_API_KEY || "";
     this.defaultFrom = options.default_from || "";
   }
 
+  /**
+   * Sets the default sender email address.
+   * @param from - The default sender email address
+   */
   setDefaultFrom(from: string): void {
     this.defaultFrom = from;
   }
 
+  /**
+   * Sends an email via Mailchimp Transactional API.
+   * @param mail - The email message to send
+   * @throws Error if the Mailchimp API request fails or emails are rejected
+   */
   async sendMail(mail: Mailable): Promise<void> {
     const toEmails = prepareEmails(mail.to);
     const ccEmails = prepareEmails(mail.cc);
