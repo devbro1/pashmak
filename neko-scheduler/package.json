@@ -28,25 +28,17 @@
   "author": "Farzad Meow Khalafi",
   "license": "MIT",
   "devDependencies": {
-    "@types/express": "^5.0.1",
     "@types/node": "^22.14.1",
-    "@types/supertest": "^6.0.3",
     "@typescript-eslint/eslint-plugin": "^7.1.1",
     "@typescript-eslint/parser": "^7.1.1",
     "eslint": "8.57.0",
     "husky": "^9.1.7",
-    "pinst": "^3.0.0",
     "prettier": "^3.5.3",
-    "supertest": "^7.1.0",
-    "ts-jest": "^29.1.2",
-    "ts-node": "^10.9.2",
     "tsup": "^8.0.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@types/pluralize": "^0.0.33",
-    "cron": "^4.3.0",
-    "pluralize": "^8.0.0"
+    "cron": "^4.3.0"
   },
   "directories": {
     "doc": "docs",

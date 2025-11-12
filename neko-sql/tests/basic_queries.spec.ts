@@ -1,6 +1,5 @@
 import { describe, expect, test, beforeAll, afterAll } from 'vitest';
 import { Query } from '../src/Query.mjs';
-import { QueryGrammar } from '../src/QueryGrammar.mjs';
 import { PostgresqlConnection } from '../src/databases/postgresql/PostgresqlConnection.mjs';
 import { Connection } from '../src/Connection.mjs';
 import { execSync } from 'child_process';

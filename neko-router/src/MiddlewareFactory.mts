@@ -1,5 +1,5 @@
 import { Middleware } from './Middleware.mjs';
-import { HandlerType, LexerToken, Request, Response } from './types.mjs';
+import { HandlerType, Request, Response } from './types.mjs';
 
 export class MiddlewareFactory {
   public static create(func: HandlerType): Middleware {

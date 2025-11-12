@@ -1,12 +1,10 @@
 import { Metadata, S3ClientConfig } from '../types.mjs';
-import { Storage } from '../Storage.mjs';
 import {
   S3Client,
   HeadObjectCommand,
   PutObjectCommand,
   GetObjectCommand,
   DeleteObjectCommand,
-  HeadObjectOutput,
 } from '@aws-sdk/client-s3';
 import { ReadStream } from 'fs';
 import Stream, { Readable } from 'stream';

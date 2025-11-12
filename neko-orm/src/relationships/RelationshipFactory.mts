@@ -6,7 +6,6 @@ import { RelationshipManager1toM } from './RelationshipManager1toM.mjs';
 import { RelationshipManagerMto1 } from './RelationshipManagerMto1.mjs';
 import { RelationshipManagerMtoM } from './RelationshipManagerMtoM.mjs';
 import { RelationFactoryOptionsType } from './types.mjs';
-import { RelationshipManager } from './RelationshipManager.mjs';
 
 export class RelationshipFactory {
   static populateOptions(options: Partial<RelationFactoryOptionsType>): RelationFactoryOptionsType {

@@ -118,11 +118,8 @@
   "license": "MIT",
   "devDependencies": {
     "@swc/core": "^1.12.9",
-    "@types/config": "^3.3.5",
-    "@types/jsonwebtoken": "^9.0.9",
     "@types/yup": "^0.32.0",
     "globby": "^14.1.0",
-    "pino-pretty": "^13.0.0",
     "typescript": "^5.8.3"
   },
   "dependencies": {
@@ -140,16 +137,10 @@
     "@devbro/neko-storage": "0.1.*",
     "@inquirer/prompts": "^7.10.0",
     "@types/pluralize": "^0.0.33",
-    "bcryptjs": "^3.0.2",
     "change-case-all": "^2.1.0",
     "clipanion": "^4.0.0-rc.4",
-    "dotenv": "^16.5.0",
     "handlebars": "^4.7.8",
-    "jsonwebtoken": "^9.0.2",
-    "pg-pool": "3.10.0",
     "pluralize": "^8.0.0",
-    "ts-jest": "^29.3.4",
-    "tsconfig-paths": "^4.2.0",
     "yup": "^1.6.1"
   },
   "directories": {

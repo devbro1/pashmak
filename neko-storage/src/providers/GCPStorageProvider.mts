@@ -2,7 +2,7 @@ import { Storage as GCPStorage } from '@google-cloud/storage';
 import { Metadata, GCPStorageConfig } from '../types.mjs';
 import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
 import { ReadStream } from 'fs';
-import Stream, { Readable } from 'stream';
+import Stream from 'stream';
 import * as mime from 'mime-types';
 
 export class GCPStorageProvider implements StorageProviderInterface {

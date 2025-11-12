@@ -1,4 +1,4 @@
-import { CronJob, CronJobParams, validateCronExpression } from 'cron';
+import { CronJob, validateCronExpression } from 'cron';
 
 export class Schedule {
   private cronJob: CronJob | undefined;

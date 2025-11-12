@@ -27,24 +27,16 @@
   },
   "author": "Farzad Meow Khalafi",
   "license": "MIT",
-  "dependencies": {
-    "@aws-sdk/client-sqs": "^3.600.0",
-    "amqplib": "^0.10.3",
-    "redis": "^4.6.8"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "@types/amqplib": "^0.10.5",
     "@types/node": "^22.14.1",
     "@typescript-eslint/eslint-plugin": "^7.1.1",
     "@typescript-eslint/parser": "^7.1.1",
     "eslint": "8.57.0",
     "husky": "^9.1.7",
-    "pinst": "^3.0.0",
     "prettier": "^3.5.3",
-    "ts-jest": "^29.1.2",
-    "ts-node": "^10.9.2",
     "tsup": "^8.0.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.8.3"
   },
   "directories": {
     "test": "tests"

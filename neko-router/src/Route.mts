@@ -1,4 +1,3 @@
-import { Middleware } from './Middleware.mjs';
 import { MiddlewareFactory } from './MiddlewareFactory.mjs';
 import { HandlerType, HttpMethod, MiddlewareProvider } from './types.mjs';
 import { LexerToken, Request, Response } from './types.mjs';

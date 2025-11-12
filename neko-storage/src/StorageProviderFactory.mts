@@ -1,4 +1,3 @@
-import { Storage } from './Storage.mjs';
 import { FlexibleFactory } from '@devbro/neko-helper';
 import { StorageProviderInterface } from './StorageProviderInterface.mjs';
 
@@ -10,7 +9,7 @@ export class StorageProviderFactory {
     StorageProviderFactory.instance.register(key, factory);
   }
 
-  static create<T>(key: string, ...args: any[]): StorageProviderInterface {
+  static create(key: string, ...args: any[]): StorageProviderInterface {
     return StorageProviderFactory.instance.create(key, ...args);
   }
 }

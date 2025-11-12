@@ -28,24 +28,20 @@
   "author": "Farzad Meow Khalafi",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^20.11.25",
+    "@types/node": "^22.14.1",
     "@typescript-eslint/eslint-plugin": "^7.1.1",
     "@typescript-eslint/parser": "^7.1.1",
     "eslint": "8.57.0",
     "husky": "^9.1.7",
-    "pinst": "^3.0.0",
     "prettier": "^3.5.3",
-    "ts-jest": "^29.1.2",
-    "ts-node": "^10.9.2",
     "tsup": "^8.0.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.8.3"
   },
   "dependencies": {
     "@devbro/neko-sql": "0.1.*",
     "@types/pluralize": "^0.0.33",
     "change-case-all": "^2.1.0",
     "date-fns": "^4.1.0",
-    "date-fns-tz": "^3.2.0",
     "pluralize": "^8.0.0"
   },
   "directories": {
