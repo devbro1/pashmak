@@ -70,11 +70,11 @@ type PollerInfo = {
  * AWS SQS-based queue transport implementation.
  * Provides message dispatching, listener registration, and long-polling with automatic retries.
  */
-export class SqsTransport implements QueueTransportInterface {
+export class AwsSqsTransport implements QueueTransportInterface {
   private readonly client: SQSClient;
   private readonly config: Required<
     Omit<
-      SqsTransportConfig,
+      AwsSqsTransportConfig,
       | 'client'
       | 'endpoint'
       | 'messageGroupId'
@@ -84,7 +84,7 @@ export class SqsTransport implements QueueTransportInterface {
     >
   > &
     Pick<
-      SqsTransportConfig,
+      AwsSqsTransportConfig,
       'endpoint' | 'messageGroupId' | 'onError' | 'credentials' | 'errorVisibilityTimeout'
     >;
   private readonly queueUrls = new Map<string, string>();
@@ -97,7 +97,7 @@ export class SqsTransport implements QueueTransportInterface {
    * Creates a new SQS transport instance.
    * @param config - Configuration options for the SQS transport
    */
-  constructor(config: SqsTransportConfig = {}) {
+  constructor(config: AwsSqsTransportConfig = {}) {
     this.config = {
       region: config.region ?? process.env.AWS_REGION ?? 'us-east-1',
       endpoint: config.endpoint ?? process.env.AWS_SQS_ENDPOINT,
@@ -254,8 +254,10 @@ export class SqsTransport implements QueueTransportInterface {
     signal: AbortSignal
   ): Promise<void> {
     let queueUrl: string = listener.queueUrl ?? (await this.ensureQueueUrl(channel));
+    let counter = 0;
 
     while (!signal.aborted && this.listening) {
+      console.log('looping', counter++);
       try {
         const receiveCommand = new ReceiveMessageCommand({
           QueueUrl: queueUrl,
@@ -263,9 +265,12 @@ export class SqsTransport implements QueueTransportInterface {
           WaitTimeSeconds: this.config.waitTimeSeconds,
           VisibilityTimeout: this.config.visibilityTimeout,
         });
+        console.log('looping A');
         const response = await this.client.send(receiveCommand, { abortSignal: signal });
+        console.log('looping B');
         const messages = response.Messages ?? [];
 
+        console.log('looping', counter++, messages.length, signal.aborted, this.listening);
         if (messages.length === 0 || signal.aborted || !this.listening) {
           continue;
         }
@@ -304,6 +309,7 @@ export class SqsTransport implements QueueTransportInterface {
         this.handleError(error, channel);
       }
     }
+    console.log('finished looping');
   }
 
   /**
