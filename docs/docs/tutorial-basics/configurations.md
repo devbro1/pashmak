@@ -23,41 +23,72 @@ export default {
 };
 ```
 
-## More configurations
+## Organizing Configurations
 
-There can be multiple features that depends on configurations to run successfully such as database, file, caching, and etc. To make maintaining configurations for each of these features, it is strongly suggested to keep their configurations in separate files and import(`await import()`) them into default config. the main configuration for each of these services must be named `default`. for example, if your system is connecting to 3 different databases, the main database must be labelled default, the second and third, can be given any name of your own choosing.
+Multiple features depend on configurations to run successfully, such as database, cache, storage, etc. To maintain clean and organized configurations:
 
-## custom feature configurations
+1. Keep configurations for each feature in separate files
+2. Import them into your default config using `await import()`
+3. The main configuration for each service should be named `default`
 
-If you decide to create your own custom feature, for example a payment processing, that needs configuration, you can create your own `XYZ.ts` file similar to:
+For example, if your system connects to 3 different databases, the main database should be labeled `default`, and the others can have custom names:
 
-```typescript
-// payment.ts
+```ts
+// config/database.ts
 export default {
-  provider: 'stripe',
-  ....
-}
-
-//optional if you are planning to connect to more than one service
-export const secondary_payment_system = {
-  ?????
-}
-
-//default.ts
-export default {
-  ?????
-  payment_system: require('./payment');
+  driver: 'postgres',
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  // ... other database config
 };
 
-// somewhere else in your code
-import config from '@devbro/pashmak/config';
+export const analyticsDb = {
+  driver: 'postgres',
+  host: process.env.ANALYTICS_DB_HOST,
+  // ...
+};
 
+// config/default.ts
+export default {
+  databases: await import('./database.js'),
+  cache: await import('./cache.js'),
+  storage: await import('./storage.js'),
+  // ... other configs
+};
+```
 
-if(config.get('payment_system.default.provider') === 'stripe') {
-  // standard payment processing
-}
-else if(config.get('payment_system.secondary_payment_system') === 'bitcoin') {
- // backup payment processing
+## Custom Feature Configurations
+
+If you create a custom feature (e.g., payment processing) that needs configuration:
+
+```typescript
+// config/payment.ts
+export default {
+  provider: 'stripe',
+  apiKey: process.env.STRIPE_API_KEY,
+  webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+};
+
+// Optional: Add a secondary payment system
+export const secondaryPayment = {
+  provider: 'paypal',
+  clientId: process.env.PAYPAL_CLIENT_ID,
+  secret: process.env.PAYPAL_SECRET,
+};
+
+// config/default.ts
+export default {
+  // ... other configs
+  payment: await import('./payment.js'),
+};
+
+// In your code
+import { config } from '@devbro/pashmak/config';
+
+if (config.get('payment.default.provider') === 'stripe') {
+  // Standard payment processing
+} else if (config.get('payment.secondaryPayment.provider') === 'paypal') {
+  // Alternative payment processing
 }
 ```
 

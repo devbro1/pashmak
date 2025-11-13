@@ -4,58 +4,78 @@ sidebar_position: 4
 
 # Router
 
-Router facade is the backbone of http server to connect different routes to your controllers.
+The Router facade is the backbone of the HTTP server, connecting routes to your controllers and managing middleware.
+
+## Basic Usage
 
 ```ts
 import { Request, Response } from "@devbro/pashmak/router";
 import { router } from "@devbro/pashmak/facades";
-
 import { CatController } from "./app/controllers/CatController";
 import { AnimalController } from "./app/controllers/AnimalController";
 import { loggerMiddleware, logResponseMiddleware } from "./middlewares";
 
-router.addGlobalMiddleware(loggerMiddleware);
+// Add global middleware (applies to all routes)
+router().addGlobalMiddleware(loggerMiddleware);
 
+// Add routes with functional controllers
 router().addRoute(
   ["GET", "HEAD"],
   "/api/v1/countries",
-  async (req: any, res: any) => {
-    return { yey: "GET countries" };
-  },
+  async (req: Request, res: Response) => {
+    return { message: "GET countries" };
+  }
 );
 
-router.addRoute("GET", "/api/v1/countries", async (req: any, res: any) => {
-  return { yey: "GET countries" };
-});
+// Single HTTP method
+router().addRoute(
+  ["GET"],
+  "/api/v1/regions",
+  async (req: Request, res: Response) => {
+    return { message: "GET regions" };
+  }
+);
 
-router
-  .addRoute(["GET", "HEAD"], "/api/v1/regions", async (req: any, res: any) => {
-    return { yey: "GET regions" };
-  })
+// Add route-specific middleware
+router()
+  .addRoute(
+    ["GET"],
+    "/api/v1/cities",
+    async (req: Request, res: Response) => {
+      return { message: "GET cities" };
+    }
+  )
   .addMiddleware(logResponseMiddleware);
 
-router.addController(CatController);
-router.addController(AnimalController);
+// Register class-based controllers
+router().addController(CatController);
+router().addController(AnimalController);
 ```
 
-router manages both middlewares and controlers.
+## Controller Types
 
-controller can be either a Controller class or an async function that gets a request and response object.
+The router supports two types of controllers:
 
-## functional controller
+1. **Functional Controllers**: Simple async functions
+2. **Class Controllers**: Classes decorated with `@Controller`
 
-basic format of a functional controller is:
+## Functional Controllers
+
+Basic format of a functional controller:
 
 ```ts
+import { Request, Response } from "@devbro/pashmak/router";
+
 async (req: Request, res: Response) => {
   return { message: "GET regions" };
 };
 ```
 
-if you want to do more complex returns you can directly modify Response.
+### Direct Response Manipulation
 
-> [!CAUTION]
-> Response and Request objects are NOT the standard objects defined as part of node, make sure to import them from @pashmak.
+For more complex responses, you can directly modify the Response object:
+
+> **Note:** Response and Request objects are NOT the standard Node.js objects. Make sure to import them from `@devbro/pashmak/router`.
 
 ```ts
 import { Request, Response } from "@devbro/pashmak/router";
@@ -66,26 +86,64 @@ async (req: Request, res: Response) => {
 };
 ```
 
-## Error handling
-
-Router is able to handle error by default. If you throw any error of type `HttpError`, httpserver can render them as json right away. If error is of any other type, server will return a generic 500 error.
+### Accessing Request Data
 
 ```ts
-import { Request, Response } from "@devbro/pashmak/router";
-import { HttpError, HTTPUnauthorizedError } from "@devbro/pashmak/http";
 async (req: Request, res: Response) => {
-  throw new HTTPUnauthorizedError();
+  const { id } = req.params;  // URL parameters
+  const { search } = req.query;  // Query string parameters
+  const data = req.body;  // Request body
+  const files = req.files;  // Uploaded files
+  
+  return { id, search, data };
 };
 ```
 
-if you want to have your own custom error handler you can:
+## Error Handling
+
+The router handles errors automatically. If you throw an error of type `HttpError`, the HTTP server will render it as JSON. If the error is of any other type, the server will return a generic 500 error.
+
+### Built-in HTTP Errors
 
 ```ts
-import { server } from '@devbro/pashmak/facades';
+import { Request, Response } from "@devbro/pashmak/router";
+import {
+  HttpError,
+  HttpBadRequestError,
+  HttpUnauthorizedError,
+  HttpForbiddenError,
+  HttpNotFoundError,
+  HttpConflictError,
+  HttpInternalServerError,
+} from "@devbro/pashmak/http";
+
+async (req: Request, res: Response) => {
+  // Throw specific HTTP errors
+  throw new HttpUnauthorizedError("Please login first");
+  // or
+  throw new HttpNotFoundError("Resource not found");
+  // or
+  throw new HttpBadRequestError("Invalid input");
+};
+```
+
+### Custom Error Handler
+
+You can set a custom error handler for more control:
+
+```ts
+import { server } from "@devbro/pashmak/facades";
 
 server().setErrorHandler(async (err: Error, req: any, res: any) => {
-  // ???
-}
+  // Custom error handling logic
+  console.error(err);
+  
+  res.writeHead(500, { "Content-Type": "application/json" });
+  res.end(JSON.stringify({
+    error: "Internal Server Error",
+    message: err.message,
+  }));
+});
 ```
 
 ## Nesting Routers

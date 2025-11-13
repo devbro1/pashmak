@@ -4,11 +4,39 @@ sidebar_position: 5
 
 # Controller
 
-Pashmak can accept both function and class controllers
+Pashmak can accept both function and class controllers.
 
-## functional Controllers
+## Functional Controllers
+
+Functional controllers are simple async functions that receive request and response objects:
+
+```ts
+import { Request, Response } from "@devbro/pashmak/router";
+import { router } from "@devbro/pashmak/facades";
+
+router().addRoute(
+  ["GET"],
+  "/api/v1/hello",
+  async (req: Request, res: Response) => {
+    return { message: "Hello World" };
+  }
+);
+```
+
+For more complex responses, you can directly modify the Response object:
+
+```ts
+import { Request, Response } from "@devbro/pashmak/router";
+
+async (req: Request, res: Response) => {
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end(JSON.stringify({ message: "Custom response" }));
+};
+```
 
 ## Class Controllers
+
+Class controllers provide a cleaner way to organize your routes using decorators:
 
 ```ts
 import { db, storage, logger } from "@devbro/pashmak/facades";
@@ -18,11 +46,12 @@ import {
   Response,
   Model,
   Param,
-  ValidatedRequest,
   BaseController,
   Controller,
   Get,
   Post,
+  Put,
+  Delete,
 } from "@devbro/pashmak/router";
 
 @Controller("/api/v1/cats", {
@@ -30,8 +59,12 @@ import {
 })
 export class CatController extends BaseController {
   @Get({ middlewares: [logResponseMiddleware] })
-  async show() {
-    const r = await db().runQuery({ sql: "select * from cats", bindings: [] });
+  async list() {
+    const r = await db().runQuery({
+      sql: "select * from cats",
+      parts: [],
+      bindings: [],
+    });
     return {
       message: "GET cats",
       data: r,
@@ -43,12 +76,26 @@ export class CatController extends BaseController {
     const req = ctx().get<Request>("request");
     logger().info({ msg: "request details", body: req.body, files: req.files });
 
-    return "success";
+    return { success: true };
   }
 
-  @Put("/:id")
-  async update(@Param("id") id, @Model(CatModel, "id", "id") cat: CatModel) {
-    return "success";
+  @Get({ path: "/:id" })
+  async show(@Param("id") id: string) {
+    return { id, name: "cat name" };
+  }
+
+  @Put({ path: "/:id" })
+  async update(@Param("id") id: string, @Model(CatModel, "id", "id") cat: CatModel) {
+    // Model decorator automatically fetches the cat by id
+    cat.name = "Updated name";
+    await cat.save();
+    return cat;
+  }
+
+  @Delete({ path: "/:id" })
+  async delete(@Param("id") id: string) {
+    await CatModel.deleteById(id);
+    return { success: true };
   }
 
   @Get({ path: "/file" })
@@ -67,34 +114,116 @@ export class CatController extends BaseController {
   }
 
   @Get({ path: "/:id/notes/:noteId" })
-  showById(@Param("noteId") noteId: string, @Param("id") id: string) {
-    return "notes";
+  showNotes(@Param("noteId") noteId: string, @Param("id") id: string) {
+    return { id, noteId, notes: [] };
   }
 }
 ```
 
-### class decorators
+## Controller Decorators
 
-#### @Model( ModelClass , param_name , model_field )
+### HTTP Method Decorators
 
-automatically fetches a model instance based on a route parameter and injects it into the controller method.
+- `@Get(options?)` - Handle GET requests
+- `@Post(options?)` - Handle POST requests
+- `@Put(options?)` - Handle PUT requests
+- `@Delete(options?)` - Handle DELETE requests
+- `@Patch(options?)` - Handle PATCH requests
 
-`param_name` is optional and defaults to "id". it is the param name in the url.
-`model_field` is optional and defaults to "id". it is the field in the model to be matched against the param value.
+Each decorator accepts an optional configuration object:
 
-#### @Param( param_name )
+```ts
+@Get({
+  path: "/:id",  // Route path (optional, defaults to "/")
+  middlewares: [middleware1, middleware2]  // Route-specific middlewares
+})
+```
 
-extracts a specific parameter from the request URL and injects it into the controller method. If param was not defined in url, it will be undefined.
+### Parameter Decorators
 
-#### @ValidatedRequest( validation_schema )
+#### @Param(param_name)
 
-validates the incoming request data against a defined schema and injects the validated data into the controller.
-validation_schema can be a yup `yup.ObjectSchema` or a function that returns `yup.ObjectSchema`.
+Extracts a specific parameter from the request URL and injects it into the controller method:
 
-## order of middleware execution
+```ts
+@Get({ path: "/:id" })
+async show(@Param("id") id: string) {
+  // id contains the value from the URL parameter
+  return { id };
+}
+```
 
-the order is as followed:
+#### @Model(ModelClass, param_name?, model_field?)
 
-1. middleswares defined in router as globalmiddlewares
-2. middlewares defined at controller class
-3. middlewares defined at each method
+Automatically fetches a model instance based on a route parameter and injects it into the controller method:
+
+- `ModelClass` - The ORM model class to fetch
+- `param_name` - Optional, defaults to "id". The parameter name in the URL.
+- `model_field` - Optional, defaults to "id". The field in the model to match against the param value.
+
+```ts
+@Put({ path: "/:id" })
+async update(@Param("id") id: string, @Model(User) user: User) {
+  // user is automatically fetched from database
+  user.name = "Updated";
+  await user.save();
+  return user;
+}
+```
+
+#### @ValidatedRequest(validation_schema)
+
+Validates the incoming request data against a defined schema and injects the validated data into the controller. See the [Validation](/docs/going-deeper/validation) page for more details.
+
+```ts
+import * as yup from "yup";
+
+const createUserSchema = yup.object({
+  name: yup.string().required(),
+  email: yup.string().email().required(),
+});
+
+@Post()
+async create(@ValidatedRequest(createUserSchema) data: any) {
+  // data is validated and type-safe
+  return await User.create(data);
+}
+```
+
+## Registering Controllers
+
+To use a controller, register it with the router:
+
+```ts
+import { router } from "@devbro/pashmak/facades";
+import { CatController } from "./app/controllers/CatController";
+
+router().addController(CatController);
+```
+
+## Middleware Execution Order
+
+Middlewares are executed in the following order:
+
+1. Global middlewares defined in router
+2. Middlewares defined at controller class level
+3. Middlewares defined at individual method level
+
+```ts
+import { router } from "@devbro/pashmak/facades";
+
+// 1. Global middleware (runs first)
+router().addGlobalMiddleware(authMiddleware);
+
+// 2. Controller-level middleware (runs second)
+@Controller("/api/v1/users", {
+  middlewares: [checkPermissions]
+})
+export class UserController extends BaseController {
+  // 3. Method-level middleware (runs last)
+  @Get({ middlewares: [logRequest] })
+  async list() {
+    return [];
+  }
+}
+```

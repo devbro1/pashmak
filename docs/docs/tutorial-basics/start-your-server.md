@@ -4,26 +4,61 @@ sidebar_position: 6
 
 # Start Your Server
 
-to start a server and all related services run:
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
-```
-yarn pdev start --all
+## Start All Services
+
+To start the HTTP server, scheduler, and queues all together:
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm" default>
+    ```bash
+    npm run dev
+    # or for production
+    npm run start
+    ```
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+    ```bash
+    yarn dev
+    # or for production
+    yarn start
+    ```
+  </TabItem>
+  <TabItem value="pnpm" label="pnpm">
+    ```bash
+    pnpm dev
+    # or for production
+    pnpm start
+    ```
+  </TabItem>
+</Tabs>
+
+## Start Individual Services
+
+You can also start services individually using the Pashmak CLI:
+
+### HTTP Server Only
+
+```bash
+pashmak start --http
 ```
 
-If you want to run only scheduler, use `--scheduler` flag
+### Scheduler Only
 
-```
-yarn pdev start --scheduler
-```
-
-If you want to run only http server, use `--http` flag
-
-```
-yarn pdev start --http
+```bash
+pashmak start --scheduler
 ```
 
-If you want to run only queues, use `--queues` flag
+### Queue Workers Only
 
+```bash
+pashmak start --queues
 ```
-yarn pdev start --queues
+
+### All Services with CLI
+
+```bash
+pashmak start --all
 ```
