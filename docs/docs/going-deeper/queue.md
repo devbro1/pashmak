@@ -76,14 +76,39 @@ export class IncomingWebhookMessage implements QueueMessageInterface {
 
 ## Available drivers:
 
-#### database
+#### Database
 
-uses database to store messages. This is the default driver and requires a table in your database.
+Uses database to store messages. This is the default driver and requires a table in your database.
 
-```bash
-# to create a migration for queue table
-yarn pdev generate queue migration
-```
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm" default>
+    ```bash
+    # Create a migration for queue table
+    pashmak generate queue migration
+    # Then run migrations
+    pashmak migrate
+    ```
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+    ```bash
+    # Create a migration for queue table
+    pashmak generate queue migration
+    # Then run migrations
+    pashmak migrate
+    ```
+  </TabItem>
+  <TabItem value="pnpm" label="pnpm">
+    ```bash
+    # Create a migration for queue table
+    pashmak generate queue migration
+    # Then run migrations
+    pashmak migrate
+    ```
+  </TabItem>
+</Tabs>
 
 #### SQS
 
