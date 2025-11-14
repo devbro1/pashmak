@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-sql",
-  "version": "0.1.30",
+  "version": "0.1.31",
   "description": "generic sql generator",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
