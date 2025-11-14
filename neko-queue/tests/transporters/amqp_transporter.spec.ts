@@ -27,6 +27,7 @@ vi.mock('amqplib', () => {
   };
 
   return {
+    connect: vi.fn().mockResolvedValue(mockConnection),
     default: {
       connect: vi.fn().mockResolvedValue(mockConnection),
     },
@@ -43,9 +44,12 @@ describe('AmqpTransport - Unit Tests', () => {
     vi.clearAllMocks();
 
     // Get the mocked amqplib
-    amqp = (await import('amqplib')).default;
+    amqp = await import('amqplib');
     mockConnection = await amqp.connect();
     mockChannel = await mockConnection.createChannel();
+
+    // Clear the mocks again after setup to not count these calls
+    vi.clearAllMocks();
   });
 
   afterEach(async () => {
@@ -161,8 +165,8 @@ describe('AmqpTransport - Unit Tests', () => {
       await transport.dispatch('channel1', 'Message 1');
       await transport.dispatch('channel2', 'Message 2');
 
-      expect(amqp.connect).toHaveBeenCalledTimes(2);
-      expect(mockConnection.createChannel).toHaveBeenCalledTimes(2);
+      expect(amqp.connect).toHaveBeenCalledTimes(1);
+      expect(mockConnection.createChannel).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -429,7 +433,7 @@ describe('AmqpTransport - Unit Tests', () => {
       ]);
 
       // Should only connect once
-      expect(amqp.connect).toHaveBeenCalledTimes(2);
+      expect(amqp.connect).toHaveBeenCalledTimes(1);
     });
   });
 

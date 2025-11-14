@@ -1,5 +1,6 @@
 import { QueueTransportInterface } from '../Interfaces.mjs';
-import amqp, { Channel, Connection, ConsumeMessage } from 'amqplib';
+import type { Channel, Connection, ConsumeMessage } from 'amqplib';
+import { connect } from 'amqplib';
 
 /**
  * Configuration options for the AMQP transport.
@@ -42,10 +43,10 @@ type ListenerInfo = {
  * Provides message dispatching and consumption using AMQP protocol.
  */
 export class AmqpTransport implements QueueTransportInterface {
-  private readonly config: Required<Omit<AmqpTransportConfig, 'exchange' | 'onError'>> &
-    Pick<AmqpTransportConfig, 'exchange' | 'onError'>;
-  private connection: Connection | undefined = undefined;
-  private channel: Channel | undefined = undefined;
+  private readonly config: Required<Omit<AmqpTransportConfig, 'url' | 'exchange' | 'onError'>> &
+    Pick<AmqpTransportConfig, 'url' | 'exchange' | 'onError'>;
+  private connection: any = undefined;
+  private channel: any = undefined;
   private readonly listeners = new Map<string, ListenerInfo>();
   private listening = false;
   private connecting = false;
@@ -90,7 +91,7 @@ export class AmqpTransport implements QueueTransportInterface {
     this.connecting = true;
 
     try {
-      this.connection = await amqp.connect(this.config.url);
+      this.connection = await connect(this.config.url!);
       this.channel = await this.connection.createChannel();
 
       await this.channel!.prefetch(this.config.prefetchCount);
@@ -103,7 +104,7 @@ export class AmqpTransport implements QueueTransportInterface {
       }
 
       // Set up connection error handlers
-      this.connection!.on('error', (error) => {
+      this.connection!.on('error', (error: Error) => {
         this.handleError(error, {});
         this.connection = undefined;
         this.channel = undefined;
@@ -114,7 +115,7 @@ export class AmqpTransport implements QueueTransportInterface {
         this.channel = undefined;
       });
 
-      this.channel!.on('error', (error) => {
+      this.channel!.on('error', (error: Error) => {
         this.handleError(error, {});
       });
     } finally {
@@ -230,7 +231,7 @@ export class AmqpTransport implements QueueTransportInterface {
     // Start consuming
     const { consumerTag } = await this.channel.consume(
       queueName,
-      async (msg) => {
+      async (msg: ConsumeMessage | null) => {
         if (!msg) {
           return;
         }
