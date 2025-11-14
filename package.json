@@ -32,5 +32,6 @@
     "neko-storage",
     "test-app",
     "pashmak"
-  ]
+  ],
+  "dependencies": {}
 }
