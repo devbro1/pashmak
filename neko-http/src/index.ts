@@ -182,6 +182,7 @@ export class HttpServer {
     } catch (e: any) {
       await this.errorHandler(e, req, res);
     } finally {
+      // make sure connection is closed no matter what, otherwise response is never sent.
       res.end();
     }
     return;

@@ -11,7 +11,7 @@ import {
 } from "@devbro/neko-mailer";
 import { config } from "@devbro/neko-config";
 import { Cli } from "clipanion";
-import { HttpServer, HttpError } from "./http.mjs";
+import { HttpServer, HttpError, handleHttpErrors } from "./http.mjs";
 import * as yup from "yup";
 import { Logger } from "@devbro/neko-logger";
 import { CacheProviderFactory } from "./factories.mjs";
@@ -56,18 +56,7 @@ export const cli = createSingleton<Cli>(() => {
 export const httpServer = createSingleton<HttpServer>(() => {
   const server = new HttpServer();
 
-  server.setErrorHandler(async (err: Error, req: any, res: any) => {
-    if (err instanceof HttpError) {
-      res.writeHead(err.statusCode, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ message: err.message, error: err.code }));
-      logger().warn({ msg: "HttpError: " + err.message, err });
-      return;
-    } else {
-      logger().error({ msg: "Error: " + err.message, err });
-    }
-    res.writeHead(500, { "Content-Type": "" });
-    res.end(JSON.stringify({ error: "Internal Server Error" }));
-  });
+  server.setErrorHandler(handleHttpErrors);
   server.setRouter(router());
 
   return server;
