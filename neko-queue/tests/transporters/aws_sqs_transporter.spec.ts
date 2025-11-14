@@ -194,160 +194,189 @@ describe('AwsSqsTransport - Unit Tests', () => {
     });
   });
 
-  //     describe('startListening() and stopListening()', () => {
-  //         test('should start listening and process messages', async () => {
-  //             transport = new AwsSqsTransport({ waitTimeSeconds: 1, pollIntervalMs: 100 });
+  describe('startListening() and stopListening()', () => {
+    test('should start listening and process messages', async () => {
+      transport = new AwsSqsTransport({ waitTimeSeconds: 1, pollIntervalMs: 100 });
 
-  //             const messages: string[] = [];
-  //             const callback = vi.fn(async (msg: string) => {
-  //                 messages.push(msg);
-  //             });
+      const messages: string[] = [];
+      const callback = vi.fn(async (msg: string) => {
+        messages.push(msg);
+      });
 
-  //             // Mock GetQueueUrl
-  //             mockSend.mockResolvedValueOnce({ QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue' });
+      // Mock GetQueueUrl
+      mockSend.mockResolvedValueOnce({
+        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
+      });
 
-  //             await transport.registerListener('test-channel', callback);
+      await transport.registerListener('test-channel', callback);
 
-  //             // Mock ReceiveMessage with one message
-  //             mockSend.mockResolvedValueOnce({
-  //                 Messages: [
-  //                     { MessageId: 'msg-1', Body: 'Test Message', ReceiptHandle: 'receipt-1' }
-  //                 ]
-  //             });
-  //             // Mock DeleteMessage
-  //             mockSend.mockResolvedValueOnce({});
-  //             // Mock subsequent empty ReceiveMessage
-  //             mockSend.mockResolvedValue({ Messages: [] });
+      // Mock ReceiveMessage with one message
+      mockSend.mockResolvedValueOnce({
+        Messages: [{ MessageId: 'msg-1', Body: 'Test Message', ReceiptHandle: 'receipt-1' }],
+      });
+      // Mock DeleteMessage
+      mockSend.mockResolvedValueOnce({});
+      // Mock subsequent empty ReceiveMessage
+      mockSend.mockImplementation(async (command: any) => {
+        await sleep(100); // Simulate network delay
+        return { Messages: [] };
+      });
 
-  //             await transport.startListening();
-  //             await sleep(500);
-  //             await transport.stopListening();
+      await transport.startListening();
+      await sleep(500);
+      await transport.stopListening();
 
-  //             expect(callback).toHaveBeenCalledWith('Test Message');
-  //             expect(messages).toContain('Test Message');
-  //         });
+      expect(callback).toHaveBeenCalledWith('Test Message');
+      expect(messages).toContain('Test Message');
+    });
 
-  //         test('should handle multiple messages in a batch', async () => {
-  //             transport = new AwsSqsTransport({ maxNumberOfMessages: 10, waitTimeSeconds: 1 });
+    test('should handle multiple messages in a batch', async () => {
+      transport = new AwsSqsTransport({ maxNumberOfMessages: 10, waitTimeSeconds: 1 });
 
-  //             const messages: string[] = [];
-  //             const callback = vi.fn(async (msg: string) => {
-  //                 messages.push(msg);
-  //             });
+      const messages: string[] = [];
+      const callback = vi.fn(async (msg: string) => {
+        messages.push(msg);
+      });
 
-  //             mockSend.mockResolvedValueOnce({ QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue' });
-  //             await transport.registerListener('test-channel', callback);
+      mockSend.mockResolvedValueOnce({
+        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
+      });
+      await transport.registerListener('test-channel', callback);
 
-  //             // Mock batch of messages
-  //             mockSend.mockResolvedValueOnce({
-  //                 Messages: [
-  //                     { MessageId: 'msg-1', Body: 'Message 1', ReceiptHandle: 'receipt-1' },
-  //                     { MessageId: 'msg-2', Body: 'Message 2', ReceiptHandle: 'receipt-2' },
-  //                     { MessageId: 'msg-3', Body: 'Message 3', ReceiptHandle: 'receipt-3' },
-  //                 ]
-  //             });
-  //             mockSend.mockResolvedValue({});
+      // Mock batch of messages
+      mockSend.mockResolvedValueOnce({
+        Messages: [
+          { MessageId: 'msg-1', Body: 'Message 1', ReceiptHandle: 'receipt-1' },
+          { MessageId: 'msg-2', Body: 'Message 2', ReceiptHandle: 'receipt-2' },
+          { MessageId: 'msg-3', Body: 'Message 3', ReceiptHandle: 'receipt-3' },
+        ],
+      });
 
-  //             await transport.startListening();
-  //             await sleep(500);
-  //             await transport.stopListening();
+      mockSend.mockImplementation(async (command: any) => {
+        await sleep(100); // Simulate network delay
+        return { Messages: [] };
+      });
 
-  //             expect(callback).toHaveBeenCalledTimes(3);
-  //             expect(messages).toEqual(['Message 1', 'Message 2', 'Message 3']);
-  //         });
+      await transport.startListening();
+      await sleep(500);
+      await transport.stopListening();
 
-  //         test('should handle message processing errors', async () => {
-  //             transport = new AwsSqsTransport({ errorVisibilityTimeout: 0, waitTimeSeconds: 1 });
+      expect(callback).toHaveBeenCalledTimes(3);
+      expect(messages).toEqual(['Message 1', 'Message 2', 'Message 3']);
+    });
 
-  //             const callback = vi.fn().mockRejectedValueOnce(new Error('Processing failed'));
+    test('should handle message processing errors', async () => {
+      transport = new AwsSqsTransport({ errorVisibilityTimeout: 100, waitTimeSeconds: 1 });
 
-  //             mockSend.mockResolvedValueOnce({ QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue' });
-  //             await transport.registerListener('test-channel', callback);
+      const callback = vi.fn().mockRejectedValueOnce(new Error('Processing failed'));
 
-  //             mockSend.mockResolvedValueOnce({
-  //                 Messages: [
-  //                     { MessageId: 'msg-1', Body: 'Failing Message', ReceiptHandle: 'receipt-1' }
-  //                 ]
-  //             });
-  //             // Mock ChangeMessageVisibility for error handling
-  //             mockSend.mockResolvedValueOnce({});
-  //             mockSend.mockResolvedValue({ Messages: [] });
+      mockSend.mockResolvedValueOnce({
+        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
+      });
+      await transport.registerListener('test-channel', callback);
 
-  //             await transport.startListening();
-  //             await sleep(500);
-  //             await transport.stopListening();
+      mockSend.mockResolvedValueOnce({
+        Messages: [{ MessageId: 'msg-1', Body: 'Failing Message', ReceiptHandle: 'receipt-1' }],
+      });
+      // Mock ChangeMessageVisibility for error handling
+      mockSend.mockResolvedValueOnce({});
+      mockSend.mockImplementation(async (command: any) => {
+        await sleep(100); // Simulate network delay
+        return { Messages: [] };
+      });
 
-  //             expect(callback).toHaveBeenCalled();
-  //             // Should call ChangeMessageVisibility to reset visibility timeout
-  //             const changeVisibilityCall = mockSend.mock.calls.find((call: any) => call[0].type === 'ChangeMessageVisibility');
-  //             expect(changeVisibilityCall).toBeDefined();
-  //         });
+      await transport.startListening();
+      await sleep(500);
+      await transport.stopListening();
 
-  //         test('should use custom error handler', async () => {
-  //             const errorHandler = vi.fn();
-  //             transport = new AwsSqsTransport({
-  //                 onError: errorHandler,
-  //                 waitTimeSeconds: 1
-  //             });
+      expect(callback).toHaveBeenCalled();
+      // Should call ChangeMessageVisibility to reset visibility timeout
 
-  //             const callback = vi.fn().mockRejectedValueOnce(new Error('Custom error'));
+      const changeVisibilityCall = mockSend.mock.calls.find(
+        (call: any) => call[0].type === 'ChangeMessageVisibility'
+      );
+      expect(changeVisibilityCall).toBeDefined();
+    });
 
-  //             mockSend.mockResolvedValueOnce({ QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue' });
-  //             await transport.registerListener('test-channel', callback);
+    test('should use custom error handler', async () => {
+      const errorHandler = vi.fn();
+      transport = new AwsSqsTransport({
+        onError: errorHandler,
+        waitTimeSeconds: 1,
+      });
 
-  //             mockSend.mockResolvedValueOnce({
-  //                 Messages: [
-  //                     { MessageId: 'msg-1', Body: 'Error Message', ReceiptHandle: 'receipt-1' }
-  //                 ]
-  //             });
-  //             mockSend.mockResolvedValue({ Messages: [] });
+      const callback = vi.fn().mockRejectedValueOnce(new Error('Custom error'));
 
-  //             await transport.startListening();
-  //             await sleep(500);
-  //             await transport.stopListening();
+      mockSend.mockResolvedValueOnce({
+        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
+      });
+      await transport.registerListener('test-channel', callback);
 
-  //             expect(errorHandler).toHaveBeenCalled();
-  //             expect(errorHandler.mock.calls[0][0].message).toBe('Custom error');
-  //             expect(errorHandler.mock.calls[0][1]).toMatchObject({
-  //                 channel: 'test-channel',
-  //                 body: 'Error Message',
-  //             });
-  //         });
+      mockSend.mockResolvedValueOnce({
+        Messages: [{ MessageId: 'msg-1', Body: 'Error Message', ReceiptHandle: 'receipt-1' }],
+      });
 
-  //         test('should stop listening cleanly', async () => {
-  //             transport = new AwsSqsTransport({ waitTimeSeconds: 1 });
+      mockSend.mockImplementation(async (command: any) => {
+        await sleep(100); // Simulate network delay
+        return { Messages: [] };
+      });
 
-  //             const callback = vi.fn();
-  //             mockSend.mockResolvedValueOnce({ QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue' });
-  //             await transport.registerListener('test-channel', callback);
+      await transport.startListening();
+      await sleep(500);
+      await transport.stopListening();
 
-  //             mockSend.mockResolvedValue({ Messages: [] });
+      expect(errorHandler).toHaveBeenCalled();
+      expect(errorHandler.mock.calls[0][0].message).toBe('Custom error');
+      expect(errorHandler.mock.calls[0][1]).toMatchObject({
+        channel: 'test-channel',
+        body: 'Error Message',
+      });
+    });
 
-  //             await transport.startListening();
-  //             await sleep(200);
-  //             await transport.stopListening();
+    test('should stop listening cleanly', async () => {
+      transport = new AwsSqsTransport({ waitTimeSeconds: 1 });
 
-  //             expect(transport).toBeInstanceOf(AwsSqsTransport);
-  //         });
+      const callback = vi.fn();
+      mockSend.mockResolvedValueOnce({
+        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
+      });
+      await transport.registerListener('test-channel', callback);
 
-  //         test('should not start listening twice', async () => {
-  //             transport = new AwsSqsTransport({ waitTimeSeconds: 1 });
+      mockSend.mockImplementation(async (command: any) => {
+        await sleep(100); // Simulate network delay
+        return { Messages: [] };
+      });
 
-  //             const callback = vi.fn();
-  //             mockSend.mockResolvedValueOnce({ QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue' });
-  //             await transport.registerListener('test-channel', callback);
+      await transport.startListening();
+      await sleep(200);
+      await transport.stopListening();
 
-  //             mockSend.mockResolvedValue({ Messages: [] });
+      expect(transport).toBeInstanceOf(AwsSqsTransport);
+    });
 
-  //             await transport.startListening();
-  //             await transport.startListening(); // Should be idempotent
+    test('should not start listening twice', async () => {
+      transport = new AwsSqsTransport({ waitTimeSeconds: 1 });
 
-  //             await sleep(200);
-  //             await transport.stopListening();
+      const callback = vi.fn();
+      mockSend.mockResolvedValueOnce({
+        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
+      });
+      await transport.registerListener('test-channel', callback);
 
-  //             expect(transport).toBeInstanceOf(AwsSqsTransport);
-  //         });
-  //     });
+      mockSend.mockImplementation(async (command: any) => {
+        await sleep(100); // Simulate network delay
+        return { Messages: [] };
+      });
+
+      await transport.startListening();
+      await transport.startListening(); // Should be idempotent
+
+      await sleep(200);
+      await transport.stopListening();
+
+      expect(transport).toBeInstanceOf(AwsSqsTransport);
+    });
+  });
 
   describe('Queue Creation', () => {
     test('should create standard queue with correct attributes', async () => {
@@ -397,96 +426,118 @@ describe('AwsSqsTransport - Unit Tests', () => {
     });
   });
 
-  //     describe('Long Polling', () => {
-  //         test('should use configured wait time for long polling', async () => {
-  //             transport = new AwsSqsTransport({ waitTimeSeconds: 20 });
+  describe('Long Polling', () => {
+    test('should use configured wait time for long polling', async () => {
+      transport = new AwsSqsTransport({ waitTimeSeconds: 20 });
 
-  //             const callback = vi.fn();
-  //             mockSend.mockResolvedValueOnce({ QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue' });
-  //             await transport.registerListener('test-channel', callback);
+      const callback = vi.fn();
+      mockSend.mockResolvedValueOnce({
+        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
+      });
+      await transport.registerListener('test-channel', callback);
 
-  //             mockSend.mockResolvedValue({ Messages: [] });
+      mockSend.mockImplementation(async (command: any) => {
+        await sleep(100); // Simulate network delay
+        return { Messages: [] };
+      });
 
-  //             await transport.startListening();
-  //             await sleep(100);
-  //             await transport.stopListening();
+      await transport.startListening();
+      await sleep(100);
+      await transport.stopListening();
 
-  //             const receiveMessageCall = mockSend.mock.calls.find((call: any) => call[0].type === 'ReceiveMessage');
-  //             expect(receiveMessageCall[0].params.WaitTimeSeconds).toBe(20);
-  //         });
+      const receiveMessageCall = mockSend.mock.calls.find(
+        (call: any) => call[0].type === 'ReceiveMessage'
+      );
+      expect(receiveMessageCall[0].params.WaitTimeSeconds).toBe(20);
+    });
 
-  //         test('should continue polling after receiving empty response', async () => {
-  //             transport = new AwsSqsTransport({ waitTimeSeconds: 1 });
+    test('should continue polling after receiving empty response', async () => {
+      transport = new AwsSqsTransport({ waitTimeSeconds: 1 });
 
-  //             const callback = vi.fn();
-  //             mockSend.mockResolvedValueOnce({ QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue' });
-  //             await transport.registerListener('test-channel', callback);
+      const callback = vi.fn();
+      mockSend.mockResolvedValueOnce({
+        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
+      });
+      await transport.registerListener('test-channel', callback);
 
-  //             // First poll: empty
-  //             mockSend.mockResolvedValueOnce({ Messages: [] });
-  //             // Second poll: message
-  //             mockSend.mockResolvedValueOnce({
-  //                 Messages: [{ MessageId: 'msg-1', Body: 'Late Message', ReceiptHandle: 'receipt-1' }]
-  //             });
-  //             mockSend.mockResolvedValue({});
+      // First poll: empty
+      mockSend.mockResolvedValueOnce({ Messages: [] });
+      // Second poll: message
+      mockSend.mockResolvedValueOnce({
+        Messages: [{ MessageId: 'msg-1', Body: 'Late Message', ReceiptHandle: 'receipt-1' }],
+      });
+      mockSend.mockImplementation(async (command: any) => {
+        await sleep(100); // Simulate network delay
+        return { Messages: [] };
+      });
 
-  //             await transport.startListening();
-  //             await sleep(500);
-  //             await transport.stopListening();
+      await transport.startListening();
+      await sleep(500);
+      await transport.stopListening();
 
-  //             expect(callback).toHaveBeenCalledWith('Late Message');
-  //         });
-  //     });
+      expect(callback).toHaveBeenCalledWith('Late Message');
+    });
+  });
 
-  // describe('Error Handling', () => {
-  //     test('should not change visibility timeout when errorVisibilityTimeout is undefined', async () => {
-  //         transport = new AwsSqsTransport({ errorVisibilityTimeout: undefined, waitTimeSeconds: 1 });
+  describe('Error Handling', () => {
+    test('should not change visibility timeout when errorVisibilityTimeout is undefined', async () => {
+      transport = new AwsSqsTransport({ errorVisibilityTimeout: undefined, waitTimeSeconds: 1 });
 
-  //         const callback = vi.fn().mockRejectedValueOnce(new Error('Processing failed'));
+      const callback = vi.fn().mockRejectedValueOnce(new Error('Processing failed'));
 
-  //         mockSend.mockResolvedValueOnce({ QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue' });
-  //         await transport.registerListener('test-channel', callback);
+      mockSend.mockResolvedValueOnce({
+        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
+      });
+      await transport.registerListener('test-channel', callback);
 
-  //         mockSend.mockResolvedValueOnce({
-  //             Messages: [
-  //                 { MessageId: 'msg-1', Body: 'Failing Message', ReceiptHandle: 'receipt-1' }
-  //             ]
-  //         });
-  //         mockSend.mockResolvedValue({ Messages: [] });
+      mockSend.mockResolvedValueOnce({
+        Messages: [{ MessageId: 'msg-1', Body: 'Failing Message', ReceiptHandle: 'receipt-1' }],
+      });
+      mockSend.mockImplementation(async (command: any) => {
+        await sleep(100); // Simulate network delay
+        return {};
+      });
 
-  //         await transport.startListening();
-  //         await sleep(500);
-  //         await transport.stopListening();
+      await transport.startListening();
+      await sleep(500);
+      await transport.stopListening();
 
-  //         const changeVisibilityCall = mockSend.mock.calls.find((call: any) => call[0].type === 'ChangeMessageVisibility');
-  //         expect(changeVisibilityCall).toBeUndefined();
-  //     });
+      const changeVisibilityCall = mockSend.mock.calls.find(
+        (call: any) => call[0].type === 'ChangeMessageVisibility'
+      );
+      expect(changeVisibilityCall).toBeUndefined();
+    });
 
-  //     test('should handle errors during queue URL lookup', async () => {
-  //         const errorHandler = vi.fn();
-  //         transport = new AwsSqsTransport({
-  //             onError: errorHandler,
-  //             waitTimeSeconds: 1,
-  //             errorBackoffMs: 100
-  //         });
+    test('should handle errors during queue URL lookup', async () => {
+      const errorHandler = vi.fn();
+      transport = new AwsSqsTransport({
+        onError: errorHandler,
+        waitTimeSeconds: 1,
+        errorBackoffMs: 100,
+      });
 
-  //         const callback = vi.fn();
-  //         // First GetQueueUrl succeeds
-  //         mockSend.mockResolvedValueOnce({ QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue' });
-  //         await transport.registerListener('test-channel', callback);
+      const callback = vi.fn();
+      // First GetQueueUrl succeeds
+      mockSend.mockResolvedValueOnce({
+        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
+      });
+      await transport.registerListener('test-channel', callback);
 
-  //         // ReceiveMessage fails
-  //         mockSend.mockRejectedValueOnce(new Error('Network error'));
-  //         // Subsequent polls return empty
-  //         mockSend.mockResolvedValue({ Messages: [] });
+      // ReceiveMessage fails
+      mockSend.mockRejectedValueOnce(new Error('Network error'));
+      // Subsequent polls return empty
+      mockSend.mockImplementation(async (command: any) => {
+        await sleep(100); // Simulate network delay
+        return { Messages: [] };
+      });
 
-  //         await transport.startListening();
-  //         await sleep(300);
-  //         await transport.stopListening();
+      await transport.startListening();
+      await sleep(300);
+      await transport.stopListening();
 
-  //         expect(errorHandler).toHaveBeenCalled();
-  //     });
-  // });
+      expect(errorHandler).toHaveBeenCalled();
+    });
+  });
 });
 
 describe('AwsSqsTransport - Integration Tests', () => {
@@ -507,7 +558,7 @@ describe('AwsSqsTransport - Integration Tests', () => {
     }
   });
 
-  test.only('should handle full message lifecycle: dispatch -> receive -> process -> delete', async () => {
+  test('should handle full message lifecycle: dispatch -> receive -> process -> delete', async () => {
     transport = new AwsSqsTransport({ waitTimeSeconds: 1 });
 
     const processedMessages: string[] = [];
@@ -543,13 +594,13 @@ describe('AwsSqsTransport - Integration Tests', () => {
     // Subsequent polls
     mockSend.mockResolvedValue({ Messages: [] });
 
-    console.log('A');
-    await sleep(500);
-    console.log('B');
+    mockSend.mockImplementation(async (command: any) => {
+      await sleep(100); // Simulate network delay
+      return { Messages: [] };
+    });
+
     await transport.startListening();
-    console.log('A');
-    await sleep(100);
-    console.log('B');
+    await sleep(500);
     await transport.stopListening();
 
     expect(processedMessages).toContain('Integration Test Message');
@@ -561,78 +612,94 @@ describe('AwsSqsTransport - Integration Tests', () => {
     expect(mockSend.mock.calls[3][0].type).toBe('DeleteMessage');
   });
 
-  //     test('should handle multiple channels concurrently', async () => {
-  //         transport = new AwsSqsTransport({ waitTimeSeconds: 1 });
+  test('should handle multiple channels concurrently', async () => {
+    transport = new AwsSqsTransport({ waitTimeSeconds: 1 });
 
-  //         const channel1Messages: string[] = [];
-  //         const channel2Messages: string[] = [];
+    const channel1Messages: string[] = [];
+    const channel2Messages: string[] = [];
 
-  //         const callback1 = vi.fn(async (msg: string) => { channel1Messages.push(msg); });
-  //         const callback2 = vi.fn(async (msg: string) => { channel2Messages.push(msg); });
+    const callback1 = vi.fn(async (msg: string) => {
+      channel1Messages.push(msg);
+    });
+    const callback2 = vi.fn(async (msg: string) => {
+      channel2Messages.push(msg);
+    });
 
-  //         // GetQueueUrl for channel1
-  //         mockSend.mockResolvedValueOnce({ QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/channel1' });
-  //         // GetQueueUrl for channel2
-  //         mockSend.mockResolvedValueOnce({ QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/channel2' });
+    // GetQueueUrl for channel1
+    mockSend.mockResolvedValueOnce({
+      QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/channel1',
+    });
+    // GetQueueUrl for channel2
+    mockSend.mockResolvedValueOnce({
+      QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/channel2',
+    });
 
-  //         await transport.registerListener('channel1', callback1);
-  //         await transport.registerListener('channel2', callback2);
+    await transport.registerListener('channel1', callback1);
+    await transport.registerListener('channel2', callback2);
 
-  //         // Channel1 receives message
-  //         mockSend.mockResolvedValueOnce({
-  //             Messages: [{ MessageId: 'msg-ch1', Body: 'Channel 1 Message', ReceiptHandle: 'receipt-ch1' }]
-  //         });
-  //         // Channel2 receives message
-  //         mockSend.mockResolvedValueOnce({
-  //             Messages: [{ MessageId: 'msg-ch2', Body: 'Channel 2 Message', ReceiptHandle: 'receipt-ch2' }]
-  //         });
-  //         // Delete responses and subsequent empty polls
-  //         mockSend.mockResolvedValue({});
+    // Channel1 receives message
+    mockSend.mockResolvedValueOnce({
+      Messages: [{ MessageId: 'msg-ch1', Body: 'Channel 1 Message', ReceiptHandle: 'receipt-ch1' }],
+    });
+    // Channel2 receives message
+    mockSend.mockResolvedValueOnce({
+      Messages: [{ MessageId: 'msg-ch2', Body: 'Channel 2 Message', ReceiptHandle: 'receipt-ch2' }],
+    });
+    // Delete responses and subsequent empty polls
+    mockSend.mockImplementation(async (command: any) => {
+      await sleep(100); // Simulate network delay
+      return { Messages: [] };
+    });
 
-  //         await transport.startListening();
-  //         await sleep(500);
-  //         await transport.stopListening();
+    await transport.startListening();
+    await sleep(500);
+    await transport.stopListening();
 
-  //         expect(channel1Messages).toContain('Channel 1 Message');
-  //         expect(channel2Messages).toContain('Channel 2 Message');
-  //     });
+    expect(channel1Messages).toContain('Channel 1 Message');
+    expect(channel2Messages).toContain('Channel 2 Message');
+  });
 
-  //     test('should handle message retry after processing failure', async () => {
-  //         transport = new AwsSqsTransport({
-  //             errorVisibilityTimeout: 0,
-  //             waitTimeSeconds: 1
-  //         });
+  test('should handle message retry after processing failure', async () => {
+    transport = new AwsSqsTransport({
+      errorVisibilityTimeout: 0,
+      waitTimeSeconds: 1,
+    });
 
-  //         let attempt = 0;
-  //         const callback = vi.fn(async (msg: string) => {
-  //             attempt++;
-  //             if (attempt === 1) {
-  //                 throw new Error('First attempt failed');
-  //             }
-  //             // Second attempt succeeds
-  //         });
+    let attempt = 0;
+    const callback = vi.fn(async (msg: string) => {
+      attempt++;
+      if (attempt === 1) {
+        throw new Error('First attempt failed');
+      }
+      // Second attempt succeeds
+    });
 
-  //         mockSend.mockResolvedValueOnce({ QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/retry-queue' });
-  //         await transport.registerListener('retry-channel', callback);
+    mockSend.mockResolvedValueOnce({
+      QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/retry-queue',
+    });
+    await transport.registerListener('retry-channel', callback);
 
-  //         // First receive
-  //         mockSend.mockResolvedValueOnce({
-  //             Messages: [{ MessageId: 'msg-retry', Body: 'Retry Message', ReceiptHandle: 'receipt-1' }]
-  //         });
-  //         // ChangeMessageVisibility after error
-  //         mockSend.mockResolvedValueOnce({});
-  //         // Second receive (retry)
-  //         mockSend.mockResolvedValueOnce({
-  //             Messages: [{ MessageId: 'msg-retry', Body: 'Retry Message', ReceiptHandle: 'receipt-2' }]
-  //         });
-  //         // Delete after success
-  //         mockSend.mockResolvedValueOnce({});
-  //         mockSend.mockResolvedValue({ Messages: [] });
+    // First receive
+    mockSend.mockResolvedValueOnce({
+      Messages: [{ MessageId: 'msg-retry', Body: 'Retry Message', ReceiptHandle: 'receipt-1' }],
+    });
+    // ChangeMessageVisibility after error
+    mockSend.mockResolvedValueOnce({});
+    // Second receive (retry)
+    mockSend.mockResolvedValueOnce({
+      Messages: [{ MessageId: 'msg-retry', Body: 'Retry Message', ReceiptHandle: 'receipt-2' }],
+    });
+    // Delete after success
+    mockSend.mockResolvedValueOnce({});
+    mockSend.mockImplementation(async (command: any) => {
+      await sleep(100); // Simulate network delay
+      return { Messages: [] };
+    });
 
-  //         await transport.startListening();
-  //         await sleep(800);
-  //         await transport.stopListening();
+    await transport.startListening();
+    await sleep(800);
+    await transport.stopListening();
 
-  //         expect(callback).toHaveBeenCalledTimes(2);
-  //     });
+    expect(callback).toHaveBeenCalledTimes(2);
+  });
 });

@@ -9,6 +9,7 @@ import {
   SendMessageCommand,
 } from '@aws-sdk/client-sqs';
 import type { SQSClientConfig } from '@aws-sdk/client-sqs';
+import { sleep } from '../../../neko-helper/dist/time.mjs';
 
 /**
  * Configuration options for the SQS transport.
@@ -257,7 +258,6 @@ export class AwsSqsTransport implements QueueTransportInterface {
     let counter = 0;
 
     while (!signal.aborted && this.listening) {
-      console.log('looping', counter++);
       try {
         const receiveCommand = new ReceiveMessageCommand({
           QueueUrl: queueUrl,
@@ -265,12 +265,10 @@ export class AwsSqsTransport implements QueueTransportInterface {
           WaitTimeSeconds: this.config.waitTimeSeconds,
           VisibilityTimeout: this.config.visibilityTimeout,
         });
-        console.log('looping A');
+
         const response = await this.client.send(receiveCommand, { abortSignal: signal });
-        console.log('looping B');
         const messages = response.Messages ?? [];
 
-        console.log('looping', counter++, messages.length, signal.aborted, this.listening);
         if (messages.length === 0 || signal.aborted || !this.listening) {
           continue;
         }
@@ -288,7 +286,7 @@ export class AwsSqsTransport implements QueueTransportInterface {
             }
           } catch (processingError) {
             this.handleError(processingError, channel, body, sqsMessage.MessageId);
-            if (sqsMessage.ReceiptHandle && this.config.errorVisibilityTimeout !== undefined) {
+            if (sqsMessage.ReceiptHandle && this.config.errorVisibilityTimeout) {
               try {
                 const visibilityCommand = new ChangeMessageVisibilityCommand({
                   QueueUrl: queueUrl,
@@ -309,7 +307,6 @@ export class AwsSqsTransport implements QueueTransportInterface {
         this.handleError(error, channel);
       }
     }
-    console.log('finished looping');
   }
 
   /**
@@ -451,6 +448,6 @@ export class AwsSqsTransport implements QueueTransportInterface {
     }
 
     // eslint-disable-next-line no-console
-    console.error('[SqsTransport] Error', { channel, messageId, message: err.message });
+    // console.error('[SqsTransport] Error', { channel, messageId, message: err.message });
   }
 }
