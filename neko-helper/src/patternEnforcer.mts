@@ -41,3 +41,36 @@ export function createRepeater(fn: Function, interval: number) {
     },
   };
 }
+
+/**
+ * Creates a chainable pipeline for sequential async transformations.
+ * Each step receives the result of the previous step and can perform async operations.
+ * The chain is thenable, allowing it to be awaited or used with .then().
+ *
+ * @example
+ * ```typescript
+ * const result = await chainer(5)
+ *   .step([(x, multiplier) => x * multiplier, [2]])
+ *   .step([(x) => x + 10, []])
+ *   .step([(x) => Promise.resolve(x.toString()), []]);
+ * // result: "20"
+ * ```
+ *
+ * @template T - The initial value type
+ * @param initial - The starting value for the chain
+ * @returns A Promise that can have steps added and can be awaited
+ */
+export function chainer<T>(initial: any): Promise<T> & { step: typeof chainer.prototype.step } {
+  let chainPromise = Promise.resolve(initial);
+
+  const api: any = new Promise((resolve, reject) => {
+    chainPromise.then(resolve).catch(reject);
+  });
+
+  api.step = function <A extends any[], R>([fn, args]: [(v: T, ...a: A) => R | Promise<R>, A]) {
+    chainPromise = chainPromise.then((v) => fn(v, ...(args as any)));
+    return api;
+  };
+
+  return api as Promise<T> & { step: typeof api.step };
+}
