@@ -42,7 +42,9 @@ export class CompiledRoute {
 
   async run() {
     let rc = await this.runMiddlewares(this.middlewares, this.request, this.response);
-    this.response.end();
+    if (!this.response.writableEnded) {
+      this.response.end();
+    }
     return rc;
   }
 
