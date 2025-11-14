@@ -28,7 +28,9 @@
   "author": "Farzad Meow Khalafi",
   "license": "MIT",
   "dependencies": {
-    "@aws-sdk/client-sqs": "^3.929.0"
+    "@aws-sdk/client-sqs": "^3.929.0",
+    "@types/amqplib": "^0.10.8",
+    "amqplib": "^0.10.9"
   },
   "devDependencies": {
     "@types/node": "^22.14.1",
