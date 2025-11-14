@@ -181,6 +181,8 @@ export class HttpServer {
       });
     } catch (e: any) {
       await this.errorHandler(e, req, res);
+    } finally {
+      res.end();
     }
     return;
   }

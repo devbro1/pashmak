@@ -41,11 +41,7 @@ export class CompiledRoute {
   }
 
   async run() {
-    let rc = await this.runMiddlewares(this.middlewares, this.request, this.response);
-    if (!this.response.writableEnded) {
-      this.response.end();
-    }
-    return rc;
+    return await this.runMiddlewares(this.middlewares, this.request, this.response);
   }
 
   prepareOutputJsonFormat<T>(obj: object | Array<any>): T {
