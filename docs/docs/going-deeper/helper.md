@@ -402,9 +402,11 @@ Num.spellOrdinal(21); // "twenty-first"
 Num.spellOrdinal(100); // "one hundredth"
 ```
 
-#### Num.round(number: number, options?: {precision?: number, method?: 'round' | 'ceil' | 'floor'}): number
+#### `Num.round(number: number, options?: RoundOptions): number`
 
-#### Num.round(number: number[], options?: {precision?: number, method?: 'round' | 'ceil' | 'floor'}): number[]
+#### `Num.round(number: number[], options?: RoundOptions): number[]`
+
+Where `RoundOptions` is `{ precision?: number, method?: 'round' | 'ceil' | 'floor' }`
 
 Rounds a number or array of numbers to a specified precision. Supports single numbers or arrays of numbers, returning the same type as the input. Precision can be positive (decimal places), zero (nearest integer), or negative (rounding to tens, hundreds, etc.).
 

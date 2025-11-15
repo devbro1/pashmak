@@ -6,66 +6,107 @@ sidebar_position: 2
 
 Under the hood, we are using [neko-config](https://www.npmjs.com/package/@devbro/neko-config) library to help with managing configuration.
 
-To start place your related configs in `config/default.ts` file and it will be autoloaded.
+By default configs are loaded from `src/config/default.ts` file as a single object. To modify this behavior, you can modify `src/initialize.ts` file.
+
+You can then access your configurations anywhere in your code like this:
 
 ```typescript
-import { config } from "@devbro/pashmak/config";
+import { config } from "@devbro/pashmak/config"; // notice lower case 'c'
 
 console.log(config.get("databases"));
 ```
 
 it may become needed to load some values from envvars. to do this, use this approach:
 
-```javascript
+```ts
+import { getEnv } from "@devbro/pashmak/helper";
 // config/default.ts
 export default {
-  port: process.env.PORT || 3000,
+  port: process.env.PORT || 3000, // classic way
+  https_port: getEnv("HTTPS_PORT", 443), // better way
 };
 ```
 
-## More configurations
+## Organizing Configurations
 
-There can be multiple features that depends on configurations to run successfully such as database, file, caching, and etc. To make maintaining configurations for each of these features, it is strongly suggested to keep their configurations in separate files and import(`await import()`) them into default config. the main configuration for each of these services must be named `default`. for example, if your system is connecting to 3 different databases, the main database must be labelled default, the second and third, can be given any name of your own choosing.
+Different features depend on configurations to run successfully, such as database, cache, storage, etc. To maintain clean and organized configurations:
 
-## custom feature configurations
+1. Keep configurations for each feature/service in separate files
+2. Import them into your default config using `loadConfig('file_name_without_extension')`
+3. If using .ts, .js, .mjs, or .mts files, ensure they export default objects. Other possible extensions are .json, .yaml, and .yml which do not require default exports.
+4. for facades that can provide multiple connections (like databases, caches, etc.), the main config must be called default.
 
-If you decide to create your own custom feature, for example a payment processing, that needs configuration, you can create your own `XYZ.ts` file similar to:
+An example for databases:
 
-```typescript
-// payment.ts
+```ts
+// config/databases.ts or config/database.js
 export default {
-  provider: 'stripe',
-  ....
-}
-
-//optional if you are planning to connect to more than one service
-export const secondary_payment_system = {
-  ?????
-}
-
-//default.ts
-export default {
-  ?????
-  payment_system: require('./payment');
+  default: {
+    provider: 'postgresql',
+    config: {
+      ???
+    },
+  },
+  analytics: {
+    provider: 'postgresql',
+    config: {
+      ???
+    },
+  },
+  west_db: {
+    provider: 'mysql',
+    config: {
+      ???
+    },
+  },
 };
 
-// somewhere else in your code
-import config from '@devbro/pashmak/config';
+// config/default.ts
+export default {
+  databases: loadConfig('databases'),
+  cache: await loadConfig('cache'), // await keyword is optional since pashmak supports async configs
+  // ... other configs
+};
+```
 
+## NODE_ENV Based Configurations
 
-if(config.get('payment_system.default.provider') === 'stripe') {
-  // standard payment processing
-}
-else if(config.get('payment_system.secondary_payment_system') === 'bitcoin') {
- // backup payment processing
-}
+It is possible to mix and match different configuration files based on the `NODE_ENV` value. Simply export `$NODE_ENV` named exports from your configuration files. If a matching export is found, it will be merged with the default export.
+
+```typescript
+// config/payment.ts
+export default {
+  provider: "stripe",
+  apiKey: "PLEASE_REPLACE_ME",
+  webhookSecret: "PLEASE_REPLACE_ME",
+};
+
+// NODE_ENV = 'dev'
+export const $dev = {
+  apiKey: "sk_dev_XXXXXXXXXXXXXXXXXXXX",
+  webhookSecret: "whsec_dev_XXXXXXXXXXXXXXXXXXXX",
+};
+
+// NODE_ENV = 'test'
+export const $test = {
+  provider: "stripe",
+  apiKey: "sk_test_XXXXXXXXXXXXXXXXXXXX",
+  webhookSecret: "whsec_test_XXXXXXXXXXXXXXXXXXXX",
+};
+
+// NODE_ENV = 'prod'
+export const $prod = {
+  provider: "stripe",
+  apiKey: process.env.STRIPE_API_KEY,
+  webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+};
 ```
 
 ## .env AKA dotenv
 
-there is also .env support in case you want to load some configs that way. please note, you will still need to add the specific configs you want to default.js to be able to access the values.
+There is also .env support in case you want to load some configs that way. please note, you will still need to add the specific configs you want to default.js to be able to access the values.
 
-## Force config to exists
+## Enforce values for config to exists
 
 some configs are essential and you want to stop the process without them. If these values need to come from envar, you can do this:
 
@@ -73,14 +114,8 @@ some configs are essential and you want to stop the process without them. If the
 import { getEnv } from "@devbro/pashmak/helper";
 
 export default {
-  https_port: getEnv("HTTPS_PORT", 443),
-  port: getEnv("PORT"),
-  ssh_port: getEnv("SSH_PORT", undefined),
+  https_port: getEnv("HTTPS_PORT", 443), // will return 443 if not defined
+  port: getEnv("PORT"), // will throw an error if PORT is not defined
+  ssh_port: getEnv("SSH_PORT", undefined), // will return undefined if not defined
 };
 ```
-
-if `PORT` is not defined, an error is thrown and stopping the process entirely before it starts.
-
-if `HTTPS_PORT` is not defined, it will use default value of 443 and will not throw an error.
-
-if `ssh_port` is not defined, it will use default value of `undefined` and will NOT throw an error.

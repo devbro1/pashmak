@@ -32,14 +32,14 @@ export const qa_s3 = {
 }
 ```
 
-you can then access your drivers as wanted:
+You can then access your storage drivers:
 
-```javascript
-import { storage } from "@root/facade";
+```ts
+import { storage } from "@devbro/pashmak/facades";
 
-storage().get("testfile.txt"); // uses default
-storage("temp").get("testfile.txt"); // uses temp file system
-storage("qa_s3").get("testfile.txt"); // uses qa_s3 storage, which is a AWS-S3
+await storage().getString("testfile.txt"); // uses default
+await storage("temp").getString("testfile.txt"); // uses temp file system
+await storage("qa_s3").getString("testfile.txt"); // uses qa_s3 storage (AWS-S3)
 ```
 
 ## Managing Files

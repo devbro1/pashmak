@@ -8,15 +8,23 @@ Caching is a mechanism for storing data in a temporary storage area to reduce th
 
 ttl: Time To Live, how long a cache value will be kept for.
 
-## Basic usage
+## Basic Usage
 
 ```ts
 import { cache } from "@devbro/pashmak/facades";
 
+// Store a value in cache
 await cache().put("my_key", value);
 await cache().put("my_key2", value2, 3600 * 24); // 1 full day
 
-const user = await cache.get("my_key");
+// Retrieve a value from cache
+const user = await cache().get("my_key");
+
+// Check if a key exists
+const exists = await cache().has("my_key");
+
+// Delete a cached value
+await cache().delete("my_key");
 ```
 
 ### put
