@@ -17,6 +17,10 @@ import {
   AWSS3StorageProvider,
   LocalStorageProvider,
   StorageProviderFactory,
+  GCPStorageProvider,
+  AzureBlobStorageProvider,
+  FTPStorageProvider,
+  SFTPStorageProvider,
 } from "@devbro/neko-storage";
 
 export class FlexibleFactory<T> {
@@ -94,4 +98,20 @@ StorageProviderFactory.register("local", (opt) => {
 
 StorageProviderFactory.register("s3", (opt) => {
   return new AWSS3StorageProvider(opt);
+});
+
+StorageProviderFactory.register("gcp", (opt) => {
+  return new GCPStorageProvider(opt);
+});
+
+StorageProviderFactory.register("azure", (opt) => {
+  return new AzureBlobStorageProvider(opt);
+});
+
+StorageProviderFactory.register("ftp", (opt) => {
+  return new FTPStorageProvider(opt);
+});
+
+StorageProviderFactory.register("sftp", (opt) => {
+  return new SFTPStorageProvider(opt);
 });

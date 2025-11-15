@@ -41,3 +41,52 @@ export function createRepeater(fn: Function, interval: number) {
     },
   };
 }
+
+///////////////
+
+type StepFn<I, A extends any[], O> = (value: I, ...args: A) => O | Promise<O>;
+
+class Chainer<T> extends Promise<T> {
+  private chainPromise: Promise<T>;
+
+  constructor(initial: T) {
+    let chainPromise = Promise.resolve(initial);
+    super((resolve, reject) => {
+      chainPromise.then(resolve).catch(reject);
+    });
+    this.chainPromise = chainPromise;
+  }
+
+  step<A extends any[], R>(fn: StepFn<T, A, R>, ...args: any[]): Chainer<R> {
+    const nextChainer = new Chainer(undefined as any);
+    (nextChainer as any).chainPromise = this.chainPromise.then((v) => fn(v, ...(args as any)));
+    return nextChainer;
+  }
+
+  s<A extends any[], R>(fn: StepFn<T, A, R>, ...args: any[]): Chainer<R> {
+    return this.step(fn, ...args);
+  }
+
+  static from<T>(initial: T): Chainer<T> {
+    return new Chainer(initial);
+  }
+}
+
+/**
+ * chains multiple functions/steps together. Each step can be synchronous or asynchronous.
+ * To calculate the final result, use `await` on the returned Chainer.
+ * @param initial initial value to start
+ * @returns final result
+ * @example
+ * ```ts
+ * import { chainer } from "@devbro/pashmak/helpers";
+ * const add = (x: number, y: number) => x + y;
+ * const multiply = (x: number, y: number) => x * y;
+ *
+ * const result = await chainer(4)
+ *   .step(add, 2)        // 4 + 2 = 6
+ *   .step(multiply, 3)   // 6 * 3 = 18
+ */
+export function chainer<T>(initial: T): Chainer<T> {
+  return Chainer.from(initial);
+}
