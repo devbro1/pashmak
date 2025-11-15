@@ -38,22 +38,25 @@ pashmak create project --path /path/to/project
 cd /path/to/project
 ```
 
-## Install Dependencies
+## Install Dependencies and setup
 
 <Tabs groupId="package-manager">
   <TabItem value="npm" label="npm" default>
     ```bash
     npm install
+    npm run pdev migrate
     ```
   </TabItem>
   <TabItem value="yarn" label="Yarn">
     ```bash
     yarn install
+    yarn pdev migrate
     ```
   </TabItem>
   <TabItem value="pnpm" label="pnpm">
     ```bash
     pnpm install
+    pnpm run pdev migrate
     ```
   </TabItem>
 </Tabs>
@@ -65,24 +68,26 @@ To start the development server with all services (HTTP server, scheduler, and q
 <Tabs groupId="package-manager">
   <TabItem value="npm" label="npm" default>
     ```bash
-    npm run dev
+    npm run pdev start
     ```
   </TabItem>
   <TabItem value="yarn" label="Yarn">
     ```bash
-    yarn dev
+    yarn pdev start
     ```
   </TabItem>
   <TabItem value="pnpm" label="pnpm">
     ```bash
-    pnpm dev
+    pnpm run pdev start
     ```
   </TabItem>
 </Tabs>
 
 ## Build and Run for Production
 
-To do a complete build and then run in production:
+Pashmak has good performance with regular start command.
+If you plan on running for production and want to maximize performance, use minified code,
+and optimize size of the build, you can use the build command:
 
 <Tabs groupId="package-manager">
   <TabItem value="npm" label="npm" default>

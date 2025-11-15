@@ -14,51 +14,26 @@ To start the HTTP server, scheduler, and queues all together:
 <Tabs groupId="package-manager">
   <TabItem value="npm" label="npm" default>
     ```bash
-    npm run dev
-    # or for production
-    npm run start
+    npm run pdev start
     ```
   </TabItem>
   <TabItem value="yarn" label="Yarn">
     ```bash
-    yarn dev
-    # or for production
-    yarn start
+    yarn pdev start
     ```
   </TabItem>
   <TabItem value="pnpm" label="pnpm">
     ```bash
-    pnpm dev
-    # or for production
-    pnpm start
+    pnpm run pdev start
     ```
   </TabItem>
 </Tabs>
 
 ## Start Individual Services
 
-You can also start services individually using the Pashmak CLI:
+`pdev start` accepts flags to start indivitual services:
 
-### HTTP Server Only
-
-```bash
-pashmak start --http
-```
-
-### Scheduler Only
-
-```bash
-pashmak start --scheduler
-```
-
-### Queue Workers Only
-
-```bash
-pashmak start --queues
-```
-
-### All Services with CLI
-
-```bash
-pashmak start --all
-```
+- `--all`: Start all services (default)
+- `--http`: Start only the HTTP server
+- `--scheduler`: Start only the scheduler
+- `--queues`: Start only the queues
