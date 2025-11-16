@@ -4,14 +4,14 @@ import { CacheProviderInterface } from '../CacheProviderInterface.mjs';
 /**
  * Configuration options for the in-memory cache provider.
  */
-export interface MemoryCacheConfig {
+export type MemoryCacheConfig = {
   /** Maximum number of items to store in cache (default: 1000) */
   maxSize?: number;
   /** Default time to live in seconds (default: 3600) */
   defaultTTL?: number;
   /** Interval in seconds to run cleanup of expired entries (default: 600) */
   cleanupInterval?: number;
-}
+};
 
 /**
  * Represents a cached item with metadata.

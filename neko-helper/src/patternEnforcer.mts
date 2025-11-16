@@ -74,17 +74,18 @@ class Chainer<T> extends Promise<T> {
 
 /**
  * chains multiple functions/steps together. Each step can be synchronous or asynchronous.
+ * Each step receives the result of the previous step as the first parameter. more parameters can be passed after that.
  * To calculate the final result, use `await` on the returned Chainer.
  * @param initial initial value to start
  * @returns final result
  * @example
  * ```ts
  * import { chainer } from "@devbro/pashmak/helpers";
- * const add = (x: number, y: number) => x + y;
+ * const add = (x: number, y: number, z: number) => x + y + z;
  * const multiply = (x: number, y: number) => x * y;
  *
  * const result = await chainer(4)
- *   .step(add, 2)        // 4 + 2 = 6
+ *   .step(add, 2, 0)        // 4 + 2 = 6
  *   .step(multiply, 3)   // 6 * 3 = 18
  */
 export function chainer<T>(initial: T): Chainer<T> {

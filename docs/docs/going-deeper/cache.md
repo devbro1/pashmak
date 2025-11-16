@@ -8,6 +8,28 @@ Caching is a mechanism for storing data in a temporary storage area to reduce th
 
 ttl: Time To Live, how long a cache value will be kept for.
 
+## Configuration
+By default a cache provider must be present. As such there is  a `disabled` cache that is a no-op.
+
+```ts
+export default {
+  default: {
+    provider: 'disabled',
+    config: {},
+  },
+};
+
+export const $prod = {
+  default: {
+    provider: 'redis',
+    config: {
+      url: 'redis://redis:6379',
+    } as RedisCacheProviderConfig,
+  },
+};
+
+```
+
 ## Basic Usage
 
 ```ts

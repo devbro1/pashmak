@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-queue",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "neko generic queue system to handle pubsubs",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -27,7 +27,14 @@
   },
   "author": "Farzad Meow Khalafi",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "@aws-sdk/client-sqs": "^3.929.0",
+    "@azure/service-bus": "^7.9.5",
+    "@google-cloud/pubsub": "^5.2.0",
+    "@types/amqplib": "^0.10.8",
+    "amqplib": "^0.10.9",
+    "redis": "^4.7.1"
+  },
   "devDependencies": {
     "@types/node": "^22.14.1",
     "@typescript-eslint/eslint-plugin": "^7.1.1",

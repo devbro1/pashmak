@@ -12,7 +12,7 @@ concept of Connection is like a server/service that can handle multiple queues. 
 
 queue is a channel inside a connection that can handle messages.
 
-## Creating a connection
+## Configuration
 
 ```ts
 // app/config/queues.ts

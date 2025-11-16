@@ -6,7 +6,7 @@ sidebar_position: 2
 
 Pashmak provides a simple way to send emails using different drivers.
 
-## Config setup
+## Configuration
 
 ```ts
 // app/config/email.ts

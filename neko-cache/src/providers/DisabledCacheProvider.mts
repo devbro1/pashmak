@@ -1,4 +1,3 @@
-import { createClient, RedisClientOptions, RedisClientType } from 'redis';
 import { CacheProviderInterface } from '../CacheProviderInterface.mjs';
 import { JSONValue, JSONObject } from '@devbro/neko-helper';
 
