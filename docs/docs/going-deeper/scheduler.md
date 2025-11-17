@@ -116,7 +116,7 @@ scheduler().setErrorHandler(async (error, scheduleName) => {
     scheduleName,
     error: error.message,
   });
-  
+
   // Send notification, log to external service, etc.
 });
 ```
@@ -188,4 +188,16 @@ scheduler().setErrorHandler(async (error, scheduleName) => {
     stack: error.stack,
   });
 });
+```
+
+## Running the Scheduler
+
+by default, the scheduler is start when the http server using `--all` flag.
+
+```bash
+npm run pdev start --all
+# or
+yarn pdev start --scheduler
+# or
+pnpm pdev start --cron # alternative name for --scheduler
 ```

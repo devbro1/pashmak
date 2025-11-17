@@ -312,3 +312,69 @@ export default {
   },
 };
 ```
+
+## Creating your own Transport
+
+You can create custom queue transports by implementing the `QueueTransportInterface`:
+
+```ts
+import { QueueTransportInterface } from "@devbro/pashmak/queue";
+
+export class CustomTransport implements QueueTransportInterface {
+  /**
+   * Dispatch a message to a specific channel
+   */
+  async dispatch(channel: string, message: string): Promise<void> {
+    // Your implementation
+  }
+
+  /**
+   * Register a listener callback for a channel
+   */
+  async registerListener(
+    channel: string,
+    callback: (message: string) => Promise<void>,
+  ): Promise<void> {
+    // Your implementation
+  }
+
+  /**
+   * Start listening for messages on all registered channels
+   */
+  async startListening(): Promise<void> {
+    // Your implementation
+  }
+
+  /**
+   * Stop listening and cleanup resources
+   */
+  async stopListening(): Promise<void> {
+    // Your implementation
+  }
+}
+```
+
+Then register your custom transport in the queue factory:
+
+```ts
+import { QueueTransportFactory } from "@devbro/pashmak/queue";
+import { CustomTransport } from "./CustomTransport";
+
+// Register your transport
+QueueTransportFactory.register("custom", (config) => {
+  return new CustomTransport(config);
+});
+```
+
+and refer to it in your configuration:
+
+```ts
+export default {
+  default: {
+    provider: "custom",
+    config: {
+      // Your custom configuration
+    },
+  },
+};
+```
