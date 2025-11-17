@@ -2,7 +2,7 @@
 sidebar_position: 5
 ---
 
-# Controller and Middlewares
+# Controller
 
 Pashmak can accept both function and class controllers.
 
@@ -201,52 +201,6 @@ import { router } from "@devbro/pashmak/facades";
 import { CatController } from "./app/controllers/CatController";
 
 router().addController(CatController);
-```
-
-## Middlewares
-
-Middlewares are functions or classes that can execute with direct access to the request and response objects.
-The main distinction between middlewares in Pashmak vs nestjs or express or fastify is that middlewares can execute before or after the controller method.
-
-```mermaid
-graph LR
-  http_req_res -->|1| middleware1
-  middleware1 -->|2| middleware2
-  middleware2 -->|3| middleware3
-  middleware3 -->|4| Controller
-  Controller -->|5| middleware3
-  middleware3 -->|6| middleware2
-  middleware2 -->|7| middleware1
-  middleware1 -->|8| http_req_res
-```
-
-### Middleware Execution Order
-
-Middlewares are executed in the following order:
-
-1. Global middlewares defined in router
-2. Middlewares defined at controller class level
-3. Middlewares defined at individual method/function level
-
-If you used parentRouter.addRouter(childRouter), then middlewares of parentRouter are executed then middlewares of childRouter.
-
-```ts
-import { router } from "@devbro/pashmak/facades";
-
-// 1. Global middleware (runs first)
-router().addGlobalMiddleware(authMiddleware);
-
-// 2. Controller-level middleware (runs second)
-@Controller("/api/v1/users", {
-  middlewares: [checkPermissions],
-})
-export class UserController extends BaseController {
-  // 3. Method-level middleware (runs last)
-  @Get({ middlewares: [logRequest] })
-  async list() {
-    return [];
-  }
-}
 ```
 
 ## Direct Response Manipulation

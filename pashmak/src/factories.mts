@@ -4,7 +4,16 @@ import {
   MemoryProvider,
   MailerProviderFactory,
 } from "@devbro/neko-mailer";
-import { MemoryTransport, QueueTransportFactory } from "@devbro/neko-queue";
+import {
+  MemoryTransport,
+  QueueTransportFactory,
+  AwsSqsTransport,
+  AmqpTransport,
+  RedisTransport,
+  AsyncTransport,
+  AzureServiceBusTransport,
+  GooglePubSubTransport,
+} from "@devbro/neko-queue";
 import { DatabaseTransport } from "./queue.mjs";
 import {
   CacheProviderInterface,
@@ -51,12 +60,38 @@ MailerProviderFactory.register("memory", (opt) => {
   return new MemoryProvider();
 });
 
+// Queue
+
 QueueTransportFactory.register("database", (opt) => {
   return new DatabaseTransport(opt);
 });
 
 QueueTransportFactory.register("memory", (opt) => {
   return new MemoryTransport(opt);
+});
+
+QueueTransportFactory.register("sqs", (opt) => {
+  return new AwsSqsTransport(opt);
+});
+
+QueueTransportFactory.register("amqp", (opt) => {
+  return new AmqpTransport(opt);
+});
+
+QueueTransportFactory.register("redis", (opt) => {
+  return new RedisTransport(opt);
+});
+
+QueueTransportFactory.register("async", (opt) => {
+  return new AsyncTransport();
+});
+
+QueueTransportFactory.register("azure_service_bus", (opt) => {
+  return new AzureServiceBusTransport(opt);
+});
+
+QueueTransportFactory.register("google_pubsub", (opt) => {
+  return new GooglePubSubTransport(opt);
 });
 
 // CACHE
