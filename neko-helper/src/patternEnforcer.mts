@@ -91,3 +91,23 @@ class Chainer<T> extends Promise<T> {
 export function chainer<T>(initial: T): Chainer<T> {
   return Chainer.from(initial);
 }
+
+/**
+ * Checks if a variable is a class constructor.
+ * @param variable - The variable to check
+ * @returns True if the variable is a class, false otherwise
+ */
+export function isClass(variable: any) {
+  return (
+    typeof variable === 'function' && /^class\s/.test(Function.prototype.toString.call(variable))
+  );
+}
+
+/**
+ * Checks if a variable is a function (but not a class constructor).
+ * @param variable - The variable to check
+ * @returns True if the variable is a function and not a class, false otherwise
+ */
+export function isFunction(variable: any) {
+  return typeof variable === 'function' && !isClass(variable);
+}

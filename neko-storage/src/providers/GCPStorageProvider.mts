@@ -1,5 +1,5 @@
 import { Storage as GCPStorage } from '@google-cloud/storage';
-import { Metadata, GCPStorageConfig } from '../types.mjs';
+import { Metadata, GCPStorageProviderConfig } from '../types.mjs';
 import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
 import { ReadStream } from 'fs';
 import Stream from 'stream';
@@ -8,7 +8,7 @@ import * as mime from 'mime-types';
 export class GCPStorageProvider implements StorageProviderInterface {
   private storage: GCPStorage;
 
-  constructor(protected config: GCPStorageConfig) {
+  constructor(protected config: GCPStorageProviderConfig) {
     const { bucket, ...gcpOptions } = config;
     this.storage = new GCPStorage(gcpOptions);
   }
