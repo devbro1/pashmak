@@ -6,7 +6,7 @@ import { prepareEmails } from "../helper.mjs";
 /**
  * Configuration options for the SMTPProvider.
  */
-export type SMTPProviderOptions = {
+export type SMTPProviderConfig = {
   /** Nodemailer transport options for SMTP configuration */
   nodemailer_options: nodemailer.TransportOptions;
   /** Default sender email address */
@@ -25,7 +25,7 @@ export class SMTPProvider implements MailerProvider {
    * Creates a new SMTPProvider instance.
    * @param options - Provider configuration options
    */
-  constructor(options: Partial<SMTPProviderOptions> = {}) {
+  constructor(options: Partial<SMTPProviderConfig> = {}) {
     this.transporter = nodemailer.createTransport(options.nodemailer_options);
     this.defaultFrom = options.default_from || "";
   }

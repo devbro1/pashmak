@@ -5,7 +5,7 @@ import { prepareEmails } from "../helper.mjs";
 /**
  * Configuration options for the PostmarkProvider.
  */
-export type PostmarkProviderOptions = {
+export type PostmarkProviderConfig = {
   /** Postmark server token */
   server_token: string;
   /** Default sender email address */
@@ -24,7 +24,7 @@ export class PostmarkProvider implements MailerProvider {
    * Creates a new PostmarkProvider instance.
    * @param options - Provider configuration options
    */
-  constructor(options: Partial<PostmarkProviderOptions> = {}) {
+  constructor(options: Partial<PostmarkProviderConfig> = {}) {
     this.serverToken =
       options.server_token || process.env.POSTMARK_SERVER_TOKEN || "";
     this.defaultFrom = options.default_from || "";

@@ -6,14 +6,14 @@ import { JSONObject, JSONValue } from '@devbro/neko-helper';
 /**
  * Configuration options for the file-based cache provider.
  */
-export interface FileCacheConfig {
+export type FileCacheConfig = {
   /** Directory where cache files are stored (default: './cache') */
   cacheDirectory?: string;
   /** Default time to live in milliseconds (default: 3600000) */
   defaultTTL?: number;
   /** Interval in milliseconds for cleanup of expired entries (default: 300000) */
   cleanupInterval?: number;
-}
+};
 
 /**
  * Represents a cached item stored in a file.

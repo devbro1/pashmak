@@ -8,15 +8,45 @@ Caching is a mechanism for storing data in a temporary storage area to reduce th
 
 ttl: Time To Live, how long a cache value will be kept for.
 
-## Basic usage
+## Configuration
+
+By default a cache provider must be present. As such there is a `disabled` cache that is a no-op.
+
+```ts
+export default {
+  default: {
+    provider: "disabled",
+    config: {},
+  },
+};
+
+export const $prod = {
+  default: {
+    provider: "redis",
+    config: {
+      url: "redis://redis:6379",
+    } as RedisCacheProviderConfig,
+  },
+};
+```
+
+## Basic Usage
 
 ```ts
 import { cache } from "@devbro/pashmak/facades";
 
+// Store a value in cache
 await cache().put("my_key", value);
 await cache().put("my_key2", value2, 3600 * 24); // 1 full day
 
-const user = await cache.get("my_key");
+// Retrieve a value from cache
+const user = await cache().get("my_key");
+
+// Check if a key exists
+const exists = await cache().has("my_key");
+
+// Delete a cached value
+await cache().delete("my_key");
 ```
 
 ### put
@@ -230,4 +260,58 @@ const users3 = await cacheQuery(q, { ttl: 600, cache_label: "my_redis_cache" });
 
 ## Registering your own Provider
 
-TODO: add how to do it
+You can create custom cache providers by implementing the `CacheProviderInterface`:
+
+```ts
+import { CacheProviderInterface } from "@devbro/pashmak/cache";
+import { JSONValue, JSONObject } from "@devbro/pashmak/helpers";
+
+export class CustomCacheProvider implements CacheProviderInterface {
+  constructor(private config: any) {}
+
+  async get(key: string): Promise<JSONValue | JSONObject | undefined> {
+    // Your implementation
+  }
+
+  async put(
+    key: string,
+    value: JSONValue | JSONObject,
+    ttl?: number,
+  ): Promise<void> {
+    // Your implementation
+  }
+
+  async has(key: string): Promise<boolean> {
+    // Your implementation
+  }
+
+  async delete(key: string): Promise<void> {
+    // Your implementation
+  }
+}
+```
+
+Then register your custom provider in the cache factory:
+
+```ts
+import { CacheProviderFactory } from "@devbro/pashmak/cache";
+import { CustomCacheProvider } from "./CustomCacheProvider";
+
+// Register your provider
+CacheProviderFactory.register("custom", (opt) => {
+  return new CustomCacheProvider(opt);
+});
+```
+
+and reference it in your configuration:
+
+```ts
+export default {
+  default: {
+    type: "custom",
+    config: {
+      // Your custom configuration
+    },
+  },
+};
+```

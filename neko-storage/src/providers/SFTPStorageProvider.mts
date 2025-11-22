@@ -1,12 +1,12 @@
 import SFTPClient from 'ssh2-sftp-client';
-import { Metadata, SFTPConfig } from '../types.mjs';
+import { Metadata, SFTPStorageProviderConfig } from '../types.mjs';
 import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
 import { ReadStream } from 'fs';
 import Stream, { Readable, PassThrough } from 'stream';
 import * as mime from 'mime-types';
 
 export class SFTPStorageProvider implements StorageProviderInterface {
-  constructor(private config: SFTPConfig) {}
+  constructor(private config: SFTPStorageProviderConfig) {}
 
   private async getClient(): Promise<SFTPClient> {
     const client = new SFTPClient();

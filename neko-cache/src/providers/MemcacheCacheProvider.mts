@@ -5,12 +5,12 @@ import Memcached from 'memcached';
 /**
  * Configuration options for the Memcached cache provider.
  */
-export interface MemcachedConfig {
+export type MemcachedConfig = {
   /** Memcached server location(s) */
   location?: Memcached.Location;
   /** Additional Memcached options */
   options?: Memcached.options;
-}
+};
 
 /**
  * Memcached-based cache provider that stores cache entries in a Memcached server.

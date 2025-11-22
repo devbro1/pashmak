@@ -3,11 +3,11 @@ import * as fs from 'fs/promises';
 import { createWriteStream, createReadStream, ReadStream } from 'fs';
 import * as path from 'path';
 import * as mime from 'mime-types';
-import { Metadata, LocalStorageConfig } from '../types.mjs';
+import { Metadata, LocalStorageProviderConfig } from '../types.mjs';
 import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
 
 export class LocalStorageProvider implements StorageProviderInterface {
-  constructor(private config: LocalStorageConfig) {
+  constructor(private config: LocalStorageProviderConfig) {
     // Ensure the base folder exists
     fs.mkdir(this.config.basePath, { recursive: true }).catch((error) => {
       throw error;

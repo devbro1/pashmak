@@ -2,12 +2,32 @@
 sidebar_position: 5
 ---
 
-# Loggers
+# Logger
 
-you can use log to record details you need during various parts of execution:
+Pashmak provides a simplified logging system built on top of Pino, allowing you to record important information during execution.
+
+## Configuration
 
 ```ts
-import { logger } from "@root/facades";
+// app/config/logger.ts
+import { ctxSafe } from "@devbro/pashmak/context";
+
+export default {
+  default: {
+    level: "info",
+    extrasFunction: (message: any) => {
+      let requestId = ctxSafe()?.get("requestId");
+      requestId && (message.requestId = requestId);
+      return message;
+    },
+  },
+};
+```
+
+## Basic Usage
+
+```ts
+import { logger } from "@devbro/pashmak/facades";
 
 logger().info("info green message");
 logger().warn("warning yellow message");
@@ -17,27 +37,65 @@ logger().trace("trace white message");
 logger().debug("debug gray message");
 ```
 
-these would produce proper log messages in json format to stdout.
+These produce properly formatted log messages in JSON format to stdout.
 
-## detailed logs
+## Detailed Logs
 
-if you need to capture more details in your logs, you can always pass an object instead:
+If you need to capture more details in your logs, you can pass an object:
 
 ```ts
-logger().info({ msg: "my message", err: error });
-// or
-logger().info("my message", { err: error });
+import { logger } from "@devbro/pashmak/facades";
+
+// Log with additional data
+logger().info({ msg: "User logged in", userId: 123, ip: "192.168.1.1" });
+
+// Log errors with context
+logger().error({ msg: "Database connection failed", err: error });
+
+// Alternative syntax
+logger().info("my message", { err: error, context: "authentication" });
 ```
 
-## multiple loggers
+## Multiple Loggers
 
-if you want to have multiple loggers simply define different configs for each logger in config/logger.ts file.
+Currently there is no built-in way to define multiple loggers with different providers. To achieve this, you can define multiple pino configurations and use them as needed.
 
-Currently we are using Pino to generate logs. So passing any valid Pino config will work.
+```ts
+// config/logger.ts
+import { ctxSafe } from '@devbro/pashmak/context';
+
+export default {
+  default: {
+    level: 'error',
+    extrasFunction: (message: any) => {
+      let requestId = ctxSafe()?.get('requestId');
+      requestId && (message.requestId = requestId);
+      return message;
+    },
+  },
+  soc2logs: {
+    level: 'info',
+    extrasFunction: (message: any) => {
+      let requestId = ctxSafe()?.get('requestId');
+      message.extra_details = ???;
+      return message;
+    },
+  },
+};
+```
+
+Then use them in your code:
+
+```ts
+import { logger } from "@devbro/pashmak/facades";
+
+logger().info("Standard log");
+logger("soc2logs").error("Error log");
+```
 
 ## extrasFunction
 
-Sometimes you want to globally add some details to all your LogMessages. to do this pass option
+Sometimes you want to globally add details to all your LogMessages. to do this pass option
 extraFunctions in your config:
 
 ```ts

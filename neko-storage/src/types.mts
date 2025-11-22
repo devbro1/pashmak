@@ -1,5 +1,5 @@
-import { S3ClientConfig as S3ClientConfig_base } from '@aws-sdk/client-s3';
-import { StorageOptions as GCPStorageConfig_base } from '@google-cloud/storage';
+import { S3ClientConfig as AWSS3StorageProviderConfig_base } from '@aws-sdk/client-s3';
+import { StorageOptions as GCPStorageProviderConfig_base } from '@google-cloud/storage';
 
 export type Metadata = {
   size: number;
@@ -7,14 +7,14 @@ export type Metadata = {
   lastModifiedDate: string;
 };
 
-export type AzureStorageConfig = {
+export type AzureBlobStorageProviderConfig = {
   accountName: string;
   accountKey?: string;
   sasToken?: string;
   containerName: string;
 };
 
-export type FTPConfig = {
+export type FTPStorageProviderConfig = {
   host: string;
   port?: number;
   user?: string;
@@ -22,7 +22,7 @@ export type FTPConfig = {
   secure?: boolean;
 };
 
-export type SFTPConfig = {
+export type SFTPStorageProviderConfig = {
   host: string;
   port?: number;
   username?: string;
@@ -31,14 +31,6 @@ export type SFTPConfig = {
   passphrase?: string;
 };
 
-export type S3ClientConfig = S3ClientConfig_base & { bucket: string };
-export type LocalStorageConfig = { basePath: string };
-export type GCPStorageConfig = GCPStorageConfig_base & { bucket: string };
-
-export type StorageConfig =
-  | LocalStorageConfig
-  | S3ClientConfig
-  | GCPStorageConfig
-  | AzureStorageConfig
-  | FTPConfig
-  | SFTPConfig;
+export type AWSS3StorageProviderConfig = AWSS3StorageProviderConfig_base & { bucket: string };
+export type LocalStorageProviderConfig = { basePath: string };
+export type GCPStorageProviderConfig = GCPStorageProviderConfig_base & { bucket: string };

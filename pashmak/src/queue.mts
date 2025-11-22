@@ -5,7 +5,7 @@ import { db, logger } from "./facades.mjs";
 import { createRepeater } from "@devbro/neko-helper";
 import { context_provider } from "@devbro/neko-context";
 
-type DatabaseTransportConfig = {
+export type DatabaseTransportConfig = {
   queue_table: string;
   db_connection: string;
   listen_interval: number;

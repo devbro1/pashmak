@@ -9,7 +9,6 @@ import {
   SendMessageCommand,
 } from '@aws-sdk/client-sqs';
 import type { SQSClientConfig } from '@aws-sdk/client-sqs';
-import { sleep } from '../../../neko-helper/dist/time.mjs';
 
 /**
  * Configuration options for the SQS transport.

@@ -5,7 +5,7 @@ import { prepareEmails } from "../helper.mjs";
 /**
  * Configuration options for the MailgunProvider.
  */
-export type MailgunProviderOptions = {
+export type MailgunProviderConfig = {
   /** Mailgun API key */
   api_key: string;
   /** Mailgun domain */
@@ -31,7 +31,7 @@ export class MailgunProvider implements MailerProvider {
    * Creates a new MailgunProvider instance.
    * @param options - Provider configuration options
    */
-  constructor(options: Partial<MailgunProviderOptions> = {}) {
+  constructor(options: Partial<MailgunProviderConfig> = {}) {
     this.apiKey = options.api_key || process.env.MAILGUN_API_KEY || "";
     this.domain = options.domain || process.env.MAILGUN_DOMAIN || "";
     this.defaultFrom = options.default_from || "";

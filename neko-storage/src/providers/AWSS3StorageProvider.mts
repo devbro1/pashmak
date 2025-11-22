@@ -1,4 +1,4 @@
-import { Metadata, S3ClientConfig } from '../types.mjs';
+import { Metadata, AWSS3StorageProviderConfig } from '../types.mjs';
 import {
   S3Client,
   HeadObjectCommand,
@@ -13,7 +13,7 @@ import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
 export class AWSS3StorageProvider implements StorageProviderInterface {
   private s3: S3Client;
 
-  constructor(protected config: S3ClientConfig) {
+  constructor(protected config: AWSS3StorageProviderConfig) {
     this.s3 = new S3Client(this.config);
   }
 

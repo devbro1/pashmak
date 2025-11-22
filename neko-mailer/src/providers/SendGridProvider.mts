@@ -5,7 +5,7 @@ import { prepareEmails } from "../helper.mjs";
 /**
  * Configuration options for the SendGridProvider.
  */
-export type SendGridProviderOptions = {
+export type SendGridProviderConfig = {
   /** SendGrid API key */
   api_key: string;
   /** Default sender email address */
@@ -24,7 +24,7 @@ export class SendGridProvider implements MailerProvider {
    * Creates a new SendGridProvider instance.
    * @param options - Provider configuration options
    */
-  constructor(options: Partial<SendGridProviderOptions> = {}) {
+  constructor(options: Partial<SendGridProviderConfig> = {}) {
     this.apiKey = options.api_key || process.env.SENDGRID_API_KEY || "";
     this.defaultFrom = options.default_from || "";
   }

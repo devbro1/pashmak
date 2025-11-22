@@ -10,24 +10,24 @@ Set of useful helper functions.
 
 All encryption, hashing, and cryptographic utilities are available under the `Enc` namespace:
 
-| Function | Description | Example |
-|----------|-------------|---------|
-| [`Enc.hash.md5()`](#enchashmd5data-string-string) | Generates MD5 hash | `Enc.hash.md5("hello")` → `'5d41402abc4b2a76b9719d...'` |
-| [`Enc.hash.sha1()`](#enchashsha1data-string-string) | Generates SHA-1 hash | `Enc.hash.sha1("hello")` → `'aaf4c61ddcc5e8a2dabe...'` |
-| [`Enc.hash.sha256()`](#enchashsha256data-string-string) | Generates SHA-256 hash | `Enc.hash.sha256("hello")` → `'2cf24dba5fb0a30e26e8...'` |
-| [`Enc.hash.sha512()`](#enchashsha512data-string-string) | Generates SHA-512 hash | `Enc.hash.sha512("hello")` → `'9b71d224bd62f3785d96...'` |
-| [`Enc.hash.sha3_256()`](#enchashsha3_256data-string-string) | Generates SHA3-256 hash | `Enc.hash.sha3_256("hello")` → `'3338be694f50c5f338...'` |
-| [`Enc.hash.sha3_512()`](#enchashsha3_512data-string-string) | Generates SHA3-512 hash | `Enc.hash.sha3_512("hello")` → `'75d527c368f2efe...'` |
-| [`Enc.password.isBcryptHash()`](#encpasswordisbcrypthashstr-string-boolean) | Checks if string is bcrypt hash | `Enc.password.isBcryptHash("$2a$10...")` → `true` |
-| [`Enc.password.encryptPassword()`](#encpasswordencryptpasswordpassword-string-rounds-number-promisestring) | Encrypts password with bcrypt | `await Enc.password.encryptPassword("pass")` → `'$2a$10...'` |
-| [`Enc.password.comparePassword()`](#encpasswordcomparepasswordpassword-string-hash-string-promiseboolean) | Compares password with hash | `await Enc.password.comparePassword("pass", hash)` → `true` |
-| [`Enc.keys.rsa()`](#enckeysrsamoduluslength-number--publickey-string-privatekey-string-) | Generates RSA key pair | `Enc.keys.rsa(2048)` → `{ publicKey, privateKey }` |
-| [`Enc.keys.ed25519()`](#enckeyse25519-promisepublickey-string-privatekey-string-) | Generates Ed25519 key pair | `await Enc.keys.ed25519()` → `{ publicKey, privateKey }` |
-| [`Enc.jwt.sign()`](#encjwtsignpayload-string--object--buffer-secret-string-options-signoptions-string) | Signs JWT token | `Enc.jwt.sign({ id: 1 }, "secret")` → `'eyJhbGc...'` |
-| [`Enc.jwt.verify()`](#encjwtverifytoken-string-secret-string-options-verifyoptions-string--jwtpayload) | Verifies JWT token | `Enc.jwt.verify(token, "secret")` → `{ id: 1, iat: ... }` |
-| [`Enc.jwt.decode()`](#encjwtdecodetoken-string-options-decodeoptions-null--string--jwtpayload) | Decodes JWT without verification | `Enc.jwt.decode(token)` → `{ id: 1 }` |
-| [`Enc.sign.ed25519()`](#encsigne25519privatekey-string-data-string-promisestring) | Signs data with Ed25519 | `await Enc.sign.ed25519(key, "data")` → `'abc123...'` |
-| [`Enc.sign.verifyEd25519()`](#encsignverifye25519publickey-string-signature-string-data-string-promiseboolean) | Verifies Ed25519 signature | `await Enc.sign.verifyEd25519(pub, sig, data)` → `true` |
+| Function                                                                                                       | Description                      | Example                                                      |
+| -------------------------------------------------------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------ |
+| [`Enc.hash.md5()`](#enchashmd5data-string-string)                                                              | Generates MD5 hash               | `Enc.hash.md5("hello")` → `'5d41402abc4b2a76b9719d...'`      |
+| [`Enc.hash.sha1()`](#enchashsha1data-string-string)                                                            | Generates SHA-1 hash             | `Enc.hash.sha1("hello")` → `'aaf4c61ddcc5e8a2dabe...'`       |
+| [`Enc.hash.sha256()`](#enchashsha256data-string-string)                                                        | Generates SHA-256 hash           | `Enc.hash.sha256("hello")` → `'2cf24dba5fb0a30e26e8...'`     |
+| [`Enc.hash.sha512()`](#enchashsha512data-string-string)                                                        | Generates SHA-512 hash           | `Enc.hash.sha512("hello")` → `'9b71d224bd62f3785d96...'`     |
+| [`Enc.hash.sha3_256()`](#enchashsha3_256data-string-string)                                                    | Generates SHA3-256 hash          | `Enc.hash.sha3_256("hello")` → `'3338be694f50c5f338...'`     |
+| [`Enc.hash.sha3_512()`](#enchashsha3_512data-string-string)                                                    | Generates SHA3-512 hash          | `Enc.hash.sha3_512("hello")` → `'75d527c368f2efe...'`        |
+| [`Enc.password.isBcryptHash()`](#encpasswordisbcrypthashstr-string-boolean)                                    | Checks if string is bcrypt hash  | `Enc.password.isBcryptHash("$2a$10...")` → `true`            |
+| [`Enc.password.encryptPassword()`](#encpasswordencryptpasswordpassword-string-rounds-number-promisestring)     | Encrypts password with bcrypt    | `await Enc.password.encryptPassword("pass")` → `'$2a$10...'` |
+| [`Enc.password.comparePassword()`](#encpasswordcomparepasswordpassword-string-hash-string-promiseboolean)      | Compares password with hash      | `await Enc.password.comparePassword("pass", hash)` → `true`  |
+| [`Enc.keys.rsa()`](#enckeysrsamoduluslength-number--publickey-string-privatekey-string-)                       | Generates RSA key pair           | `Enc.keys.rsa(2048)` → `{ publicKey, privateKey }`           |
+| [`Enc.keys.ed25519()`](#enckeyse25519-promisepublickey-string-privatekey-string-)                              | Generates Ed25519 key pair       | `await Enc.keys.ed25519()` → `{ publicKey, privateKey }`     |
+| [`Enc.jwt.sign()`](#encjwtsignpayload-string--object--buffer-secret-string-options-signoptions-string)         | Signs JWT token                  | `Enc.jwt.sign({ id: 1 }, "secret")` → `'eyJhbGc...'`         |
+| [`Enc.jwt.verify()`](#encjwtverifytoken-string-secret-string-options-verifyoptions-string--jwtpayload)         | Verifies JWT token               | `Enc.jwt.verify(token, "secret")` → `{ id: 1, iat: ... }`    |
+| [`Enc.jwt.decode()`](#encjwtdecodetoken-string-options-decodeoptions-null--string--jwtpayload)                 | Decodes JWT without verification | `Enc.jwt.decode(token)` → `{ id: 1 }`                        |
+| [`Enc.sign.ed25519()`](#encsigne25519privatekey-string-data-string-promisestring)                              | Signs data with Ed25519          | `await Enc.sign.ed25519(key, "data")` → `'abc123...'`        |
+| [`Enc.sign.verifyEd25519()`](#encsignverifye25519publickey-string-signature-string-data-string-promiseboolean) | Verifies Ed25519 signature       | `await Enc.sign.verifyEd25519(pub, sig, data)` → `true`      |
 
 ```ts
 import { Enc } from "@devbro/neko-helper";
@@ -257,18 +257,18 @@ Sleep for a given number of milliseconds.
 
 All number utility functions are available under the `Num` namespace:
 
-| Function | Description | Example |
-|----------|-------------|---------|
-| [`Num.abbreviate()`](#numabbreviatenum-number-string) | Abbreviates large numbers with K, M, B, T suffixes | `Num.abbreviate(1500)` → `"1.5K"` |
-| [`Num.clamp()`](#numclampnum-number-min-number-max-number-number) | Clamps number between min and max | `Num.clamp(15, 1, 10)` → `10` |
-| [`Num.currencyFormat()`](#numcurrencyformatnum-number-currency-string-string) | Formats as currency | `Num.currencyFormat(1234.56)` → `"$1,234.56"` |
-| [`Num.fileSize()`](#numfilesizenum-number-string) | Formats bytes to human-readable size | `Num.fileSize(1024)` → `"1 KB"` |
-| [`Num.format()`](#numformatnum-number-decimalplaces-number-string) | Formats with decimal places | `Num.format(1234.5678)` → `"1,234.57"` |
-| [`Num.ordinal()`](#numordinalnum-number-string) | Converts to ordinal (1st, 2nd, 3rd) | `Num.ordinal(1)` → `"1st"` |
-| [`Num.parse()`](#numparsestr-string--number--undefined-number--undefined) | Parses string to number | `Num.parse("1,234")` → `1234` |
-| [`Num.round()`](#numroundnumber-number-options-precision-number-method-round--ceil--floor-number) | Rounds to precision | `Num.round(3.14159, {precision: 2})` → `3.14` |
-| [`Num.spell()`](#numspellnum-number-string) | Converts to words | `Num.spell(42)` → `"forty-two"` |
-| [`Num.spellOrdinal()`](#numspellordinalnum-number-string) | Converts to ordinal words | `Num.spellOrdinal(1)` → `"first"` |
+| Function                                                                                          | Description                                        | Example                                       |
+| ------------------------------------------------------------------------------------------------- | -------------------------------------------------- | --------------------------------------------- |
+| [`Num.abbreviate()`](#numabbreviatenum-number-string)                                             | Abbreviates large numbers with K, M, B, T suffixes | `Num.abbreviate(1500)` → `"1.5K"`             |
+| [`Num.clamp()`](#numclampnum-number-min-number-max-number-number)                                 | Clamps number between min and max                  | `Num.clamp(15, 1, 10)` → `10`                 |
+| [`Num.currencyFormat()`](#numcurrencyformatnum-number-currency-string-string)                     | Formats as currency                                | `Num.currencyFormat(1234.56)` → `"$1,234.56"` |
+| [`Num.fileSize()`](#numfilesizenum-number-string)                                                 | Formats bytes to human-readable size               | `Num.fileSize(1024)` → `"1 KB"`               |
+| [`Num.format()`](#numformatnum-number-decimalplaces-number-string)                                | Formats with decimal places                        | `Num.format(1234.5678)` → `"1,234.57"`        |
+| [`Num.ordinal()`](#numordinalnum-number-string)                                                   | Converts to ordinal (1st, 2nd, 3rd)                | `Num.ordinal(1)` → `"1st"`                    |
+| [`Num.parse()`](#numparsestr-string--number--undefined-number--undefined)                         | Parses string to number                            | `Num.parse("1,234")` → `1234`                 |
+| [`Num.round()`](#numroundnumber-number-options-precision-number-method-round--ceil--floor-number) | Rounds to precision                                | `Num.round(3.14159, {precision: 2})` → `3.14` |
+| [`Num.spell()`](#numspellnum-number-string)                                                       | Converts to words                                  | `Num.spell(42)` → `"forty-two"`               |
+| [`Num.spellOrdinal()`](#numspellordinalnum-number-string)                                         | Converts to ordinal words                          | `Num.spellOrdinal(1)` → `"first"`             |
 
 ```ts
 import { Num } from "@devbro/neko-helper";
@@ -402,9 +402,11 @@ Num.spellOrdinal(21); // "twenty-first"
 Num.spellOrdinal(100); // "one hundredth"
 ```
 
-#### Num.round(number: number, options?: {precision?: number, method?: 'round' | 'ceil' | 'floor'}): number
+#### `Num.round(number: number, options?: RoundOptions): number`
 
-#### Num.round(number: number[], options?: {precision?: number, method?: 'round' | 'ceil' | 'floor'}): number[]
+#### `Num.round(number: number[], options?: RoundOptions): number[]`
+
+Where `RoundOptions` is `{ precision?: number, method?: 'round' | 'ceil' | 'floor' }`
 
 Rounds a number or array of numbers to a specified precision. Supports single numbers or arrays of numbers, returning the same type as the input. Precision can be positive (decimal places), zero (nearest integer), or negative (rounding to tens, hundreds, etc.).
 
@@ -446,17 +448,17 @@ Num.round([1.5, NaN, 2.7], { precision: 0 }); // [2, NaN, 3]
 
 All array utility functions are available under the `Arr` namespace:
 
-| Function | Description | Example |
-|----------|-------------|---------|
-| [`Arr.intersperse()`](#arrinterspersetarr-t-sep-s-t--s) | Inserts separator between elements | `Arr.intersperse([1, 2, 3], 0)` → `[1, 0, 2, 0, 3]` |
-| [`Arr.flatten()`](#arrflattentarr-t-t) | Flattens nested array by one level | `Arr.flatten([[1, 2], [3, 4]])` → `[1, 2, 3, 4]` |
-| [`Arr.crossJoin()`](#arrcrossjoinarr1-t-arr2-u-t-u) | Creates Cartesian product of arrays | `Arr.crossJoin([1, 2], ['a', 'b'])` → `[[1, 'a'], [1, 'b'], ...]` |
-| [`Arr.get()`](#arrgettarr-t-index-number-defaultvalue-d-t--d--undefined) | Gets element at index (supports negative) | `Arr.get([1, 2, 3], -1)` → `3` |
-| [`Arr.first()`](#arrfirsttarr-t-defaultvalue-d-t--d--undefined) | Gets first element | `Arr.first([1, 2, 3])` → `1` |
-| [`Arr.last()`](#arrlasttarr-t-defaultvalue-d-t--d--undefined) | Gets last element | `Arr.last([1, 2, 3])` → `3` |
-| [`Arr.split()`](#arrsplittarr-t-sizeorfunc-number--item-t-index-number--boolean-t) | Splits array by size or predicate | `Arr.split([1, 2, 3, 4], 2)` → `[[1, 2], [3, 4]]` |
-| [`Arr.random()`](#arrrandomtarr-t-t--undefined) | Returns random element | `Arr.random([1, 2, 3])` → `2` (random) |
-| [`Arr.shuffle()`](#arrshuffletarr-t-t) | Shuffles array randomly | `Arr.shuffle([1, 2, 3])` → `[3, 1, 2]` (random order) |
+| Function                                                                           | Description                               | Example                                                           |
+| ---------------------------------------------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------- |
+| [`Arr.intersperse()`](#arrinterspersetarr-t-sep-s-t--s)                            | Inserts separator between elements        | `Arr.intersperse([1, 2, 3], 0)` → `[1, 0, 2, 0, 3]`               |
+| [`Arr.flatten()`](#arrflattentarr-t-t)                                             | Flattens nested array by one level        | `Arr.flatten([[1, 2], [3, 4]])` → `[1, 2, 3, 4]`                  |
+| [`Arr.crossJoin()`](#arrcrossjoinarr1-t-arr2-u-t-u)                                | Creates Cartesian product of arrays       | `Arr.crossJoin([1, 2], ['a', 'b'])` → `[[1, 'a'], [1, 'b'], ...]` |
+| [`Arr.get()`](#arrgettarr-t-index-number-defaultvalue-d-t--d--undefined)           | Gets element at index (supports negative) | `Arr.get([1, 2, 3], -1)` → `3`                                    |
+| [`Arr.first()`](#arrfirsttarr-t-defaultvalue-d-t--d--undefined)                    | Gets first element                        | `Arr.first([1, 2, 3])` → `1`                                      |
+| [`Arr.last()`](#arrlasttarr-t-defaultvalue-d-t--d--undefined)                      | Gets last element                         | `Arr.last([1, 2, 3])` → `3`                                       |
+| [`Arr.split()`](#arrsplittarr-t-sizeorfunc-number--item-t-index-number--boolean-t) | Splits array by size or predicate         | `Arr.split([1, 2, 3, 4], 2)` → `[[1, 2], [3, 4]]`                 |
+| [`Arr.random()`](#arrrandomtarr-t-t--undefined)                                    | Returns random element                    | `Arr.random([1, 2, 3])` → `2` (random)                            |
+| [`Arr.shuffle()`](#arrshuffletarr-t-t)                                             | Shuffles array randomly                   | `Arr.shuffle([1, 2, 3])` → `[3, 1, 2]` (random order)             |
 
 ```ts
 import { Arr } from "@devbro/neko-helper";
@@ -598,4 +600,18 @@ MailerProviderFactory.register(
 const mailer = MailerProviderFactory.create("smtp", {
   host: "smtp.example.com",
 });
+```
+
+#### chainer
+
+A simple utility to chain multiple functions together. Each step can be synchronous or asynchronous.
+To calculate the final result, use `await` on the returned Chainer.
+
+```ts
+import { chainer } from "@devbro/pashmak/helpers";
+const add = (x: number, y: number) => x + y;
+const multiply = async (x: number, y: number) => x * y;
+
+const chainedFunction = chainer(10).step(add, 10).step(multiply, 3);
+const result = await chainedFunction(4);
 ```

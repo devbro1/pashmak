@@ -6,6 +6,7 @@ import { PostgresqlConnection } from "@devbro/neko-sql";
 
 export class StartCommand extends Command {
   scheduler = Option.Boolean(`--scheduler`, false);
+  cron = Option.Boolean(`--cron`, false);
   http = Option.Boolean(`--http`, false);
   queue = Option.Boolean(`--queue`, false);
   all = Option.Boolean("--all", false);
@@ -13,8 +14,9 @@ export class StartCommand extends Command {
 
   async execute() {
     if (
-      [this.all, this.http, this.scheduler, this.queue].filter((x) => x)
-        .length == 0
+      [this.all, this.http, this.scheduler || this.cron, this.queue].filter(
+        (x) => x,
+      ).length == 0
     ) {
       this.context.stdout.write(
         `No service was selected. please check -h for details\n`,
@@ -26,7 +28,7 @@ export class StartCommand extends Command {
 
     PostgresqlConnection.defaults.idleTimeoutMillis = 10000;
 
-    if (this.scheduler || this.all) {
+    if (this.scheduler || this.cron || this.all) {
       logger().info(`starting scheduler\n`);
       scheduler().start();
     }

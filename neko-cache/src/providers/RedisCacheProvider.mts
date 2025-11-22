@@ -2,6 +2,7 @@ import { createClient, RedisClientOptions, RedisClientType } from 'redis';
 import { CacheProviderInterface } from '../CacheProviderInterface.mjs';
 import { JSONValue, JSONObject } from '@devbro/neko-helper';
 
+export type RedisCacheProviderConfig = RedisClientOptions;
 /**
  * Redis-based cache provider that stores cache entries in a Redis server.
  * Provides distributed caching with automatic expiration support.
@@ -14,7 +15,7 @@ export class RedisCacheProvider implements CacheProviderInterface {
    * Creates a new RedisCacheProvider instance.
    * @param config - Redis client configuration options
    */
-  constructor(private config: RedisClientOptions) {
+  constructor(private config: RedisCacheProviderConfig) {
     this.client = this.createRedisClient();
     this.client.connect();
   }

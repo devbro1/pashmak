@@ -4,11 +4,28 @@ sidebar_position: 5
 
 # Controller
 
-Pashmak can accept both function and class controllers
+Pashmak can accept both function and class controllers.
 
-## functional Controllers
+## Functional Controllers
+
+Functional controllers are simple async functions that receive request and response objects:
+
+```ts
+import { Request, Response } from "@devbro/pashmak/router";
+import { router } from "@devbro/pashmak/facades";
+
+router().addRoute(
+  ["GET"],
+  "/api/v1/hello",
+  async (req: Request, res: Response) => {
+    return { message: "Hello World" };
+  },
+);
+```
 
 ## Class Controllers
+
+Class controllers provide a cleaner way to organize your routes using decorators:
 
 ```ts
 import { db, storage, logger } from "@devbro/pashmak/facades";
@@ -18,40 +35,62 @@ import {
   Response,
   Model,
   Param,
-  ValidatedRequest,
   BaseController,
   Controller,
   Get,
   Post,
+  Put,
+  Delete,
 } from "@devbro/pashmak/router";
 
 @Controller("/api/v1/cats", {
   middlewares: [mid1, mid2],
 })
 export class CatController extends BaseController {
-  @Get({ middlewares: [logResponseMiddleware] })
-  async show() {
-    const r = await db().runQuery({ sql: "select * from cats", bindings: [] });
+  @Get("/", { middlewares: [logResponseMiddleware] })
+  async list() {
+    const r = await db().runQuery({
+      sql: "select * from cats",
+      parts: [],
+      bindings: [],
+    });
     return {
       message: "GET cats",
       data: r,
     };
   }
 
-  @Post()
+  @Post("/")
   async store() {
     const req = ctx().get<Request>("request");
     logger().info({ msg: "request details", body: req.body, files: req.files });
 
-    return "success";
+    return { success: true };
+  }
+
+  @Get("/:id")
+  async show(@Param("id") id: string) {
+    return { id, name: "cat name" };
   }
 
   @Put("/:id")
-  async update(@Param("id") id, @Model(CatModel, "id", "id") cat: CatModel) {
-    return "success";
+  async update(
+    @Param("id") id: string,
+    @Model(CatModel, "id", "id") cat: CatModel,
+  ) {
+    // Model decorator automatically fetches the cat by id
+    cat.name = "Updated name";
+    await cat.save();
+    return cat;
   }
 
-  @Get({ path: "/file" })
+  @Delete("/:id")
+  async delete(@Param("id") id: string) {
+    await CatModel.deleteById(id);
+    return { success: true };
+  }
+
+  @Get("/file")
   async getFile() {
     const res = ctx().get<Response>("response");
     await res.writeHead(200, {
@@ -61,40 +100,164 @@ export class CatController extends BaseController {
     (await storage().getStream("test.jpg")).pipe(res);
   }
 
-  @Get({ path: "/file-details" })
+  @Get("/file-details")
   async getFileDetails() {
     return await storage().metadata("test.jpg");
   }
 
-  @Get({ path: "/:id/notes/:noteId" })
-  showById(@Param("noteId") noteId: string, @Param("id") id: string) {
-    return "notes";
+  @Get("/:id/notes/:noteId")
+  showNotes(@Param("noteId") noteId: string, @Param("id") id: string) {
+    return { id, noteId, notes: [] };
   }
 }
 ```
 
-### class decorators
+## Controller Decorators
 
-#### @Model( ModelClass , param_name , model_field )
+### HTTP Method Decorators
 
-automatically fetches a model instance based on a route parameter and injects it into the controller method.
+- `@Get("path", options?)` - Handle GET and HEAD requests
+- `@Post("path", options?)` - Handle POST requests
+- `@Put("path", options?)` - Handle PUT requests
+- `@Delete("path", options?)` - Handle DELETE requests
+- `@Patch("path", options?)` - Handle PATCH requests
 
-`param_name` is optional and defaults to "id". it is the param name in the url.
-`model_field` is optional and defaults to "id". it is the field in the model to be matched against the param value.
+Each decorator accepts an optional configuration object:
 
-#### @Param( param_name )
+```ts
+@Get("/path", {
+  middlewares: [middleware1, middleware2]  // Route-specific middlewares
+})
+```
 
-extracts a specific parameter from the request URL and injects it into the controller method. If param was not defined in url, it will be undefined.
+### Parameter Decorators
 
-#### @ValidatedRequest( validation_schema )
+#### @Param(param_name)
 
-validates the incoming request data against a defined schema and injects the validated data into the controller.
-validation_schema can be a yup `yup.ObjectSchema` or a function that returns `yup.ObjectSchema`.
+Extracts a specific parameter from the request URL and injects it into the controller method:
 
-## order of middleware execution
+```ts
+@Get("/:id")
+async show(@Param("id") id: string) {
+  // id contains the value from the URL parameter
+  return { id };
+}
+```
 
-the order is as followed:
+#### @Model(ModelClass, param_name?, model_field?)
 
-1. middleswares defined in router as globalmiddlewares
-2. middlewares defined at controller class
-3. middlewares defined at each method
+Automatically fetches a model instance based on a route parameter and injects it into the controller method:
+
+- `ModelClass` - The ORM model class to fetch
+- `param_name` - Optional, defaults to "id". The parameter name in the URL.
+- `model_field` - Optional, defaults to "id". The field in the model to match against the param value.
+
+```ts
+@Put("/:userId")
+async update(@Param("userId") userId: string, @Model(User,'userId','id') user: User) {
+  // user is automatically fetched from database
+  user.name = "Updated name";
+  await user.save();
+  return user;
+}
+```
+
+#### @ValidatedRequest(validation_schema)
+
+This decorator is defined under `src/helpers/validation.ts` to allow modification/replacement of main validation library. Currently there is support for both Yup and Zod validation libraries.
+
+```ts
+import * as yup from "yup";
+import zod from "zod";
+
+const createUserSchema = yup.object({
+  name: yup.string().required(),
+  email: yup.string().email().required(),
+});
+
+const updateUserSchema = zod.object({
+  name: zod.string().optional(),
+  email: zod.string().email().optional(),
+});
+
+@Post()
+async create(@ValidatedRequest(createUserSchema) data: any) {
+  // data is validated and type-safe
+  return await User.create(data);
+}
+
+@Put("/:id")
+async update(@Param("id") id: string, @ValidatedRequest(updateUserSchema) data: any) {
+  return { "message": "User updated", data};
+}
+```
+
+## Registering Controllers
+
+To use a controller, it must be registered with the router:
+
+```ts
+import { router } from "@devbro/pashmak/facades";
+import { CatController } from "./app/controllers/CatController";
+
+router().addController(CatController);
+```
+
+## Direct Response Manipulation
+
+For more complex responses, you can directly modify the Response object:
+
+```ts
+import { Request, Response } from "@devbro/pashmak/router";
+
+async (req: Request, res: Response) => {
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.write(JSON.stringify({ message: "Custom response" }));
+};
+```
+
+If do so, make sure to call `res.writeHead()` to set the status code and headers before writing the response body.
+When writing response directly, it is highly recommended to use `res.write()` instead of `res.end()` to allow middlewares and error handling to function properly.
+
+## Decorators
+
+Currently decorators are supported only on classes and class-methods.
+
+#### making your own decorators
+
+to simplify making your own decorators you can use `createParamDecorator` helper from `@devbro/pashmak/router`
+
+```ts
+import * as yup from "yup";
+import { z } from "zod";
+import { ctx } from "@devbro/pashmak/context";
+import { Request, createParamDecorator } from "@devbro/pashmak/router";
+
+export function ValidatedRequest(
+  validationRules:
+    | yup.ObjectSchema<any>
+    | (() => yup.ObjectSchema<any>)
+    | z.ZodType<any>
+    | (() => z.ZodType<any>),
+): ParameterDecorator {
+  return createParamDecorator(async () => {
+    const schema =
+      typeof validationRules === "function"
+        ? validationRules()
+        : validationRules;
+    const requestBody = ctx().get<Request>("request").body;
+
+    // Check if it's a Zod schema by checking for parse method
+    if ("parse" in schema && typeof schema.parse === "function") {
+      return await schema.parseAsync(requestBody);
+    }
+
+    // Otherwise, treat it as Yup schema
+    const rc = await (schema as yup.ObjectSchema<any>)
+      .noUnknown()
+      .validate(requestBody, { abortEarly: false });
+
+    return rc;
+  });
+}
+```

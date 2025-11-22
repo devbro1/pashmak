@@ -1,12 +1,12 @@
 import { Client as FTPClient } from 'basic-ftp';
-import { Metadata, FTPConfig } from '../types.mjs';
+import { Metadata, FTPStorageProviderConfig } from '../types.mjs';
 import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
 import { ReadStream } from 'fs';
 import Stream, { Readable, PassThrough } from 'stream';
 import * as mime from 'mime-types';
 
 export class FTPStorageProvider implements StorageProviderInterface {
-  constructor(private config: FTPConfig) {}
+  constructor(private config: FTPStorageProviderConfig) {}
 
   private async getClient(): Promise<FTPClient> {
     const client = new FTPClient();
