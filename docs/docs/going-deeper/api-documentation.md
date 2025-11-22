@@ -85,6 +85,36 @@ The code for this method is part of your project so you can make adjustments as 
 - You can pass name of example and tags to help organize your examples.
 - routePath is optional but strongly recommended to be passed. Currently the method cannot determine which part is url parameter so this is needd to determine which route the example should be added for.
 - If `Authorization` header exists, it will automatically mark the endpoint as authentication required.
+- It can be beneficial to have tests with apidocs tagged to improve performance of document generation
+
+## Generating different apidocs
+
+There may be situations that you want to generate different sets of api-docs. An example of this would be when you want to generate one for public release, another one for internal use, and a third for pen testers. To make this you can create multiple entries in your config file:
+
+```ts
+// src/config/default.ts
+export default {
+  ???,
+  api_docs: ???,
+  api_docs_internal: ???,
+  pen_testers: {
+    api_docs: ???,
+  },
+}
+```
+
+once you have different configs, you can run different merge commands:
+
+```bash
+# use api_docs as default
+npm run generate apidocs --merge-files
+
+# use api_docs_internal for merge process
+npm run generate apidocs --merge-files --config api_docs_internal
+
+# use { pen_testers: { api_docs: ??? } } for merge process
+npm run generate apidocs --merge-files --config pen_testers.api_docs
+```
 
 ## Best practices
 

@@ -1,4 +1,4 @@
-import { AWSS3StorageProviderConfig as AWSS3StorageProviderConfig_base } from '@aws-sdk/client-s3';
+import { S3ClientConfig as AWSS3StorageProviderConfig_base } from '@aws-sdk/client-s3';
 import { StorageOptions as GCPStorageProviderConfig_base } from '@google-cloud/storage';
 
 export type Metadata = {
