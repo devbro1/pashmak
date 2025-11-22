@@ -1,15 +1,18 @@
-import { cli, router } from "../../../facades.mjs";
+/*
+how this command should work:
+command --generate-from-routes --output path/to/output.json
+command --generate-base --output path/to/output.json
+command --merge-files # file lists/details are in config
+*/
+import { cli, router } from "@devbro/pashmak/facades";
 import { Command, Option } from "clipanion";
 import path from "path";
 import * as fs from "fs/promises";
-import { config } from "../../../config.mjs";
+import { config } from "@devbro/pashmak/config";
 import { Arr } from "@devbro/neko-helper";
 
 export class GenerateApiDocsCommand extends Command {
-  static paths = [
-    [`make`, `apidocs`],
-    [`generate`, `apidocs`],
-  ];
+  static paths = [[`generate`, `apidocsv2`]];
 
   static usage = Command.Usage({
     category: `Generate`,
@@ -37,7 +40,17 @@ export class GenerateApiDocsCommand extends Command {
         output: path.join(__dirname, '../..', 'private', 'openapi.json'),
       }
     `,
-    examples: [[`Generate API documentation`, `$0 generate apidocs`]],
+    examples: [
+      [
+        `Generate API documentation from registered routes`,
+        `$0 --generate-from-routes --output path/to/output.json`,
+      ],
+      [
+        `Generate base API documentation`,
+        `$0 --generate-base --output path/to/output.json`,
+      ],
+      [`Merge API documentation files`, `$0 --merge-files`],
+    ],
   });
 
   help = Option.Boolean(`--help,-h`, false, {
@@ -56,9 +69,6 @@ export class GenerateApiDocsCommand extends Command {
 
     this.context.stdout.write(`Generating OpenAPI documentation...\n`);
 
-    // Get all routes from the router
-    const routes = router().routes;
-
     // Generate OpenAPI 3.0 specification
     const openApiSpec = {
       openapi: "3.0.0",
@@ -73,64 +83,23 @@ export class GenerateApiDocsCommand extends Command {
           description: "Local server",
         },
       ],
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: "http",
+            scheme: "bearer",
+            bearerFormat: "JWT",
+            description: "JWT token authentication",
+          },
+        },
+      },
+      security: [
+        {
+          bearerAuth: [],
+        },
+      ],
       paths: {} as Record<string, any>,
     };
-
-    // Process each route
-    for (const route of routes) {
-      const routePath = route.path;
-      // Convert route path to OpenAPI format (e.g., /api/:id -> /api/{id})
-      const openApiPath = routePath.replace(/:([a-zA-Z0-9_]+)/g, "{$1}");
-
-      if (!openApiSpec.paths[openApiPath]) {
-        openApiSpec.paths[openApiPath] = {};
-      }
-
-      // Add each HTTP method for this route
-      for (const method of route.methods) {
-        const lowerMethod = method.toLowerCase();
-
-        // Skip HEAD as it's usually auto-generated
-        if (lowerMethod === "head") {
-          continue;
-        }
-
-        openApiSpec.paths[openApiPath][lowerMethod] = {
-          summary: `${method} ${routePath}`,
-          description: `Endpoint for ${method} ${routePath}`,
-          parameters: this.extractParameters(routePath),
-          responses: {
-            "200": {
-              description: "Successful response",
-              content: {
-                "application/json": {
-                  schema: {
-                    type: "object",
-                  },
-                },
-              },
-            },
-            "500": {
-              description: "Internal server error",
-            },
-          },
-        };
-
-        // Add request body for POST, PUT, PATCH
-        if (["post", "put", "patch"].includes(lowerMethod)) {
-          openApiSpec.paths[openApiPath][lowerMethod].requestBody = {
-            required: true,
-            content: {
-              "application/json": {
-                schema: {
-                  type: "object",
-                },
-              },
-            },
-          };
-        }
-      }
-    }
 
     // Ensure public directory exists
     await fs.mkdir(config.get("private_path"), { recursive: true });
@@ -146,13 +115,15 @@ export class GenerateApiDocsCommand extends Command {
     this.context.stdout.write(
       `OpenAPI documentation generated at: ${outputPath}\n`,
     );
-    this.context.stdout.write(`Total routes documented: ${routes.length}\n`);
+    // this.context.stdout.write(`Total routes documented: ${routes.length}\n`);
 
     let files_to_merge: string[] = config.get("api_docs.merge_files");
     let final_api_docs = {};
     for (let file_path of files_to_merge) {
       let file_json = JSON.parse(await fs.readFile(file_path, "utf8"));
-      final_api_docs = Arr.deepMerge(final_api_docs, file_json);
+      final_api_docs = Arr.deepMerge(final_api_docs, file_json, {
+        arrayMergeStrategy: "concat",
+      });
     }
 
     await fs.writeFile(
@@ -183,6 +154,58 @@ export class GenerateApiDocsCommand extends Command {
     }
 
     return parameters;
+  }
+
+  private generateFromRoutes() {
+    const openApiSpec = {
+      paths: {} as any,
+    };
+    const routes = router().routes;
+
+    // Process each route
+    for (const route of routes) {
+      const routePath = route.path;
+      // Convert route path to OpenAPI format (e.g., /api/:id -> /api/{id})
+      const openApiPath = routePath.replace(/\/$/g, ""); //.replace(/:([a-zA-Z0-9_]+)/g, "{$1}");
+
+      if (!openApiSpec.paths[openApiPath]) {
+        openApiSpec.paths[openApiPath] = {};
+      }
+
+      // Add each HTTP method for this route
+      for (const method of route.methods) {
+        const lowerMethod = method.toLowerCase();
+
+        // Skip HEAD as it's usually auto-generated
+        if (lowerMethod === "head") {
+          continue;
+        }
+
+        openApiSpec.paths[openApiPath][lowerMethod] = {
+          summary: `${routePath}`,
+          description: `Endpoint for ${method} ${routePath}`,
+          security: [],
+          parameters: this.extractParameters(routePath),
+          responses: {},
+        };
+
+        // Add request body for POST, PUT, PATCH
+        if (["post", "put", "patch"].includes(lowerMethod)) {
+          openApiSpec.paths[openApiPath][lowerMethod].requestBody = {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                },
+              },
+            },
+          };
+        }
+      }
+    }
+
+    return openApiSpec;
   }
 }
 
