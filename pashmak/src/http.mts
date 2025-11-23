@@ -1,5 +1,5 @@
 import { HttpError } from "@devbro/neko-http";
-import { logger } from "./facades.mts";
+import { logger } from "./facades.mjs";
 
 export * from "@devbro/neko-http";
 

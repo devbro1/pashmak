@@ -68,17 +68,17 @@ To start the development server with all services (HTTP server, scheduler, and q
 <Tabs groupId="package-manager">
   <TabItem value="npm" label="npm" default>
     ```bash
-    npm run pdev start
+    npm run pdev start --all
     ```
   </TabItem>
   <TabItem value="yarn" label="Yarn">
     ```bash
-    yarn pdev start
+    yarn pdev start --all
     ```
   </TabItem>
   <TabItem value="pnpm" label="pnpm">
     ```bash
-    pnpm run pdev start
+    pnpm run pdev start --all
     ```
   </TabItem>
 </Tabs>
