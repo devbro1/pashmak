@@ -312,56 +312,25 @@ access to records before they are loaded from database.
 ### Local Scope
 
 There may be situations that you want easier to read queries OR your query logics are too complicated to rewrite in multiple places.
-so you can use a local scope to inject code into Query of a model
 
-```ts
-class Country extends BaseModel {
-  protected tableName: string = "countries";
-  protected hasTimestamps: boolean = false;
-
-  @Attribute({ primaryKey: true, incrementingPrimaryKey: false })
-  public country_id: number | undefined;
-
-  @Attribute()
-  public country_name: string | undefined;
-
-  @Attribute()
-  public region_id: number | undefined;
-
-  regions(): Region[] {
-    return [];
-  }
-
-  public static getLocalScopesQuery() {
-    return class extends LocalScopeQuery<Country> {
-      protected getModel(): new () => Country {
-        return Country;
-      }
-
-      region(region_id: number) {
-        this.whereOp("region_id", "=", region_id);
-        return this;
-      }
-
-      nameLike(name: string) {
-        this.whereOp("country_name", "ILIKE", `%${name}%`);
-        return this;
-      }
-    };
-  }
-}
-
-let result = await (await Country.getQuery())
-  .nameLike("united")
-  .region(2)
-  .get();
-```
-
-### getLocalScopesQuery class
+For this purpose, you can override `static getQuery` of a model class to return an extended `Query` object. This way you can add more methods for your local scopes.
 
 this class added a few extra localscope functions that can help with casting.
 
 ```ts
+class Country extends BaseModel {
+  public static getQuery() {
+    let rc = new Query();
+
+    rc.region = function (region_id) {
+      this.whereOp("region_id", "=", region_id);
+      return this;
+    };
+
+    return rc;
+  }
+}
+
 let c1_obj = await (await Country.getQuery()).region(1).getObject(); // return an object of type Country or undefined
 
 let c1_objs = await (await Country.getQuery()).region(1).getObjects(); // return an array of type Country, or array will be empty if none match

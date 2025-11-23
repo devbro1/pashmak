@@ -4,6 +4,42 @@ sidebar_position: 1
 
 # Setup Database
 
+## Configuration
+
+If you are planning to connect to a database using Pashmak SQL library, first you need to define your db access:
+
+```ts
+// src/config/databases.ts
+
+export default {
+  default: {
+    provider: "postgresql",
+    config: {
+      host: process.env.DB_HOST,
+      database: process.env.DB_NAME || "test_db",
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      port: parseInt(process.env.DB_PORT || "5432"),
+    },
+  },
+};
+
+export const $test = {
+  default: {
+    provider: "postgresql",
+    config: {
+      host: process.env.TEST_DB_HOST,
+      database: process.env.TEST_DB_NAME || "test_db",
+      user: process.env.TEST_DB_USER,
+      password: process.env.TEST_DB_PASSWORD,
+      port: parseInt(process.env.TEST_DB_PORT || "5432"),
+    },
+  },
+};
+```
+
+## Applying migrations
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -33,58 +69,10 @@ To initially setup your database and run migrations:
   </TabItem>
 </Tabs>
 
-Or use the CLI directly:
+## Eager vs Lazy Connection
 
-```bash
-pashmak migrate
-```
+Eager logic is where we do something ahead of when it is needed. For example database connection is opened at the beginning request processing to be ready for any database query that will be made. It is beneficial to improve performance at the risk of allocating resources that may not be used.
 
-## Migration Commands
+Pashmak takes the route of lazy logic when it comes to database. Connection to database is not established until the first query needs to run. If your request results in no query execution, no connection to database will be made. This is mainly useful to save resources and gives you opportunity to end a request if there are issues with the request such as bad authentication or invalid body.
 
-### Run Migrations
-
-Apply all pending migrations:
-
-```bash
-pashmak migrate
-```
-
-### Rollback Migrations
-
-Undo the last migration:
-
-```bash
-pashmak migrate rollback
-```
-
-Undo the last X migrations:
-
-```bash
-pashmak migrate rollback --steps=3
-```
-
-### Refresh Migrations
-
-Clean up the database by undoing all migrations, then reapply all available migrations:
-
-```bash
-pashmak migrate --refresh
-```
-
-### Fresh Migrations
-
-Drop and recreate the database, then run all migrations (use with caution in production!):
-
-```bash
-pashmak migrate --fresh
-```
-
-## Creating Migrations
-
-Generate a new migration file:
-
-```bash
-pashmak generate migrate --name=create_users_table
-```
-
-This will create a migration file in your `database/migrations` directory.
+If you want to enforce eager connection, you will need to define a new middleware and manually call `await db().connect();`

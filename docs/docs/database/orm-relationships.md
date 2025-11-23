@@ -337,3 +337,44 @@ export class User extends BaseModel {
 ## Polymorphism
 
 Polymorphism referes to the concept where two different type of models can relate to same object. for example, image and posts can have comments.
+
+This first step is decide on a term/keyword that describe the polymorphic relationship. in this section we assume this keyword is `commentable`.
+
+Your table must have:
+
+```ts
+await schema.createTable("comments", (table: Blueprint) => {
+  table.id();
+  table.timestamps();
+  table.string("title").default("");
+  table.string("note").default("");
+  table.string("commentable_type"); // to describe which type of table/model we are connecting to
+  table.integer("commentable_id"); // forgein ID of the relationship
+});
+```
+
+Once your table is ready, you can tell relationship manager that this is a polymorphic
+
+```ts
+export class Image extends BaseModel {
+  notes() {
+    return RelationshipFactory.createHasMany<Image, Comment>({
+      source: this,
+      targetModel: Comment,
+      morphIdentifier: "commentable",
+    });
+  }
+}
+
+export class Post extends BaseModel {
+  notes() {
+    return RelationshipFactory.createHasMany<Post, Comment>({
+      source: this,
+      targetModel: Comment,
+      morphIdentifier: "commentable",
+    });
+  }
+}
+```
+
+you can pass `morphIdentifier` to any kind of relationship. The only thing you need to keep in mind is in M-to-M relationships, only one side can be polymorphic.

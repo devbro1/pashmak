@@ -675,60 +675,6 @@ const stats = await query
   .get();
 ```
 
-## Best Practices
-
-### 1. Use Transactions for Related Operations
-
-Always wrap related database operations in transactions to maintain data consistency.
-
-### 2. Use Prepared Statements
-
-The query builder automatically uses parameterized queries to prevent SQL injection:
-
-```typescript
-// ✅ Safe - uses parameters
-query.whereOp("email", "=", userInput);
-
-// ❌ Avoid raw SQL with user input
-query.whereRaw(`email = '${userInput}'`); // Dangerous!, you are open to sql injection
-
-// ✅ If you must use raw SQL, use bindings
-query.whereRaw("email = ?", [userInput]);
-```
-
-### 3. Index Frequently Queried Columns
-
-Add indexes to columns used in WHERE, JOIN, and ORDER BY clauses:
-
-```typescript
-table.index("email");
-table.index("created_at");
-table.index(["user_id", "status"]); // Composite index
-```
-
-### 4. Use Appropriate Column Types
-
-Choose the right column type for your data to optimize storage and performance:
-
-```typescript
-table.boolean("active"); // Not integer for boolean values
-table.date("birth_date"); // Not string for dates
-table.jsonb("metadata"); // For structured data in PostgreSQL
-```
-
-### 5. Clean Up Connections
-
-Always disconnect when done:
-
-```typescript
-try {
-  const results = await query.table("users").get();
-  // Process results
-} finally {
-  await connection.disconnect();
-}
-```
-
 ## Troubleshooting
 
 ### Connection Issues
@@ -758,7 +704,11 @@ try {
 // View compiled SQL before executing
 const compiled = query.table("users").whereOp("active", "=", true).toSql();
 console.log("SQL:", compiled.sql);
+console.log("SQL Parts:", compiled.parts);
 console.log("Bindings:", compiled.bindings);
+
+let result = await query.get();
+console.log(result);
 ```
 
 ## Supported Databases

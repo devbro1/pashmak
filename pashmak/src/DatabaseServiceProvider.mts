@@ -14,7 +14,7 @@ export class DatabaseServiceProvider extends Middleware {
     res: Response,
     next: () => Promise<void>,
   ): Promise<void> {
-    const db_configs: Record<string, PoolConfig & { name: string }> =
+    const db_configs: Record<string, { provider: string; config: PoolConfig }> =
       config.get("databases");
 
     const conns = [];
@@ -58,8 +58,15 @@ export class DatabaseServiceProvider extends Middleware {
     return DatabaseServiceProvider.instance;
   }
 
-  getConnection(db_config: PoolConfig): Connection {
-    const conn = new PostgresqlConnection(db_config);
-    return conn;
+  getConnection(db_config: {
+    provider: string;
+    config: PoolConfig;
+  }): Connection {
+    if (db_config.provider === "postgresql") {
+      const conn = new PostgresqlConnection(db_config.config);
+      return conn;
+    }
+
+    throw new Error(`Unsupported database provider: ${db_config.provider}`);
   }
 }
