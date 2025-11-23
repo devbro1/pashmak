@@ -1,3 +1,10 @@
+/*
+how this command should work:
+<command> generate-from-routes --output path/to/output.json
+<command> generate-base --output path/to/output.json
+<command> merge-files # file lists/details are in config
+<command> # will show help
+*/
 import { cli, router } from "../../../facades.mjs";
 import { Command, Option } from "clipanion";
 import path from "path";
@@ -6,137 +13,106 @@ import { config } from "../../../config.mjs";
 import { Arr } from "@devbro/neko-helper";
 
 export class GenerateApiDocsCommand extends Command {
-  static paths = [
-    [`make`, `apidocs`],
-    [`generate`, `apidocs`],
-  ];
+  static paths = [[`generate`, `apidocsv2`]];
 
   static usage = Command.Usage({
     category: `Generate`,
     description: `Generate OpenAPI documentation from routes`,
     details: `
-      This command generates OpenAPI 3.0 specification documentation by analyzing
+      This command utility generates OpenAPI 3.0 specification documentation by analyzing
       your application's routes and merging with example files.
       
-      The generated documentation includes:
-      - All registered routes with their HTTP methods
-      - Path parameters extracted from route definitions
-      - Request body schemas for POST, PUT, and PATCH methods
-      - Response schemas
-      
-      The command will merge files specified in config.api_docs.merge_files
-      and output the final documentation to config.api_docs.output.
+      Subcommands:
+      - generate-from-routes: Generate OpenAPI spec from registered routes
+      - generate-base: Generate base OpenAPI specification structure
+      - merge-files: Merge multiple OpenAPI files into final documentation
 
+      
       This command depends on config data. make sure your default config contains the following:
-      api_docs: {
-        merge_files: [
-          path.join(__dirname, '../..', 'private', 'openapi_examples.json'),
-          path.join(__dirname, '../..', 'private', 'openapi_base.json'),
-          path.join(__dirname, '../..', 'private', 'openapi_user_changes.json'),
-        ],
-        output: path.join(__dirname, '../..', 'private', 'openapi.json'),
-      }
+
+\`\`\`
+api_docs: {
+
+  merge_files: [
+
+    path.join(__dirname, '../..', 'private', 'openapi_base.json'),
+
+    path.join(__dirname, '../..', 'private', 'openapi_from_routes.json'),
+
+    path.join(__dirname, '../..', 'private', 'openapi_from_tests.json'),
+
+    path.join(__dirname, '../..', 'private', 'openapi_other_user_changes.json'),
+
+  ],
+
+  output: path.join(__dirname, '../..', 'public', 'openapi.json'),
+
+}
+
+\`\`\`
     `,
-    examples: [[`Generate API documentation`, `$0 generate apidocs`]],
+    examples: [
+      [
+        `Generate from routes`,
+        `$0 generate apidocsv2 generate-from-routes --output path/to/output.json`,
+      ],
+      [
+        `Generate base spec`,
+        `$0 generate apidocsv2 generate-base --output path/to/output.json`,
+      ],
+      [`Merge files`, `$0 generate apidocsv2 merge-files`],
+      [`Show help`, `$0 generate apidocsv2 --help`],
+    ],
   });
 
-  help = Option.Boolean(`--help,-h`, false, {
-    description: `Show help message for this command`,
+  subcommand = Option.String({ required: false });
+
+  output = Option.String(`--output,-o`, {
+    description: `Output file path for generated documentation`,
+  });
+
+  config = Option.String(`--config,-c`, {
+    description: `Path in config to get details from (default: api_docs)`,
+    required: false,
   });
 
   async execute() {
-    if (this.help) {
+    if (!this.subcommand) {
       this.context.stdout.write(
         this.constructor.usage?.toString() || "No help available\n",
       );
       return 0;
     }
 
-    const rootDir = process.cwd();
-
-    this.context.stdout.write(`Generating OpenAPI documentation...\n`);
-
-    // Get all routes from the router
-    const routes = router().routes;
-
-    // Generate OpenAPI 3.0 specification
-    const openApiSpec = {
-      openapi: "3.0.0",
-      info: {
-        title: "API Documentation",
-        version: "1.0.0",
-        description: "Auto-generated API documentation",
-      },
-      servers: [
-        {
-          url: "/",
-          description: "Local server",
-        },
-      ],
-      paths: {} as Record<string, any>,
-    };
-
-    // Process each route
-    for (const route of routes) {
-      const routePath = route.path;
-      // Convert route path to OpenAPI format (e.g., /api/:id -> /api/{id})
-      const openApiPath = routePath.replace(/:([a-zA-Z0-9_]+)/g, "{$1}");
-
-      if (!openApiSpec.paths[openApiPath]) {
-        openApiSpec.paths[openApiPath] = {};
-      }
-
-      // Add each HTTP method for this route
-      for (const method of route.methods) {
-        const lowerMethod = method.toLowerCase();
-
-        // Skip HEAD as it's usually auto-generated
-        if (lowerMethod === "head") {
-          continue;
-        }
-
-        openApiSpec.paths[openApiPath][lowerMethod] = {
-          summary: `${method} ${routePath}`,
-          description: `Endpoint for ${method} ${routePath}`,
-          parameters: this.extractParameters(routePath),
-          responses: {
-            "200": {
-              description: "Successful response",
-              content: {
-                "application/json": {
-                  schema: {
-                    type: "object",
-                  },
-                },
-              },
-            },
-            "500": {
-              description: "Internal server error",
-            },
-          },
-        };
-
-        // Add request body for POST, PUT, PATCH
-        if (["post", "put", "patch"].includes(lowerMethod)) {
-          openApiSpec.paths[openApiPath][lowerMethod].requestBody = {
-            required: true,
-            content: {
-              "application/json": {
-                schema: {
-                  type: "object",
-                },
-              },
-            },
-          };
-        }
-      }
+    switch (this.subcommand) {
+      case "generate-from-routes":
+        return await this.executeGenerateFromRoutes();
+      case "generate-base":
+        return await this.executeGenerateBase();
+      case "merge-files":
+        return await this.executeMergeFiles();
+      default:
+        this.context.stderr.write(`Unknown subcommand: ${this.subcommand}\n`);
+        this.context.stdout.write(
+          this.constructor.usage?.toString() || "No help available\n",
+        );
+        return 1;
     }
+  }
 
-    // Ensure public directory exists
-    await fs.mkdir(config.get("private_path"), { recursive: true });
+  private async executeGenerateFromRoutes() {
+    this.context.stdout.write(
+      `Generating OpenAPI documentation from routes...\n`,
+    );
 
-    // Write the OpenAPI spec to public/openapi.json
-    const outputPath = path.join(config.get("private_path"), "openapi.json");
+    const openApiSpec = this.generateFromRoutes();
+    const outputPath =
+      this.output ||
+      path.join(config.get("private_path"), "openapi_from_routes.json");
+
+    // Ensure directory exists
+    await fs.mkdir(path.dirname(outputPath), { recursive: true });
+
     await fs.writeFile(
       outputPath,
       JSON.stringify(openApiSpec, null, 2),
@@ -144,25 +120,62 @@ export class GenerateApiDocsCommand extends Command {
     );
 
     this.context.stdout.write(
-      `OpenAPI documentation generated at: ${outputPath}\n`,
+      `OpenAPI routes documentation generated at: ${outputPath}\n`,
     );
-    this.context.stdout.write(`Total routes documented: ${routes.length}\n`);
-
-    let files_to_merge: string[] = config.get("api_docs.merge_files");
-    let final_api_docs = {};
-    for (let file_path of files_to_merge) {
-      let file_json = JSON.parse(await fs.readFile(file_path, "utf8"));
-      final_api_docs = Arr.deepMerge(final_api_docs, file_json);
-    }
-
-    await fs.writeFile(
-      config.get("api_docs.output"),
-      JSON.stringify(final_api_docs, null, 2),
+    this.context.stdout.write(
+      `Total routes documented: ${Object.keys(openApiSpec.paths).length}\n`,
     );
+    return 0;
+  }
+
+  private async executeGenerateBase() {
+    this.context.stdout.write(`Generating base OpenAPI specification...\n`);
+
+    const baseSpec = this.getBaseOpenApiSpec();
+    const outputPath =
+      this.output || path.join(config.get("private_path"), "openapi_base.json");
+
+    // Ensure directory exists
+    await fs.mkdir(path.dirname(outputPath), { recursive: true });
+
+    await fs.writeFile(outputPath, JSON.stringify(baseSpec, null, 2), "utf-8");
 
     this.context.stdout.write(
-      `wrote final open api document to : ${config.get("api_docs.output")}\n`,
+      `Base OpenAPI specification generated at: ${outputPath}\n`,
     );
+    return 0;
+  }
+
+  private async executeMergeFiles() {
+    this.context.stdout.write(`Merging OpenAPI files...\n`);
+    let configPath = this.config || "api_docs";
+
+    const files_to_merge: string[] = config.get(`${configPath}.merge_files`);
+    let final_api_docs = {};
+
+    for (const file_path of files_to_merge) {
+      try {
+        const file_json = JSON.parse(await fs.readFile(file_path, "utf8"));
+        final_api_docs = Arr.deepMerge(final_api_docs, file_json);
+        this.context.stdout.write(`  Merged: ${file_path}\n`);
+      } catch (error) {
+        this.context.stderr.write(
+          `  Warning: Could not read ${file_path}: ${(error as Error).message}\n`,
+        );
+      }
+    }
+
+    const outputPath = this.output || config.get(`${configPath}.output`);
+
+    // Ensure directory exists
+    await fs.mkdir(path.dirname(outputPath), { recursive: true });
+
+    await fs.writeFile(outputPath, JSON.stringify(final_api_docs, null, 2));
+
+    this.context.stdout.write(
+      `Final OpenAPI document written to: ${outputPath}\n`,
+    );
+    return 0;
   }
 
   private extractParameters(routePath: string): any[] {
@@ -183,6 +196,94 @@ export class GenerateApiDocsCommand extends Command {
     }
 
     return parameters;
+  }
+
+  private generateFromRoutes() {
+    const openApiSpec = {
+      paths: {} as any,
+    };
+    const routes = router().routes;
+
+    // Process each route
+    for (const route of routes) {
+      const routePath = route.path;
+      // Convert route path to OpenAPI format (e.g., /api/:id -> /api/{id})
+      const openApiPath = routePath.replace(/\/$/g, ""); //.replace(/:([a-zA-Z0-9_]+)/g, "{$1}");
+
+      if (!openApiSpec.paths[openApiPath]) {
+        openApiSpec.paths[openApiPath] = {};
+      }
+
+      // Add each HTTP method for this route
+      for (const method of route.methods) {
+        const lowerMethod = method.toLowerCase();
+
+        // Skip HEAD as it's usually auto-generated
+        if (lowerMethod === "head") {
+          continue;
+        }
+
+        openApiSpec.paths[openApiPath][lowerMethod] = {
+          summary: `${routePath}`,
+          description: `Endpoint for ${method} ${routePath}`,
+          security: [],
+          parameters: this.extractParameters(routePath),
+          responses: {},
+        };
+
+        // Add request body for POST, PUT, PATCH
+        if (["post", "put", "patch"].includes(lowerMethod)) {
+          openApiSpec.paths[openApiPath][lowerMethod].requestBody = {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                },
+              },
+            },
+          };
+        }
+      }
+    }
+
+    return openApiSpec;
+  }
+
+  getBaseOpenApiSpec() {
+    // Generate OpenAPI 3.0 specification
+    const openApiSpec = {
+      openapi: "3.0.0",
+      info: {
+        title: "API Documentation",
+        version: "1.0.0",
+        description: "Auto-generated API documentation",
+      },
+      servers: [
+        {
+          url: "/",
+          description: "Local server",
+        },
+      ],
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: "http",
+            scheme: "bearer",
+            bearerFormat: "JWT",
+            description: "JWT token authentication",
+          },
+        },
+      },
+      security: [
+        {
+          bearerAuth: [],
+        },
+      ],
+      paths: {} as Record<string, any>,
+    };
+
+    return openApiSpec;
   }
 }
 

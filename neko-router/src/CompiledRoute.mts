@@ -4,6 +4,7 @@ import { MiddlewareFactory } from './MiddlewareFactory.mjs';
 import { Route } from './Route.mjs';
 import { HandlerType, MiddlewareProvider } from './types.mjs';
 import { Request, Response } from './types.mjs';
+import { isClass } from '@devbro/neko-helper';
 
 export class CompiledRoute {
   constructor(
@@ -26,7 +27,7 @@ export class CompiledRoute {
     for (const middleware of [...this.globalMiddlewares, ...this.route.getMiddlewares()]) {
       if (middleware instanceof Middleware) {
         this.middlewares.push(middleware);
-      } else if (this.isClass(middleware)) {
+      } else if (isClass(middleware)) {
         this.middlewares.push((middleware as any).getInstance({}));
       } else if (typeof middleware === 'function') {
         this.middlewares.push(MiddlewareFactory.create(middleware as HandlerType));
@@ -34,10 +35,6 @@ export class CompiledRoute {
         throw new Error('Invalid middleware type');
       }
     }
-  }
-
-  isClass(func: any) {
-    return typeof func === 'function' && /^class\s/.test(Function.prototype.toString.call(func));
   }
 
   async run() {

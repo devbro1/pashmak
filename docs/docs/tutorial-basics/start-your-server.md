@@ -4,26 +4,36 @@ sidebar_position: 6
 
 # Start Your Server
 
-to start a server and all related services run:
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
-```
-yarn pdev start --all
-```
+## Start All Services
 
-If you want to run only scheduler, use `--scheduler` flag
+To start the HTTP server, scheduler, and queues all together:
 
-```
-yarn pdev start --scheduler
-```
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm" default>
+    ```bash
+    npm run pdev start
+    ```
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+    ```bash
+    yarn pdev start
+    ```
+  </TabItem>
+  <TabItem value="pnpm" label="pnpm">
+    ```bash
+    pnpm run pdev start
+    ```
+  </TabItem>
+</Tabs>
 
-If you want to run only http server, use `--http` flag
+## Start Individual Services
 
-```
-yarn pdev start --http
-```
+`pdev start` accepts flags to start indivitual services:
 
-If you want to run only queues, use `--queues` flag
-
-```
-yarn pdev start --queues
-```
+- `--all`: Start all services (default)
+- `--http`: Start only the HTTP server
+- `--scheduler`: Start only the scheduler
+- `--queues`: Start only the queues

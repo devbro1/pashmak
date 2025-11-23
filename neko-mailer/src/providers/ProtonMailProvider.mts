@@ -6,7 +6,7 @@ import { prepareEmails } from "../helper.mjs";
 /**
  * Configuration options for the ProtonMailProvider.
  */
-export type ProtonMailProviderOptions = {
+export type ProtonMailProviderConfig = {
   /** ProtonMail Bridge host (default: 127.0.0.1) */
   bridge_host?: string;
   /** ProtonMail Bridge port (default: 1025) */
@@ -34,7 +34,7 @@ export class ProtonMailProvider implements MailerProvider {
    * Creates a new ProtonMailProvider instance.
    * @param options - Provider configuration options
    */
-  constructor(options: Partial<ProtonMailProviderOptions> = {}) {
+  constructor(options: Partial<ProtonMailProviderConfig> = {}) {
     this.defaultFrom = options.default_from || "";
 
     // ProtonMail Bridge default settings

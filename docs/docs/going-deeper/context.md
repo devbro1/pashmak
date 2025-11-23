@@ -13,17 +13,17 @@ contextualized processes:
 - cron jobs
 - queue jobs
 
-## creating your own context
+## Working with Context
 
 ```ts
 import { ctx } from "@devbro/pashmak/context";
 
 ctx().set("context_key", my_object);
 
-ctx().get < MyObject > get("context_key");
+let my_var: MyObject = ctx().get < MyObject > get("context_key");
 ```
 
-It is suggested that you add a wrapper around your context.
+Context is not type aware so the best approach would be to add methods around your context calls.
 
 ```ts
 function getMyObject(): MyObject {
@@ -31,9 +31,28 @@ function getMyObject(): MyObject {
 }
 ```
 
-## Unit testing in a contexualized env
+### Available methods
 
-during testing you may want to have your own contextualized test or mini process.
+- `ctx().set(key: string | string[], value: any): void` - sets a value in the current context
+- `ctx().get<T>(key: string | string[]): T | undefined` - gets a value from the current context
+- `ctx().getOrThrow<T>(key: string | string[]): T` - gets a value from the current context or throws an error if not found
+- `ctx().has(key: string | string[]): boolean` - checks if a key exists in the current context
+- `ctx().delete(key: string | string[]): void` - deletes a key from the current context
+- `ctx().keys(): string[]` - returns all keys in the current context
+- `ctx.isActive(): boolean` - checks if there is an active context
+
+## ctx() vs ctxSafe()
+
+Calling `ctx()` when there is no active context will throw an error. If you want to avoid that you can use `ctxSafe()` which will return a no-op context in such cases.
+
+```ts
+import { ctxSafe } from "@devbro/pashmak/context";
+const myVar = ctxSafe().get("maybe_missing_key");
+```
+
+## Testing in a contexualized env
+
+Tests do not run in a contextualized environment by default. During testing you may want to have your own contextualized test or mini process.
 
 ```ts
 import { context_provider } from "@devbro/pashmak/context";
@@ -42,16 +61,21 @@ test("context test", async () => {
   await context_provider.run(async (): Promise<void> => {
     ctx().get("????");
   });
+
+  // make http calls
+
+  await context_provider.run(async (): Promise<void> => {
+    ctx().get("????");
+  });
 });
 ```
 
 If you ever get an error that `Context has not started` it means you are trying to access context outside of a context provider run block. Just wrap your code in `context_provider.run(async () => { /* YOUR CODE */ });`
 
-### detect context availability
+### Http context
 
-```ts
-// to detect if the code is running inside a context or not
-if (ctx.isActive()) {
-  ctx().get(KEY);
-}
-```
+Http requests are automatically contextualized by Pashmak. Available contexts in http requests:
+
+- request: incmoming http request object
+- response: outgoing http response object
+- requestId: unique identifier for the request

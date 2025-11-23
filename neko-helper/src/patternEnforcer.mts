@@ -42,35 +42,72 @@ export function createRepeater(fn: Function, interval: number) {
   };
 }
 
+///////////////
+
+type StepFn<I, A extends any[], O> = (value: I, ...args: A) => O | Promise<O>;
+
+class Chainer<T> extends Promise<T> {
+  private chainPromise: Promise<T>;
+
+  constructor(initial: T) {
+    let chainPromise = Promise.resolve(initial);
+    super((resolve, reject) => {
+      chainPromise.then(resolve).catch(reject);
+    });
+    this.chainPromise = chainPromise;
+  }
+
+  step<A extends any[], R>(fn: StepFn<T, A, R>, ...args: any[]): Chainer<R> {
+    const nextChainer = new Chainer(undefined as any);
+    (nextChainer as any).chainPromise = this.chainPromise.then((v) => fn(v, ...(args as any)));
+    return nextChainer;
+  }
+
+  s<A extends any[], R>(fn: StepFn<T, A, R>, ...args: any[]): Chainer<R> {
+    return this.step(fn, ...args);
+  }
+
+  static from<T>(initial: T): Chainer<T> {
+    return new Chainer(initial);
+  }
+}
+
 /**
- * Creates a chainable pipeline for sequential async transformations.
- * Each step receives the result of the previous step and can perform async operations.
- * The chain is thenable, allowing it to be awaited or used with .then().
- *
+ * chains multiple functions/steps together. Each step can be synchronous or asynchronous.
+ * Each step receives the result of the previous step as the first parameter. more parameters can be passed after that.
+ * To calculate the final result, use `await` on the returned Chainer.
+ * @param initial initial value to start
+ * @returns final result
  * @example
- * ```typescript
- * const result = await chainer(5)
- *   .step([(x, multiplier) => x * multiplier, [2]])
- *   .step([(x) => x + 10, []])
- *   .step([(x) => Promise.resolve(x.toString()), []]);
- * // result: "20"
- * ```
+ * ```ts
+ * import { chainer } from "@devbro/pashmak/helpers";
+ * const add = (x: number, y: number, z: number) => x + y + z;
+ * const multiply = (x: number, y: number) => x * y;
  *
- * @template T - The initial value type
- * @param initial - The starting value for the chain
- * @returns A Promise that can have steps added and can be awaited
+ * const result = await chainer(4)
+ *   .step(add, 2, 0)        // 4 + 2 = 6
+ *   .step(multiply, 3)   // 6 * 3 = 18
  */
-export function chainer<T>(initial: any): Promise<T> & { step: typeof chainer.prototype.step } {
-  let chainPromise = Promise.resolve(initial);
+export function chainer<T>(initial: T): Chainer<T> {
+  return Chainer.from(initial);
+}
 
-  const api: any = new Promise((resolve, reject) => {
-    chainPromise.then(resolve).catch(reject);
-  });
+/**
+ * Checks if a variable is a class constructor.
+ * @param variable - The variable to check
+ * @returns True if the variable is a class, false otherwise
+ */
+export function isClass(variable: any) {
+  return (
+    typeof variable === 'function' && /^class\s/.test(Function.prototype.toString.call(variable))
+  );
+}
 
-  api.step = function <A extends any[], R>([fn, args]: [(v: T, ...a: A) => R | Promise<R>, A]) {
-    chainPromise = chainPromise.then((v) => fn(v, ...(args as any)));
-    return api;
-  };
-
-  return api as Promise<T> & { step: typeof api.step };
+/**
+ * Checks if a variable is a function (but not a class constructor).
+ * @param variable - The variable to check
+ * @returns True if the variable is a function and not a class, false otherwise
+ */
+export function isFunction(variable: any) {
+  return typeof variable === 'function' && !isClass(variable);
 }

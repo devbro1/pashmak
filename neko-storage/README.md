@@ -120,7 +120,7 @@ import { FTPStorageProvider, Storage } from '@devbro/neko-storage';
 const provider = new FTPStorageProvider({
   engine: 'ftp',
   basePath: '/remote/path',
-  ftpConfig: {
+  FTPStorageProviderConfig: {
     host: 'ftp.example.com',
     port: 21,
     user: 'username',
@@ -141,7 +141,7 @@ import { SFTPStorageProvider, Storage } from '@devbro/neko-storage';
 const provider = new SFTPStorageProvider({
   engine: 'sftp',
   basePath: '/remote/path',
-  sftpConfig: {
+  SFTPStorageProviderConfig: {
     host: 'sftp.example.com',
     port: 22,
     username: 'username',

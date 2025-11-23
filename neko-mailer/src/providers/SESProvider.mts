@@ -10,7 +10,7 @@ import { prepareEmails } from "../helper.mjs";
 /**
  * Configuration options for the SESProvider.
  */
-export type SESProviderOptions = {
+export type SESProviderConfig = {
   /** AWS SES client configuration */
   sesClientConfig: SESClientConfig;
   /** Default sender email address */
@@ -29,7 +29,7 @@ export class SESProvider implements MailerProvider {
    * Creates a new SESProvider instance.
    * @param options - Provider configuration options
    */
-  constructor(options: Partial<SESProviderOptions> = {}) {
+  constructor(options: Partial<SESProviderConfig> = {}) {
     this.sesClient = new SESClient({
       region: process.env.AWS_REGION || "us-east-1",
       credentials: {

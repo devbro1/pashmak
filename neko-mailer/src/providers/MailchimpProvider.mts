@@ -5,7 +5,7 @@ import { prepareEmails } from "../helper.mjs";
 /**
  * Configuration options for the MailchimpProvider.
  */
-export type MailchimpProviderOptions = {
+export type MailchimpProviderConfig = {
   /** Mailchimp Transactional API key */
   api_key: string;
   /** Default sender email address */
@@ -34,7 +34,7 @@ export class MailchimpProvider implements MailerProvider {
    * Creates a new MailchimpProvider instance.
    * @param options - Provider configuration options
    */
-  constructor(options: Partial<MailchimpProviderOptions> = {}) {
+  constructor(options: Partial<MailchimpProviderConfig> = {}) {
     this.apiKey = options.api_key || process.env.MAILCHIMP_API_KEY || "";
     this.defaultFrom = options.default_from || "";
   }

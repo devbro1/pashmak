@@ -6,14 +6,22 @@ sidebar_position: 2
 
 Database migrations provide version control for your database schema, allowing you to track and manage changes to your database structure over time. They enable teams to synchronize database changes and provide a way to roll back changes when needed.
 
+## Creating new migration files
+
+To create new migration file run this command:
+
+```bash
+npm run pdev generate migration new_migration_filename
+```
+
+This will create a new migraiton file `src/database/migrations/DATE_MICROTIME_new_migration_filename.ts`
+
 ## What are Migrations?
 
 Migrations are classes that define changes to be made to your database schema. Each migration has:
 
 - An `up()` method that applies the changes
 - A `down()` method that reverts the changes
-
-## Creating Migrations
 
 ### Basic Migration Structure
 
@@ -82,17 +90,6 @@ export class AddPhoneToUsers extends Migration {
 }
 ```
 
-## Schema Builder
-
-The Schema Builder is used within migrations to create and modify database tables.
-
-### Getting the Schema Builder
-
-```typescript
-// Within a migration
-const schema = connection.getSchema();
-```
-
 ## Creating Tables
 
 ### Basic Table
@@ -142,7 +139,7 @@ await schema.createTable("products", (table) => {
   table.timestamps(); // created_at, updated_at
 
   // raw, whatever custom column you want to create
-  table.raw('area GEOGRAPHY(POLYGON, 4326)');
+  table.raw("area GEOGRAPHY(POLYGON, 4326)");
 });
 ```
 
@@ -319,119 +316,26 @@ const exists = await schema.tableExists("users");
 console.log(exists); // true or false
 ```
 
+### Refresh Migrations
+
+Clean up the database by undoing all migrations, then reapply all available migrations:
+
+```bash
+npm run pdev migrate --refresh
+```
+
+### Fresh Migrations
+
+Drop and recreate the database, then run all migrations (use with caution as this is not recoverable!):
+
+```bash
+npm run pdev migrate --fresh
+```
+
 ## Migration Best Practices
 
-### 1. Always Write Down Methods
-
-Every migration should have a corresponding down method that can undo the changes:
-
-```typescript
-export class AddEmailVerificationToUsers extends Migration {
-  async up(schema: Schema): Promise<void> {
-    await schema.alterTable("users", (table) => {
-      table.boolean("email_verified").default(false);
-      table.timestamp("email_verified_at").nullable();
-    });
-  }
-
-  async down(schema: Schema): Promise<void> {
-    await schema.alterTable("users", (table) => {
-      table.dropColumn("email_verified");
-      table.dropColumn("email_verified_at");
-    });
-  }
-}
-```
-
-### 2. Use Descriptive Migration Names
-
-Migration class names should clearly describe what they do:
-
-```typescript
-// ✅ Good names
-export class CreateUsersTable extends Migration {}
-export class AddEmailIndexToUsers extends Migration {}
-export class RemoveDeprecatedColumns extends Migration {}
-
-// ❌ Avoid vague names
-export class Migration1 extends Migration {}
-export class UpdateTable extends Migration {}
-```
-
-### 3. Handle Foreign Key Dependencies
-
-When creating tables with foreign keys, ensure the referenced tables exist:
-
-```typescript
-// Create users table first
-export class CreateUsersTable extends Migration {
-  async up(schema: Schema): Promise<void> {
-    await schema.createTable("users", (table) => {
-      table.id();
-      table.string("email").unique();
-      table.timestamps();
-    });
-  }
-}
-
-// Then create posts table that references users
-export class CreatePostsTable extends Migration {
-  async up(schema: Schema): Promise<void> {
-    await schema.createTable("posts", (table) => {
-      table.id();
-      table.string("title");
-      table.integer("user_id");
-      table.timestamps();
-
-      table.foreign("user_id").references("id").on("users").onDelete("cascade");
-    });
-  }
-}
-```
-
-### 4. Use Transactions for Multiple Operations
-
-```typescript
-export class ComplexDataMigration extends Migration {
-  async up(schema: Schema): Promise<void> {
-    // Multiple related schema changes should be wrapped in a transaction
-    await schema.createTable("categories", (table) => {
-      table.id();
-      table.string("name");
-    });
-
-    await schema.alterTable("posts", (table) => {
-      table.integer("category_id").nullable();
-      table.foreign("category_id").references("id").on("categories");
-    });
-  }
-
-  async down(schema: Schema): Promise<void> {
-    await schema.alterTable("posts", (table) => {
-      table.dropColumn("category_id");
-    });
-
-    await schema.dropTable("categories");
-  }
-}
-```
-
-### 5. Test Your Migrations
-
-Always test both up and down methods:
-
-```typescript
-// Test migration up
-await migration.up(schema);
-
-// Verify changes were applied
-const tableExists = await schema.tableExists("new_table");
-console.log("Table created:", tableExists);
-
-// Test migration down
-await migration.down(schema);
-
-// Verify changes were reverted
-const tableExistsAfterDown = await schema.tableExists("new_table");
-console.log("Table removed:", !tableExistsAfterDown);
-```
+1. **Always Write Down Methods:** Every migration should have a corresponding down method that can undo the changes:
+2. **Use Descriptive Migration Names:** it will help when you want to find relevant migration.
+3. **Handle Foreign Key Dependencies:** When creating tables with foreign keys, ensure the referenced tables exist.
+4. **Use Transactions for Multiple Operations and carefully:** If you have multiple operations in the same migration file, it can be helpful to use transactions in case of failure. Otherwise, in cases of partial migration, you will need to manually undo the changes.
+5. **Test Your Migrations:** Always test both up and down methods.
