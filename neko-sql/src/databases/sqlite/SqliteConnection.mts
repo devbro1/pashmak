@@ -69,9 +69,9 @@ export class SqliteConnection extends ConnectionAbs {
     try {
       const stmt = this.connection!.prepare(sql.sql);
       
-      // Check if the query is a SELECT or returns data
-      if (sql.sql.trim().toUpperCase().startsWith('SELECT') || 
-          sql.sql.trim().toUpperCase().startsWith('RETURNING')) {
+      // Check if the query is a SELECT or contains RETURNING clause
+      const sqlUpper = sql.sql.trim().toUpperCase();
+      if (sqlUpper.startsWith('SELECT') || sqlUpper.includes('RETURNING')) {
         return stmt.all(...sql.bindings);
       } else {
         const result = stmt.run(...sql.bindings);
