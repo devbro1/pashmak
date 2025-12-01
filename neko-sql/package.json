@@ -29,6 +29,7 @@
   "license": "MIT",
   "devDependencies": {
     "@faker-js/faker": "^9.5.1",
+    "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^22.14.1",
     "@types/pg": "^8.11.2",
     "@types/pg-cursor": "^2.7.2",
@@ -42,6 +43,7 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
+    "better-sqlite3": "^11.7.0",
     "pg": "^8.11.3",
     "pg-cursor": "^2.15.0",
     "sql-tokenizer": "^1.0.4"
