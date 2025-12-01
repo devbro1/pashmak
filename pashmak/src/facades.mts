@@ -33,7 +33,7 @@ function wrapSingletonWithAccessors<T>(
   const initializeMethods = () => {
     if (methodsInitialized) return;
     
-    const defaultInstance = singletonFn('default');
+    const defaultInstance = singletonFn();
     const prototype = Object.getPrototypeOf(defaultInstance);
     
     // Get all method names from the instance's prototype
@@ -44,7 +44,7 @@ function wrapSingletonWithAccessors<T>(
     // Attach each method as a property on the singleton function
     for (const methodName of methodNames) {
       (singletonFn as any)[methodName] = (...args: any[]) => {
-        const instance = singletonFn('default');
+        const instance = singletonFn();
         return (instance as any)[methodName](...args);
       };
     }

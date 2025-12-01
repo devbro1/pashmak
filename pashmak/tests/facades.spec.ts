@@ -108,7 +108,7 @@ describe("Facade property accessors", () => {
     // Test direct method call - just check it doesn't throw
     expect(() => {
       const schedule = scheduler.call(() => {
-        console.log("test schedule");
+        // Scheduled job logic
       });
       // Just verify we got something back
       expect(schedule).toBeDefined();
@@ -121,7 +121,7 @@ describe("Facade property accessors", () => {
     // Test function call - just check it doesn't throw
     expect(() => {
       const schedule = scheduler().call(() => {
-        console.log("test schedule");
+        // Scheduled job logic
       });
       // Just verify we got something back
       expect(schedule).toBeDefined();
