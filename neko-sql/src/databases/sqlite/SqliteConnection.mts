@@ -6,6 +6,7 @@ import { SqliteQueryGrammar } from './SqliteQueryGrammar.mjs';
 import { Schema } from '../../Schema.mjs';
 import { SqliteSchemaGrammar } from './SqliteSchemaGrammar.mjs';
 import { EventManager } from '@devbro/neko-helper';
+import * as fs from 'fs';
 
 export interface SqliteConfig {
   filename: string;
@@ -186,7 +187,6 @@ export class SqliteConnection extends ConnectionAbs {
     // SQLite databases are files, dropping means deleting the file
     const safeName = this.validateAndEscapeIdentifier(name);
     const dbPath = name.endsWith('.db') ? name : `${name}.db`;
-    const fs = await import('fs');
     if (fs.existsSync(dbPath)) {
       fs.unlinkSync(dbPath);
     }
@@ -200,7 +200,6 @@ export class SqliteConnection extends ConnectionAbs {
 
   async existsDatabase(name: string): Promise<boolean> {
     const dbPath = name.endsWith('.db') ? name : `${name}.db`;
-    const fs = await import('fs');
     return fs.existsSync(dbPath);
   }
 }

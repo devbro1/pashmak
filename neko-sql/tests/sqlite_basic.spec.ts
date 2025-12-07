@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { SqliteConnection } from '../src/databases/sqlite/SqliteConnection.mjs';
 import * as fs from 'fs';
 
-const TEST_DB = '/tmp/test_sqlite.db';
+const TEST_DB = `/tmp/test_sqlite_${Math.random().toString(36).substring(7)}.db`;
 
 describe('SQLite Connection Tests', () => {
   afterAll(() => {
