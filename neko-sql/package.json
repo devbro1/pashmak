@@ -44,6 +44,7 @@
   },
   "dependencies": {
     "better-sqlite3": "^11.7.0",
+    "mysql2": "^3.11.5",
     "pg": "^8.11.3",
     "pg-cursor": "^2.15.0",
     "sql-tokenizer": "^1.0.4"
