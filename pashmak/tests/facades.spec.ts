@@ -24,6 +24,20 @@ beforeAll(() => {
         provider: "memory",
         config: {},
       },
+      memory_primary: {
+        provider: "memory",
+        config: {},
+      },
+      memory_secondary: {
+        provider: "memory",
+        config: {},
+      },
+      multi_cache: {
+        provider: "multi",
+        config: {
+          caches: ["memory_primary", "memory_secondary"],
+        },
+      },
     },
     loggers: {
       default: {
@@ -137,5 +151,57 @@ describe("Facade property accessors", () => {
       // Just verify we got something back
       expect(schedule).toBeDefined();
     }).not.toThrow();
+  });
+
+  test("multi cache provider should cascade through caches", async () => {
+    const { cache } = await import("../src/facades.mjs");
+
+    // Create a multi cache instance
+    const multiCache = cache("multi_cache");
+
+    // Put value into multi cache (should go to all underlying caches)
+    await multiCache.put("multi-test-key", "multi-value", 10);
+
+    // Get value from multi cache
+    const result = await multiCache.get("multi-test-key");
+    expect(result).toBe("multi-value");
+
+    // Verify both underlying caches have the value
+    const primary = cache("memory_primary");
+    const secondary = cache("memory_secondary");
+
+    expect(await primary.get("multi-test-key")).toBe("multi-value");
+    expect(await secondary.get("multi-test-key")).toBe("multi-value");
+
+    // Delete from multi cache (should delete from all)
+    await multiCache.delete("multi-test-key");
+
+    // Verify deleted from all caches
+    expect(await multiCache.get("multi-test-key")).toBeUndefined();
+    expect(await primary.get("multi-test-key")).toBeUndefined();
+    expect(await secondary.get("multi-test-key")).toBeUndefined();
+  });
+
+  test("multi cache provider should return first match when cascading", async () => {
+    const { cache } = await import("../src/facades.mjs");
+
+    const multiCache = cache("multi_cache");
+    const primary = cache("memory_primary");
+    const secondary = cache("memory_secondary");
+
+    // Put different values in each cache
+    await primary.put("cascade-test", "from-primary", 10);
+    await secondary.put("cascade-test", "from-secondary", 10);
+
+    // Multi cache should return value from first cache (primary)
+    const result = await multiCache.get("cascade-test");
+    expect(result).toBe("from-primary");
+
+    // Delete from primary only
+    await primary.delete("cascade-test");
+
+    // Multi cache should now return from secondary
+    const result2 = await multiCache.get("cascade-test");
+    expect(result2).toBe("from-secondary");
   });
 });
