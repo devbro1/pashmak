@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, afterAll } from 'vitest';
 import { SqliteConnection } from '../src/databases/sqlite/SqliteConnection.mjs';
 import * as fs from 'fs';
 
