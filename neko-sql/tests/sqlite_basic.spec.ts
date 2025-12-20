@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, afterAll } from 'vitest';
 import { SqliteConnection } from '../src/databases/sqlite/SqliteConnection.mjs';
 import * as fs from 'fs';
 
@@ -27,7 +27,20 @@ describe('SQLite Connection Tests', () => {
     await conn.runQuery({
       sql: 'CREATE TABLE IF NOT EXISTS test_table (id INTEGER PRIMARY KEY, name TEXT)',
       bindings: [],
-      parts: ['CREATE', 'TABLE', 'IF', 'NOT', 'EXISTS', 'test_table', '(id', 'INTEGER', 'PRIMARY', 'KEY,', 'name', 'TEXT)'],
+      parts: [
+        'CREATE',
+        'TABLE',
+        'IF',
+        'NOT',
+        'EXISTS',
+        'test_table',
+        '(id',
+        'INTEGER',
+        'PRIMARY',
+        'KEY,',
+        'name',
+        'TEXT)',
+      ],
     });
 
     // Insert data
@@ -57,7 +70,7 @@ describe('SQLite Connection Tests', () => {
     await conn.connect();
 
     await conn.beginTransaction();
-    
+
     await conn.runQuery({
       sql: 'INSERT INTO test_table (name) VALUES (?)',
       bindings: ['transaction_test'],
@@ -97,7 +110,7 @@ describe('SQLite Connection Tests', () => {
     await conn.connect();
 
     const schema = conn.getSchema();
-    
+
     // Verify that we can get a schema object with correct grammar
     expect(schema).toBeDefined();
     expect(conn.getSchemaGrammar()).toBeDefined();
