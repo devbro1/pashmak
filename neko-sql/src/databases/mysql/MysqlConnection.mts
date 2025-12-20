@@ -24,6 +24,7 @@ export class MysqlConnection extends ConnectionAbs {
 
   connection: mysql.PoolConnection | undefined;
   static pool: mysql.Pool;
+  static poolConfig: mysql.PoolOptions;
 
   static defaults: mysql.PoolOptions = {
     port: 3306,
@@ -37,7 +38,8 @@ export class MysqlConnection extends ConnectionAbs {
   constructor(params: mysql.PoolOptions) {
     super();
     if (!MysqlConnection.pool) {
-      MysqlConnection.pool = mysql.createPool({ ...MysqlConnection.defaults, ...params });
+      MysqlConnection.poolConfig = { ...MysqlConnection.defaults, ...params };
+      MysqlConnection.pool = mysql.createPool(MysqlConnection.poolConfig);
     }
   }
   async connect(): Promise<boolean> {
@@ -92,9 +94,9 @@ export class MysqlConnection extends ConnectionAbs {
 
   async beginTransaction(): Promise<void> {
     await this.runQuery({
-      sql: 'START TRANSACTION',
+      sql: 'BEGIN',
       bindings: [],
-      parts: ['START', 'TRANSACTION'],
+      parts: ['BEGIN'],
     });
   }
 
@@ -162,10 +164,10 @@ export class MysqlConnection extends ConnectionAbs {
     }
 
     const tempConn = await mysql.createConnection({
-      host: (MysqlConnection.pool.pool as any).config.connectionConfig.host,
-      user: (MysqlConnection.pool.pool as any).config.connectionConfig.user,
-      password: (MysqlConnection.pool.pool as any).config.connectionConfig.password,
-      port: (MysqlConnection.pool.pool as any).config.connectionConfig.port,
+      host: MysqlConnection.poolConfig.host,
+      user: MysqlConnection.poolConfig.user,
+      password: MysqlConnection.poolConfig.password,
+      port: MysqlConnection.poolConfig.port,
     });
     const safeName = this.validateAndEscapeIdentifier(name);
     await tempConn.query(`CREATE DATABASE ${safeName}`);
@@ -178,10 +180,10 @@ export class MysqlConnection extends ConnectionAbs {
     }
 
     const tempConn = await mysql.createConnection({
-      host: (MysqlConnection.pool.pool as any).config.connectionConfig.host,
-      user: (MysqlConnection.pool.pool as any).config.connectionConfig.user,
-      password: (MysqlConnection.pool.pool as any).config.connectionConfig.password,
-      port: (MysqlConnection.pool.pool as any).config.connectionConfig.port,
+      host: MysqlConnection.poolConfig.host,
+      user: MysqlConnection.poolConfig.user,
+      password: MysqlConnection.poolConfig.password,
+      port: MysqlConnection.poolConfig.port,
     });
     const safeName = this.validateAndEscapeIdentifier(name);
     await tempConn.query(`DROP DATABASE ${safeName}`);

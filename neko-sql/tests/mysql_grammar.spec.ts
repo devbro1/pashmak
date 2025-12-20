@@ -63,7 +63,7 @@ describe('MySQL Schema Grammar', () => {
   test('should create table with basic columns', async () => {
     const fakeConnection = new FakeConnection();
     const schema = new Schema(fakeConnection, new MysqlSchemaGrammar());
-    
+
     await schema.createTable('users', (table: Blueprint) => {
       table.id();
       table.string('name');
@@ -71,14 +71,14 @@ describe('MySQL Schema Grammar', () => {
     });
 
     expect(fakeConnection.getLastSql().sql).toBe(
-      'create table users (id serial not null, name varchar(255) not null, email varchar(255) not null,primary key (id))'
+      'create table users (id INT AUTO_INCREMENT NOT NULL, name varchar(255) not null, email varchar(255) not null,primary key (id))'
     );
   });
 
   test('should create table with index', async () => {
     const fakeConnection = new FakeConnection();
     const schema = new Schema(fakeConnection, new MysqlSchemaGrammar());
-    
+
     await schema.createTable('users', (table: Blueprint) => {
       table.id();
       table.string('email');
@@ -86,14 +86,14 @@ describe('MySQL Schema Grammar', () => {
     });
 
     expect(fakeConnection.getLastSql().sql).toBe(
-      'create table users (id serial not null, email varchar(255) not null,primary key (id)); create index users_email_index on users (email)'
+      'create table users (id INT AUTO_INCREMENT NOT NULL, email varchar(255) not null,primary key (id)); create index users_email_index on users (email)'
     );
   });
 
   test('should alter table to add column', async () => {
     const fakeConnection = new FakeConnection();
     const schema = new Schema(fakeConnection, new MysqlSchemaGrammar());
-    
+
     await schema.alterTable('users', (table: Blueprint) => {
       table.string('phone');
     });
