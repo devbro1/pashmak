@@ -13,7 +13,7 @@ import { config } from "../../../config.mjs";
 import { Arr } from "@devbro/neko-helper";
 
 export class GenerateApiDocsCommand extends Command {
-  static paths = [[`generate`, `apidocsv2`]];
+  static paths = [[`generate`, `apidocs`]];
 
   static usage = Command.Usage({
     category: `Generate`,
@@ -54,14 +54,14 @@ api_docs: {
     examples: [
       [
         `Generate from routes`,
-        `$0 generate apidocsv2 generate-from-routes --output path/to/output.json`,
+        `$0 generate apidocs generate-from-routes --output path/to/output.json`,
       ],
       [
         `Generate base spec`,
-        `$0 generate apidocsv2 generate-base --output path/to/output.json`,
+        `$0 generate apidocs generate-base --output path/to/output.json`,
       ],
-      [`Merge files`, `$0 generate apidocsv2 merge-files`],
-      [`Show help`, `$0 generate apidocsv2 --help`],
+      [`Merge files`, `$0 generate apidocs merge-files`],
+      [`Show help`, `$0 generate apidocs --help`],
     ],
   });
 
