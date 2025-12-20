@@ -43,12 +43,12 @@ export class PostgresqlConnection extends ConnectionAbs {
     }
   }
   async connect(): Promise<boolean> {
-    this.eventManager.emit('connect');
+    this.eventManager.emit('connect').catch(() => {});
     this.connection = await PostgresqlConnection.pool.connect();
     return true;
   }
   async runQuery(sql: CompiledSql | string): Promise<any> {
-    if( typeof sql === 'string') {
+    if (typeof sql === 'string') {
       sql = { sql: sql, bindings: [], parts: [sql] };
     }
     let counter = 1;
@@ -57,7 +57,7 @@ export class PostgresqlConnection extends ConnectionAbs {
       sql2 = sql.parts.map((v) => (v === '?' ? '$' + counter++ : v)).join(' ');
     }
 
-    this.eventManager.emit('query', { sql: sql2, bindings: sql.bindings });
+    this.eventManager.emit('query', { sql: sql2, bindings: sql.bindings }).catch(() => {});
 
     if (!this.isConnected()) {
       await this.connect();
@@ -76,7 +76,7 @@ export class PostgresqlConnection extends ConnectionAbs {
     }
     await this.connection?.release();
     this.connection = undefined;
-    this.eventManager.emit('disconnect');
+    this.eventManager.emit('disconnect').catch(() => {});
     return true;
   }
 
@@ -107,9 +107,8 @@ export class PostgresqlConnection extends ConnectionAbs {
     await this.runQuery({ sql: 'ROLLBACK', bindings: [], parts: ['ROLLBACK'] });
   }
 
-  static async destroy(): Promise<void> {
-    PostgresqlConnection.pool.end();
-    return;
+  static destroy(): Promise<void> {
+    return PostgresqlConnection.pool.end();
   }
 
   isConnected(): boolean {
@@ -159,7 +158,7 @@ export class PostgresqlConnection extends ConnectionAbs {
       throw new Error('Cannot create database while connected.');
     }
 
-    let conn = new Client({
+    const conn = new Client({
       ...PostgresqlConnection.pool.options,
       database: 'postgres',
     });
@@ -174,7 +173,7 @@ export class PostgresqlConnection extends ConnectionAbs {
       throw new Error('Cannot drop database while connected.');
     }
 
-    let conn = new Client({
+    const conn = new Client({
       ...PostgresqlConnection.pool.options,
       database: 'postgres', // connect to default 'postgres' database to drop others
     });
