@@ -171,11 +171,20 @@ export const cache = wrapSingletonWithAccessors(
         throw new Error(`Multi cache provider requires 'caches' array in config`);
       }
       
+      // Validate no circular references
+      if (providerConfig.caches.includes(label)) {
+        throw new Error(`Multi cache '${label}' cannot reference itself`);
+      }
+      
       // Resolve cache names to actual cache providers
       const cacheProviders = providerConfig.caches.map((cacheName: string) => {
         const cacheConfig: any = config.get(["caches", cacheName].join("."));
         if (!cacheConfig) {
           throw new Error(`Cache configuration for '${cacheName}' not found`);
+        }
+        // Prevent multi caches from containing other multi caches to avoid complex circular dependencies
+        if (cacheConfig.provider === "multi") {
+          throw new Error(`Multi cache '${label}' cannot contain another multi cache '${cacheName}'`);
         }
         return CacheProviderFactory.create(
           cacheConfig.provider,

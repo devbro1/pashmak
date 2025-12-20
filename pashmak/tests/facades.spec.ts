@@ -204,4 +204,36 @@ describe("Facade property accessors", () => {
     const result2 = await multiCache.get("cascade-test");
     expect(result2).toBe("from-secondary");
   });
+
+  test("multi cache provider should prevent circular references", async () => {
+    const { config } = await import("@devbro/neko-config");
+    
+    // Add a config with circular reference
+    config.set("caches.circular", {
+      provider: "multi",
+      config: {
+        caches: ["circular", "memory_primary"],
+      },
+    });
+
+    // Importing cache should throw when trying to create circular cache
+    const { cache } = await import("../src/facades.mjs");
+    expect(() => cache("circular")).toThrow("cannot reference itself");
+  });
+
+  test("multi cache provider should prevent nested multi caches", async () => {
+    const { config } = await import("@devbro/neko-config");
+    
+    // Add a nested multi cache config
+    config.set("caches.nested_multi", {
+      provider: "multi",
+      config: {
+        caches: ["multi_cache", "memory_primary"],
+      },
+    });
+
+    // Should throw when trying to create nested multi cache
+    const { cache } = await import("../src/facades.mjs");
+    expect(() => cache("nested_multi")).toThrow("cannot contain another multi cache");
+  });
 });
