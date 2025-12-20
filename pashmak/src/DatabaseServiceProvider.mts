@@ -1,6 +1,6 @@
 import { Middleware } from "@devbro/neko-router";
 import { Request, Response } from "@devbro/neko-router";
-import { PostgresqlConnection } from "@devbro/neko-sql";
+import { PostgresqlConnection, SqliteConnection, SqliteConfig } from "@devbro/neko-sql";
 import { PoolConfig } from "pg";
 import { Connection } from "@devbro/neko-sql";
 import { BaseModel } from "@devbro/neko-orm";
@@ -14,7 +14,7 @@ export class DatabaseServiceProvider extends Middleware {
     res: Response,
     next: () => Promise<void>,
   ): Promise<void> {
-    const db_configs: Record<string, { provider: string; config: PoolConfig }> =
+    const db_configs: Record<string, { provider: string; config: PoolConfig | SqliteConfig }> =
       config.get("databases");
 
     const conns = [];
@@ -60,10 +60,15 @@ export class DatabaseServiceProvider extends Middleware {
 
   getConnection(db_config: {
     provider: string;
-    config: PoolConfig;
+    config: PoolConfig | SqliteConfig;
   }): Connection {
     if (db_config.provider === "postgresql") {
-      const conn = new PostgresqlConnection(db_config.config);
+      const conn = new PostgresqlConnection(db_config.config as PoolConfig);
+      return conn;
+    }
+
+    if (db_config.provider === "sqlite") {
+      const conn = new SqliteConnection(db_config.config as SqliteConfig);
       return conn;
     }
 

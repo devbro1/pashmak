@@ -9,6 +9,22 @@ import { PostgresqlSchemaGrammar, QueryGrammar } from '../src';
 class FakeConnection extends Connection {
   last_sql: CompiledSql = { sql: '', bindings: [] };
 
+  on(event: string, listener: (...args: any[]) => void): this {
+    return this;
+  }
+
+  off(event: string, listener: (...args: any[]) => void): this {
+    return this;
+  }
+
+  emit(event: string, ...args: any[]): Promise<boolean> {
+    return Promise.resolve(true);
+  }
+
+  isConnected(): boolean {
+    return true;
+  }
+
   getLastSql(): CompiledSql {
     return this.last_sql;
   }

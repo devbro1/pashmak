@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # DB and SQL
 
-The `@devbro/neko-sql` package provides a powerful SQL query builder for working with relational databases. It supports PostgreSQL with plans for MySQL, SQLite, and MS SQL Server.
+The `@devbro/neko-sql` package provides a powerful SQL query builder for working with relational databases. It supports PostgreSQL and SQLite, with plans for MySQL and MS SQL Server.
 
 ## Features
 
@@ -227,6 +227,40 @@ import { db } from "@devbro/pashmak/facades";
 
 const connection = db();
 const q = connection.getQuery();
+```
+
+You can also create connections directly for different database types:
+
+#### PostgreSQL Connection
+
+```typescript
+import { PostgresqlConnection } from "@devbro/neko-sql";
+
+const connection = new PostgresqlConnection({
+  host: "localhost",
+  database: "mydb",
+  user: "myuser",
+  password: "mypassword",
+  port: 5432,
+});
+
+await connection.connect();
+```
+
+#### SQLite Connection
+
+```typescript
+import { SqliteConnection } from "@devbro/neko-sql";
+
+const connection = new SqliteConnection({
+  filename: "./database.db",
+  // Optional settings:
+  readonly: false,      // Open database in readonly mode (default: false)
+  fileMustExist: false, // Database file must exist (default: false)
+  timeout: 5000,        // Busy timeout in milliseconds (default: 5000)
+});
+
+await connection.connect();
 ```
 
 ### Connection Methods
@@ -716,9 +750,9 @@ console.log(result);
 ### Current Support
 
 - **PostgreSQL**: Full support
+- **SQLite**: Full support
 
 ### Planned Support
 
 - MySQL
-- SQLite
 - Microsoft SQL Server

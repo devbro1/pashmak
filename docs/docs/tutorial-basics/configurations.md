@@ -44,19 +44,24 @@ export default {
   default: {
     provider: 'postgresql',
     config: {
-      ???
+      host: process.env.DB_HOST || 'localhost',
+      database: process.env.DB_NAME || 'mydb',
+      user: process.env.DB_USER || 'postgres',
+      password: process.env.DB_PASSWORD,
+      port: parseInt(process.env.DB_PORT || '5432'),
     },
   },
   analytics: {
-    provider: 'postgresql',
+    provider: 'sqlite',
     config: {
-      ???
+      filename: './analytics.db',
+      readonly: false,
     },
   },
   west_db: {
     provider: 'mysql',
     config: {
-      ???
+      // MySQL config here
     },
   },
 };
@@ -67,6 +72,42 @@ export default {
   cache: await loadConfig('cache'), // await keyword is optional since pashmak supports async configs
   // ... other configs
 };
+```
+
+### Database Provider Configurations
+
+#### PostgreSQL Configuration
+
+```ts
+{
+  provider: 'postgresql',
+  config: {
+    host: 'localhost',
+    database: 'mydb',
+    user: 'postgres',
+    password: 'password',
+    port: 5432,
+    ssl: false,              // Enable SSL (default: false)
+    max: 20,                 // Max pool size (default: 20)
+    idleTimeoutMillis: 1,    // Time before closing idle connection (default: 1)
+    connectionTimeoutMillis: 30000, // Timeout for acquiring connection (default: 30000)
+    maxUses: 7500,           // Max uses before connection refresh (default: 7500)
+  }
+}
+```
+
+#### SQLite Configuration
+
+```ts
+{
+  provider: 'sqlite',
+  config: {
+    filename: './database.db',  // Path to database file (required)
+    readonly: false,            // Open in readonly mode (default: false)
+    fileMustExist: false,       // Database file must exist (default: false)
+    timeout: 5000,              // Busy timeout in ms (default: 5000)
+  }
+}
 ```
 
 ## NODE_ENV Based Configurations
