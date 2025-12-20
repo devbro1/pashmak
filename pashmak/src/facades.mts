@@ -11,7 +11,7 @@ import {
 } from "@devbro/neko-mailer";
 import { config } from "@devbro/neko-config";
 import { Cli } from "clipanion";
-import { HttpServer, HttpError, handleHttpErrors } from "./http.mjs";
+import { HttpServer, handleHttpErrors } from "./http.mjs";
 import * as yup from "yup";
 import { Logger } from "@devbro/neko-logger";
 import { CacheProviderFactory } from "./factories.mjs";
@@ -25,20 +25,22 @@ import { QueueConnection, QueueTransportFactory } from "@devbro/neko-queue";
  * @returns The wrapped singleton with property accessors
  */
 function wrapSingletonWithAccessors<T>(
-  singletonFn: (label?: string, ...args: any[]) => T
+  singletonFn: (label?: string, ...args: any[]) => T,
 ): typeof singletonFn & Omit<T, keyof Function> {
   // Create a proxy that lazily adds method accessors on first access
   let methodsInitialized = false;
-  
+
   const initializeMethods = () => {
     if (methodsInitialized) return;
-    
+
     const defaultInstance = singletonFn();
     const prototype = Object.getPrototypeOf(defaultInstance);
-    
+
     // Get all method names from the instance's prototype
     const methodNames = Object.getOwnPropertyNames(prototype).filter(
-      (name) => name !== 'constructor' && typeof (prototype as any)[name] === 'function'
+      (name) =>
+        name !== "constructor" &&
+        typeof (prototype as any)[name] === "function",
     );
 
     // Attach each method as a property on the singleton function
@@ -48,7 +50,7 @@ function wrapSingletonWithAccessors<T>(
         return (instance as any)[methodName](...args);
       };
     }
-    
+
     methodsInitialized = true;
   };
 
@@ -56,11 +58,11 @@ function wrapSingletonWithAccessors<T>(
   return new Proxy(singletonFn, {
     get(target, prop, receiver) {
       // If accessing a method that doesn't exist yet, initialize methods
-      if (typeof prop === 'string' && !Reflect.has(target, prop)) {
+      if (typeof prop === "string" && !Reflect.has(target, prop)) {
         initializeMethods();
       }
       return Reflect.get(target, prop, receiver);
-    }
+    },
   }) as typeof singletonFn & Omit<T, keyof Function>;
 }
 
@@ -76,8 +78,9 @@ export const scheduler = wrapSingletonWithAccessors(
       });
     });
     return rc;
-  })
+  }),
 );
+
 export const db = (label = "default") =>
   ctx().getOrThrow<Connection>(["database", label]);
 
@@ -91,7 +94,7 @@ export const storage = wrapSingletonWithAccessors(
     );
 
     return new Storage(provider);
-  })
+  }),
 );
 
 export const cli = createSingleton<Cli>(() => {
@@ -122,7 +125,7 @@ export const logger = wrapSingletonWithAccessors(
     });
 
     return rc;
-  })
+  }),
 );
 
 export const mailer = wrapSingletonWithAccessors(
@@ -136,7 +139,7 @@ export const mailer = wrapSingletonWithAccessors(
 
     const rc = new Mailer(provider);
     return rc;
-  })
+  }),
 );
 
 export const queue = wrapSingletonWithAccessors(
@@ -150,7 +153,7 @@ export const queue = wrapSingletonWithAccessors(
       queue_config.config,
     );
     return new QueueConnection(provider);
-  })
+  }),
 );
 
 export const cache = wrapSingletonWithAccessors(
@@ -165,5 +168,5 @@ export const cache = wrapSingletonWithAccessors(
     );
 
     return new Cache(provider);
-  })
+  }),
 );

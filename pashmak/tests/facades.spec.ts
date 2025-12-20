@@ -48,7 +48,10 @@ describe("Facade property accessors", () => {
     const { storage } = await import("../src/facades.mjs");
 
     // Test function call with explicit label
-    await storage("backup").put("test-backup.json", JSON.stringify({ backup: true }));
+    await storage("backup").put(
+      "test-backup.json",
+      JSON.stringify({ backup: true }),
+    );
     const result = await storage("backup").getJson("test-backup.json");
 
     expect(result).toEqual({ backup: true });
@@ -62,6 +65,14 @@ describe("Facade property accessors", () => {
     const result = await storage().getJson("test-default.json");
 
     expect(result).toEqual({ default: true });
+
+    await storage("default").put(
+      "test-default2.json",
+      JSON.stringify({ default: true }),
+    );
+    const result2 = await storage().getJson("test-default2.json");
+
+    expect(result2).toEqual({ default: true });
   });
 
   test("cache should support direct method calls", async () => {
