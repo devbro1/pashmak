@@ -91,7 +91,11 @@ export class MysqlConnection extends ConnectionAbs {
   }
 
   async beginTransaction(): Promise<void> {
-    await this.runQuery({ sql: 'START TRANSACTION', bindings: [], parts: ['START', 'TRANSACTION'] });
+    await this.runQuery({
+      sql: 'START TRANSACTION',
+      bindings: [],
+      parts: ['START', 'TRANSACTION'],
+    });
   }
 
   async commit(): Promise<void> {
