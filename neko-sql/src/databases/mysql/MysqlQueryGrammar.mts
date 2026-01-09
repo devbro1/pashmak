@@ -12,6 +12,6 @@ export class MysqlQueryGrammar extends QueryGrammar {
   }
 
   postProcessGetInsertId(result: any) {
-    return result.insertId;
+    return [{id: result.insertId}];
   }
 }

@@ -155,7 +155,9 @@ export class PostgresqlConnection extends ConnectionAbs {
 
   async createDatabase(name: string): Promise<void> {
     if (this.isConnected()) {
-      throw new Error('Cannot create database while connected.');
+      const safeName = this.validateAndEscapeIdentifier(name);
+      await this.runQuery(`CREATE DATABASE ${safeName}`);
+      return;
     }
 
     const conn = new Client({
@@ -170,7 +172,9 @@ export class PostgresqlConnection extends ConnectionAbs {
 
   async dropDatabase(name: string): Promise<void> {
     if (this.isConnected()) {
-      throw new Error('Cannot drop database while connected.');
+      const safeName = this.validateAndEscapeIdentifier(name);
+      await this.runQuery(`DROP DATABASE ${safeName}`);
+      return;
     }
 
     const conn = new Client({
@@ -195,7 +199,7 @@ export class PostgresqlConnection extends ConnectionAbs {
 
   async existsDatabase(name: string): Promise<boolean> {
     if (!this.isConnected()) {
-          const conn = new Client({
+        const conn = new Client({
           ...PostgresqlConnection.pool.options,
           database: 'postgres',
         });

@@ -71,7 +71,7 @@ describe('MySQL Schema Grammar', () => {
     });
 
     expect(fakeConnection.getLastSql().sql).toBe(
-      'create table users (id INT AUTO_INCREMENT NOT NULL, name varchar(255) not null, email varchar(255) not null,primary key (id))'
+      'create table users (id INT AUTO_INCREMENT NOT NULL, name varchar(255) NOT NULL, email varchar(255) NOT NULL,primary key (id))'
     );
   });
 
@@ -86,7 +86,7 @@ describe('MySQL Schema Grammar', () => {
     });
 
     expect(fakeConnection.getLastSql().sql).toBe(
-      'create table users (id INT AUTO_INCREMENT NOT NULL, email varchar(255) not null,primary key (id)); create index users_email_index on users (email)'
+      'create table users (id INT AUTO_INCREMENT NOT NULL, email varchar(255) NOT NULL,primary key (id)); create index users_email_index on users (email)'
     );
   });
 
@@ -99,7 +99,7 @@ describe('MySQL Schema Grammar', () => {
     });
 
     expect(fakeConnection.getLastSql().sql).toBe(
-      'alter table users add column phone varchar(255) not null'
+      'alter table users add column phone varchar(255) NOT NULL'
     );
   });
 });

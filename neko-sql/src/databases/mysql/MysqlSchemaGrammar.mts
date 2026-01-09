@@ -20,7 +20,7 @@ export class MysqlSchemaGrammar extends SchemaGrammar {
     } else if (column.properties.type === 'timestampz') {
       rc.push('TIMESTAMP');
     } else if (column.properties.type === 'serial') {
-      rc.push('serial');
+      rc.push('INT AUTO_INCREMENT');
     } else if (column.properties.type === 'float') {
       rc.push('float');
     } else if (column.properties.type === 'double') {
@@ -40,7 +40,7 @@ export class MysqlSchemaGrammar extends SchemaGrammar {
     if (column.properties.nullable) {
       rc.push('null');
     } else {
-      rc.push('not null');
+      rc.push('NOT NULL');
     }
 
     if (column.properties.unique) {

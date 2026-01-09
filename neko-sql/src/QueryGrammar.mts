@@ -423,6 +423,6 @@ export abstract class QueryGrammar {
   }
 
   postProcessGetInsertId(result: any) {
-    return result[0].id;
+    return result;
   }
 }

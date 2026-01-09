@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'vitest'
+import { describe, test, expect, afterAll } from 'vitest'
 import { PostgresqlConnection } from '../src/databases/postgresql/PostgresqlConnection.mjs';
 import { Blueprint, Connection, MysqlConnection, Schema, SchemaGrammar, SqliteConnection } from '../src';
 
@@ -168,7 +168,7 @@ describe('long test', () => {
         first_name: 'test7_getId',
     });
 
-    expect(typeof insertedId === 'number').toBeTruthy();
+    expect(typeof insertedId[0].id === 'number').toBeTruthy();
 
     await conn.disconnect();
     await conn.dropDatabase(db_name);
