@@ -57,8 +57,9 @@ export class MysqlConnection extends ConnectionAbs {
     if (!this.isConnected()) {
       await this.connect();
     }
-    const [rows] = await this.connection!.query(sql.sql, sql.bindings);
-    return rows;
+
+    const result = await this.connection!.query(sql.sql, sql.bindings);
+    return result[0];
   }
 
   async runCursor(sql: CompiledSql): Promise<any> {
@@ -159,8 +160,20 @@ export class MysqlConnection extends ConnectionAbs {
   }
 
   async createDatabase(name: string): Promise<void> {
-    if (this.isConnected()) {
-      throw new Error('Cannot create database while connected.');
+    if (!this.isConnected()) {
+                  const tempConn = await mysql.createConnection({
+      host: MysqlConnection.poolConfig.host,
+      user: MysqlConnection.poolConfig.user,
+      password: MysqlConnection.poolConfig.password,
+      port: MysqlConnection.poolConfig.port,
+    });
+
+        const safeName = this.validateAndEscapeIdentifier(name);
+        console.log(safeName);
+    let [rows] = await tempConn.query(`CREATE DATABASE ${safeName}`);
+
+      await tempConn.end();
+      return;
     }
 
     const tempConn = await mysql.createConnection({
@@ -200,7 +213,19 @@ export class MysqlConnection extends ConnectionAbs {
 
   async existsDatabase(name: string): Promise<boolean> {
     if (!this.isConnected()) {
-      await this.connect();
+            const tempConn = await mysql.createConnection({
+      host: MysqlConnection.poolConfig.host,
+      user: MysqlConnection.poolConfig.user,
+      password: MysqlConnection.poolConfig.password,
+      port: MysqlConnection.poolConfig.port,
+    });
+
+    let [rows] = await tempConn.query('SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ?',
+      [name]);
+
+      await tempConn.end();
+
+      return rows.length > 0;
     }
     const [rows] = await this.connection!.query<mysql.RowDataPacket[]>(
       'SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ?',

@@ -8,8 +8,10 @@ export class MysqlQueryGrammar extends QueryGrammar {
     data: Record<string, any>,
     options: { primaryKey: string[] } = { primaryKey: ['id'] }
   ): CompiledSql {
-    // MySQL uses LAST_INSERT_ID() to get the auto-increment value
-    // We'll compile the insert normally and handle the ID retrieval in the connection
     return super.compileInsert(query, data);
+  }
+
+  postProcessGetInsertId(result: any) {
+    return result.insertId;
   }
 }

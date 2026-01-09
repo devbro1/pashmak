@@ -421,4 +421,8 @@ export abstract class QueryGrammar {
       bindings: w.bindings,
     };
   }
+
+  postProcessGetInsertId(result: any) {
+    return result[0].id;
+  }
 }

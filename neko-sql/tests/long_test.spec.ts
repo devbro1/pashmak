@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest'
 import { PostgresqlConnection } from '../src/databases/postgresql/PostgresqlConnection.mjs';
-import { Blueprint, Connection, Schema, SchemaGrammar, SqliteConnection } from '../src';
+import { Blueprint, Connection, MysqlConnection, Schema, SchemaGrammar, SqliteConnection } from '../src';
 
 const randName = Math.random().toString(36).substring(7);
 let db_name = (process.env.DB_NAME || 'test_db') + `_${randName}`;
@@ -25,6 +25,13 @@ function getDatabaseConnections(): ([string, Connection])[] {
     })]);
 
     // mysql
+    let db_config_mysql = {
+        host: process.env.MYSQL_HOST,
+        database: db_name,
+        user: process.env.MYSQL_USERNAME,
+        password: process.env.MYSQL_PASSWORD,
+    };
+    rc.push(['Mysql', new MysqlConnection(db_config_mysql)]);
 
     return rc;
 }
@@ -154,6 +161,14 @@ describe('long test', () => {
         .whereOp('email', '=', 'test6@gmail.com')
         .first();
     expect(transactionRow).toBeUndefined();
+
+    // depending on db, insertedId might be 6 or 7
+    let insertedId = await conn.getQuery().table('users').insertGetId({
+        email: 'test6@gmail.com',
+        first_name: 'test7_getId',
+    });
+
+    expect(typeof insertedId === 'number').toBeTruthy();
 
     await conn.disconnect();
     await conn.dropDatabase(db_name);
