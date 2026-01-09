@@ -18,6 +18,7 @@
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
+    "bench": "vitest bench",
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
     "format": "eslint . --fix --ext ts,tsx --report-unused-disable-directives --max-warnings 0 ",
