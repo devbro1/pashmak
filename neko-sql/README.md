@@ -88,5 +88,3 @@ await conn.disconnect();
 please check test classes for more robust examples
 
 ## APIs
-
--- TODO: add all available methods and how to use them
