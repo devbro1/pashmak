@@ -161,16 +161,16 @@ export class MysqlConnection extends ConnectionAbs {
 
   async createDatabase(name: string): Promise<void> {
     if (!this.isConnected()) {
-                  const tempConn = await mysql.createConnection({
-      host: MysqlConnection.poolConfig.host,
-      user: MysqlConnection.poolConfig.user,
-      password: MysqlConnection.poolConfig.password,
-      port: MysqlConnection.poolConfig.port,
-    });
+      const tempConn = await mysql.createConnection({
+        host: MysqlConnection.poolConfig.host,
+        user: MysqlConnection.poolConfig.user,
+        password: MysqlConnection.poolConfig.password,
+        port: MysqlConnection.poolConfig.port,
+      });
 
-        const safeName = this.validateAndEscapeIdentifier(name);
-        console.log(safeName);
-    let [rows] = await tempConn.query(`CREATE DATABASE ${safeName}`);
+      const safeName = this.validateAndEscapeIdentifier(name);
+      console.log(safeName);
+      let [rows] = await tempConn.query(`CREATE DATABASE ${safeName}`);
 
       await tempConn.end();
       return;
@@ -213,15 +213,17 @@ export class MysqlConnection extends ConnectionAbs {
 
   async existsDatabase(name: string): Promise<boolean> {
     if (!this.isConnected()) {
-            const tempConn = await mysql.createConnection({
-      host: MysqlConnection.poolConfig.host,
-      user: MysqlConnection.poolConfig.user,
-      password: MysqlConnection.poolConfig.password,
-      port: MysqlConnection.poolConfig.port,
-    });
+      const tempConn = await mysql.createConnection({
+        host: MysqlConnection.poolConfig.host,
+        user: MysqlConnection.poolConfig.user,
+        password: MysqlConnection.poolConfig.password,
+        port: MysqlConnection.poolConfig.port,
+      });
 
-    let [rows] = await tempConn.query('SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ?',
-      [name]);
+      let [rows] = await tempConn.query<mysql.RowDataPacket[]>(
+        'SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ?',
+        [name]
+      );
 
       await tempConn.end();
 
