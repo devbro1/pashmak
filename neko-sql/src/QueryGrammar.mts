@@ -421,4 +421,13 @@ export abstract class QueryGrammar {
       bindings: w.bindings,
     };
   }
+
+  /**
+   * post process result from database
+   * @param result result from database
+   * @returns post processed result
+   */
+  postProcessGetInsertId(result: any) {
+    return result;
+  }
 }

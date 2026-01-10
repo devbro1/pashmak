@@ -4,7 +4,7 @@ COMMIT_MESSAGE=$(cat "$1")
 commit_source="$2"
 
 # Exit early if this is a merge commit or branch is detached
-if [[ "$BRANCH_NAME" == "HEAD" || "$commit_source" == "merge" ]]; then
+if [ "$BRANCH_NAME" = "HEAD" ] || [ "$commit_source" = "merge" ]; then
   exit 0
 fi
 
