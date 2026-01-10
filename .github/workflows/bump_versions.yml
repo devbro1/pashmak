@@ -19,6 +19,7 @@ jobs:
           registry-url: "https://registry.npmjs.org"
       - name: bump version
         run: |
+          git fetch origin master:master
           yarn bump
       - name: Commit changes
         run: |
