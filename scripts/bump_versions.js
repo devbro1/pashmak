@@ -30,6 +30,20 @@ for (const loc of wc_locations) {
   }
 }
 
+// check if ${loc}/package.json has a line version already bumped
+for (const loc of to_bump) {
+  let pchanges = execSync(`git diff HEAD ${loc}/package.json`, {
+    cwd: workspacePath,
+    // stdio: 'inherit',
+  })
+    .toString()
+    .split("\n")
+    .map((f) => f.trim())
+    .filter((f) => f.length > 0)
+    .filter((f) => /\+\s*"version"/.test(f));
+  console.log("changedFiles", pchanges);
+}
+
 for (const loc of to_bump) {
   let packageJson = JSON.parse(
     fs.readFileSync(path.join(loc, "package.json"), "utf-8"),
