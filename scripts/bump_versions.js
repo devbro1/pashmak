@@ -41,7 +41,10 @@ for (const loc of to_bump) {
     .map((f) => f.trim())
     .filter((f) => f.length > 0)
     .filter((f) => /\+\s*"version"/.test(f));
-  console.log("changedFiles", pchanges);
+  console.log("changedFiles", loc, pchanges);
+  if (pchanges.length > 0) {
+    to_bump.delete(loc);
+  }
 }
 
 for (const loc of to_bump) {
