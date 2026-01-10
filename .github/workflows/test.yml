@@ -26,6 +26,20 @@ jobs:
           POSTGRES_DB: testdb
           POSTGRES_USER: testuser
           POSTGRES_PASSWORD: testpassword
+      mysql:
+        image: mysql:8.0
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: dbpassword
+          MYSQL_DATABASE: practice_db_1
+          MYSQL_USER: dbadmin
+          MYSQL_PASSWORD: dbpassword
+
+      memcache:
+        image: memcached:latest
+        ports:
+          - 11211:11211
     env:
       DATABASE_URL: postgres://testuser:testpassword@localhost:5432/testdb
       DB_HOST: localhost
