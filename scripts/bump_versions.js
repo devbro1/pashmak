@@ -32,10 +32,13 @@ for (const loc of wc_locations) {
 
 // check if ${loc}/package.json has a line version already bumped
 for (const loc of to_bump) {
-  let pchanges = execSync(`git diff HEAD ${loc}/package.json`, {
-    cwd: workspacePath,
-    // stdio: 'inherit',
-  })
+  let pchanges = execSync(
+    `git diff HEAD ${loc}/package.json; git diff master ${loc}/package.json`,
+    {
+      cwd: workspacePath,
+      // stdio: 'inherit',
+    },
+  )
     .toString()
     .split("\n")
     .map((f) => f.trim())
