@@ -1,11 +1,13 @@
 name: Bump package versions
 on:
-  push:
-    branches:
-      - 106-remove-promise-from-await-countrygetquery
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
 jobs:
   bump-versions:
-    # needs: [run-tests]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,6 +17,16 @@ jobs:
           registry-url: "https://registry.npmjs.org"
       - name: publish to npm
         run: |
-          yarn bump_versions
-          git add --all
-          git diff --cached
+          yarn bump
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git status --porcelain; then
+            git add .
+            git commit -m "chore: update generated files"
+            git push origin HEAD:${{ github.head_ref }}
+          else
+            echo "No changes to commit"
+          fi
