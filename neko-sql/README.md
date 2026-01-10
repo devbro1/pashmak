@@ -15,10 +15,10 @@ currently supported databases:
 
 - postgresql
 - sqlite
+- mysql
 
 future planned:
 
-- mysql
 - mssql
 
 ## how to use
@@ -52,6 +52,28 @@ import { SqliteConnection } from '@devbro/neko-sql';
 
 const conn = new SqliteConnection({
   filename: './database.db',
+});
+
+await conn.connect();
+
+// Use Query builder
+const query = conn.getQuery();
+const results = await query.table('users').whereOp('id', '=', 1).get();
+
+await conn.disconnect();
+```
+
+### MySQL Example
+
+```typescript
+import { MysqlConnection } from '@devbro/neko-sql';
+
+const conn = new MysqlConnection({
+  host: 'localhost',
+  database: 'mydb',
+  user: 'myuser',
+  password: 'mypassword',
+  port: 3306,
 });
 
 await conn.connect();
