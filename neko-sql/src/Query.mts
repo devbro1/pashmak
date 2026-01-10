@@ -221,7 +221,9 @@ export class Query {
     options: { primaryKey: string[] } = { primaryKey: ['id'] }
   ) {
     const csql: CompiledSql = this.grammar.compileInsertGetId(this, data, options);
-    return await this.connection?.runQuery(csql);
+    let rc = await this.connection?.runQuery(csql);
+    rc = this.grammar.postProcessGetInsertId(rc);
+    return rc;
   }
 
   async update(data: Record<string, Parameter>) {
