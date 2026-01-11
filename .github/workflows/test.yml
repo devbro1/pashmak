@@ -48,6 +48,8 @@ jobs:
       DB_PASSWORD: testpassword
       DB_NAME: testdb
       NODE_ENV: test
+      REDIS_HOST: localhost
+      MEMCACHE_HOST: localhost
     steps:
       - uses: actions/checkout@v4
       # Setup .npmrc file to publish to npm

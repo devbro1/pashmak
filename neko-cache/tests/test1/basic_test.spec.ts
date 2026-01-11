@@ -14,13 +14,13 @@ describe.each(PROVIDERS)('cache provider %s', (provider_name) => {
   test('general happy path', async () => {
     let provider;
     if (provider_name === 'redis') {
-      provider = new RedisCacheProvider({ url: 'redis://redis:6379' });
+      provider = new RedisCacheProvider({ url: `redis://${process.env.REDIS_HOST}:6379` });
     } else if (provider_name === 'memory') {
       provider = new MemoryCacheProvider();
     } else if (provider_name === 'file') {
       provider = new FileCacheProvider({ cacheDirectory: '/tmp/cache_dir' });
     } else if (provider_name === 'memcache') {
-      provider = new MemcacheCacheProvider({ location: ['memcache:11211'] });
+      provider = new MemcacheCacheProvider({ location: [`${process.env.MEMCACHE_HOST}:11211`] });
     }
 
     let cache = new Cache(provider!);
