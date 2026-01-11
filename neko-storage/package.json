@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-storage",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "abstracted file storage implementation",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

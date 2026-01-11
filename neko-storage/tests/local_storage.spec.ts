@@ -1,4 +1,5 @@
-import { LocalStorage } from '../src/';
+import { describe, expect, test, beforeEach, afterAll } from 'vitest';
+import { Storage, LocalStorageProvider } from '../src/';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
@@ -7,10 +8,10 @@ import { sleep } from '@devbro/neko-helper';
 
 describe('LocalStorage', () => {
   const basePath = path.resolve(os.tmpdir(), `test-storage-${randomUUID()}`);
-  let storage: LocalStorage;
+  let storage: Storage;
 
   beforeEach(async () => {
-    storage = new LocalStorage({ engine: 'local', basePath });
+    storage = new Storage(new LocalStorageProvider({ basePath }));
     await sleep(1000);
   });
 

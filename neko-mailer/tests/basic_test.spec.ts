@@ -15,9 +15,14 @@ describe("basic tests", () => {
     }
 
     const mails: Mailable[] = [];
-    const p1: MailerProvider = new FunctionProvider((mail: Mailable) => {
-      mails.push(mail);
-    });
+    const p1: MailerProvider = new FunctionProvider(
+      (mail: Mailable) => {
+        mails.push(mail);
+      },
+      {
+        default_from: "noreply@devbro.local",
+      },
+    );
 
     p1.setDefaultFrom("backup@example.com");
 

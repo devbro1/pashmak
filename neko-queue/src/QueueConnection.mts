@@ -30,7 +30,7 @@ export class QueueConnection<M extends Record<string, QueueMessageInterface>>
     if (typeof isClass(message_processor)) {
       this.transport.registerListener(channel as string, async (message: string) => {
         // @ts-ignore
-        const msgObj = new message_type();
+        const msgObj = new message_processor();
         await msgObj.setMessage(message);
         if (!(await msgObj.validateMessage())) {
           throw new Error('Invalid message received');
