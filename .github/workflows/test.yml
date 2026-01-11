@@ -67,4 +67,5 @@ jobs:
       - run: yarn build:all
       - name: run tests
         run: |
+          ls -alt /tmp
           yarn workspaces run test
