@@ -2,6 +2,31 @@
 import { JSONPath } from 'jsonpath-plus';
 
 /**
+ * Interface for defining typed configuration keys.
+ * Can be augmented using module declaration to add type-safe keys.
+ * 
+ * @example
+ * ```ts
+ * declare module '@devbro/neko-config' {
+ *   interface ConfigKeys {
+ *     '$.app.name': string;
+ *     '$.app.port': number;
+ *     '$.database.host': string;
+ *   }
+ * }
+ * ```
+ */
+export interface ConfigKeys {
+  // By default, this is empty. Users can augment it with their own keys.
+}
+
+/**
+ * Type helper to extract valid config keys.
+ * If ConfigKeys has properties, use them. Otherwise, accept any string.
+ */
+export type ConfigKey = keyof ConfigKeys extends never ? string : keyof ConfigKeys;
+
+/**
  * Singleton class for managing application configuration settings.
  * Supports JSONPath queries for accessing nested configuration values.
  */
@@ -41,9 +66,9 @@ export class Config {
    * @param default_value - Default value to return if key is not found (default: undefined)
    * @returns The configuration value or the default value
    */
-  public get(key: string, default_value: any = undefined): any | undefined {
+  public get<K extends ConfigKey>(key: K, default_value?: any): K extends keyof ConfigKeys ? ConfigKeys[K] : any {
     try {
-      const results = JSONPath({ path: key, json: this.configs });
+      const results = JSONPath({ path: key as string, json: this.configs });
       return results.length > 0 ? results[0] : default_value;
     } catch (error) {
       return default_value;
@@ -57,8 +82,8 @@ export class Config {
    * @param default_value - Default value to return if key is not found (default: undefined)
    * @returns The configuration value or the default value
    */
-  public getOrFail(key: string, default_value: any = undefined): any {
-    const results = JSONPath({ path: key, json: this.configs });
+  public getOrFail<K extends ConfigKey>(key: K, default_value?: any): K extends keyof ConfigKeys ? ConfigKeys[K] : any {
+    const results = JSONPath({ path: key as string, json: this.configs });
     return results.length > 0 ? results[0] : default_value;
   }
 
@@ -67,9 +92,9 @@ export class Config {
    * @param key - JSONPath query string to check
    * @returns True if the key exists, false otherwise
    */
-  public has(key: string): boolean {
+  public has(key: ConfigKey): boolean {
     try {
-      const results = JSONPath({ path: key, json: this.configs });
+      const results = JSONPath({ path: key as string, json: this.configs });
       return results.length > 0;
     } catch (error) {
       return false;
