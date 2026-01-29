@@ -107,6 +107,37 @@ describe('Batch Insert Support', () => {
     expect(() => grammar.compileInsert(query, [])).toThrow('Cannot insert empty array');
   });
 
+  test('should throw error for empty object', () => {
+    const grammar = new MysqlQueryGrammar();
+    const query = new Query(null, grammar);
+    query.table('users');
+
+    expect(() => grammar.compileInsert(query, {})).toThrow('Cannot insert object with no properties');
+  });
+
+  test('should handle single-element array', () => {
+    const grammar = new MysqlQueryGrammar();
+    const query = new Query(null, grammar);
+    query.table('users');
+    const sql = grammar.compileInsert(query, [{ name: 'John', email: 'john@example.com' }]);
+
+    expect(sql.sql).toBe('insert into users ( name , email ) values ( ? , ? )');
+    expect(sql.bindings).toStrictEqual(['John', 'john@example.com']);
+  });
+
+  test('should handle objects with missing keys (uses undefined)', () => {
+    const grammar = new MysqlQueryGrammar();
+    const query = new Query(null, grammar);
+    query.table('users');
+    const sql = grammar.compileInsert(query, [
+      { name: 'John', email: 'john@example.com' },
+      { name: 'Jane' }, // missing 'email' property
+    ]);
+
+    expect(sql.sql).toBe('insert into users ( name , email ) values ( ? , ? ) , ( ? , ? )');
+    expect(sql.bindings).toStrictEqual(['John', 'john@example.com', 'Jane', undefined]);
+  });
+
   test('should compile insertGetId with single object (PostgreSQL)', () => {
     const grammar = new PostgresqlQueryGrammar();
     const query = new Query(null, grammar);

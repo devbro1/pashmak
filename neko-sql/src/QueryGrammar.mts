@@ -298,6 +298,10 @@ export abstract class QueryGrammar {
     const firstEntry = dataArray[0];
     const columns = Object.keys(firstEntry);
 
+    if (columns.length === 0) {
+      throw new Error('Cannot insert object with no properties');
+    }
+
     // Add column names
     for (const k of columns) {
       parts.push(k);
