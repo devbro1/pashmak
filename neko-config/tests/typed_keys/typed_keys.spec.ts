@@ -2,7 +2,8 @@ import { describe, expect, test, beforeEach } from 'vitest';
 import { Config } from '@/index.ts';
 
 // Augment the ConfigKeys interface with typed keys for testing
-declare module '@/Config.mjs' {
+// Note: This uses the public package name that end-users would use
+declare module '@devbro/neko-config' {
   interface ConfigKeys {
     '$.app.name': string;
     '$.app.port': number;

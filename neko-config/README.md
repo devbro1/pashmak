@@ -59,6 +59,7 @@ const appName = config.get('$.app.name');
 const port = config.get('$.app.port');
 
 // TypeScript will show an error if you use a key that's not defined
+// (only when ConfigKeys has been augmented)
 // const invalid = config.get('$.app.invalid'); // Error!
 
 // You can still use any string key by casting to 'any' if needed
