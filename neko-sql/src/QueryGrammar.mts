@@ -280,33 +280,52 @@ export abstract class QueryGrammar {
     };
   }
 
-  compileInsert(query: Query, data: Record<string, Parameter>): CompiledSql {
+  compileInsert(
+    query: Query,
+    data: Record<string, Parameter> | Record<string, Parameter>[]
+  ): CompiledSql {
     let parts = ['insert', 'into', query.parts.table, '('];
-    const columns: string[] = [];
     const bindings: Parameter[] = [];
-    const values: string[] = [];
 
-    for (const [k, v] of Object.entries(data)) {
+    // Normalize data to array
+    const dataArray = Array.isArray(data) ? data : [data];
+
+    if (dataArray.length === 0) {
+      throw new Error('Cannot insert empty array');
+    }
+
+    // Get columns from first entry
+    const firstEntry = dataArray[0];
+    const columns = Object.keys(firstEntry);
+
+    // Add column names
+    for (const k of columns) {
       parts.push(k);
       parts.push(',');
     }
     parts.pop();
-    parts = parts.concat([')', 'values', '(']);
+    parts = parts.concat([')', 'values']);
 
-    for (const [k, v] of Object.entries(data)) {
-      parts.push('?');
-      bindings.push(v);
+    // Add value sets for each entry
+    for (let i = 0; i < dataArray.length; i++) {
+      parts.push('(');
+      for (const k of columns) {
+        parts.push('?');
+        bindings.push(dataArray[i][k]);
+        parts.push(',');
+      }
+      parts.pop();
+      parts.push(')');
       parts.push(',');
     }
     parts.pop();
-    parts.push(')');
 
     return { sql: parts.join(' '), parts, bindings };
   }
 
   abstract compileInsertGetId(
     query: Query,
-    data: Record<string, Parameter>,
+    data: Record<string, Parameter> | Record<string, Parameter>[],
     options: { primaryKey: string[] }
   ): CompiledSql;
 
