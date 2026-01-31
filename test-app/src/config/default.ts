@@ -3,11 +3,12 @@ import os from "os";
 import { getEnv } from "@devbro/pashmak/helper";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
+import { ConfigKeys } from "@devbro/pashmak/config";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-export default {
+let project_configs = {
   databases: await import("./databases"),
   storages: await import("./storages"),
   port: getEnv("PORT", 3000),
@@ -39,3 +40,15 @@ export default {
       "\n-----END PUBLIC KEY-----\n",
   },
 };
+
+type DotPaths<T> = {
+  [K in keyof T & string]: T[K] extends Record<string, any>
+    ? K | `${K}.${DotPaths<T[K]>}`
+    : K;
+}[keyof T & string];
+declare module "@devbro/neko-config" {
+  interface ConfigKeys
+    extends Record<DotPaths<typeof project_configs>, string> {}
+}
+
+export default project_configs;
