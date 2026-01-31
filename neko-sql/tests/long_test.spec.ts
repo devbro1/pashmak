@@ -79,10 +79,10 @@ describe('long test', () => {
       first_name: 'test2',
     });
 
-    await conn
+    let a = await conn
       .getQuery()
       .table('users')
-      .insert([
+      .insertGetId([
         {
           email: 'test3@gmail.com',
           first_name: 'test3',

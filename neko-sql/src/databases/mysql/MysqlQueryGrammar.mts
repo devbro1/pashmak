@@ -12,6 +12,10 @@ export class MysqlQueryGrammar extends QueryGrammar {
   }
 
   postProcessGetInsertId(result: any) {
-    return [{id: result.insertId}];
+    let rc = [];
+    for (let i = 0; i < result.affectedRows; i++) {
+      rc.push({ id: result.insertId + i });
+    }
+    return rc;
   }
 }
