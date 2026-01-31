@@ -8,7 +8,7 @@ import { loadConfig } from '@devbro/pashmak/config';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-export default {
+const project_configs = {
   databases: await loadConfig('./databases'),
   storages: await loadConfig('./storages'),
   mailer: await loadConfig('./mailer'),
@@ -47,3 +47,18 @@ export const $prod = {
   port: getEnv('PORT', 80),
   debug_mode: false,
 };
+
+
+type DotPaths<T> = {
+  [K in keyof T & string]:
+    T[K] extends Record<string, any>
+      ? K | `${K}.${DotPaths<T[K]>}`
+      : K
+}[keyof T & string];
+
+declare module '@devbro/neko-config' {
+    interface ConfigKeys extends Record<DotPaths<typeof project_configs>, string> {
+    }
+}
+
+export default project_configs;

@@ -1,5 +1,6 @@
 import { logResponseMiddleware } from "../../middlewares";
 import { db, storage, logger } from "@devbro/pashmak/facades";
+import { config } from "@devbro/pashmak/config";
 import { ctx } from "@devbro/pashmak/context";
 import fs from "fs";
 import {
@@ -38,6 +39,11 @@ export class CatController extends BaseController {
       req.files.f1.newFilename,
       fs.readFileSync(req.files.f1.filepath),
     );
+
+    logger.info({
+      msg: "config port",
+      port: config.get("databases.default.database"),
+    });
     return req.body;
   }
 
