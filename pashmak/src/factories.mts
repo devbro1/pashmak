@@ -21,6 +21,7 @@ import {
   RedisCacheProvider,
   FileCacheProvider,
   DisabledCacheProvider,
+  MultiCacheProvider,
 } from "@devbro/neko-cache";
 import {
   AWSS3StorageProvider,
@@ -125,6 +126,10 @@ CacheProviderFactory.register("file", (opt) => {
 
 CacheProviderFactory.register("disabled", (opt) => {
   return new DisabledCacheProvider();
+});
+
+CacheProviderFactory.register("multi", (opt) => {
+  return new MultiCacheProvider(opt);
 });
 
 StorageProviderFactory.register("local", (opt) => {
