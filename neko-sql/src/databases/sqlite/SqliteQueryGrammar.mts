@@ -12,13 +12,13 @@ export class SqliteQueryGrammar extends QueryGrammar {
     return super.toSql(query);
   }
 
-  compileInsert(query: Query, data: Record<string, any>): CompiledSql {
+  compileInsert(query: Query, data: Record<string, any> | Record<string, any>[]): CompiledSql {
     return super.compileInsert(query, data);
   }
 
   compileInsertGetId(
     query: Query,
-    data: Record<string, any>,
+    data: Record<string, any> | Record<string, any>[],
     options: { primaryKey: string[] } = { primaryKey: ['id'] }
   ): CompiledSql {
     const rc = super.compileInsert(query, data);
