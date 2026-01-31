@@ -42,24 +42,24 @@ An example for databases:
 // config/databases.ts or config/database.js
 export default {
   default: {
-    provider: 'postgresql',
+    provider: "postgresql",
     config: {
-      host: process.env.DB_HOST || 'localhost',
-      database: process.env.DB_NAME || 'mydb',
-      user: process.env.DB_USER || 'postgres',
+      host: process.env.DB_HOST || "localhost",
+      database: process.env.DB_NAME || "mydb",
+      user: process.env.DB_USER || "postgres",
       password: process.env.DB_PASSWORD,
-      port: parseInt(process.env.DB_PORT || '5432'),
+      port: parseInt(process.env.DB_PORT || "5432"),
     },
   },
   analytics: {
-    provider: 'sqlite',
+    provider: "sqlite",
     config: {
-      filename: './analytics.db',
+      filename: "./analytics.db",
       readonly: false,
     },
   },
   west_db: {
-    provider: 'mysql',
+    provider: "mysql",
     config: {
       // MySQL config here
     },
@@ -68,8 +68,8 @@ export default {
 
 // config/default.ts
 export default {
-  databases: loadConfig('databases'),
-  cache: await loadConfig('cache'), // await keyword is optional since pashmak supports async configs
+  databases: loadConfig("databases"),
+  cache: await loadConfig("cache"), // await keyword is optional since pashmak supports async configs
   // ... other configs
 };
 ```
@@ -160,3 +160,25 @@ export default {
   ssh_port: getEnv("SSH_PORT", undefined), // will return undefined if not defined
 };
 ```
+
+## Typescript and Type Safety
+
+`neko-config` supports type safety by allowing you to pass your types as possible allowed keys to `KeyConfigs`.
+
+here is an example that is already implemented for you that you can adjust as you wish:
+
+```ts
+// to create all dot_paths from a json/object a.b.c
+type DotPaths<T> = {
+  [K in keyof T & string]: T[K] extends Record<string, any>
+    ? K | `${K}.${DotPaths<T[K]>}`
+    : K;
+}[keyof T & string];
+
+declare module "@devbro/neko-config" {
+  interface ConfigKeys
+    extends Record<DotPaths<typeof project_configs>, string> {}
+}
+```
+
+If you want to disble type safety, just remove overide of `interface ConfigKeys`
