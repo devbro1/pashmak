@@ -4,6 +4,17 @@ sidebar_position: 1
 
 # Setup Database
 
+## install drivers
+Pashmak uses `neko-sql` and `neko-orm` packages for database drivers. to keep the size of original package small, each database driver is peerDependency that you need to install separately based on the type of database you like to use:
+
+- Postgresql:
+  - [pg](https://www.npmjs.com/package/pg)
+  - [pg-cursor](https://www.npmjs.com/package/pg-cursor)
+- Mysql
+  - [mysql2](https://www.npmjs.com/package/mysql2)
+- sqlite
+  - [better-sqlite3](https://www.npmjs.com/package/better-sqlite3)
+
 ## Configuration
 
 If you are planning to connect to a database using Pashmak SQL library, first you need to define your db access:

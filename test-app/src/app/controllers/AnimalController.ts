@@ -13,6 +13,7 @@ import {
   Post,
 } from "@devbro/pashmak/router";
 import { ValidatedRequest } from "@/helpers/validation";
+import { config } from "@devbro/pashmak/config";
 
 @Controller("/api/v1/animals", { middlewares: [authenticate] })
 export class AnimalController extends BaseController {
@@ -57,6 +58,9 @@ export class AnimalController extends BaseController {
 
   @Get({ path: "/:id" })
   async showById(@Param("id") id: number, @Model(Animal, "id") mm: Animal) {
+    let p = config.get('port');
+    console.log(p);
+
     return { mm, id };
   }
 }
