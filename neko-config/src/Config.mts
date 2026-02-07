@@ -66,11 +66,16 @@ export class Config {
    * @param default_value - Default value to return if key is not found (default: undefined)
    * @returns The configuration value or the default value
    */
-  public get<K extends ConfigKey>(key: K, default_value?: any): K extends keyof ConfigKeys ? ConfigKeys[K] : any {
+  public get<K extends ConfigKey>(
+    key: K, 
+    default_value?: K extends keyof ConfigKeys ? ConfigKeys[K] : any
+  ): K extends keyof ConfigKeys ? ConfigKeys[K] : any {
     try {
       const results = JSONPath({ path: key as string, json: this.configs });
+      // @ts-ignore
       return results.length > 0 ? results[0] : default_value;
     } catch (error) {
+      // @ts-ignore
       return default_value;
     }
   }
@@ -82,8 +87,12 @@ export class Config {
    * @param default_value - Default value to return if key is not found (default: undefined)
    * @returns The configuration value or the default value
    */
-  public getOrFail<K extends ConfigKey>(key: K, default_value?: any): K extends keyof ConfigKeys ? ConfigKeys[K] : any {
+  public getOrFail<K extends ConfigKey>(
+    key: K, 
+    default_value?: K extends keyof ConfigKeys ? ConfigKeys[K] : any
+  ): K extends keyof ConfigKeys ? ConfigKeys[K] : any {
     const results = JSONPath({ path: key as string, json: this.configs });
+    // @ts-ignore
     return results.length > 0 ? results[0] : default_value;
   }
 

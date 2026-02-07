@@ -74,6 +74,26 @@ export default {
 };
 ```
 
+## Typescript and Type Safety
+
+`neko-config` supports type safety by allowing you to pass your types in as `KeyConfigs`.
+
+here is an example that is already implemented for you that you can adjust as you wish:
+
+```ts
+import { DotPathRecord } from "@devbro/pashmak/config";
+
+let project_configs = {
+  ...
+};
+
+declare module "@devbro/neko-config" {
+  interface ConfigKeys extends DotPathRecord<typeof project_configs> {}
+}
+```
+
+If you want to disble type safety, just remove `interface ConfigKeys extends DotPathRecord<typeof project_configs> {}` . This will make key value to be `string` and return type to be `any`.
+
 ### Database Provider Configurations
 
 #### PostgreSQL Configuration
@@ -138,14 +158,14 @@ export const $test = {
 // NODE_ENV = 'prod'
 export const $prod = {
   provider: "stripe",
-  apiKey: process.env.STRIPE_API_KEY,
-  webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+  apiKey: getEnv('STRIPE_API_KEY'),
+  webhookSecret: getEnv('STRIPE_WEBHOOK_SECRET'),
 };
 ```
 
 ## .env AKA dotenv
 
-There is also .env support in case you want to load some configs that way. please note, you will still need to add the specific configs you want to default.js to be able to access the values.
+There is also .env support in case you want to load some configs that way. please note, you will still need to add the specific configs you want to default.ts to be able to access the values.
 
 ## Enforce values for config to exists
 
@@ -161,24 +181,3 @@ export default {
 };
 ```
 
-## Typescript and Type Safety
-
-`neko-config` supports type safety by allowing you to pass your types as possible allowed keys to `KeyConfigs`.
-
-here is an example that is already implemented for you that you can adjust as you wish:
-
-```ts
-// to create all dot_paths from a json/object a.b.c
-type DotPaths<T> = {
-  [K in keyof T & string]: T[K] extends Record<string, any>
-    ? K | `${K}.${DotPaths<T[K]>}`
-    : K;
-}[keyof T & string];
-
-declare module "@devbro/neko-config" {
-  interface ConfigKeys
-    extends Record<DotPaths<typeof project_configs>, string> {}
-}
-```
-
-If you want to disble type safety, just remove overide of `interface ConfigKeys`

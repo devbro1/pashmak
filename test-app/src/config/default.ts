@@ -3,20 +3,20 @@ import os from "os";
 import { getEnv } from "@devbro/pashmak/helper";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
-import { ConfigKeys } from "@devbro/pashmak/config";
+import { loadConfig, DotPathRecord } from "@devbro/pashmak/config";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 let project_configs = {
-  databases: await import("./databases"),
-  storages: await import("./storages"),
-  port: getEnv("PORT", 3000),
+  databases: await loadConfig("./databases"),
+  storages: await loadConfig("./storages"),
+  port: parseInt(getEnv("PORT", "3000")!),
   file_upload_path: path.join(os.tmpdir(), ""),
   migration: {
     path: path.join(__dirname, "..", "database/migrations"),
   },
-  loggers: await import("./loggers"),
+  loggers: await loadConfig("./loggers"),
   jwt: {
     options: {
       algorithm: "RS256",
@@ -41,14 +41,8 @@ let project_configs = {
   },
 };
 
-type DotPaths<T> = {
-  [K in keyof T & string]: T[K] extends Record<string, any>
-    ? K | `${K}.${DotPaths<T[K]>}`
-    : K;
-}[keyof T & string];
 declare module "@devbro/neko-config" {
-  interface ConfigKeys
-    extends Record<DotPaths<typeof project_configs>, string> {}
+  interface ConfigKeys extends DotPathRecord<typeof project_configs> {}
 }
 
 export default project_configs;
