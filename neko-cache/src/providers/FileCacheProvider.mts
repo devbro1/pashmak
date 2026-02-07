@@ -1,4 +1,4 @@
-import * as fs from 'fs/promises';
+import * as fs from 'fs';
 import * as path from 'path';
 import { CacheProviderInterface } from '../CacheProviderInterface.mjs';
 import { JSONObject, JSONValue } from '@devbro/neko-helper';
@@ -54,11 +54,12 @@ export class FileCacheProvider implements CacheProviderInterface {
   /**
    * Ensures the cache directory exists, creating it if necessary.
    */
-  private async ensureCacheDirectory(): Promise<void> {
+  private ensureCacheDirectory(): void {
     try {
-      await fs.access(this.config.cacheDirectory!);
+      fs.accessSync(this.config.cacheDirectory!);
     } catch {
-      await fs.mkdir(this.config.cacheDirectory!, { recursive: true });
+      console.log('creating cache directory', this.config.cacheDirectory);
+      fs.mkdirSync(this.config.cacheDirectory!, { recursive: true });
     }
   }
 
@@ -99,22 +100,22 @@ export class FileCacheProvider implements CacheProviderInterface {
    */
   private async cleanupExpiredEntries(): Promise<void> {
     try {
-      const files = await fs.readdir(this.config.cacheDirectory!);
+      const files = await fs.promises.readdir(this.config.cacheDirectory!);
       const now = Date.now();
 
       for (const file of files) {
         if (file.endsWith('.json')) {
           const filePath = path.join(this.config.cacheDirectory!, file);
           try {
-            const content = await fs.readFile(filePath, 'utf-8');
+            const content = await fs.promises.readFile(filePath, 'utf-8');
             const item: CacheItem = JSON.parse(content);
 
             if (item.expiresAt && item.expiresAt < now) {
-              await fs.unlink(filePath);
+              await fs.promises.unlink(filePath);
             }
           } catch {
             // If file is corrupted, delete it
-            await fs.unlink(filePath).catch(() => {});
+            await fs.promises.unlink(filePath).catch(() => {});
           }
         }
       }
@@ -132,12 +133,12 @@ export class FileCacheProvider implements CacheProviderInterface {
     const filePath = this.getFilePath(key);
 
     try {
-      const content = await fs.readFile(filePath, 'utf-8');
+      const content = await fs.promises.readFile(filePath, 'utf-8');
       const item: CacheItem = JSON.parse(content);
 
       // Check if item has expired
       if (item.expiresAt && item.expiresAt < Date.now()) {
-        await fs.unlink(filePath).catch(() => {});
+        await fs.promises.unlink(filePath).catch(() => {});
         return undefined;
       }
 
@@ -165,7 +166,7 @@ export class FileCacheProvider implements CacheProviderInterface {
     };
 
     this.ensureCacheDirectory();
-    await fs.writeFile(filePath, JSON.stringify(item), 'utf-8');
+    await fs.promises.writeFile(filePath, JSON.stringify(item), 'utf-8');
   }
 
   /**
@@ -176,7 +177,7 @@ export class FileCacheProvider implements CacheProviderInterface {
     const filePath = this.getFilePath(key);
 
     try {
-      await fs.unlink(filePath);
+      await fs.promises.unlink(filePath);
     } catch {
       // File doesn't exist, that's fine
     }
@@ -214,7 +215,7 @@ export class FileCacheProvider implements CacheProviderInterface {
     while (!lockAcquired && retries < maxRetries) {
       try {
         // Try to create lock file exclusively
-        await fs.writeFile(lockPath, '', { flag: 'wx' });
+        await fs.promises.writeFile(lockPath, '', { flag: 'wx' });
         lockAcquired = true;
       } catch {
         // Lock exists, wait a bit and retry
@@ -233,7 +234,7 @@ export class FileCacheProvider implements CacheProviderInterface {
 
       // Read current value
       try {
-        const content = await fs.readFile(filePath, 'utf-8');
+        const content = await fs.promises.readFile(filePath, 'utf-8');
         const parsedItem = JSON.parse(content);
 
         // Check if item has expired
@@ -258,13 +259,13 @@ export class FileCacheProvider implements CacheProviderInterface {
         expiresAt: item?.expiresAt,
       };
 
-      await fs.writeFile(filePath, JSON.stringify(newItem), 'utf-8');
+      await fs.promises.writeFile(filePath, JSON.stringify(newItem), 'utf-8');
 
       return newValue;
     } finally {
       // Release lock
       try {
-        await fs.unlink(lockPath);
+        await fs.promises.unlink(lockPath);
       } catch {
         // Ignore errors when removing lock file
       }

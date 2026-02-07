@@ -9,8 +9,6 @@ import { Cache } from '@/index';
 import { describe, expect, test } from 'vitest';
 import { sleep } from '@devbro/neko-helper';
 
-const PROVIDERS = ['redis', 'memory', 'file', 'memcache'] as const;
-
 describe('disabled cache provider', () => {
   test('general happy path', async () => {
     let provider = new DisabledCacheProvider();

@@ -155,7 +155,9 @@ export class PostgresqlConnection extends ConnectionAbs {
 
   async createDatabase(name: string): Promise<void> {
     if (this.isConnected()) {
-      throw new Error('Cannot create database while connected.');
+      const safeName = this.validateAndEscapeIdentifier(name);
+      await this.runQuery(`CREATE DATABASE ${safeName}`);
+      return;
     }
 
     const conn = new Client({
@@ -170,7 +172,9 @@ export class PostgresqlConnection extends ConnectionAbs {
 
   async dropDatabase(name: string): Promise<void> {
     if (this.isConnected()) {
-      throw new Error('Cannot drop database while connected.');
+      const safeName = this.validateAndEscapeIdentifier(name);
+      await this.runQuery(`DROP DATABASE ${safeName}`);
+      return;
     }
 
     const conn = new Client({
@@ -195,8 +199,19 @@ export class PostgresqlConnection extends ConnectionAbs {
 
   async existsDatabase(name: string): Promise<boolean> {
     if (!this.isConnected()) {
-      await this.connect();
+        const conn = new Client({
+          ...PostgresqlConnection.pool.options,
+          database: 'postgres',
+        });
+        await conn.connect();
+        const safeName = this.validateAndEscapeIdentifier(name);
+        const result = await conn.query('SELECT 1 FROM pg_database WHERE datname = $1', [
+          safeName,
+        ]);
+        await conn.end();
+        return result.rows.length > 0;
     }
+
     const result = await this.connection!.query('SELECT 1 FROM pg_database WHERE datname = $1', [
       name,
     ]);

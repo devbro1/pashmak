@@ -26,6 +26,20 @@ jobs:
           POSTGRES_DB: testdb
           POSTGRES_USER: testuser
           POSTGRES_PASSWORD: testpassword
+      mysql:
+        image: mysql:8.0
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: dbpassword
+          MYSQL_DATABASE: practice_db_1
+          MYSQL_USER: dbadmin
+          MYSQL_PASSWORD: dbpassword
+
+      memcache:
+        image: memcached:latest
+        ports:
+          - 11211:11211
     env:
       DATABASE_URL: postgres://testuser:testpassword@localhost:5432/testdb
       DB_HOST: localhost
@@ -34,6 +48,8 @@ jobs:
       DB_PASSWORD: testpassword
       DB_NAME: testdb
       NODE_ENV: test
+      REDIS_HOST: localhost
+      MEMCACHE_HOST: localhost
     steps:
       - uses: actions/checkout@v4
       # Setup .npmrc file to publish to npm
@@ -51,4 +67,5 @@ jobs:
       - run: yarn build:all
       - name: run tests
         run: |
+          ls -alt /tmp
           yarn workspaces run test

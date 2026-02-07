@@ -1,4 +1,4 @@
-import { describe, expect, test, bench } from 'vitest';
+import { beforeAll, bench, describe, expect, test } from 'vitest';
 import { Middleware, Router } from '../src';
 import { Request, Response } from '../src/types.mjs';
 import { BaseController, Get, Controller } from '../src/Controller.mjs';

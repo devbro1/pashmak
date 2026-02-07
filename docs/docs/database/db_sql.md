@@ -255,9 +255,9 @@ import { SqliteConnection } from "@devbro/neko-sql";
 const connection = new SqliteConnection({
   filename: "./database.db",
   // Optional settings:
-  readonly: false,      // Open database in readonly mode (default: false)
+  readonly: false, // Open database in readonly mode (default: false)
   fileMustExist: false, // Database file must exist (default: false)
-  timeout: 5000,        // Busy timeout in milliseconds (default: 5000)
+  timeout: 5000, // Busy timeout in milliseconds (default: 5000)
 });
 
 await connection.connect();
@@ -522,6 +522,12 @@ await query.table("users").insert({
 });
 ```
 
+To improve performance, you can insert multiple rows in one query:
+
+```ts
+await query.table("users").insert([{...}, {...}, ...]);
+```
+
 #### Insert and Get ID
 
 ```typescript
@@ -535,6 +541,8 @@ const result = await query.table("users").insertGetId(
 
 console.log(result[0].id); // Returns the inserted ID
 ```
+
+similar to `.insert()` you can do multi row insert and get the generated IDs.
 
 #### Update
 

@@ -211,17 +211,19 @@ export class Query {
     return this.connection;
   }
 
-  async insert(data: Record<string, Parameter>) {
+  async insert(data: Record<string, Parameter> | Record<string, Parameter>[]) {
     const csql: CompiledSql = this.grammar.compileInsert(this, data);
     return await this.connection?.runQuery(csql);
   }
 
   async insertGetId(
-    data: Record<string, Parameter>,
+    data: Record<string, Parameter> | Record<string, Parameter>[],
     options: { primaryKey: string[] } = { primaryKey: ['id'] }
   ) {
     const csql: CompiledSql = this.grammar.compileInsertGetId(this, data, options);
-    return await this.connection?.runQuery(csql);
+    let rc = await this.connection?.runQuery(csql);
+    rc = this.grammar.postProcessGetInsertId(rc);
+    return rc;
   }
 
   async update(data: Record<string, Parameter>) {
