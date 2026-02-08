@@ -1,6 +1,6 @@
 # @devbro/neko-config
 
-A lightweight, type-safe configuration management library for Node.js and TypeScript applications. Part of the Neko and Pashmak ecosystem.
+A lightweight, type-safe configuration management library with TypeScript support. Part of the Neko and Pashmak ecosystem. tested with Nodejs and Bun.
 
 ## Installation
 
@@ -35,6 +35,7 @@ const configData = {
   },
   database: {
     primary: {
+      type: 'postgesql',
       host: 'localhost',
       port: 5432,
       uri: 'postgresql://localhost:5432/mydb',
@@ -47,6 +48,7 @@ const configData = {
       { uri: 'redis://localhost:6379/2' },
     ],
   },
+  service_is_active: () => { return true; },
 };
 
 config.load(configData);
@@ -91,17 +93,24 @@ Create a type declaration file (e.g., `types/config.d.ts` or `src/config.d.ts`):
 // types/config.d.ts
 declare module '@devbro/neko-config' {
   interface ConfigKeys {
-    '$.app.name': string;
-    '$.app.port': number;
-    '$.app.debug': boolean;
-    '$.database.host': string;
-    '$.database.port': number;
-    '$.database.username': string;
-    '$.database.password': string;
-    '$.cache.redis[0].uri': string;
-    '$.api.baseUrl': string;
-    '$.api.timeout': number;
+    'app.name': string;
+    'app.port': number;
+    'app.debug': boolean;
+    'database.host': string;
+    'database.port': number;
+    'database.username': string;
+    'database.password': string;
+    'cache.redis[0].uri': string;
+    'api.baseUrl': string;
+    'api.timeout': number;
   }
+}
+
+//infer type from existing json object
+import { DotPathRecord } from "@devbro/pashmak/config";
+
+declare module "@devbro/neko-config" {
+  interface ConfigKeys extends DotPathRecord<typeof project_configs> {}
 }
 ```
 
@@ -113,19 +122,19 @@ After defining your typed keys, TypeScript will provide full autocomplete and ty
 import { config } from '@devbro/neko-config';
 
 // ✅ TypeScript knows this is a string - full autocomplete!
-const appName = config.get('$.app.name');
+const appName = config.get('app.name');
 
 // ✅ TypeScript knows this is a number
-const port = config.get('$.app.port');
+const port = config.get('app.port');
 
 // ✅ Type inference works with default values
-const timeout = config.get('$.api.timeout', 5000); // number
+const timeout = config.get('api.timeout', 5000); // number
 
 // ❌ TypeScript will show an error for undefined keys
 // const invalid = config.get('$.app.nonexistent'); // Error!
 
 // 💡 You can still use dynamic keys when needed
-const dynamicKey = config.get('$.some.dynamic.path' as any);
+const dynamicKey = config.get('some.dynamic.path' as any);
 ```
 
 **Benefits of Typed Configuration:**
@@ -136,6 +145,23 @@ const dynamicKey = config.get('$.some.dynamic.path' as any);
 - **Refactoring**: Safely rename or restructure configuration keys
 
 > **Note**: If you don't augment the `ConfigKeys` interface, the library accepts any string key (default behavior), providing maximum flexibility.
+
+### Functional Configs
+There may be situations that config values needs to be calculated using a function. For example, you are loading values from Launch Darkly or values are reloaded periodically from Secret Manager. In these cases you can use a function that is 
+evaluated at `get()` .
+
+```ts
+let project_values = {
+  f1: () => { ???? return "hello world!"; }
+}
+config.load(project_values);
+
+console.log(config.get('f1'));
+```
+
+There are a few details and limitations that need to be kept in mind:
+- functional configs cannot be async, if your config is returning a promise, then you need to `await config.get('f1');`
+- function configs cannot recieve arguments.
 
 ### Multiple Configuration Instances
 
@@ -180,7 +206,7 @@ Load configuration data into the instance.
 config.load({ app: { name: 'MyApp' } });
 ```
 
-##### `get<T = any>(key: string, defaultValue?: T): T`
+##### `get(key: string, defaultValue?: T): T`
 
 Retrieve a configuration value by key. Returns the default value if the key doesn't exist.
 
@@ -275,9 +301,3 @@ MIT
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Related Packages
-
-- [@devbro/neko-cache](https://www.npmjs.com/package/@devbro/neko-cache) - Caching solution
-- [@devbro/neko-logger](https://www.npmjs.com/package/@devbro/neko-logger) - Logging utilities
-- [@devbro/pashmak](https://www.npmjs.com/package/@devbro/pashmak) - Full-stack TypeScript framework
