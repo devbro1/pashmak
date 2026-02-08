@@ -22,15 +22,15 @@ describe('Config class tests', () => {
       instance1.load({ test: 'value' });
 
       const instance2 = Config.getInstance();
-      expect(instance2.get('$.test')).toBe('value');
+      expect(instance2.get('test')).toBe('value');
     });
   });
 
   describe('load method', () => {
     test('should load simple configuration', () => {
       config.load({ name: 'test', version: '1.0' });
-      expect(config.get('$.name')).toBe('test');
-      expect(config.get('$.version')).toBe('1.0');
+      expect(config.get('name')).toBe('test');
+      expect(config.get('version')).toBe('1.0');
     });
 
     test('should load nested configuration', () => {
@@ -44,24 +44,25 @@ describe('Config class tests', () => {
           },
         },
       });
-      expect(config.get('$.database.host')).toBe('localhost');
-      expect(config.get('$.database.credentials.username')).toBe('admin');
+      expect(config.get('database.host')).toBe('localhost');
+      expect(config.get('database.credentials.username')).toBe('admin');
     });
 
     test('should replace existing configuration', () => {
       config.load({ key: 'value1' });
-      expect(config.get('$.key')).toBe('value1');
+      expect(config.get('key')).toBe('value1');
 
       config.load({ key: 'value2' });
-      expect(config.get('$.key')).toBe('value2');
+      expect(config.get('key')).toBe('value2');
     });
 
     test('should create deep copy of configuration', () => {
       const original = { nested: { value: 'test' } };
       config.load(original);
 
+      expect(config.get('nested.value')).toBe('test');
       original.nested.value = 'modified';
-      expect(config.get('$.nested.value')).toBe('test');
+      expect(config.get('nested.value')).toBe('test');
     });
 
     test('should handle empty configuration', () => {
@@ -92,17 +93,17 @@ describe('Config class tests', () => {
     });
 
     test('should get simple values', () => {
-      expect(config.get('$.app.name')).toBe('MyApp');
-      expect(config.get('$.app.version')).toBe('2.0');
+      expect(config.get('app.name')).toBe('MyApp');
+      expect(config.get('app.version')).toBe('2.0');
     });
 
     test('should get nested values', () => {
-      expect(config.get('$.app.settings.debug')).toBe(true);
-      expect(config.get('$.app.settings.timeout')).toBe(5000);
+      expect(config.get('app.settings.debug')).toBe(true);
+      expect(config.get('app.settings.timeout')).toBe(5000);
     });
 
     test('should get entire objects', () => {
-      const dbConfig = config.get('$.database');
+      const dbConfig = config.get('database');
       expect(dbConfig).toEqual({
         host: 'localhost',
         port: 5432,
@@ -110,36 +111,36 @@ describe('Config class tests', () => {
     });
 
     test('should get array values', () => {
-      const features = config.get('$.features');
+      const features = config.get('features');
       expect(features).toEqual(['auth', 'cache', 'logging']);
     });
 
     test('should get array elements by index', () => {
-      expect(config.get('$.features[0]')).toBe('auth');
-      expect(config.get('$.features[1]')).toBe('cache');
-      expect(config.get('$.features[2]')).toBe('logging');
+      expect(config.get('features[0]')).toBe('auth');
+      expect(config.get('features[1]')).toBe('cache');
+      expect(config.get('features[2]')).toBe('logging');
     });
 
     test('should return default value for non-existent keys', () => {
-      expect(config.get('$.nonexistent', 'default')).toBe('default');
-      expect(config.get('$.app.missing', 'fallback')).toBe('fallback');
+      expect(config.get('nonexistent', 'default')).toBe('default');
+      expect(config.get('app.missing', 'fallback')).toBe('fallback');
     });
 
     test('should return undefined when no default provided', () => {
-      expect(config.get('$.nonexistent')).toBeUndefined();
+      expect(config.get('nonexistent')).toBeUndefined();
     });
 
     test('should handle boolean false values correctly', () => {
-      expect(config.get('$.enabled')).toBe(false);
+      expect(config.get('enabled')).toBe(false);
     });
 
     test('should handle zero values correctly', () => {
-      expect(config.get('$.count')).toBe(0);
+      expect(config.get('count')).toBe(0);
     });
 
     test('should use JSONPath queries', () => {
       // Get all feature names
-      const allFeatures = config.get('$.features[*]');
+      const allFeatures = config.get('features[*]');
       expect(allFeatures).toBe('auth'); // JSONPath returns first match
     });
 
@@ -159,16 +160,16 @@ describe('Config class tests', () => {
     });
 
     test('should get existing values', () => {
-      expect(config.getOrFail('$.existing')).toBe('value');
-      expect(config.getOrFail('$.nested.key')).toBe('data');
+      expect(config.getOrFail('existing')).toBe('value');
+      expect(config.getOrFail('nested.key')).toBe('data');
     });
 
     test('should return default value for non-existent keys', () => {
-      expect(config.getOrFail('$.nonexistent', 'default')).toBe('default');
+      expect(config.getOrFail('nonexistent', 'default')).toBe('default');
     });
 
     test('should return undefined when no default and key not found', () => {
-      expect(config.getOrFail('$.missing')).toBeUndefined();
+      expect(config.getOrFail('missing')).toBeUndefined();
     });
   });
 
@@ -188,23 +189,23 @@ describe('Config class tests', () => {
     });
 
     test('should return true for existing keys', () => {
-      expect(config.has('$.app')).toBe(true);
-      expect(config.has('$.app.name')).toBe(true);
-      expect(config.has('$.app.settings.debug')).toBe(true);
+      expect(config.has('app')).toBe(true);
+      expect(config.has('app.name')).toBe(true);
+      expect(config.has('app.settings.debug')).toBe(true);
     });
 
     test('should return false for non-existent keys', () => {
-      expect(config.has('$.nonexistent')).toBe(false);
-      expect(config.has('$.app.missing')).toBe(false);
+      expect(config.has('nonexistent')).toBe(false);
+      expect(config.has('app.missing')).toBe(false);
     });
 
     test('should return true for falsy values', () => {
-      expect(config.has('$.count')).toBe(true); // 0
-      expect(config.has('$.enabled')).toBe(true); // false
+      expect(config.has('count')).toBe(true); // 0
+      expect(config.has('enabled')).toBe(true); // false
     });
 
     test('should return true for null values', () => {
-      expect(config.has('$.nullable')).toBe(true);
+      expect(config.has('nullable')).toBe(true);
     });
 
     test('should handle invalid JSONPath gracefully', () => {
@@ -253,7 +254,7 @@ describe('Config class tests', () => {
           },
         },
       });
-      expect(config.get('$.level1.level2.level3.level4.value')).toBe('deep');
+      expect(config.get('level1.level2.level3.level4.value')).toBe('deep');
     });
 
     test('should handle arrays of objects', () => {
@@ -264,8 +265,8 @@ describe('Config class tests', () => {
           { id: 3, name: 'Charlie' },
         ],
       });
-      expect(config.get('$.users[0].name')).toBe('Alice');
-      expect(config.get('$.users[1].id')).toBe(2);
+      expect(config.get('users[0].name')).toBe('Alice');
+      expect(config.get('users[1].id')).toBe(2);
     });
 
     test('should handle mixed data types', () => {
@@ -277,12 +278,12 @@ describe('Config class tests', () => {
         object: { key: 'value' },
         nullable: null,
       });
-      expect(config.get('$.string')).toBe('text');
-      expect(config.get('$.number')).toBe(42);
-      expect(config.get('$.boolean')).toBe(true);
-      expect(config.get('$.array')).toEqual([1, 2, 3]);
-      expect(config.get('$.object')).toEqual({ key: 'value' });
-      expect(config.get('$.nullable')).toBeNull();
+      expect(config.get('string')).toBe('text');
+      expect(config.get('number')).toBe(42);
+      expect(config.get('boolean')).toBe(true);
+      expect(config.get('array')).toEqual([1, 2, 3]);
+      expect(config.get('object')).toEqual({ key: 'value' });
+      expect(config.get('nullable')).toBeNull();
     });
 
     test('should preserve data types through load', () => {
@@ -294,10 +295,10 @@ describe('Config class tests', () => {
       };
       config.load(originalConfig);
 
-      expect(typeof config.get('$.num')).toBe('number');
-      expect(typeof config.get('$.str')).toBe('string');
-      expect(typeof config.get('$.bool')).toBe('boolean');
-      expect(Array.isArray(config.get('$.arr'))).toBe(true);
+      expect(typeof config.get('num')).toBe('number');
+      expect(typeof config.get('str')).toBe('string');
+      expect(typeof config.get('bool')).toBe('boolean');
+      expect(Array.isArray(config.get('arr'))).toBe(true);
     });
   });
 
@@ -320,14 +321,25 @@ describe('Config class tests', () => {
     });
 
     test('should access nested arrays', () => {
-      expect(config.get('$.store.book[0].title')).toBe('Sayings of the Century');
-      expect(config.get('$.store.book[1].author')).toBe('Evelyn Waugh');
+      expect(config.get('store.book[0].title')).toBe('Sayings of the Century');
+      expect(config.get('store.book[1].author')).toBe('Evelyn Waugh');
     });
 
     test('should work with basic path expressions', () => {
-      const firstBook = config.get('$.store.book[0]');
+      const firstBook = config.get('store.book[0]');
       expect(firstBook.category).toBe('reference');
       expect(firstBook.price).toBe(8.95);
     });
+
+    test('functional values', () => {
+      let c = new Config();
+      c.load({
+        'v1' : () => 100,
+        'v2': 200
+      });
+
+      expect(c.get('v2')).toBe(200);
+      expect(c.get('v1')).toBe(100);
+    })
   });
 });

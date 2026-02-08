@@ -1,5 +1,6 @@
 // a class to manage configuration settings
 import { JSONPath } from 'jsonpath-plus';
+import { Arr } from '@devbro/neko-helper';
 
 /**
  * Interface for defining typed configuration keys.
@@ -9,9 +10,9 @@ import { JSONPath } from 'jsonpath-plus';
  * ```ts
  * declare module '@devbro/neko-config' {
  *   interface ConfigKeys {
- *     '$.app.name': string;
- *     '$.app.port': number;
- *     '$.database.host': string;
+ *     'app.name': string;
+ *     'app.port': number;
+ *     'database.host': string;
  *   }
  * }
  * ```
@@ -57,7 +58,7 @@ export class Config {
    * @param new_config_data - The configuration data to load
    */
   public load(new_config_data: Record<string, any>): void {
-    this.configs = JSON.parse(JSON.stringify(new_config_data));
+    this.configs = Arr.deepClone(new_config_data)
   }
 
   /**
@@ -73,7 +74,11 @@ export class Config {
     try {
       const results = JSONPath({ path: key as string, json: this.configs });
       // @ts-ignore
-      return results.length > 0 ? results[0] : default_value;
+      let rc = results.length > 0 ? results[0] : default_value;
+      if(typeof rc === 'function') {
+        rc = rc();
+      }
+      return rc;
     } catch (error) {
       // @ts-ignore
       return default_value;
