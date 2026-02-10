@@ -161,7 +161,8 @@ console.log(config.get('f1'));
 
 There are a few details and limitations that need to be kept in mind:
 - functional configs cannot be async, if your config is returning a promise, then you need to `await config.get('f1');`
-- function configs cannot recieve arguments.
+- functional configs cannot recieve arguments.
+- functional configs are called on each `get()`
 
 ### Multiple Configuration Instances
 
@@ -191,6 +192,36 @@ testConfig.load({
 console.log(appConfig.get('environment')); // 'production'
 console.log(testConfig.get('environment')); // 'test'
 ```
+
+### NODE_ENV and environment specific configs
+We can use `loadConfig` to load files that contain environment specific configs:
+```ts
+//logger.ts
+import { ctxSafe } from "@devbro/pashmak/context";
+import { LogMessage } from "@devbro/pashmak/logger";
+
+export default {
+  level: "info",
+  extrasFunction: (message: LogMessage) => {
+    let requestId = ctxSafe()?.get("requestId");
+    requestId && (message.requestId = requestId);
+    return message;
+  },
+};
+
+export const $test = {
+  level: "silent",
+}
+
+//default.ts
+let project_configs = {
+  ...
+  loggers: await loadConfig("./loggers"),
+  ...
+}
+```
+
+If value of a config is a `Promise` it will be resolved at `load()` so the value is calculated only once.
 
 ## API Reference
 
