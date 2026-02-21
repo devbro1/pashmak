@@ -71,7 +71,6 @@ export class Config {
       let envValues: JSONObject | undefined = undefined;
       for(let key of keys) {
         if(key.startsWith('$') && key !== `$${this.options.env}` ) {
-          console.log('Removing env reference', key);
           delete value[key];
         }
         else if(key.startsWith('$') && key === `$${this.options.env}`) {

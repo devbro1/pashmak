@@ -28,7 +28,6 @@ describe('Config class special features', () =>
             'v2': 200,
             'v3': new Promise((resolve) => setTimeout(() => {count++; resolve(300)}, 100))
         };
-        console.log('is', envVars.v1 instanceof Promise);
         let c = new Config();
         await c.load(envVars);
 
@@ -46,7 +45,7 @@ describe('Config class special features', () =>
     });
 
 
-    test.only('env references', async () =>
+    test('env references', async () =>
     {
         let envVars = {
             'v1': 100,
@@ -79,7 +78,6 @@ describe('Config class special features', () =>
         c = new Config({ env: 'stage1' });
         await c.load(envVars);
 
-        console.log(c.all());
         expect(c.get('v1')).toBe(100);
         expect(c.get('v2')).toBe(300);
         expect(c.get('v3.v4')).toBe(350);
