@@ -367,8 +367,13 @@ export function deepClone<T = any>(obj: T, visited = new WeakMap()): T {
     return obj;
   }
 
-  if(typeof obj === 'symbol') {
+  if(obj instanceof Promise) {
     return obj;
+  }
+
+  if(typeof obj === 'symbol') {
+    // @ts-ignore
+    return Symbol(obj.description);
   }
 
   // Handle circular references
@@ -531,4 +536,30 @@ export async function evaluateAllNodes<T>(
   }
 
   return rc;
+}
+
+
+/**
+ * traverse an object and apply a function to all branches (objects and arrays)
+ * @param obj object to be traversed 
+ * @param func function to be applied to each branch
+ * @returns traversed object
+ */
+export async function evaluateAllBranches(obj: Record<string, any>, func: (node: any) => any): Promise<Record<string, any>> {
+  const rc: Record<string, any> = Array.isArray(obj) ? [] : {};
+
+  for (const key in obj) {
+    const value = obj[key];
+
+    if(value instanceof Promise) {
+      rc[key] = await func(await value);
+    }
+    else if (value !== null && (typeof value === 'object' || Array.isArray(value))) {
+      rc[key] = await func(await evaluateAllBranches(value, func));
+    } else {
+      rc[key] = value;
+    }
+  }
+
+  return await func(rc);
 }

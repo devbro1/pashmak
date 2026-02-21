@@ -82,6 +82,40 @@ const apiKey = getEnv('API_KEY', 'default-key');
 
 Import: `import { Arr } from '@devbro/neko-helper';`
 
+
+#### `Arr.evaluateAllBranches(obj: Record<string, any>, func: (node: any) => any): Promise<Record<string, any>>`
+
+Recursively traverses an object or array and applies an async function to all branches (objects and arrays), returning a new object with the transformed branches. Leaves primitive values unchanged.
+
+```typescript
+const input = {
+  a: 1,
+  b: {
+    c: 2,
+    d: [3, 4]
+  }
+};
+
+const result = await Arr.evaluateAllBranches(input, async (branch) => {
+  if (Array.isArray(branch)) return branch.reverse();
+  return branch;
+});
+// result:
+// {
+//   a: 1,
+//   b: {
+//     c: 2,
+//     d: [4, 3]
+//   }
+// }
+```
+
+**Use Cases:**
+- Transforming or validating all nested arrays/objects in a data structure
+- Recursively applying a normalization or filtering function
+- Preparing deeply nested data for serialization or API output
+
+---
 #### `Arr.intersperse<T, S>(arr: T[], sep: S): (T | S)[]`
 
 Insert a separator between array elements.
@@ -606,6 +640,7 @@ const value: JSONValue = 'can be any JSON-compatible value';
 - `sample<T>(arr: T[]): T`
 - `sum(arr: number[]): number`
 - `average(arr: number[]): number`
+ - `evaluateAllBranches(obj: Record<string, any>, func: (node: any) => any): Promise<Record<string, any>>`
 
 ### Number Module (`Num`)
 
