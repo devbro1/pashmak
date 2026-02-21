@@ -11,13 +11,18 @@ export type DotPaths<T> = {
       : K;
 }[keyof T & string];
 
-export type DotPathValue<T, P extends string> = P extends `${infer K}.${infer Rest}`
-  ? K extends keyof T
-    ? DotPathValue<T[K], Rest>
-    : never
-  : P extends keyof T
-  ? T[P]
-  : never;
+export type DotPathValue<T, P extends string> =
+  P extends `${infer K}.${infer Rest}`
+    ? K extends keyof T
+      ? DotPathValue<T[K], Rest>
+      : never
+    : P extends keyof T
+      ? T[P] extends (...args: any[]) => any
+        ? ReturnType<T[P]>
+        : T[P] extends Promise<infer U>
+          ? U
+          : T[P]
+      : never;
 
 export type DotPathRecord<T> = {
   [P in DotPaths<WithoutDollarKeys<T>>]: DotPathValue<T, P>;
