@@ -4,6 +4,7 @@ export default defineConfig([
   {
     entry: ['src/**/*.ts', 'src/**/*.mts'],
     format: ['esm'],
+    outDir: 'dist/esm',
     dts: true,
     splitting: false,
     sourcemap: true,
@@ -14,7 +15,8 @@ export default defineConfig([
   {
     entry: ['src/index.ts'],
     format: ['cjs'],
-    dts: false,
+    outDir: 'dist/cjs',
+    dts: true,
     splitting: false,
     sourcemap: true,
     clean: true,
