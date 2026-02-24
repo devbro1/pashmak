@@ -16,13 +16,11 @@
     },
     "./errors": {
       "types": "./dist/esm/errors.d.ts",
-      "import": "./dist/esm/errors.mjs",
-      "require": "./dist/cjs/errors.js"
+      "import": "./dist/esm/errors.mjs"
     },
     "./*": {
       "types": "./dist/esm/*.d.ts",
-      "import": "./dist/esm/*.mjs",
-      "require": "./dist/cjs/*.js"
+      "import": "./dist/esm/*.mjs"
     }
   },
   "scripts": {
