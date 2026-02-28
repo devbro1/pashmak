@@ -2,9 +2,9 @@
   "name": "@devbro/pashmak",
   "version": "0.1.53",
   "description": "testing application for the entire repo",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.mjs",
+  "types": "./dist/cjs/index.d.ts",
   "bin": {
     "pashmak": "./dist/bin/pashmak_cli.cjs"
   },
@@ -13,94 +13,94 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.mjs",
+      "require": "./dist/cjs/index.js"
     },
     "./facades": {
-      "types": "./dist/facades.d.ts",
-      "import": "./dist/facades.mjs",
-      "require": "./dist/facades.js"
+      "types": "./dist/esm/facades.d.ts",
+      "import": "./dist/esm/facades.mjs",
+      "require": "./dist/cjs/facades.js"
     },
     "./router": {
-      "types": "./dist/router.d.ts",
-      "import": "./dist/router.mjs",
-      "require": "./dist/router.js"
+      "types": "./dist/esm/router.d.ts",
+      "import": "./dist/esm/router.mjs",
+      "require": "./dist/cjs/router.js"
     },
     "./initialize": {
-      "types": "./dist/initialize.d.ts",
-      "import": "./dist/initialize.mjs",
-      "require": "./dist/initialize.js"
+      "types": "./dist/esm/initialize.d.ts",
+      "import": "./dist/esm/initialize.mjs",
+      "require": "./dist/cjs/initialize.js"
     },
     "./http": {
-      "types": "./dist/http.d.ts",
-      "import": "./dist/http.mjs",
-      "require": "./dist/http.js"
+      "types": "./dist/esm/http.d.ts",
+      "import": "./dist/esm/http.mjs",
+      "require": "./dist/cjs/http.js"
     },
     "./config": {
-      "types": "./dist/config.d.ts",
-      "import": "./dist/config.mjs",
-      "require": "./dist/config.js"
+      "types": "./dist/esm/config.d.ts",
+      "import": "./dist/esm/config.mjs",
+      "require": "./dist/cjs/config.js"
     },
     "./cache": {
-      "types": "./dist/cache.d.ts",
-      "import": "./dist/cache.mjs",
-      "require": "./dist/cache.js"
+      "types": "./dist/esm/cache.d.ts",
+      "import": "./dist/esm/cache.mjs",
+      "require": "./dist/cjs/cache.js"
     },
     "./sql": {
-      "types": "./dist/sql.d.ts",
-      "import": "./dist/sql.mjs",
-      "require": "./dist/sql.js"
+      "types": "./dist/esm/sql.d.ts",
+      "import": "./dist/esm/sql.mjs",
+      "require": "./dist/cjs/sql.js"
     },
     "./context": {
-      "types": "./dist/context.d.ts",
-      "import": "./dist/context.mjs",
-      "require": "./dist/context.js"
+      "types": "./dist/esm/context.d.ts",
+      "import": "./dist/esm/context.mjs",
+      "require": "./dist/cjs/context.js"
     },
     "./factories": {
-      "types": "./dist/factories.d.ts",
-      "import": "./dist/factories.mjs",
-      "require": "./dist/factories.js"
+      "types": "./dist/esm/factories.d.ts",
+      "import": "./dist/esm/factories.mjs",
+      "require": "./dist/cjs/factories.js"
     },
     "./global": {
-      "types": "./dist/global.d.ts",
-      "import": "./dist/global.mjs",
-      "require": "./dist/global.js"
+      "types": "./dist/esm/global.d.ts",
+      "import": "./dist/esm/global.mjs",
+      "require": "./dist/cjs/global.js"
     },
     "./helper": {
-      "types": "./dist/helper.d.ts",
-      "import": "./dist/helper.mjs",
-      "require": "./dist/helper.js"
+      "types": "./dist/esm/helper.d.ts",
+      "import": "./dist/esm/helper.mjs",
+      "require": "./dist/cjs/helper.js"
     },
     "./logger": {
-      "types": "./dist/logger.d.ts",
-      "import": "./dist/logger.mjs",
-      "require": "./dist/logger.js"
+      "types": "./dist/esm/logger.d.ts",
+      "import": "./dist/esm/logger.mjs",
+      "require": "./dist/cjs/logger.js"
     },
     "./orm": {
-      "types": "./dist/orm.d.ts",
-      "import": "./dist/orm.mjs",
-      "require": "./dist/orm.js"
+      "types": "./dist/esm/orm.d.ts",
+      "import": "./dist/esm/orm.mjs",
+      "require": "./dist/cjs/orm.js"
     },
     "./queue": {
-      "types": "./dist/queue.d.ts",
-      "import": "./dist/queue.mjs",
-      "require": "./dist/queue.js"
+      "types": "./dist/esm/queue.d.ts",
+      "import": "./dist/esm/queue.mjs",
+      "require": "./dist/cjs/queue.js"
     },
     "./mailer": {
-      "types": "./dist/mailer.d.ts",
-      "import": "./dist/mailer.mjs",
-      "require": "./dist/mailer.js"
+      "types": "./dist/esm/mailer.d.ts",
+      "import": "./dist/esm/mailer.mjs",
+      "require": "./dist/cjs/mailer.js"
     },
     "./middlewares": {
-      "types": "./dist/middlewares.d.ts",
-      "import": "./dist/middlewares.mjs",
-      "require": "./dist/middlewares.js"
+      "types": "./dist/esm/middlewares.d.ts",
+      "import": "./dist/esm/middlewares.mjs",
+      "require": "./dist/cjs/middlewares.js"
     },
     "./storage": {
-      "types": "./dist/storage.d.ts",
-      "import": "./dist/storage.mjs",
-      "require": "./dist/storage.js"
+      "types": "./dist/esm/storage.d.ts",
+      "import": "./dist/esm/storage.mjs",
+      "require": "./dist/cjs/storage.js"
     },
     "./package.json": "./package.json"
   },
