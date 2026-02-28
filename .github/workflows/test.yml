@@ -50,6 +50,11 @@ jobs:
       NODE_ENV: test
       REDIS_HOST: localhost
       MEMCACHE_HOST: localhost
+      MYSQL_HOST: localhost
+      MYSQL_PORT: 3306
+      MYSQL_USER: dbadmin
+      MYSQL_PASSWORD: dbpassword
+      MYSQL_DATABASE: practice_db_1
     steps:
       - uses: actions/checkout@v4
       # Setup .npmrc file to publish to npm
