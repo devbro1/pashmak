@@ -7,6 +7,7 @@ import { Schema } from '../../Schema.mjs';
 import { SqliteSchemaGrammar } from './SqliteSchemaGrammar.mjs';
 import { EventManager } from '@devbro/neko-helper';
 import * as fs from 'fs';
+import { loadPackage } from '../../helper.mjs';
 
 /**
  * Configuration options for SQLite database connection
@@ -58,7 +59,7 @@ export class SqliteConnection extends ConnectionAbs {
   constructor(params: SqliteConfig) {
     super();
     if (!SqliteConnection.sqlite) {
-      SqliteConnection.sqlite = require('better-sqlite3');
+      SqliteConnection.sqlite = loadPackage('better-sqlite3');
     }
     this.config = { ...SqliteConnection.defaults, ...params } as SqliteConfig;
   }

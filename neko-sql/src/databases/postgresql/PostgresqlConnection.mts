@@ -1,5 +1,5 @@
 import { connection_events, Connection as ConnectionAbs } from '../../Connection.mjs';
-import { Client, PoolClient, PoolConfig } from 'pg';
+import type { Client, PoolClient, PoolConfig } from 'pg';
 import type pg from 'pg';
 import { CompiledSql } from '../../types.mjs';
 import { Query } from '../../Query.mjs';
@@ -170,7 +170,7 @@ export class PostgresqlConnection extends ConnectionAbs {
       return;
     }
 
-    const conn = new Client({
+    const conn = new PostgresqlConnection.pg.Client({
       ...PostgresqlConnection.pool.options,
       database: 'postgres',
     });
@@ -187,7 +187,7 @@ export class PostgresqlConnection extends ConnectionAbs {
       return;
     }
 
-    const conn = new Client({
+    const conn = new PostgresqlConnection.pg.Client({
       ...PostgresqlConnection.pool.options,
       database: 'postgres', // connect to default 'postgres' database to drop others
     });
@@ -209,7 +209,7 @@ export class PostgresqlConnection extends ConnectionAbs {
 
   async existsDatabase(name: string): Promise<boolean> {
     if (!this.isConnected()) {
-      const conn = new Client({
+      const conn = new PostgresqlConnection.pg.Client({
         ...PostgresqlConnection.pool.options,
         database: 'postgres',
       });

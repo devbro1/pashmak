@@ -4,7 +4,6 @@ dotenv.config();
 import { bootstrap } from "@devbro/pashmak";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
-import { loadConfig } from "c12";
 
 const { config: config_data } = await loadConfig({
   cwd: dirname(fileURLToPath(import.meta.url)),
