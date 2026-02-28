@@ -1,7 +1,7 @@
 {
   "name": "@devbro/pashmak",
   "version": "0.1.54",
-  "description": "testing application for the entire repo",
+  "description": "Pashmak framework, the framework that aims to be the easiest framework for all",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
   "types": "./dist/cjs/index.d.ts",
@@ -120,7 +120,7 @@
     "@swc/core": "^1.12.9",
     "@types/yup": "^0.32.0",
     "globby": "^14.1.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@devbro/neko-cache": "0.1.*",
