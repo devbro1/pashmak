@@ -5,7 +5,7 @@ const files = await globby("src/**/*.tpl");
 
 await Promise.all(
   files.map(async (file) => {
-    const dest = file.replace(/^src\//, "dist/");
+    const dest = file.replace(/^src\//, "dist/esm/");
     await cp(file, dest, { recursive: true });
   }),
 );
