@@ -78,7 +78,7 @@ export class Route {
   }
 
   /**
-   * to evaludate if request is a match for this route
+   * to evaluadate if request is a match for this route
    * @param request http request
    * @returns return true if route is a match for this request
    */

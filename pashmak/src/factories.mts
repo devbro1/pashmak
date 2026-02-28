@@ -127,6 +127,8 @@ CacheProviderFactory.register("disabled", (opt) => {
   return new DisabledCacheProvider();
 });
 
+/* STORAGE */
+
 StorageProviderFactory.register("local", (opt) => {
   return new LocalStorageProvider(opt);
 });

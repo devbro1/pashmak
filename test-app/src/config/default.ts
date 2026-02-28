@@ -11,7 +11,7 @@ const __dirname = dirname(__filename);
 let project_configs = {
   databases: await import("./databases"),
   storages: await import("./storages"),
-  port: getEnv("PORT", 3000),
+  port: parseInt(getEnv("PORT", "3000")),
   file_upload_path: path.join(os.tmpdir(), ""),
   migration: {
     path: path.join(__dirname, "..", "database/migrations"),

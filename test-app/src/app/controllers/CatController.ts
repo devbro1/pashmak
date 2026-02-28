@@ -64,6 +64,7 @@ export class CatController extends BaseController {
 
   @Get({ path: "/:id/:id2" })
   showById(@Param("id2") ss: string, @Param("id") id: string) {
+    let p: string = config.get("port");
     return {
       id,
       ss,
