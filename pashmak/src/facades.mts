@@ -12,7 +12,6 @@ import {
 import { config } from "@devbro/neko-config";
 import { Cli } from "clipanion";
 import { HttpServer, handleHttpErrors } from "./http.mjs";
-import * as yup from "yup";
 import { Logger } from "@devbro/neko-logger";
 import { CacheProviderFactory } from "./factories.mjs";
 import { Cache } from "@devbro/neko-cache";
