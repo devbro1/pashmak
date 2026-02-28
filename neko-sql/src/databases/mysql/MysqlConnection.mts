@@ -1,11 +1,12 @@
 import { connection_events, Connection as ConnectionAbs } from '../../Connection.mjs';
-import mysql from 'mysql2/promise';
+import type mysql from 'mysql2/promise';
 import { CompiledSql } from '../../types.mjs';
 import { Query } from '../../Query.mjs';
 import { MysqlQueryGrammar } from './MysqlQueryGrammar.mjs';
 import { Schema } from '../../Schema.mjs';
 import { MysqlSchemaGrammar } from './MysqlSchemaGrammar.mjs';
 import { EventManager } from '@devbro/neko-helper';
+import { loadPackage } from '../../helper.mjs';
 
 export class MysqlConnection extends ConnectionAbs {
   private eventManager = new EventManager();
@@ -25,6 +26,7 @@ export class MysqlConnection extends ConnectionAbs {
   connection: mysql.PoolConnection | undefined;
   static pool: mysql.Pool;
   static poolConfig: mysql.PoolOptions;
+  static mysql: typeof mysql;
 
   static defaults: mysql.PoolOptions = {
     port: 3306,
@@ -37,9 +39,12 @@ export class MysqlConnection extends ConnectionAbs {
 
   constructor(params: mysql.PoolOptions) {
     super();
+    if (!MysqlConnection.mysql) {
+      MysqlConnection.mysql = loadPackage('mysql2/promise') as typeof mysql;
+    }
     if (!MysqlConnection.pool) {
       MysqlConnection.poolConfig = { ...MysqlConnection.defaults, ...params };
-      MysqlConnection.pool = mysql.createPool(MysqlConnection.poolConfig);
+      MysqlConnection.pool = MysqlConnection.mysql.createPool(MysqlConnection.poolConfig);
     }
   }
   async connect(): Promise<boolean> {
@@ -161,7 +166,7 @@ export class MysqlConnection extends ConnectionAbs {
 
   async createDatabase(name: string): Promise<void> {
     if (!this.isConnected()) {
-      const tempConn = await mysql.createConnection({
+      const tempConn = await MysqlConnection.mysql.createConnection({
         host: MysqlConnection.poolConfig.host,
         user: MysqlConnection.poolConfig.user,
         password: MysqlConnection.poolConfig.password,
@@ -169,14 +174,13 @@ export class MysqlConnection extends ConnectionAbs {
       });
 
       const safeName = this.validateAndEscapeIdentifier(name);
-      console.log(safeName);
-      let [rows] = await tempConn.query(`CREATE DATABASE ${safeName}`);
+      await tempConn.query(`CREATE DATABASE ${safeName}`);
 
       await tempConn.end();
       return;
     }
 
-    const tempConn = await mysql.createConnection({
+    const tempConn = await MysqlConnection.mysql.createConnection({
       host: MysqlConnection.poolConfig.host,
       user: MysqlConnection.poolConfig.user,
       password: MysqlConnection.poolConfig.password,
@@ -192,7 +196,7 @@ export class MysqlConnection extends ConnectionAbs {
       throw new Error('Cannot drop database while connected.');
     }
 
-    const tempConn = await mysql.createConnection({
+    const tempConn = await MysqlConnection.mysql.createConnection({
       host: MysqlConnection.poolConfig.host,
       user: MysqlConnection.poolConfig.user,
       password: MysqlConnection.poolConfig.password,
@@ -213,14 +217,14 @@ export class MysqlConnection extends ConnectionAbs {
 
   async existsDatabase(name: string): Promise<boolean> {
     if (!this.isConnected()) {
-      const tempConn = await mysql.createConnection({
+      const tempConn = await MysqlConnection.mysql.createConnection({
         host: MysqlConnection.poolConfig.host,
         user: MysqlConnection.poolConfig.user,
         password: MysqlConnection.poolConfig.password,
         port: MysqlConnection.poolConfig.port,
       });
 
-      let [rows] = await tempConn.query<mysql.RowDataPacket[]>(
+      const [rows] = await tempConn.query<mysql.RowDataPacket[]>(
         'SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ?',
         [name]
       );

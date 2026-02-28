@@ -1,13 +1,14 @@
 import { connection_events, Connection as ConnectionAbs } from '../../Connection.mjs';
 import { Client, PoolClient, PoolConfig } from 'pg';
-import { Pool } from 'pg';
+import type pg from 'pg';
 import { CompiledSql } from '../../types.mjs';
 import { Query } from '../../Query.mjs';
 import { PostgresqlQueryGrammar } from './PostgresqlQueryGrammar.mjs';
 import { Schema } from '../../Schema.mjs';
 import { PostgresqlSchemaGrammar } from './PostgresqlSchemaGrammar.mjs';
-import Cursor from 'pg-cursor';
+import type pg_cursor from 'pg-cursor';
 import { EventManager } from '@devbro/neko-helper';
+import { loadPackage } from '../../helper.mjs';
 
 export class PostgresqlConnection extends ConnectionAbs {
   private eventManager = new EventManager();
@@ -24,8 +25,10 @@ export class PostgresqlConnection extends ConnectionAbs {
     return this.eventManager.emit(event, ...args);
   }
 
+  static pg: typeof pg;
+  static pg_cursor: typeof pg_cursor;
   connection: PoolClient | undefined;
-  static pool: Pool;
+  static pool: pg.Pool;
 
   static defaults: PoolConfig = {
     port: 5432,
@@ -38,8 +41,15 @@ export class PostgresqlConnection extends ConnectionAbs {
 
   constructor(params: PoolConfig) {
     super();
+    if (!PostgresqlConnection.pg) {
+      PostgresqlConnection.pg = loadPackage('pg');
+      PostgresqlConnection.pg_cursor = loadPackage('pg-cursor');
+    }
     if (!PostgresqlConnection.pool) {
-      PostgresqlConnection.pool = new Pool({ ...PostgresqlConnection.defaults, ...params });
+      PostgresqlConnection.pool = new PostgresqlConnection.pg.Pool({
+        ...PostgresqlConnection.defaults,
+        ...params,
+      });
     }
   }
   async connect(): Promise<boolean> {
@@ -67,7 +77,7 @@ export class PostgresqlConnection extends ConnectionAbs {
   }
 
   async runCursor(sql: CompiledSql): Promise<any> {
-    return this.connection?.query(new Cursor(sql.sql, sql.bindings));
+    return this.connection?.query(new PostgresqlConnection.pg_cursor(sql.sql, sql.bindings));
   }
 
   async disconnect(): Promise<boolean> {
@@ -199,17 +209,15 @@ export class PostgresqlConnection extends ConnectionAbs {
 
   async existsDatabase(name: string): Promise<boolean> {
     if (!this.isConnected()) {
-        const conn = new Client({
-          ...PostgresqlConnection.pool.options,
-          database: 'postgres',
-        });
-        await conn.connect();
-        const safeName = this.validateAndEscapeIdentifier(name);
-        const result = await conn.query('SELECT 1 FROM pg_database WHERE datname = $1', [
-          safeName,
-        ]);
-        await conn.end();
-        return result.rows.length > 0;
+      const conn = new Client({
+        ...PostgresqlConnection.pool.options,
+        database: 'postgres',
+      });
+      await conn.connect();
+      const safeName = this.validateAndEscapeIdentifier(name);
+      const result = await conn.query('SELECT 1 FROM pg_database WHERE datname = $1', [safeName]);
+      await conn.end();
+      return result.rows.length > 0;
     }
 
     const result = await this.connection!.query('SELECT 1 FROM pg_database WHERE datname = $1', [

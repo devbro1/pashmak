@@ -35,7 +35,7 @@ function getDatabaseConnections(): [string, Connection][] {
   ]);
 
   // mysql
-  let db_config_mysql = {
+  const db_config_mysql = {
     host: process.env.MYSQL_HOST,
     database: db_name,
     user: process.env.MYSQL_USERNAME,

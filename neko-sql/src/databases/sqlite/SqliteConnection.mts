@@ -1,5 +1,5 @@
 import { connection_events, Connection as ConnectionAbs } from '../../Connection.mjs';
-import Database from 'better-sqlite3';
+import type Database from 'better-sqlite3';
 import { CompiledSql } from '../../types.mjs';
 import { Query } from '../../Query.mjs';
 import { SqliteQueryGrammar } from './SqliteQueryGrammar.mjs';
@@ -57,8 +57,13 @@ export class SqliteConnection extends ConnectionAbs {
 
   constructor(params: SqliteConfig) {
     super();
+    if (!SqliteConnection.sqlite) {
+      SqliteConnection.sqlite = require('better-sqlite3');
+    }
     this.config = { ...SqliteConnection.defaults, ...params } as SqliteConfig;
   }
+
+  static sqlite: typeof Database;
 
   /**
    * Establishes a connection to the SQLite database
@@ -66,7 +71,7 @@ export class SqliteConnection extends ConnectionAbs {
    */
   async connect(): Promise<boolean> {
     this.eventManager.emit('connect').catch(() => {});
-    this.connection = new Database(this.config.filename, {
+    this.connection = new SqliteConnection.sqlite(this.config.filename, {
       readonly: this.config.readonly,
       fileMustExist: this.config.fileMustExist,
       timeout: this.config.timeout,
@@ -251,7 +256,7 @@ export class SqliteConnection extends ConnectionAbs {
   async createDatabase(name: string): Promise<void> {
     // SQLite databases are files, creating a database means creating a new connection
     const dbPath = name.endsWith('.db') ? name : `${name}.db`;
-    const tempDb = new Database(dbPath);
+    const tempDb = new SqliteConnection.sqlite(dbPath);
     tempDb.close();
   }
 
