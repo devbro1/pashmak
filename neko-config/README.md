@@ -1,85 +1,334 @@
 # @devbro/neko-config
 
-Part of neko and pashmak ecosystem, it is a super simple library to manage configs in your projects easily.
+A lightweight, type-safe configuration management library with TypeScript support. Part of the Neko and Pashmak ecosystem. tested with Nodejs and Bun.
 
-## Basic Usage
+## Installation
 
-```ts
-// loader.ts
-import { config } from '@devbro/neko-config';
-
-config.load(json_data_from_file);
-
-// main_code.ts
-import { config, Config } from '@devbro/neko-config';
-
-// get a value with a default value
-config.get('PORT', 3000);
-
-// get a value. if it does not exists we get undefined
-config.get('security_key');
-config.get('databases.primary.uri');
-config.get('cache.redis[2].uri');
-
-//check if a given key exists
-config.has('PORT');
-
-//get the entire json config
-config.all();
+```bash
+npm install @devbro/neko-config
 ```
 
-## Typed Configuration Keys
+## Features
 
-You can define typed configuration keys using TypeScript module augmentation. This provides type safety and autocomplete for your configuration keys.
+- 🎯 **Simple API** - Easy to use with intuitive methods
+- 🔒 **Type-Safe** - Full TypeScript support with autocomplete
+- 🌲 **Nested Access** - Access deeply nested values using dot notation
+- 🔄 **Multiple Instances** - Support for multiple configuration instances
+- 📦 **Singleton Pattern** - Default singleton instance for convenience
+- 🎨 **Flexible** - Works with any JSON-like configuration structure
+
+## Quick Start
+
+### Loading Configuration
+
+First, load your configuration data in your application entry point:
+
+```ts
+// loader.ts or app.ts
+import { config } from '@devbro/neko-config';
+
+const configData = {
+  app: {
+    name: 'MyApp',
+    port: 3000,
+    debug: true,
+  },
+  database: {
+    primary: {
+      type: 'postgesql',
+      host: 'localhost',
+      port: 5432,
+      uri: 'postgresql://localhost:5432/mydb',
+    },
+  },
+  cache: {
+    redis: [
+      { uri: 'redis://localhost:6379/0' },
+      { uri: 'redis://localhost:6379/1' },
+      { uri: 'redis://localhost:6379/2' },
+    ],
+  },
+  service_is_active: () => { return true; },
+};
+
+config.load(configData);
+```
+
+### Basic Usage
+
+Once loaded, you can access configuration values anywhere in your application:
+
+```ts
+import { config } from '@devbro/neko-config';
+
+// Get a value with a default fallback
+const port = config.get('app.port', 3000);
+
+// Get a nested value
+const dbHost = config.get('database.primary.host');
+
+// Access array elements
+const redisUri = config.get('cache.redis[2].uri');
+
+// Check if a key exists
+if (config.has('app.debug')) {
+  console.log('Debug mode is configured');
+}
+
+// Get the entire configuration object
+const allConfig = config.all();
+```
+
+## Advanced Features
+
+### Typed Configuration Keys
+
+For enhanced type safety and autocomplete, you can define your configuration schema using TypeScript module augmentation. This is especially useful in larger projects where you want to catch configuration errors at compile time.
+
+#### Step 1: Define Your Configuration Types
+
+Create a type declaration file (e.g., `types/config.d.ts` or `src/config.d.ts`):
 
 ```ts
 // types/config.d.ts
 declare module '@devbro/neko-config' {
   interface ConfigKeys {
-    '$.app.name': string;
-    '$.app.port': number;
-    '$.app.debug': boolean;
-    '$.database.host': string;
-    '$.database.port': number;
-    '$.database.username': string;
-    '$.database.password': string;
+    'app.name': string;
+    'app.port': number;
+    'app.debug': boolean;
+    'database.host': string;
+    'database.port': number;
+    'database.username': string;
+    'database.password': string;
+    'cache.redis[0].uri': string;
+    'api.baseUrl': string;
+    'api.timeout': number;
   }
+}
+
+//infer type from existing json object
+import { DotPathRecord } from "@devbro/pashmak/config";
+
+declare module "@devbro/neko-config" {
+  interface ConfigKeys extends DotPathRecord<typeof project_configs> {}
 }
 ```
 
-After defining your typed keys, TypeScript will provide autocomplete and type checking:
+#### Step 2: Enjoy Type Safety
+
+After defining your typed keys, TypeScript will provide full autocomplete and type checking:
 
 ```ts
 import { config } from '@devbro/neko-config';
 
-// TypeScript knows this is a string
-const appName = config.get('$.app.name');
+// ✅ TypeScript knows this is a string - full autocomplete!
+const appName = config.get('app.name');
 
-// TypeScript knows this is a number
-const port = config.get('$.app.port');
+// ✅ TypeScript knows this is a number
+const port = config.get('app.port');
 
-// TypeScript will show an error if you use a key that's not defined
-// (only when ConfigKeys has been augmented)
-// const invalid = config.get('$.app.invalid'); // Error!
+// ✅ Type inference works with default values
+const timeout = config.get('api.timeout', 5000); // number
 
-// You can still use any string key by casting to 'any' if needed
-const dynamicKey = config.get('$.some.dynamic.path' as any);
+// ❌ TypeScript will show an error for undefined keys
+// const invalid = config.get('$.app.nonexistent'); // Error!
+
+// 💡 You can still use dynamic keys when needed
+const dynamicKey = config.get('some.dynamic.path' as any);
 ```
 
-**Note**: If you don't augment the `ConfigKeys` interface, all string keys are accepted (default behavior).
+**Benefits of Typed Configuration:**
 
-## Multiple Config Instances
+- **Autocomplete**: Your IDE will suggest available configuration keys
+- **Type Safety**: Catch typos and missing keys at compile time
+- **Documentation**: Configuration schema serves as self-documenting code
+- **Refactoring**: Safely rename or restructure configuration keys
 
-`config` (lower case c) is a singleton instance of config that can be used anywhere.
-If you want to have multiple instances of Config, you can follow:
+> **Note**: If you don't augment the `ConfigKeys` interface, the library accepts any string key (default behavior), providing maximum flexibility.
+
+### Functional Configs
+There may be situations that config values needs to be calculated using a function. For example, you are loading values from Launch Darkly or values are reloaded periodically from Secret Manager. In these cases you can use a function that is 
+evaluated at `get()` .
 
 ```ts
-// upper case C
-import { config, Config } from '@devbro/neko-config';
+let project_values = {
+  f1: () => { ???? return "hello world!"; }
+}
+config.load(project_values);
 
-const c1 = new Config();
-c1.load(first_set_of_configs);
-
-const c2 = new Config();
-c2.load(second_set_of_configs);
+console.log(config.get('f1'));
 ```
+
+There are a few details and limitations that need to be kept in mind:
+- functional configs cannot be async, if your config is returning a promise, then you need to `await config.get('f1');`
+- functional configs cannot recieve arguments.
+- functional configs are called on each `get()`
+
+### Multiple Configuration Instances
+
+While the singleton `config` instance is convenient for most use cases, you can create multiple independent configuration instances when needed. This is useful for:
+
+- Testing with different configurations
+- Multi-tenant applications
+- Isolating configuration scopes
+
+```ts
+import { Config } from '@devbro/neko-config';
+
+// Create separate configuration instances
+const appConfig = new Config();
+appConfig.load({
+  environment: 'production',
+  features: { newUI: true },
+});
+
+const testConfig = new Config();
+testConfig.load({
+  environment: 'test',
+  features: { newUI: false },
+});
+
+// Each instance maintains its own state
+console.log(appConfig.get('environment')); // 'production'
+console.log(testConfig.get('environment')); // 'test'
+```
+
+### NODE_ENV and environment specific configs
+We can use `loadConfig` to load files that contain environment specific configs:
+```ts
+//logger.ts
+import { ctxSafe } from "@devbro/pashmak/context";
+import { LogMessage } from "@devbro/pashmak/logger";
+
+export default {
+  level: "info",
+  extrasFunction: (message: LogMessage) => {
+    let requestId = ctxSafe()?.get("requestId");
+    requestId && (message.requestId = requestId);
+    return message;
+  },
+};
+
+export const $test = {
+  level: "silent",
+}
+
+//default.ts
+let project_configs = {
+  ...
+  loggers: await loadConfig("./loggers"),
+  ...
+}
+```
+
+If value of a config is a `Promise` it will be resolved at `load()` so the value is calculated only once.
+
+## API Reference
+
+### `Config` Class
+
+#### Methods
+
+##### `load(data: object): void`
+
+Load configuration data into the instance.
+
+```ts
+config.load({ app: { name: 'MyApp' } });
+```
+
+##### `get(key: string, defaultValue?: T): T`
+
+Retrieve a configuration value by key. Returns the default value if the key doesn't exist.
+
+```ts
+const port = config.get('app.port', 3000);
+const name = config.get<string>('app.name');
+```
+
+##### `has(key: string): boolean`
+
+Check if a configuration key exists.
+
+```ts
+if (config.has('database.uri')) {
+  // Configuration exists
+}
+```
+
+##### `all(): object`
+
+Get the entire configuration object.
+
+```ts
+const allConfig = config.all();
+```
+
+### Dot Notation
+
+The library supports flexible dot notation for accessing nested values:
+
+```ts
+// Object properties
+config.get('database.primary.host');
+
+// Array elements
+config.get('servers[0].url');
+
+// Mixed
+config.get('services.api.endpoints[0].path');
+```
+
+## Best Practices
+
+1. **Load Early**: Load your configuration as early as possible in your application lifecycle
+2. **Use Types**: Define typed configuration keys for better developer experience
+3. **Environment Variables**: Combine with environment variables for different deployment environments
+4. **Default Values**: Always provide sensible defaults when calling `get()`
+5. **Validation**: Validate critical configuration values after loading
+
+## Example: Complete Setup
+
+```ts
+// config/index.ts
+import { config } from '@devbro/neko-config';
+import fs from 'fs';
+import path from 'path';
+
+// Load configuration from file
+const configPath = path.join(__dirname, 'config.json');
+const configData = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+
+// Merge with environment variables
+const finalConfig = {
+  ...configData,
+  app: {
+    ...configData.app,
+    port: process.env.PORT || configData.app.port,
+    env: process.env.NODE_ENV || 'development',
+  },
+};
+
+config.load(finalConfig);
+
+// Export for use in other modules
+export { config };
+```
+
+```ts
+// app.ts
+import { config } from './config';
+
+const port = config.get('app.port', 3000);
+const appName = config.get('app.name');
+
+console.log(`Starting ${appName} on port ${port}`);
+```
+
+## License
+
+MIT
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.

@@ -1,5 +1,6 @@
 // a class to manage configuration settings
 import { JSONPath } from 'jsonpath-plus';
+import { Arr, JSONObject } from '@devbro/neko-helper';
 
 /**
  * Interface for defining typed configuration keys.
@@ -9,9 +10,9 @@ import { JSONPath } from 'jsonpath-plus';
  * ```ts
  * declare module '@devbro/neko-config' {
  *   interface ConfigKeys {
- *     '$.app.name': string;
- *     '$.app.port': number;
- *     '$.database.host': string;
+ *     'app.name': string;
+ *     'app.port': number;
+ *     'database.host': string;
  *   }
  * }
  * ```
@@ -33,12 +34,16 @@ export type ConfigKey = keyof ConfigKeys extends never ? string : keyof ConfigKe
 export class Config {
   private static instance: Config;
   private configs: Record<string, any>;
+  private options: { env: string };
 
   /**
    * Creates a new Config instance (private constructor for singleton pattern).
    */
-  constructor() {
+  constructor(options: { env?: string } = {}) {
     this.configs = {};
+    this.options = {
+      env: options.env || process.env.NODE_ENV || 'development',
+    }
   }
 
   /**
@@ -56,8 +61,39 @@ export class Config {
    * Loads configuration data, replacing any existing configuration.
    * @param new_config_data - The configuration data to load
    */
-  public load(new_config_data: Record<string, any>): void {
-    this.configs = JSON.parse(JSON.stringify(new_config_data));
+  public async load(new_config_data: Record<string, any>): Promise<void> {
+    this.configs = Arr.deepClone(new_config_data)
+
+    // this.configs may contain $env references that need to be resolved
+    // for these reference we want to remove them 
+    let applyEnvReferences = (value: JSONObject) => {
+      let keys = Object.keys(value);
+      let envValues: JSONObject | undefined = undefined;
+      for(let key of keys) {
+        if(key.startsWith('$') && key !== `$${this.options.env}` ) {
+          delete value[key];
+        }
+        else if(key.startsWith('$') && key === `$${this.options.env}`) {
+          envValues = value[key] as JSONObject;
+          delete value[key];
+        }
+      }
+
+      if(envValues !== undefined) {
+        value = Arr.deepMerge(value, envValues);
+      }
+
+      return value;
+    };
+
+    this.configs = await Arr.evaluateAllBranches(this.configs, applyEnvReferences);
+    // resolve all promises
+    this.configs = await Arr.evaluateAllNodes(this.configs, async (value) => {
+      if(value instanceof Promise) {
+        return await value;
+      }
+      return value;
+    });
   }
 
   /**
@@ -66,11 +102,20 @@ export class Config {
    * @param default_value - Default value to return if key is not found (default: undefined)
    * @returns The configuration value or the default value
    */
-  public get<K extends ConfigKey>(key: K, default_value?: any): K extends keyof ConfigKeys ? ConfigKeys[K] : any {
+  public get<K extends ConfigKey>(
+    key: K, 
+    default_value?: K extends keyof ConfigKeys ? ConfigKeys[K] : any
+  ): K extends keyof ConfigKeys ? ConfigKeys[K] : any {
     try {
       const results = JSONPath({ path: key as string, json: this.configs });
-      return results.length > 0 ? results[0] : default_value;
+      // @ts-ignore
+      let rc = results.length > 0 ? results[0] : default_value;
+      if(typeof rc === 'function') {
+        rc = rc();
+      }
+      return rc;
     } catch (error) {
+      // @ts-ignore
       return default_value;
     }
   }
@@ -82,8 +127,12 @@ export class Config {
    * @param default_value - Default value to return if key is not found (default: undefined)
    * @returns The configuration value or the default value
    */
-  public getOrFail<K extends ConfigKey>(key: K, default_value?: any): K extends keyof ConfigKeys ? ConfigKeys[K] : any {
+  public getOrFail<K extends ConfigKey>(
+    key: K, 
+    default_value?: K extends keyof ConfigKeys ? ConfigKeys[K] : any
+  ): K extends keyof ConfigKeys ? ConfigKeys[K] : any {
     const results = JSONPath({ path: key as string, json: this.configs });
+    // @ts-ignore
     return results.length > 0 ? results[0] : default_value;
   }
 

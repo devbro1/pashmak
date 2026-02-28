@@ -572,6 +572,58 @@ Arr.shuffle([]); // []
 Arr.shuffle(["single"]); // ['single']
 ```
 
+### `evaluateAllBranches`
+
+Recursively traverses an object or array and applies an async function to all branches (objects and arrays), returning a new object with the transformed branches. Leaves primitive values unchanged.
+
+**Signature:**
+
+```typescript
+export async function evaluateAllBranches(
+  obj: Record<string, any>,
+  func: (node: any) => any
+): Promise<Record<string, any>>
+```
+
+**Parameters:**
+- `obj`: The object or array to traverse.
+- `func`: An async function to apply to each branch (object or array). Receives the branch as its argument.
+
+**Returns:**
+- A Promise resolving to a new object/array with the same structure, but with all branches transformed by `func`.
+
+**Example:**
+```typescript
+const input = {
+  a: 1,
+  b: {
+    c: 2,
+    d: [3, 4]
+  }
+};
+
+const result = await evaluateAllBranches(input, async (branch) => {
+  if (Array.isArray(branch)) return branch.reverse();
+  return branch;
+});
+// result:
+// {
+//   a: 1,
+//   b: {
+//     c: 2,
+//     d: [4, 3]
+//   }
+// }
+```
+
+**Use Cases:**
+- Transforming or validating all nested arrays/objects in a data structure
+- Recursively applying a normalization or filtering function
+- Preparing deeply nested data for serialization or API output
+
+---
+
+
 ## Pattern helpers
 
 #### export function createSingleton`<T>`(func: (...args: any[]) => T): (label?: string, ...args: any[]) => T

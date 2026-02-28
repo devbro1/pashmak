@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-queue",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "neko generic queue system to handle pubsubs",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

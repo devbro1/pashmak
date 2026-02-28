@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-sql",
-  "version": "0.1.35",
+  "version": "0.1.37",
   "description": "generic sql generator",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -40,14 +40,34 @@
     "prettier": "^3.5.3",
     "tsup": "^8.0.2",
     "typescript": "^5.8.3",
-    "vitest": "^3.2.4"
-  },
-  "dependencies": {
-    "better-sqlite3": "^11.7.0",
-    "mysql2": "^3.11.5",
+    "vitest": "^3.2.4",
     "pg": "^8.11.3",
     "pg-cursor": "^2.15.0",
+    "better-sqlite3": "^11.7.0",
+    "mysql2": "^3.11.5"
+  },
+  "dependencies": {
     "sql-tokenizer": "^1.0.4"
+  },
+  "peerDependencies": {
+    "pg": "^8.18.3",
+    "pg-cursor": "^2.15.0",
+    "better-sqlite3": "^11.7.0",
+    "mysql2": "^3.11.5"
+  },
+  "peerDependenciesMeta": {
+    "pg": {
+      "optional": true
+    },
+    "pg-cursor": {
+      "optional": true
+    },
+    "better-sqlite3": {
+      "optional": true
+    },
+    "mysql2": {
+      "optional": true
+    }
   },
   "directories": {
     "doc": "docs",

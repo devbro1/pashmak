@@ -327,14 +327,16 @@ export function shuffle<T>(arr: T[]): T[] {
 }
 
 /**
- * Creates a deep clone of an object using JSON serialization.
+ * Creates a deep clone of an object or array.
  *
- * Performs a deep copy of an object by converting it to JSON and back.
- * This method is simple but has limitations: it cannot clone functions,
- * undefined values, symbols, or circular references.
+ * Performs a deep copy by recursively iterating through objects and arrays,
+ * creating new instances with copied primitive values. Uncloneable types
+ * (functions, symbols, etc.) are converted to undefined. Handles circular
+ * references to prevent infinite loops.
  *
- * @param obj - The object to clone
- * @returns A deep clone of the input object
+ * @param obj - The object or array to clone
+ * @param visited - Internal WeakMap for tracking visited objects (used for circular reference detection)
+ * @returns A deep clone of the input
  *
  * @example
  * ```typescript
@@ -345,10 +347,79 @@ export function shuffle<T>(arr: T[]): T[] {
  * const cloned = deepClone(original);
  * cloned.x.push(4);
  * // original.x is still [1, 2, 3]
+ *
+ * deepClone({ fn: () => {}, num: 42 })
+ * // Returns: { fn: undefined, num: 42 }
  * ```
  */
-export function deepClone(obj: Record<string, any>) {
-  return JSON.parse(JSON.stringify(obj));
+export function deepClone<T = any>(obj: T, visited = new WeakMap()): T {
+  // Handle null or undefined
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  // Handle primitive
+  if(typeof obj === 'number' || typeof obj === 'string' || typeof obj === 'boolean') {
+    return obj;
+  }
+
+  if(typeof obj === 'function') {
+    return obj;
+  }
+
+  if(obj instanceof Promise) {
+    return obj;
+  }
+
+  if(typeof obj === 'symbol') {
+    // @ts-ignore
+    return Symbol(obj.description);
+  }
+
+  // Handle circular references
+  if (visited.has(obj as any)) {
+    return visited.get(obj as any);
+  }
+
+  // Handle Date
+  if (obj instanceof Date) {
+    return new Date(obj.getTime()) as T;
+  }
+
+  // Handle Array
+  if (Array.isArray(obj)) {
+    const arrCopy: any[] = [];
+    visited.set(obj as any, arrCopy);
+    for (let i = 0; i < obj.length; i++) {
+      arrCopy[i] = deepClone(obj[i], visited);
+    }
+    return arrCopy as T;
+  }
+
+  // Handle plain objects
+  if (Object.prototype.toString.call(obj) === '[object Object]') {
+    const objCopy: Record<string, any> = {};
+    visited.set(obj as any, objCopy);
+    
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        const value = (obj as any)[key];
+        objCopy[key] = deepClone(value, visited);
+      }
+    }
+    return objCopy as T;
+  }
+
+  //clonable Objects
+  // @ts-ignore
+  if(typeof obj === 'object' && typeof obj?.clone === 'function') {
+    // @ts-ignore
+    return obj.clone();
+  }
+
+  // For other object types (Map, Set, RegExp, custom classes, etc.)
+  // that we don't handle, return undefined
+  return undefined as T;
 }
 
 /**
@@ -465,4 +536,30 @@ export async function evaluateAllNodes<T>(
   }
 
   return rc;
+}
+
+
+/**
+ * traverse an object and apply a function to all branches (objects and arrays)
+ * @param obj object to be traversed 
+ * @param func function to be applied to each branch
+ * @returns traversed object
+ */
+export async function evaluateAllBranches(obj: Record<string, any>, func: (node: any) => any): Promise<Record<string, any>> {
+  const rc: Record<string, any> = Array.isArray(obj) ? [] : {};
+
+  for (const key in obj) {
+    const value = obj[key];
+
+    if(value instanceof Promise) {
+      rc[key] = await func(await value);
+    }
+    else if (value !== null && (typeof value === 'object' || Array.isArray(value))) {
+      rc[key] = await func(await evaluateAllBranches(value, func));
+    } else {
+      rc[key] = value;
+    }
+  }
+
+  return await func(rc);
 }
