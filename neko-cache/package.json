@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-cache",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "driver agnostic caching implementation",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
