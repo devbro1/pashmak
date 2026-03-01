@@ -45,70 +45,8 @@ export class CreateProjectCommand extends Command {
     await this.setupExecutorAndPackageManager();
     await this.setupLinter();
     await this.setupGeneralPackages();
-
-    console.log(`Using project directory: ${this.projectPath}`);
-
-    const dirname =
-      typeof __dirname === "undefined"
-        ? path.dirname(fileURLToPath(import.meta.url))
-        : __dirname;
-
-    let basePath = path.join(dirname, `./base_project`);
-    if ((await this.folderExists(basePath)) === false) {
-      // we are running a compiled code that was bundled and the code is running from ./dist/bin/ folder.
-      basePath = path.join(dirname, `../app/console/project/base_project`);
-    }
-
-    console.log(`Using base project path: ${basePath}`);
-    //copy content of ./base_project to the new project directory
-    const baseProjectPath = basePath;
-
-    await this.processTplFolder(baseProjectPath, this.projectPath, {
-      validation_library: this.validation_library,
-      executor: this.executor,
-      package_manager: this.packageManager,
-      linter: this.linter,
-      database_type: this.database_type,
-    });
-    console.log(`Copied base project files to: ${this.projectPath}`);
-
-    //modify package.json with foldername
-    packageJson = JSON.parse(await fs.readFile(packageJsonPath, `utf-8`));
-    packageJson.name = Case.snake(path.basename(projectPath));
-
-    await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
-    console.log(`Updated package.json with project name: ${packageJson.name}`);
-
-    // ask if user wants to initialize git repository
-    const initGit = await select({
-      message: "Initialize a git repository?",
-      choices: [
-        {
-          name: "Yes",
-          value: true,
-          description: "Initialize git and create first commit",
-        },
-        {
-          name: "No",
-          value: false,
-          description: "Skip git initialization",
-        },
-      ],
-    });
-
-    if (initGit) {
-      try {
-        execSync(
-          `git init; git add --all; git commit --allow-empty -m "chore: first commit for ${packageJson.name}"`,
-          {
-            cwd: projectPath,
-          },
-        );
-      } catch (error) {
-        console.error(`Failed to create project.`, error);
-        return 1;
-      }
-    }
+    await this.setupBaseProject();
+    await this.setupGit();
   }
 
   async processTplFolder(src: string, dest: string, data: any = {}) {
@@ -346,6 +284,42 @@ export class CreateProjectCommand extends Command {
     );
   }
 
+  async setupBaseProject() {
+    console.log(`Using project directory: ${this.projectPath}`);
+
+    const dirname =
+      typeof __dirname === "undefined"
+        ? path.dirname(fileURLToPath(import.meta.url))
+        : __dirname;
+
+    let basePath = path.join(dirname, `./base_project`);
+    if ((await this.folderExists(basePath)) === false) {
+      // we are running a compiled code that was bundled and the code is running from ./dist/bin/ folder.
+      basePath = path.join(dirname, `../app/console/project/base_project`);
+    }
+
+    console.log(`Using base project path: ${basePath}`);
+    //copy content of ./base_project to the new project directory
+    const baseProjectPath = basePath;
+
+    await this.processTplFolder(baseProjectPath, this.projectPath, {
+      validation_library: this.validation_library,
+      executor: this.executor,
+      package_manager: this.packageManager,
+      linter: this.linter,
+      database_type: this.database_type,
+    });
+    console.log(`Copied base project files to: ${this.projectPath}`);
+
+    //modify package.json with foldername
+    const packageJsonPath = path.join(this.projectPath, "package.json");
+    let packageJson = JSON.parse(await fs.readFile(packageJsonPath, `utf-8`));
+    packageJson.name = Case.snake(path.basename(this.projectPath));
+
+    await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
+    console.log(`Updated package.json with project name: ${packageJson.name}`);
+  }
+
   async addPackage(packageName: string, dev: boolean = false) {
     const install_command =
       this.packageManager === "bun"
@@ -358,5 +332,33 @@ export class CreateProjectCommand extends Command {
       stdio: "inherit",
       cwd: this.projectPath,
     });
+  }
+
+  async setupGit() {
+    // ask if user wants to initialize git repository
+    const initGit = await select({
+      message: "Initialize a git repository?",
+      choices: [
+        {
+          name: "Yes",
+          value: true,
+          description: "Initialize git and create first commit",
+        },
+        {
+          name: "No",
+          value: false,
+          description: "Skip git initialization",
+        },
+      ],
+    });
+
+    if (initGit) {
+      execSync(
+        `git init; git add --all; git commit --allow-empty -m "chore: first commit"`,
+        {
+          cwd: this.projectPath,
+        },
+      );
+    }
   }
 }
