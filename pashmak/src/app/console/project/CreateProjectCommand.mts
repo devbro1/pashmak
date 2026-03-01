@@ -99,10 +99,9 @@ export class CreateProjectCommand extends Command {
     // Check if directory is empty
     const files = await fs.readdir(this.projectPath);
     if (files.length > 0) {
-      console.error(
-        `Error: Directory ${this.projectPath} is not empty. Please use an empty directory.`,
+      throw new Error(
+        `Directory ${this.projectPath} is not empty. Please use an empty directory.`,
       );
-      return 1;
     }
   }
 
@@ -359,6 +358,14 @@ export class CreateProjectCommand extends Command {
           cwd: this.projectPath,
         },
       );
+    }
+  }
+
+  async catch(error: unknown) {
+    if (Error.isError(error)) {
+      console.error(error.message);
+    } else {
+      console.error(error);
     }
   }
 }

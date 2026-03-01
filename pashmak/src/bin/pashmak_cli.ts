@@ -17,5 +17,6 @@ cli
   .runExit(args)
   .then(() => {})
   .catch((err: any) => {
-    console.error(err);
+    console.error("Fatal error:", err.message);
+    process.exit(1);
   });

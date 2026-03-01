@@ -112,7 +112,8 @@
     "format": "eslint . --fix --ext ts,tsx --report-unused-disable-directives --max-warnings 0 ",
     "prepare": "husky",
     "prettier": "prettier --write .",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "cli": "tsx -r tsconfig-paths/register src/bin/pashmak_cli.ts"
   },
   "author": "Farzad Meow Khalafi",
   "license": "MIT",
@@ -120,6 +121,7 @@
     "@swc/core": "^1.12.9",
     "@types/yup": "^0.32.0",
     "globby": "^14.1.0",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3"
   },
   "dependencies": {
