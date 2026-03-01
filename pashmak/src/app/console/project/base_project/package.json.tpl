@@ -1,7 +1,7 @@
 {
-  "name": "test-app",
+  "name": "Pashmak-App",
   "version": "0.1.0",
-  "description": "testing application for the entire repo",
+  "description": "initial pashmak project",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -18,7 +18,7 @@
     "format": "eslint . --fix --ext ts,tsx --report-unused-disable-directives --max-warnings 0 ",
     "prepare": "husky",
     "prettier": "prettier --write .",
-    "dev": "nodemon --watch src --ext ts,tsx,json --signal SIGTERM --exec \"clear && tsx -r tsconfig-paths/register src/index.ts start --all | npx pino-pretty\"",
+    "dev": "tsx --watch -r tsconfig-paths/register src/index.ts start --all | npx pino-pretty",
     "pdev": "tsx -r tsconfig-paths/register src/index.ts",
     "clean": "rm -rf dist"
   },
@@ -30,7 +30,6 @@
     "@types/jsonwebtoken": "^9.0.9",
     "@types/supertest": "^6.0.2",
     "@types/yup": "^0.32.0",
-    "nodemon": "^3.1.10",
     "supertest": "^6.3.3",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
