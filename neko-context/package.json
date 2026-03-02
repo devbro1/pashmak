@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-context",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "neko context is a lightweight context management library for JavaScript and TypeScript applications, designed to simplify state management and dependency injection.",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
@@ -28,14 +28,14 @@
   "author": "Farzad Meow Khalafi",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^22.14.1",
+    "@types/node": "^24.1.0",
     "@typescript-eslint/eslint-plugin": "^7.1.1",
     "@typescript-eslint/parser": "^7.1.1",
     "eslint": "8.57.0",
     "husky": "^9.1.7",
     "prettier": "^3.5.3",
     "tsup": "^8.0.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.3"
   },
   "dependencies": {},
   "directories": {

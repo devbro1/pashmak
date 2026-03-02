@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-sql",
-  "version": "0.1.39",
+  "version": "0.1.40",
   "description": "generic sql generator",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
@@ -30,7 +30,7 @@
   "devDependencies": {
     "@faker-js/faker": "^9.5.1",
     "@types/better-sqlite3": "^7.6.12",
-    "@types/node": "^22.14.1",
+    "@types/node": "^24.1.0",
     "@types/pg": "^8.11.2",
     "@types/pg-cursor": "^2.7.2",
     "@typescript-eslint/eslint-plugin": "^7.1.1",
@@ -39,7 +39,7 @@
     "husky": "^9.1.7",
     "prettier": "^3.5.3",
     "tsup": "^8.0.2",
-    "typescript": "^5.8.3",
+    "typescript": "^5.9.3",
     "vitest": "^3.2.4",
     "pg": "^8.11.3",
     "pg-cursor": "^2.15.0",

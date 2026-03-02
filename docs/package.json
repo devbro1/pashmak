@@ -1,6 +1,6 @@
 {
   "name": "docs",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
@@ -31,7 +31,7 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "typescript": "~5.6.2"
+    "typescript": "~5.9.3"
   },
   "browserslist": {
     "production": [
