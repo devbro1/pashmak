@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-helper",
-  "version": "0.1.21",
+  "version": "0.1.22",
   "description": "general methods and classes for different usecases",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
@@ -30,7 +30,7 @@
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^22.14.1",
+    "@types/node": "^24.1.0",
     "@types/number-to-words": "^1.2.3",
     "@typescript-eslint/eslint-plugin": "^7.1.1",
     "@typescript-eslint/parser": "^7.1.1",
@@ -39,7 +39,7 @@
     "prettier": "^3.5.3",
     "ts-jest": "^29.1.2",
     "tsup": "^8.0.2",
-    "typescript": "^5.8.3",
+    "typescript": "^5.9.3",
     "vitest": "^3.2.4"
   },
   "dependencies": {
