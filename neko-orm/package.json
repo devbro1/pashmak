@@ -28,18 +28,18 @@
   "author": "Farzad Meow Khalafi",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^22.14.1",
+    "@types/node": "^24.1.0",
     "@typescript-eslint/eslint-plugin": "^7.1.1",
     "@typescript-eslint/parser": "^7.1.1",
     "eslint": "8.57.0",
     "husky": "^9.1.7",
     "prettier": "^3.5.3",
     "tsup": "^8.0.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.3",
+    "@types/pluralize": "^0.0.33"
   },
   "dependencies": {
     "@devbro/neko-sql": "0.1.*",
-    "@types/pluralize": "^0.0.33",
     "change-case-all": "^2.1.0",
     "date-fns": "^4.1.0",
     "pluralize": "^8.0.0"

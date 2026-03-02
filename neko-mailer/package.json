@@ -34,7 +34,7 @@
   "devDependencies": {
     "@swc/core": "^1.12.9",
     "@types/nodemailer": "^6.4.17",
-    "typescript": "^5.8.3",
+    "typescript": "^5.9.3",
     "vitest": "^3.2.4"
   },
   "dependencies": {
