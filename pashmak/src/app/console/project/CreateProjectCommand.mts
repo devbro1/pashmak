@@ -42,11 +42,11 @@ export class CreateProjectCommand extends Command {
   async execute() {
     //setup project
     await this.setupProjectPath();
+    await this.setupGit();
     await this.setupExecutorAndPackageManager();
     await this.setupLinter();
     await this.setupGeneralPackages();
     await this.setupBaseProject();
-    await this.setupGit();
   }
 
   async processTplFolder(src: string, dest: string, data: any = {}) {
@@ -160,8 +160,9 @@ export class CreateProjectCommand extends Command {
     // add commands to package.json based on the selected executor
     const packageJsonPath = path.join(this.projectPath, `package.json`);
     let packageJson = JSON.parse(await fs.readFile(packageJsonPath, `utf-8`));
+    packageJson.type = "module";
     packageJson.scripts = packageJson.scripts || {};
-    packageJson.scripts.prepare = "husky install";
+    packageJson.scripts.prepare = "husky init";
     packageJson.scripts.clean = "rm -rf dist";
     if (this.executor === "bun") {
       packageJson.scripts.dev = "bun run dev";
@@ -276,7 +277,7 @@ export class CreateProjectCommand extends Command {
     }
 
     // add other packages
-    await this.addPackage("@devbro/pashmak tsconfig-paths ");
+    await this.addPackage("@devbro/pashmak tsconfig-paths dotenv ");
     await this.addPackage(
       "husky vitest supertest @types/supertest pino-pretty typescript",
       true,
