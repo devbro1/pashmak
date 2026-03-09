@@ -47,6 +47,7 @@ export class CreateProjectCommand extends Command {
     await this.setupLinter();
     await this.setupGeneralPackages();
     await this.setupBaseProject();
+    await this.installPackages();
   }
 
   async processTplFolder(src: string, dest: string, data: any = {}) {
@@ -321,12 +322,32 @@ export class CreateProjectCommand extends Command {
   }
 
   async addPackage(packageName: string, dev: boolean = false) {
+    let install_command = '';
+    switch(this.packageManager) {
+      case "bun":
+        install_command = `bun add ${packageName}${dev ? " -d" : ""}`;
+        break;
+      case "yarn":
+        install_command = `yarn add ${packageName}${dev ? " -D" : ""} --no-install`;
+        break;
+      case "npm":
+        install_command = `npm install ${packageName}${dev ? " --save-dev" : ""} --package-lock-only`;
+        break;
+    };
+
+    execSync(install_command, {
+      stdio: "inherit",
+      cwd: this.projectPath,
+    });
+  }
+
+  async installPackages() {
     const install_command =
       this.packageManager === "bun"
-        ? `bun add ${packageName}${dev ? " -d" : ""}`
+        ? `bun install`
         : this.packageManager === "yarn"
-          ? `yarn add ${packageName}${dev ? " -D" : ""}`
-          : `npm install ${packageName}${dev ? " --save-dev" : ""}`;
+          ? `yarn`
+          : `npm install`;
 
     execSync(install_command, {
       stdio: "inherit",
