@@ -210,9 +210,11 @@ export class CreateProjectCommand extends Command {
     if (this.linter === "biome") {
       packageJson.scripts.lint = "biome check . --ext .ts,.tsx";
       packageJson.scripts.format = "biome format . --ext .ts,.tsx --write";
+      this.addPackage('@biomejs/biome', true);
     } else if (this.linter === "eslint") {
       packageJson.scripts.lint = "eslint . --ext .ts,.tsx";
       packageJson.scripts.format = "eslint . --ext .ts,.tsx --fix";
+      this.addPackage('eslint',true);
     }
     //save back to package.json
     await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));

@@ -169,25 +169,13 @@ export class DatabaseProviderMiddleware extends Middleware {
     const conns = [];
     try {
       for (const [name, db_config] of Object.entries(db_configs)) {
+        if(ctx().get(["database", name])) {
+          return;
+        }
         const conn = await this.getConnection(db_config);
         ctx().set(["database", name], conn);
         conns.push(conn);
       }
-      BaseModel.setConnection(() => {
-        const key = ["database", "default"];
-        let rc: Connection | undefined;
-
-        if (ctx.isActive()) {
-          rc = ctx().get<Connection>(key);
-        } else if (Global.has(key)) {
-          rc = Global.get<Connection>(key);
-        } else {
-          rc = this.getConnection(db_configs["default"]);
-          Global.set(key, rc);
-        }
-
-        return rc!;
-      });
       await next();
     } finally {
       for (const conn of conns) {
