@@ -210,11 +210,11 @@ export class CreateProjectCommand extends Command {
     if (this.linter === "biome") {
       packageJson.scripts.lint = "biome check . --ext .ts,.tsx";
       packageJson.scripts.format = "biome format . --ext .ts,.tsx --write";
-      this.addPackage('@biomejs/biome', true);
+      this.addPackage("@biomejs/biome", true);
     } else if (this.linter === "eslint") {
       packageJson.scripts.lint = "eslint . --ext .ts,.tsx";
       packageJson.scripts.format = "eslint . --ext .ts,.tsx --fix";
-      this.addPackage('eslint',true);
+      this.addPackage("eslint", true);
     }
     //save back to package.json
     await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
@@ -282,7 +282,7 @@ export class CreateProjectCommand extends Command {
     // add other packages
     await this.addPackage("@devbro/pashmak tsconfig-paths dotenv ");
     await this.addPackage(
-      "husky vitest supertest @types/supertest pino-pretty typescript",
+      "husky vitest supertest @types/supertest pino-pretty typescript tsx",
       true,
     );
   }
@@ -324,8 +324,8 @@ export class CreateProjectCommand extends Command {
   }
 
   async addPackage(packageName: string, dev: boolean = false) {
-    let install_command = '';
-    switch(this.packageManager) {
+    let install_command = "";
+    switch (this.packageManager) {
       case "bun":
         install_command = `bun add ${packageName}${dev ? " -d" : ""}`;
         break;
@@ -335,7 +335,7 @@ export class CreateProjectCommand extends Command {
       case "npm":
         install_command = `npm install ${packageName}${dev ? " --save-dev" : ""} --package-lock-only`;
         break;
-    };
+    }
 
     execSync(install_command, {
       stdio: "inherit",
@@ -376,6 +376,23 @@ export class CreateProjectCommand extends Command {
     });
 
     if (initGit) {
+      const gitignoreContent =
+        [
+          "node_modules/",
+          "dist/",
+          ".env",
+          ".env.*",
+          "!.env.example",
+          "*.log",
+          "coverage/",
+          ".DS_Store",
+        ].join("\n") + "\n";
+
+      await fs.writeFile(
+        path.join(this.projectPath, ".gitignore"),
+        gitignoreContent,
+      );
+
       execSync(
         `git init; git add --all; git commit --allow-empty -m "chore: first commit"`,
         {
