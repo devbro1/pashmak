@@ -1,24 +1,56 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
 
-import { bootstrap } from '@devbro/pashmak';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { loadConfig } from '@devbro/pashmak/config';
-import { httpServer, logger, mailer } from '@devbro/pashmak/facades';
-import { startQueueListeners } from '@/app/queues';
-import { HttpError } from '@devbro/pashmak/http';
-{{#if (eq validation_library "yup")}}import * as yup from 'yup';{{/if}}{{#if (eq validation_library "zod")}}import { z, ZodError } from 'zod';{{/if}}
+import { config, loadConfigData } from "@devbro/pashmak/config";
+import * as config_data from "./config/default.mts";
+await config.load(loadConfigData(config_data));
 
-import './app/console';
-import './routes';
-import './schedules';
+import { httpServer, logger } from "@devbro/pashmak/facades";
+import { startQueueListeners } from "@/app/queues";
+import { HttpError } from "@devbro/pashmak/http";
 
-const config_data = await loadConfig(dirname(fileURLToPath(import.meta.url)) + '/config/default');
+import * as yup from "yup";
+import { Request, Response, Middleware } from "@devbro/neko-router";
+import { DatabaseProviderMiddleware } from "@devbro/pashmak/middlewares";
 
-await bootstrap({
-  root_dir: dirname(fileURLToPath(import.meta.url)),
-  config_data,
+import "@devbro/pashmak";
+
+import "./app/console";
+import "./routes";
+import "./schedules";
+
+import { context_provider } from "@devbro/neko-context";
+
+import { Connection } from "@devbro/neko-sql";
+import { Global } from "@devbro/pashmak/global";
+import { ctx } from "@devbro/pashmak/context";
+import { BaseModel } from "@devbro/pashmak/orm";
+
+context_provider.setPreLoader(async (f: Function) => {
+	const middlewares: Middleware[] = [];
+	const m = DatabaseProviderMiddleware.getInstance();
+	middlewares.push(m);
+
+	await m.call({} as Request, {} as Response, f as () => Promise<void>);
+});
+
+Global.set(
+	"database.default",
+	DatabaseProviderMiddleware.getInstance().getConnection(
+		config.get("databases.default") as any,
+	),
+);
+
+BaseModel.setConnection(() => {
+	const key = ["database", "default"];
+	let rc: Connection | undefined;
+
+	if (ctx.isActive()) {
+		rc = ctx().get<Connection>(key);
+	} else if (Global.has(key)) {
+		rc = Global.get<Connection>(key);
+	}
+	return rc!;
 });
 
 httpServer().setErrorHandler(async (err: Error, req: any, res: any) => {
