@@ -1,9 +1,9 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { config } from "@devbro/pashmak/config";
+import { config, loadConfigData } from "@devbro/pashmak/config";
 import * as config_data from "./config/default.mts";
-await config.load({ ...config_data.default, ...config_data, default: undefined });
+await config.load(loadConfigData(config_data));
 
 import { httpServer, logger } from "@devbro/pashmak/facades";
 import { startQueueListeners } from "@/app/queues";
