@@ -16,6 +16,7 @@ import * as yup from "yup";
 import { Logger } from "@devbro/neko-logger";
 import { CacheProviderFactory } from "./factories.mjs";
 import { Cache } from "@devbro/neko-cache";
+import { MultiCache } from "./MultiCache.mjs";
 import { QueueConnection, QueueTransportFactory } from "@devbro/neko-queue";
 
 /**
@@ -162,42 +163,49 @@ export const cache = wrapSingletonWithAccessors(
     if (!cache_config) {
       throw new Error(`Cache configuration for '${label}' not found`);
     }
-    
-    let providerConfig = cache_config.config;
-    
+
     // Handle multi cache provider specially
     if (cache_config.provider === "multi") {
-      if (!providerConfig?.caches || !Array.isArray(providerConfig.caches)) {
-        throw new Error(`Multi cache provider requires 'caches' array in config`);
+      if (
+        !cache_config.config?.caches ||
+        !Array.isArray(cache_config.config.caches)
+      ) {
+        throw new Error(`Multi cache requires 'caches' array in config`);
       }
-      
+
       // Validate no circular references
-      if (providerConfig.caches.includes(label)) {
+      if (cache_config.config.caches.includes(label)) {
         throw new Error(`Multi cache '${label}' cannot reference itself`);
       }
-      
-      // Resolve cache names to actual cache providers
-      const cacheProviders = providerConfig.caches.map((cacheName: string) => {
-        const cacheConfig: any = config.get(["caches", cacheName].join("."));
-        if (!cacheConfig) {
-          throw new Error(`Cache configuration for '${cacheName}' not found`);
-        }
-        // Prevent multi caches from containing other multi caches to avoid complex circular dependencies
-        if (cacheConfig.provider === "multi") {
-          throw new Error(`Multi cache '${label}' cannot contain another multi cache '${cacheName}'`);
-        }
-        return CacheProviderFactory.create(
-          cacheConfig.provider,
-          cacheConfig.config,
-        );
-      });
-      
-      providerConfig = { caches: cacheProviders };
+
+      // Recursively create Cache instances for each referenced cache
+      const cacheInstances = cache_config.config.caches.map(
+        (cacheName: string) => {
+          const refConfig: any = config.get(["caches", cacheName].join("."));
+          if (!refConfig) {
+            throw new Error(`Cache configuration for '${cacheName}' not found`);
+          }
+          // Prevent multi caches from containing other multi caches
+          if (refConfig.provider === "multi") {
+            throw new Error(
+              `Multi cache '${label}' cannot contain another multi cache '${cacheName}'`,
+            );
+          }
+          // Create the cache instance
+          const provider = CacheProviderFactory.create(
+            refConfig.provider,
+            refConfig.config,
+          );
+          return new Cache(provider);
+        },
+      );
+
+      return new MultiCache(cacheInstances) as any;
     }
-    
+
     const provider = CacheProviderFactory.create(
       cache_config.provider,
-      providerConfig,
+      cache_config.config,
     );
 
     return new Cache(provider);

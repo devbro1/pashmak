@@ -1,4 +1,5 @@
 export * from "@devbro/neko-cache";
+export * from "./MultiCache.mjs";
 
 import { Query } from "@devbro/neko-sql";
 import { cache } from "./facades.mjs";
