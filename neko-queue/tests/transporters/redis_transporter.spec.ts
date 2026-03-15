@@ -92,14 +92,14 @@ describe('RedisTransport', () => {
 
     it('should create transport with URL configuration', async () => {
       transport = new RedisTransport({
-        url: 'redis://redis-server:6380',
+        url: `redis://${process.env.REDIS_HOST}:6380`,
       });
 
       await transport.dispatch('test-channel', 'test message');
 
       expect(mockCreateClient).toHaveBeenCalledWith(
         expect.objectContaining({
-          url: 'redis://redis-server:6380',
+          url: `redis://${process.env.REDIS_HOST}:6380`,
           database: 0,
         })
       );
