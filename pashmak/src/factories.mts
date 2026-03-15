@@ -31,6 +31,8 @@ import {
   FTPStorageProvider,
   SFTPStorageProvider,
 } from "@devbro/neko-storage";
+import { MultiCache } from "./cache/MultiCache.mts";
+import { cache } from "./facades.mts";
 
 export class FlexibleFactory<T> {
   registry: Map<string, any> = new Map();
@@ -121,6 +123,15 @@ CacheProviderFactory.register("redis", (opt) => {
 
 CacheProviderFactory.register("file", (opt) => {
   return new FileCacheProvider(opt);
+});
+
+CacheProviderFactory.register("multi", (opt) => {
+  const caches: CacheProviderInterface[] = [];
+  for (const c of opt.caches) {
+    caches.push(cache(c));
+  }
+
+  return new MultiCache(caches);
 });
 
 CacheProviderFactory.register("disabled", (opt) => {
