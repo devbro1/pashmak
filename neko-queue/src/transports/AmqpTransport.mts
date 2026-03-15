@@ -50,7 +50,7 @@ export class AmqpTransport implements QueueTransportInterface {
   private readonly listeners = new Map<string, ListenerInfo>();
   private listening = false;
   private connecting = false;
-  private static amqpModule: any;
+  private static amqpModule: typeof import('amqplib');
 
   /**
    * Creates a new AMQP transport instance.

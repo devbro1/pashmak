@@ -61,7 +61,7 @@ export class RedisTransport implements QueueTransportInterface {
   private readonly listeners = new Map<string, ListenerInfo>();
   private listening = false;
   private connecting = false;
-  private static redisModule: any;
+  private static redisModule: typeof import('redis');
 
   /**
    * Creates a new Redis transport instance.

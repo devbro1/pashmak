@@ -7,7 +7,7 @@ import * as mime from 'mime-types';
 import { loadPackage } from '../helper.mjs';
 
 export class SFTPStorageProvider implements StorageProviderInterface {
-  private static sftpModule: { default: typeof SFTPClientType };
+  private static sftpModule: typeof SFTPClientType;
 
   constructor(private config: SFTPStorageProviderConfig) {
     if (!SFTPStorageProvider.sftpModule) {
@@ -16,8 +16,7 @@ export class SFTPStorageProvider implements StorageProviderInterface {
   }
 
   private async getClient(): Promise<SFTPClientType> {
-    const SFTPClient = SFTPStorageProvider.sftpModule.default;
-    const client = new SFTPClient();
+    const client = new SFTPStorageProvider.sftpModule();
     await client.connect({
       host: this.config.host,
       port: this.config.port || 22,
