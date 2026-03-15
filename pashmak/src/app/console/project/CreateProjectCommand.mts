@@ -26,6 +26,10 @@ export class CreateProjectCommand extends Command {
   linter: string = "";
   validation_library: string = "";
   database_type: string = "";
+  cache_library: string = "";
+  mailer_library: string = "";
+  queue_library: string = "";
+  storage_library: string = "";
 
   async folderExists(folderPath: string): Promise<boolean> {
     try {
@@ -277,6 +281,167 @@ export class CreateProjectCommand extends Command {
       await this.addPackage("mysql2");
     } else if (this.database_type === "sqlite") {
       await this.addPackage("sqlite3");
+    }
+
+    // ask for cache library to use
+    this.cache_library = await select({
+      message: "Select a cache library",
+      choices: [
+        {
+          name: "Redis",
+          value: "redis",
+          description: "Redis client for Node.js",
+        },
+        {
+          name: "Memcached",
+          value: "memcached",
+          description: "Memcached client for Node.js",
+        },
+        new Separator(),
+        {
+          name: "None",
+          value: "none",
+          disabled: false,
+        },
+      ],
+    });
+
+    if (this.cache_library === "redis") {
+      await this.addPackage("redis");
+    } else if (this.cache_library === "memcached") {
+      await this.addPackage("memcached");
+    }
+
+    // ask for mailer library to use
+    this.mailer_library = await select({
+      message: "Select a mailer library",
+      choices: [
+        {
+          name: "AWS SES",
+          value: "@aws-sdk/client-ses",
+          description: "AWS SDK for JavaScript v3 - SES client",
+        },
+        {
+          name: "Nodemailer",
+          value: "nodemailer",
+          description: "Send emails with Node.js",
+        },
+        new Separator(),
+        {
+          name: "None",
+          value: "none",
+          disabled: false,
+        },
+      ],
+    });
+
+    if (this.mailer_library === "@aws-sdk/client-ses") {
+      await this.addPackage("@aws-sdk/client-ses");
+    } else if (this.mailer_library === "nodemailer") {
+      await this.addPackage("nodemailer");
+      await this.addPackage("@types/nodemailer", true);
+    }
+
+    // ask for queue library to use
+    this.queue_library = await select({
+      message: "Select a queue library",
+      choices: [
+        {
+          name: "AWS SQS",
+          value: "@aws-sdk/client-sqs",
+          description: "AWS SDK for JavaScript v3 - SQS client",
+        },
+        {
+          name: "Azure Service Bus",
+          value: "@azure/service-bus",
+          description: "Azure Service Bus client for Node.js",
+        },
+        {
+          name: "Google Cloud Pub/Sub",
+          value: "@google-cloud/pubsub",
+          description: "Google Cloud Pub/Sub client for Node.js",
+        },
+        {
+          name: "RabbitMQ (amqplib)",
+          value: "amqplib",
+          description: "AMQP 0-9-1 client for Node.js",
+        },
+        {
+          name: "Redis",
+          value: "redis",
+          description: "Redis client for Node.js",
+        },
+        new Separator(),
+        {
+          name: "None",
+          value: "none",
+          disabled: false,
+        },
+      ],
+    });
+
+    if (this.queue_library === "@aws-sdk/client-sqs") {
+      await this.addPackage("@aws-sdk/client-sqs");
+    } else if (this.queue_library === "@azure/service-bus") {
+      await this.addPackage("@azure/service-bus");
+    } else if (this.queue_library === "@google-cloud/pubsub") {
+      await this.addPackage("@google-cloud/pubsub");
+    } else if (this.queue_library === "amqplib") {
+      await this.addPackage("amqplib");
+      await this.addPackage("@types/amqplib", true);
+    } else if (this.queue_library === "redis") {
+      await this.addPackage("redis");
+    }
+
+    // ask for storage library to use
+    this.storage_library = await select({
+      message: "Select a storage library",
+      choices: [
+        {
+          name: "AWS S3",
+          value: "@aws-sdk/client-s3",
+          description: "AWS SDK for JavaScript v3 - S3 client",
+        },
+        {
+          name: "Azure Blob Storage",
+          value: "@azure/storage-blob",
+          description: "Azure Storage Blob client for Node.js",
+        },
+        {
+          name: "Google Cloud Storage",
+          value: "@google-cloud/storage",
+          description: "Google Cloud Storage client for Node.js",
+        },
+        {
+          name: "FTP (basic-ftp)",
+          value: "basic-ftp",
+          description: "FTP client for Node.js",
+        },
+        {
+          name: "SFTP (ssh2-sftp-client)",
+          value: "ssh2-sftp-client",
+          description: "SFTP client for Node.js",
+        },
+        new Separator(),
+        {
+          name: "None",
+          value: "none",
+          disabled: false,
+        },
+      ],
+    });
+
+    if (this.storage_library === "@aws-sdk/client-s3") {
+      await this.addPackage("@aws-sdk/client-s3");
+    } else if (this.storage_library === "@azure/storage-blob") {
+      await this.addPackage("@azure/storage-blob");
+    } else if (this.storage_library === "@google-cloud/storage") {
+      await this.addPackage("@google-cloud/storage");
+    } else if (this.storage_library === "basic-ftp") {
+      await this.addPackage("basic-ftp");
+    } else if (this.storage_library === "ssh2-sftp-client") {
+      await this.addPackage("ssh2-sftp-client");
+      await this.addPackage("@types/ssh2-sftp-client", true);
     }
 
     // add other packages
