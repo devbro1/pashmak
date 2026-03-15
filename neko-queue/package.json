@@ -28,13 +28,14 @@
   "author": "Farzad Meow Khalafi",
   "license": "MIT",
   "dependencies": {
+    "@devbro/neko-helper": "0.1.*"
+  },
+  "devDependencies": {
     "@aws-sdk/client-sqs": "^3.929.0",
     "@azure/service-bus": "^7.9.5",
     "@google-cloud/pubsub": "^5.2.0",
     "amqplib": "^0.10.9",
-    "redis": "^4.7.1"
-  },
-  "devDependencies": {
+    "redis": "^4.7.1",
     "@types/amqplib": "^0.10.8",
     "@types/node": "^24.1.0",
     "@typescript-eslint/eslint-plugin": "^7.1.1",
@@ -44,6 +45,30 @@
     "prettier": "^3.5.3",
     "tsup": "^8.0.2",
     "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "@aws-sdk/client-sqs": "^3.929.0",
+    "@azure/service-bus": "^7.9.5",
+    "@google-cloud/pubsub": "^5.2.0",
+    "amqplib": "^0.10.9",
+    "redis": "^4.7.1"
+  },
+  "peerDependenciesMeta": {
+    "@aws-sdk/client-sqs": {
+      "optional": true
+    },
+    "@azure/service-bus": {
+      "optional": true
+    },
+    "@google-cloud/pubsub": {
+      "optional": true
+    },
+    "amqplib": {
+      "optional": true
+    },
+    "redis": {
+      "optional": true
+    }
   },
   "directories": {
     "test": "tests"

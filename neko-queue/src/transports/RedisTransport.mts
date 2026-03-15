@@ -1,5 +1,6 @@
 import { QueueTransportInterface } from '../Interfaces.mjs';
-import { createClient, RedisClientType } from 'redis';
+import type { RedisClientType } from 'redis';
+import { loadPackage } from '../helper.mjs';
 
 /**
  * Configuration options for the Redis transport.
@@ -60,6 +61,7 @@ export class RedisTransport implements QueueTransportInterface {
   private readonly listeners = new Map<string, ListenerInfo>();
   private listening = false;
   private connecting = false;
+  private static redisModule: any;
 
   /**
    * Creates a new Redis transport instance.
@@ -135,8 +137,12 @@ export class RedisTransport implements QueueTransportInterface {
       }
 
       // Create main client
-      this.client = createClient(clientConfig);
-      this.subscriber = createClient(clientConfig);
+      if (!RedisTransport.redisModule) {
+        RedisTransport.redisModule = loadPackage('redis');
+      }
+      const { createClient } = RedisTransport.redisModule;
+      this.client = createClient(clientConfig) as RedisClientType;
+      this.subscriber = createClient(clientConfig) as RedisClientType;
 
       // Set up error handlers
       this.client.on('error', (error: Error) => {

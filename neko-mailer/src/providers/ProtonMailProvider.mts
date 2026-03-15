@@ -1,7 +1,7 @@
 import { Mailable } from "../Mailable.mjs";
 import { MailerProvider } from "../MailerProvider.mjs";
-import nodemailer from "nodemailer";
-import { prepareEmails } from "../helper.mjs";
+import type nodemailer from "nodemailer";
+import { loadPackage, prepareEmails } from "../helper.mjs";
 
 /**
  * Configuration options for the ProtonMailProvider.
@@ -28,13 +28,17 @@ export type ProtonMailProviderConfig = {
  */
 export class ProtonMailProvider implements MailerProvider {
   private defaultFrom: string = "";
-  private transporter;
+  private transporter: nodemailer.Transporter;
+  private static nodemailerModule: typeof nodemailer;
 
   /**
    * Creates a new ProtonMailProvider instance.
    * @param options - Provider configuration options
    */
   constructor(options: Partial<ProtonMailProviderConfig> = {}) {
+    if (!ProtonMailProvider.nodemailerModule) {
+      ProtonMailProvider.nodemailerModule = loadPackage("nodemailer");
+    }
     this.defaultFrom = options.default_from || "";
 
     // ProtonMail Bridge default settings
@@ -46,7 +50,7 @@ export class ProtonMailProvider implements MailerProvider {
     const username = options.username || process.env.PROTONMAIL_USERNAME || "";
     const password = options.password || process.env.PROTONMAIL_PASSWORD || "";
 
-    this.transporter = nodemailer.createTransport({
+    this.transporter = ProtonMailProvider.nodemailerModule.createTransport({
       host,
       port,
       secure: false, // ProtonMail Bridge uses STARTTLS

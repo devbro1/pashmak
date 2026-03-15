@@ -1,14 +1,20 @@
-import { BlobServiceClient, StorageSharedKeyCredential } from '@azure/storage-blob';
+import type * as AzureStorageBlob from '@azure/storage-blob';
 import { Metadata, AzureBlobStorageProviderConfig } from '../types.mjs';
 import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
 import { ReadStream } from 'fs';
 import Stream, { Readable } from 'stream';
 import * as mime from 'mime-types';
+import { loadPackage } from '../helper.mjs';
 
 export class AzureBlobStorageProvider implements StorageProviderInterface {
-  private blobServiceClient: BlobServiceClient;
+  private blobServiceClient!: AzureStorageBlob.BlobServiceClient;
+  private static azureModule: typeof AzureStorageBlob;
 
   constructor(protected config: AzureBlobStorageProviderConfig) {
+    if (!AzureBlobStorageProvider.azureModule) {
+      AzureBlobStorageProvider.azureModule = loadPackage('@azure/storage-blob');
+    }
+    const { BlobServiceClient, StorageSharedKeyCredential } = AzureBlobStorageProvider.azureModule;
     const { accountName, accountKey, sasToken } = config;
 
     if (accountKey) {

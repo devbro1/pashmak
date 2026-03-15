@@ -1,14 +1,20 @@
-import { Storage as GCPStorage } from '@google-cloud/storage';
+import type * as GCPStorageModule from '@google-cloud/storage';
 import { Metadata, GCPStorageProviderConfig } from '../types.mjs';
 import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
 import { ReadStream } from 'fs';
 import Stream from 'stream';
 import * as mime from 'mime-types';
+import { loadPackage } from '../helper.mjs';
 
 export class GCPStorageProvider implements StorageProviderInterface {
-  private storage: GCPStorage;
+  private storage!: GCPStorageModule.Storage;
+  private static gcpModule: typeof GCPStorageModule;
 
   constructor(protected config: GCPStorageProviderConfig) {
+    if (!GCPStorageProvider.gcpModule) {
+      GCPStorageProvider.gcpModule = loadPackage('@google-cloud/storage');
+    }
+    const { Storage: GCPStorage } = GCPStorageProvider.gcpModule;
     const { bucket, ...gcpOptions } = config;
     this.storage = new GCPStorage(gcpOptions);
   }
