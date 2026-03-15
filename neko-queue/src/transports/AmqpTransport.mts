@@ -1,6 +1,6 @@
 import { QueueTransportInterface } from '../Interfaces.mjs';
 import type { Channel, Connection, ConsumeMessage } from 'amqplib';
-import { connect } from 'amqplib';
+import { loadPackage } from '../helper.mjs';
 
 /**
  * Configuration options for the AMQP transport.
@@ -50,12 +50,16 @@ export class AmqpTransport implements QueueTransportInterface {
   private readonly listeners = new Map<string, ListenerInfo>();
   private listening = false;
   private connecting = false;
+  private static amqpModule: typeof import('amqplib');
 
   /**
    * Creates a new AMQP transport instance.
    * @param config - Configuration options for the AMQP transport
    */
   constructor(config: AmqpTransportConfig = {}) {
+    if (!AmqpTransport.amqpModule) {
+      AmqpTransport.amqpModule = loadPackage('amqplib');
+    }
     this.config = {
       url: config.url ?? process.env.AMQP_URL ?? 'amqp://localhost',
       exchange: config.exchange,
@@ -91,7 +95,7 @@ export class AmqpTransport implements QueueTransportInterface {
     this.connecting = true;
 
     try {
-      this.connection = await connect(this.config.url!);
+      this.connection = await AmqpTransport.amqpModule.connect(this.config.url!);
       this.channel = await this.connection.createChannel();
 
       await this.channel!.prefetch(this.config.prefetchCount);

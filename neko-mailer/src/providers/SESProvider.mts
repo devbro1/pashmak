@@ -1,18 +1,14 @@
 import { Mailable } from "../Mailable.mjs";
 import { MailerProvider } from "../MailerProvider.mjs";
-import {
-  SESClient,
-  SESClientConfig,
-  SendEmailCommand,
-} from "@aws-sdk/client-ses";
-import { prepareEmails } from "../helper.mjs";
+import type * as AwsSes from "@aws-sdk/client-ses";
+import { loadPackage, prepareEmails } from "../helper.mjs";
 
 /**
  * Configuration options for the SESProvider.
  */
 export type SESProviderConfig = {
   /** AWS SES client configuration */
-  sesClientConfig: SESClientConfig;
+  sesClientConfig: AwsSes.SESClientConfig;
   /** Default sender email address */
   default_from: string;
 };
@@ -22,14 +18,19 @@ export type SESProviderConfig = {
  * Supports AWS credentials from environment variables or explicit configuration.
  */
 export class SESProvider implements MailerProvider {
-  private sesClient: SESClient;
+  private sesClient!: AwsSes.SESClient;
   private defaultFrom: string = "";
+  private static sesModule: typeof AwsSes;
 
   /**
    * Creates a new SESProvider instance.
    * @param options - Provider configuration options
    */
   constructor(options: Partial<SESProviderConfig> = {}) {
+    if (!SESProvider.sesModule) {
+      SESProvider.sesModule = loadPackage("@aws-sdk/client-ses");
+    }
+    const { SESClient } = SESProvider.sesModule;
     this.sesClient = new SESClient({
       region: process.env.AWS_REGION || "us-east-1",
       credentials: {
@@ -55,6 +56,7 @@ export class SESProvider implements MailerProvider {
    * @param mail - The email message to send
    */
   async sendMail(mail: Mailable): Promise<void> {
+    const { SendEmailCommand } = SESProvider.sesModule;
     const command = new SendEmailCommand({
       Source: mail.from || this.defaultFrom,
       Destination: {

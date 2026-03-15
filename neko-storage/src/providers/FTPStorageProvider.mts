@@ -1,15 +1,23 @@
-import { Client as FTPClient } from 'basic-ftp';
+import type * as BasicFtp from 'basic-ftp';
 import { Metadata, FTPStorageProviderConfig } from '../types.mjs';
 import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
 import { ReadStream } from 'fs';
 import Stream, { Readable, PassThrough } from 'stream';
 import * as mime from 'mime-types';
+import { loadPackage } from '../helper.mjs';
 
 export class FTPStorageProvider implements StorageProviderInterface {
-  constructor(private config: FTPStorageProviderConfig) {}
+  private static ftpModule: typeof BasicFtp;
 
-  private async getClient(): Promise<FTPClient> {
-    const client = new FTPClient();
+  constructor(private config: FTPStorageProviderConfig) {
+    if (!FTPStorageProvider.ftpModule) {
+      FTPStorageProvider.ftpModule = loadPackage('basic-ftp');
+    }
+  }
+
+  private async getClient(): Promise<BasicFtp.Client> {
+    const { Client } = FTPStorageProvider.ftpModule;
+    const client = new Client();
     await client.access({
       host: this.config.host,
       port: this.config.port || 21,

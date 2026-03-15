@@ -1,6 +1,7 @@
 import { CacheProviderInterface } from '@/CacheProviderInterface.mjs';
 import { JSONValue, JSONObject } from '@devbro/neko-helper';
-import Memcached from 'memcached';
+import type Memcached from 'memcached';
+import { loadPackage } from '../helper.mjs';
 
 /**
  * Configuration options for the Memcached cache provider.
@@ -19,13 +20,20 @@ export type MemcachedConfig = {
 export class MemcacheCacheProvider implements CacheProviderInterface {
   private client: Memcached;
   private defaultTTL: number = 3600; // default TTL in seconds
+  private static memcachedModule: typeof Memcached;
 
   /**
    * Creates a new MemcacheCacheProvider instance.
    * @param config - Memcached configuration options
    */
   constructor(private config: MemcachedConfig = {}) {
-    this.client = new Memcached(config.location || 'localhost:11211', config.options || {});
+    if (!MemcacheCacheProvider.memcachedModule) {
+      MemcacheCacheProvider.memcachedModule = loadPackage('memcached');
+    }
+    this.client = new MemcacheCacheProvider.memcachedModule(
+      config.location || 'localhost:11211',
+      config.options || {}
+    );
   }
 
   /**

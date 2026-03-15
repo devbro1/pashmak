@@ -1,23 +1,23 @@
 import { Metadata, AWSS3StorageProviderConfig } from '../types.mjs';
-import {
-  S3Client,
-  HeadObjectCommand,
-  PutObjectCommand,
-  GetObjectCommand,
-  DeleteObjectCommand,
-} from '@aws-sdk/client-s3';
+import type * as AwsS3 from '@aws-sdk/client-s3';
 import { ReadStream } from 'fs';
 import Stream, { Readable } from 'stream';
 import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
+import { loadPackage } from '../helper.mjs';
 
 export class AWSS3StorageProvider implements StorageProviderInterface {
-  private s3: S3Client;
+  private s3!: AwsS3.S3Client;
+  private static awsS3Module: typeof AwsS3;
 
   constructor(protected config: AWSS3StorageProviderConfig) {
-    this.s3 = new S3Client(this.config);
+    if (!AWSS3StorageProvider.awsS3Module) {
+      AWSS3StorageProvider.awsS3Module = loadPackage('@aws-sdk/client-s3');
+    }
+    this.s3 = new AWSS3StorageProvider.awsS3Module.S3Client(this.config);
   }
 
   async exists(path: string): Promise<boolean> {
+    const { HeadObjectCommand } = AWSS3StorageProvider.awsS3Module;
     try {
       await this.s3.send(new HeadObjectCommand({ Bucket: this.config.bucket, Key: path }));
       return true;
@@ -30,6 +30,7 @@ export class AWSS3StorageProvider implements StorageProviderInterface {
   }
 
   async put(path: string, content: string | object | Stream | Buffer): Promise<boolean> {
+    const { PutObjectCommand } = AWSS3StorageProvider.awsS3Module;
     let body: any;
     if (typeof content === 'string' || content instanceof Buffer) {
       body = content;
@@ -53,6 +54,7 @@ export class AWSS3StorageProvider implements StorageProviderInterface {
   }
 
   async getJson(path: string): Promise<object> {
+    const { GetObjectCommand } = AWSS3StorageProvider.awsS3Module;
     const data = await this.s3.send(
       new GetObjectCommand({ Bucket: this.config.bucket, Key: path })
     );
@@ -61,6 +63,7 @@ export class AWSS3StorageProvider implements StorageProviderInterface {
   }
 
   async getString(path: string): Promise<string> {
+    const { GetObjectCommand } = AWSS3StorageProvider.awsS3Module;
     const data = await this.s3.send(
       new GetObjectCommand({ Bucket: this.config.bucket, Key: path })
     );
@@ -68,6 +71,7 @@ export class AWSS3StorageProvider implements StorageProviderInterface {
   }
 
   async delete(path: string): Promise<boolean> {
+    const { DeleteObjectCommand } = AWSS3StorageProvider.awsS3Module;
     await this.s3.send(new DeleteObjectCommand({ Bucket: this.config.bucket, Key: path }));
     return true;
   }
@@ -82,6 +86,7 @@ export class AWSS3StorageProvider implements StorageProviderInterface {
   }
 
   async getBuffer(path: string): Promise<Buffer> {
+    const { GetObjectCommand } = AWSS3StorageProvider.awsS3Module;
     const data = await this.s3.send(
       new GetObjectCommand({ Bucket: this.config.bucket, Key: path })
     );
@@ -96,6 +101,7 @@ export class AWSS3StorageProvider implements StorageProviderInterface {
   }
 
   async getStream(path: string): Promise<ReadStream> {
+    const { GetObjectCommand } = AWSS3StorageProvider.awsS3Module;
     const data = await this.s3.send(
       new GetObjectCommand({ Bucket: this.config.bucket, Key: path })
     );
@@ -103,6 +109,7 @@ export class AWSS3StorageProvider implements StorageProviderInterface {
   }
 
   async metadata(path: string): Promise<Metadata> {
+    const { HeadObjectCommand } = AWSS3StorageProvider.awsS3Module;
     const metadata = await this.s3.send(
       new HeadObjectCommand({ Bucket: this.config.bucket, Key: path })
     );
