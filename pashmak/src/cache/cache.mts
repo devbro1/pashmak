@@ -1,8 +1,7 @@
 export * from "@devbro/neko-cache";
 
 import { Query } from "@devbro/neko-sql";
-import { cache } from "./facades.mjs";
-import * as crypto from "crypto";
+import { cache } from "../facades.mjs";
 import { JSONValue } from "@devbro/neko-helper";
 
 export type CacheQueryOptions = {

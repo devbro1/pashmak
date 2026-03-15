@@ -203,6 +203,55 @@ export default {
 };
 ```
 
+### Multi-Cache Provider
+
+The multi-cache provider allows you to use multiple cache backends simultaneously, creating a layered caching strategy. When retrieving data, it checks each cache in order and returns the first match. When storing data, it writes to all configured caches in parallel.
+
+This is particularly useful for implementing cache hierarchies, such as:
+
+- L1 (memory) + L2 (Redis) for fast local access with shared distributed cache
+- Multiple Redis instances for redundancy
+- Memory cache with file cache fallback
+- Local cache with remote cache backup
+
+#### Configuration
+
+To use the multi-cache provider, configure it with an array of cache providers:
+
+```ts
+// app/config/cache.ts
+
+export default {
+    default: {
+      type: "multi",
+      config: {
+        caches: [ 'local_cache', 'redis_cache', 'file_cache'
+        ],
+      },
+    },
+    local_cache: {
+      ???
+    },
+    redis_cache: {
+      ???
+    },
+    file_cache: {
+      ???
+    }
+};
+```
+
+#### How It Works
+
+It will simultanously write and delete from all provided caches.
+It will read from each cache in the given order and return on the first found value.
+
+#### Usage Use cases
+
+Most common use case is to use with Launch Darkly, were we get values from LD and then allow values to be shared among different instances. Second use case is to provide a local memory layer to provide fewer server connections and faster performance. third but not last use case is to provide a way where cache server can be unstable but we want to have a fall back.
+
+````
+
 ### Your own Provider
 
 To create your own Cache driver, you can implement CacheProviderInterface and then register with CacheProviderFactory.
@@ -240,7 +289,7 @@ export class MyCacheProvider implements CacheProviderInterface {
 CacheProviderFactory.register("my_cache", (opt) => {
   return new FileCacheProvider(opt);
 });
-```
+````
 
 ## Advanced usage
 

@@ -8,6 +8,8 @@ import { MysqlSchemaGrammar } from './MysqlSchemaGrammar.mjs';
 import { EventManager } from '@devbro/neko-helper';
 import { loadPackage } from '../../helper.mjs';
 
+export type MysqlConfig = mysql.PoolOptions;
+
 export class MysqlConnection extends ConnectionAbs {
   private eventManager = new EventManager();
 
@@ -25,10 +27,10 @@ export class MysqlConnection extends ConnectionAbs {
 
   connection: mysql.PoolConnection | undefined;
   static pool: mysql.Pool;
-  static poolConfig: mysql.PoolOptions;
+  static poolConfig: MysqlConfig;
   static mysql: typeof mysql;
 
-  static defaults: mysql.PoolOptions = {
+  static defaults: MysqlConfig = {
     port: 3306,
     connectionLimit: 20,
     waitForConnections: true,
@@ -37,7 +39,7 @@ export class MysqlConnection extends ConnectionAbs {
     keepAliveInitialDelay: 0,
   };
 
-  constructor(params: mysql.PoolOptions) {
+  constructor(params: MysqlConfig) {
     super();
     if (!MysqlConnection.mysql) {
       MysqlConnection.mysql = loadPackage('mysql2/promise') as typeof mysql;

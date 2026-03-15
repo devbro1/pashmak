@@ -10,6 +10,8 @@ import type pg_cursor from 'pg-cursor';
 import { EventManager } from '@devbro/neko-helper';
 import { loadPackage } from '../../helper.mjs';
 
+export type PostgresqlConfig = PoolConfig;
+
 export class PostgresqlConnection extends ConnectionAbs {
   private eventManager = new EventManager();
 
@@ -30,7 +32,7 @@ export class PostgresqlConnection extends ConnectionAbs {
   connection: PoolClient | undefined;
   static pool: pg.Pool;
 
-  static defaults: PoolConfig = {
+  static defaults: PostgresqlConfig = {
     port: 5432,
     ssl: false,
     max: 20,
@@ -39,7 +41,7 @@ export class PostgresqlConnection extends ConnectionAbs {
     maxUses: 7500,
   };
 
-  constructor(params: PoolConfig) {
+  constructor(params: PostgresqlConfig) {
     super();
     if (!PostgresqlConnection.pg) {
       PostgresqlConnection.pg = loadPackage('pg');

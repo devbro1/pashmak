@@ -9,9 +9,9 @@ const router = routerFunc();
 router.addGlobalMiddleware(loggerMiddleware);
 router.addRoute(
   ["GET", "HEAD"],
-  "/api/v1/meow",
+  "/",
   async (req: any, res: any) => {
-    return { message: "meow meow!" };
+    return { message: "Welcome to Pashmak!" };
   },
 ).addMiddleware([]);
 
