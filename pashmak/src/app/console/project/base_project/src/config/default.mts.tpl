@@ -3,7 +3,7 @@ import os from 'os';
 import { getEnv } from '@devbro/pashmak/helper';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { loadConfigData } from '@devbro/pashmak/config';
+import { loadConfigData, DotPaths } from '@devbro/pashmak/config';
 import * as databases_config from './databases';
 import * as storages_config from './storages';
 import * as mailers_config from './mailers';
@@ -47,11 +47,6 @@ const project_configs = {
 
 export const $test = {
   // Test environment overrides
-};
-
-export const $prod = {
-  port: getEnv('PORT', 80),
-  debug_mode: false,
 };
 
 declare module '@devbro/neko-config' {
