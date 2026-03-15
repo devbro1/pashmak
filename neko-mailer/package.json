@@ -1,7 +1,7 @@
 {
   "name": "@devbro/neko-mailer",
   "version": "0.1.15",
-  "description": "for sending emails in different ways",
+  "description": "Flexible email delivery library supporting multiple transport adapters - your messages, delivered with style",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
   "types": "./dist/cjs/index.d.ts",

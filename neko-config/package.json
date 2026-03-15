@@ -1,7 +1,7 @@
 {
   "name": "@devbro/neko-config",
   "version": "0.1.16",
-  "description": "neko config helps with loading and managing configuration files in a structured way",
+  "description": "Structured configuration loading and management for TypeScript apps - tame your config files like a pro",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
   "types": "./dist/cjs/index.d.ts",

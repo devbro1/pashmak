@@ -1,7 +1,7 @@
 {
   "name": "@devbro/pashmak",
   "version": "0.1.58",
-  "description": "Pashmak framework, the framework that aims to be the easiest framework for all",
+  "description": "A pragmatic, batteries-included framework that gets out of your way and lets you ship - because building apps should be fun again",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
   "types": "./dist/cjs/index.d.ts",

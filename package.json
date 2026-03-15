@@ -1,6 +1,7 @@
 {
   "name": "pashmak",
   "version": "1.0.2",
+  "description": "Pashmak monorepo - a collection of lightweight, battle-tested Node.js libraries built for modern TypeScript applications",
   "repository": "git@github.com:devbro1/pashmak.git",
   "author": "Farzad Meow Khalafi <farzadk@gmail.com>",
   "license": "MIT",

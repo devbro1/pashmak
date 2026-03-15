@@ -1,7 +1,7 @@
 {
   "name": "@devbro/neko-http",
   "version": "0.1.11",
-  "description": "all in one http server",
+  "description": "Full-featured HTTP server toolkit - request handling, middleware, and responses all in one happy package",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
   "types": "./dist/cjs/index.d.ts",

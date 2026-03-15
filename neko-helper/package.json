@@ -1,7 +1,7 @@
 {
   "name": "@devbro/neko-helper",
   "version": "0.1.22",
-  "description": "general methods and classes for different usecases",
+  "description": "A curated collection of utility methods and classes that handle the boring parts so you can focus on the fun stuff",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
   "types": "./dist/cjs/index.d.ts",
