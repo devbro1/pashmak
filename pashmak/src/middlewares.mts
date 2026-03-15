@@ -1,6 +1,12 @@
 import { Middleware, Request, Response } from "@devbro/neko-router";
 import { logger, db, cache } from "./facades.mjs";
 import { HttpTooManyRequestsError } from "@devbro/neko-http";
+import { config } from "@devbro/neko-config";
+import { Connection } from "@devbro/neko-sql";
+import { Global } from './global.mjs';
+import { ctx } from './context.mjs';
+import { BaseModel } from "@devbro/neko-orm";
+import { MysqlConnection, PostgresqlConnection, SqliteConnection, SqliteConfig, PostgresqlConfig, MysqlConfig } from "@devbro/neko-sql";
 
 export function cors(
   options: { allowedOrigins?: (string | RegExp)[] } = {},
@@ -148,5 +154,66 @@ export class RateLimiterMiddleware extends Middleware {
 
     await next();
     return;
+  }
+}
+
+export class DatabaseProviderMiddleware extends Middleware {
+  async call(
+    req: Request,
+    res: Response,
+    next: () => Promise<void>,
+  ): Promise<void> {
+    const db_configs: Record<string, { provider: string; config: PostgresqlConfig | MysqlConfig | SqliteConfig }> =
+      config.get("databases");
+
+    const conns = [];
+    try {
+      for (const [name, db_config] of Object.entries(db_configs)) {
+        if(ctx().get(["database", name])) {
+          return;
+        }
+        const conn = await this.getConnection(db_config);
+        ctx().set(["database", name], conn);
+        conns.push(conn);
+      }
+      await next();
+    } finally {
+      for (const conn of conns) {
+        await conn.disconnect();
+      }
+    }
+  }
+
+  private static instance: DatabaseProviderMiddleware;
+
+  async register(): Promise<void> {}
+
+  static getInstance(): DatabaseProviderMiddleware {
+    if (!DatabaseProviderMiddleware.instance) {
+      DatabaseProviderMiddleware.instance = new DatabaseProviderMiddleware();
+    }
+    return DatabaseProviderMiddleware.instance;
+  }
+
+  getConnection(db_config: {
+    provider: string;
+    config: PostgresqlConfig | MysqlConfig | SqliteConfig;
+  }): Connection {
+    if (db_config.provider === "postgresql") {
+      const conn = new PostgresqlConnection(db_config.config as PostgresqlConfig);
+      return conn;
+    }
+
+    if (db_config.provider === "sqlite") {
+      const conn = new SqliteConnection(db_config.config as SqliteConfig);
+      return conn;
+    }
+
+    if(db_config.provider === "mysql") {
+      const conn = new MysqlConnection(db_config.config as MysqlConfig);
+      return conn;
+    }
+
+    throw new Error(`Unsupported database provider: ${db_config.provider}`);
   }
 }

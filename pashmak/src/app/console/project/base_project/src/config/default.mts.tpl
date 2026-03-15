@@ -3,18 +3,24 @@ import os from 'os';
 import { getEnv } from '@devbro/pashmak/helper';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { loadConfig } from '@devbro/pashmak/config';
+import { loadConfigData, DotPaths } from '@devbro/pashmak/config';
+import * as databases_config from './databases';
+import * as storages_config from './storages';
+import * as mailers_config from './mailers';
+import * as queues_config from './queues';
+import * as caches_config from './caches';
+import * as loggers_config from './loggers';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const project_configs = {
-  databases: await loadConfig('./databases'),
-  storages: await loadConfig('./storages'),
-  mailer: await loadConfig('./mailer'),
-  loggers: await loadConfig('./loggers'),
-  queues: await loadConfig('./queues'),
-  caches: await loadConfig('./caches'),
+  databases: loadConfigData(databases_config),
+  storages: loadConfigData(storages_config),
+  mailer: loadConfigData(mailers_config),
+  loggers: loadConfigData(loggers_config),
+  queues: loadConfigData(queues_config),
+  caches: loadConfigData(caches_config),
   base_url: getEnv('BASE_URL', 'http://localhost:' + getEnv('PORT', '3000')),
   port: getEnv('PORT', 3000),
   file_upload_path: path.join(os.tmpdir(), ''),
@@ -42,19 +48,6 @@ const project_configs = {
 export const $test = {
   // Test environment overrides
 };
-
-export const $prod = {
-  port: getEnv('PORT', 80),
-  debug_mode: false,
-};
-
-
-type DotPaths<T> = {
-  [K in keyof T & string]:
-    T[K] extends Record<string, any>
-      ? K | `${K}.${DotPaths<T[K]>}`
-      : K
-}[keyof T & string];
 
 declare module '@devbro/neko-config' {
     interface ConfigKeys extends Record<DotPaths<typeof project_configs>, string> {
