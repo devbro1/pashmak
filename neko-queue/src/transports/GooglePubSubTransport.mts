@@ -1,5 +1,6 @@
 import { QueueTransportInterface } from '../Interfaces.mjs';
-import { PubSub, Topic, Subscription } from '@google-cloud/pubsub';
+import type * as GooglePubSubModule from '@google-cloud/pubsub';
+import { loadPackage } from '../helper.mjs';
 
 /**
  * Configuration options for the Google Pub/Sub transport.
@@ -39,7 +40,7 @@ type ListenerInfo = {
   /** Callback function to process messages. */
   callback: (message: string) => Promise<void>;
   /** Google Pub/Sub subscription. */
-  subscription?: Subscription;
+  subscription?: GooglePubSubModule.Subscription;
 };
 
 /**
@@ -51,16 +52,20 @@ export class GooglePubSubTransport implements QueueTransportInterface {
     Omit<GooglePubSubTransportConfig, 'projectId' | 'keyFilename' | 'credentials' | 'onError'>
   > &
     Pick<GooglePubSubTransportConfig, 'projectId' | 'keyFilename' | 'credentials' | 'onError'>;
-  private client: PubSub | undefined = undefined;
-  private readonly topics = new Map<string, Topic>();
+  private client: GooglePubSubModule.PubSub | undefined = undefined;
+  private readonly topics = new Map<string, GooglePubSubModule.Topic>();
   private readonly listeners = new Map<string, ListenerInfo>();
   private listening = false;
+  private static pubsubModule: typeof GooglePubSubModule;
 
   /**
    * Creates a new Google Pub/Sub transport instance.
    * @param config - Configuration options for the Google Pub/Sub transport
    */
   constructor(config: GooglePubSubTransportConfig = {}) {
+    if (!GooglePubSubTransport.pubsubModule) {
+      GooglePubSubTransport.pubsubModule = loadPackage('@google-cloud/pubsub');
+    }
     this.config = {
       projectId: config.projectId ?? process.env.GOOGLE_CLOUD_PROJECT,
       keyFilename: config.keyFilename,
@@ -98,6 +103,7 @@ export class GooglePubSubTransport implements QueueTransportInterface {
       clientConfig.credentials = this.config.credentials;
     }
 
+    const { PubSub } = GooglePubSubTransport.pubsubModule;
     this.client = new PubSub(clientConfig);
   }
 
@@ -124,7 +130,7 @@ export class GooglePubSubTransport implements QueueTransportInterface {
    * @param channel - The channel name
    * @returns The Pub/Sub topic
    */
-  private async getTopic(channel: string): Promise<Topic> {
+  private async getTopic(channel: string): Promise<GooglePubSubModule.Topic> {
     this.ensureClient();
 
     const topicName = this.getTopicName(channel);
@@ -152,7 +158,7 @@ export class GooglePubSubTransport implements QueueTransportInterface {
    * @param channel - The channel name
    * @returns The Pub/Sub subscription
    */
-  private async getSubscription(channel: string): Promise<Subscription> {
+  private async getSubscription(channel: string): Promise<GooglePubSubModule.Subscription> {
     this.ensureClient();
 
     const topicName = this.getTopicName(channel);

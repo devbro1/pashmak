@@ -1,27 +1,19 @@
 import { QueueTransportInterface } from '../Interfaces.mjs';
-import {
-  ChangeMessageVisibilityCommand,
-  CreateQueueCommand,
-  DeleteMessageCommand,
-  GetQueueUrlCommand,
-  ReceiveMessageCommand,
-  SQSClient,
-  SendMessageCommand,
-} from '@aws-sdk/client-sqs';
-import type { SQSClientConfig } from '@aws-sdk/client-sqs';
+import type * as AwsSqs from '@aws-sdk/client-sqs';
+import { loadPackage } from '../helper.mjs';
 
 /**
  * Configuration options for the SQS transport.
  */
 export type AwsSqsTransportConfig = {
   /** Pre-configured SQS client instance. If not provided, a new client will be created. */
-  client?: SQSClient;
+  client?: AwsSqs.SQSClient;
   /** AWS region for the SQS client. Defaults to AWS_REGION environment variable or 'us-east-1'. */
   region?: string;
   /** Custom endpoint URL for SQS (useful for local development with LocalStack). */
   endpoint?: string;
   /** AWS credentials for authentication. */
-  credentials?: SQSClientConfig['credentials'];
+  credentials?: AwsSqs.SQSClientConfig['credentials'];
   /** Prefix to prepend to all queue names. */
   queueNamePrefix?: string;
   /** Maximum wait time (in seconds) for long polling. Defaults to 20. */
@@ -71,7 +63,7 @@ type PollerInfo = {
  * Provides message dispatching, listener registration, and long-polling with automatic retries.
  */
 export class AwsSqsTransport implements QueueTransportInterface {
-  private readonly client: SQSClient;
+  private readonly client: AwsSqs.SQSClient;
   private readonly config: Required<
     Omit<
       AwsSqsTransportConfig,
@@ -92,12 +84,16 @@ export class AwsSqsTransport implements QueueTransportInterface {
   private readonly listeners = new Map<string, ListenerInfo>();
   private readonly pollers = new Map<string, PollerInfo>();
   private listening = false;
+  private static sqsModule: typeof AwsSqs;
 
   /**
    * Creates a new SQS transport instance.
    * @param config - Configuration options for the SQS transport
    */
   constructor(config: AwsSqsTransportConfig = {}) {
+    if (!AwsSqsTransport.sqsModule) {
+      AwsSqsTransport.sqsModule = loadPackage('@aws-sdk/client-sqs');
+    }
     this.config = {
       region: config.region ?? process.env.AWS_REGION ?? 'us-east-1',
       endpoint: config.endpoint ?? process.env.AWS_SQS_ENDPOINT,
@@ -118,7 +114,8 @@ export class AwsSqsTransport implements QueueTransportInterface {
     if (config.client) {
       this.client = config.client;
     } else {
-      const clientConfig: SQSClientConfig = {
+      const { SQSClient } = AwsSqsTransport.sqsModule;
+      const clientConfig: AwsSqs.SQSClientConfig = {
         region: this.config.region,
       };
       if (this.config.endpoint) {
@@ -139,6 +136,7 @@ export class AwsSqsTransport implements QueueTransportInterface {
   async dispatch(channel: string, message: string): Promise<void> {
     const queueUrl = await this.ensureQueueUrl(channel);
     const queueName = this.resolveQueueName(channel);
+    const { SendMessageCommand } = AwsSqsTransport.sqsModule;
     const command = new SendMessageCommand({
       QueueUrl: queueUrl,
       MessageBody: message,
@@ -258,6 +256,7 @@ export class AwsSqsTransport implements QueueTransportInterface {
 
     while (!signal.aborted && this.listening) {
       try {
+        const { ReceiveMessageCommand, DeleteMessageCommand, ChangeMessageVisibilityCommand } = AwsSqsTransport.sqsModule;
         const receiveCommand = new ReceiveMessageCommand({
           QueueUrl: queueUrl,
           MaxNumberOfMessages: this.config.maxNumberOfMessages,
@@ -349,9 +348,10 @@ export class AwsSqsTransport implements QueueTransportInterface {
    */
   private async lookupQueueUrl(channel: string): Promise<string> {
     const queueName = this.resolveQueueName(channel);
+    const { GetQueueUrlCommand, CreateQueueCommand } = AwsSqsTransport.sqsModule;
 
     try {
-      const result = await this.client.send(new GetQueueUrlCommand({ QueueName: queueName }));
+      const result: any = await this.client.send(new GetQueueUrlCommand({ QueueName: queueName }));
       if (!result.QueueUrl) {
         throw new Error(`SQS did not return a queue URL for ${queueName}`);
       }
@@ -362,7 +362,7 @@ export class AwsSqsTransport implements QueueTransportInterface {
       }
 
       const attributes = this.buildQueueAttributes(queueName);
-      const result = await this.client.send(
+      const result: any = await this.client.send(
         new CreateQueueCommand({ QueueName: queueName, Attributes: attributes })
       );
 

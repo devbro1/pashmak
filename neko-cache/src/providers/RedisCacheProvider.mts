@@ -1,21 +1,26 @@
-import { createClient, RedisClientOptions, RedisClientType } from 'redis';
+import type * as RedisModule from 'redis';
 import { CacheProviderInterface } from '../CacheProviderInterface.mjs';
 import { JSONValue, JSONObject } from '@devbro/neko-helper';
+import { loadPackage } from '../helper.mjs';
 
-export type RedisCacheProviderConfig = RedisClientOptions;
+export type RedisCacheProviderConfig = RedisModule.RedisClientOptions;
 /**
  * Redis-based cache provider that stores cache entries in a Redis server.
  * Provides distributed caching with automatic expiration support.
  */
 export class RedisCacheProvider implements CacheProviderInterface {
-  private client: RedisClientType;
+  private client: RedisModule.RedisClientType;
   private defaultTTL: number = 3600; // default TTL in seconds
+  private static redisModule: typeof RedisModule;
 
   /**
    * Creates a new RedisCacheProvider instance.
    * @param config - Redis client configuration options
    */
   constructor(private config: RedisCacheProviderConfig) {
+    if (!RedisCacheProvider.redisModule) {
+      RedisCacheProvider.redisModule = loadPackage('redis');
+    }
     this.client = this.createRedisClient();
     this.client.connect();
   }
@@ -25,8 +30,8 @@ export class RedisCacheProvider implements CacheProviderInterface {
    * @returns A Redis client instance
    */
   private createRedisClient(): any {
-    let rc = createClient(this.config);
-    return rc;
+    const { createClient } = RedisCacheProvider.redisModule;
+    return createClient(this.config);
   }
 
   /**

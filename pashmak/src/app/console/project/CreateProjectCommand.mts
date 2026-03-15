@@ -24,8 +24,37 @@ export class CreateProjectCommand extends Command {
   executor: string = "";
   packageManager: string = "";
   linter: string = "";
-  validation_library: string = "";
-  database_type: string = "";
+  validation_library = Option.String("--validation-library", {
+    description: "Validation library to use (yup, zod, none)",
+    required: false,
+  });
+  database_type = Option.String("--database-type", {
+    description: "Database type to use (postgresql, mysql, sqlite)",
+    required: false,
+  });
+  cache_library = Option.String("--cache-library", {
+    description: "Cache library to use (redis, memcached, none)",
+    required: false,
+  });
+  mailer_library = Option.String("--mailer-library", {
+    description:
+      "Mailer library to use (@aws-sdk/client-ses, nodemailer, none)",
+    required: false,
+  });
+  queue_library = Option.String("--queue-library", {
+    description:
+      "Queue library to use (@aws-sdk/client-sqs, @azure/service-bus, @google-cloud/pubsub, amqplib, redis, none)",
+    required: false,
+  });
+  storage_library = Option.String("--storage-library", {
+    description:
+      "Storage library to use (@aws-sdk/client-s3, @azure/storage-blob, @google-cloud/storage, basic-ftp, ssh2-sftp-client, none)",
+    required: false,
+  });
+  initGit = Option.Boolean("--git", {
+    description: "Initialize a git repository (use --no-git to skip)",
+    required: false,
+  });
 
   async folderExists(folderPath: string): Promise<boolean> {
     try {
@@ -222,54 +251,69 @@ export class CreateProjectCommand extends Command {
 
   async setupGeneralPackages() {
     // ask what library to use for validation: yup or zod or none
-    this.validation_library = await select({
-      message: "Select a package you want for validation",
-      choices: [
-        {
-          name: "Yup",
-          value: "yup",
-          description: "https://github.com/jquense/yup",
-        },
-        {
-          name: "Zod",
-          value: "zod",
-          description: "https://zod.dev/",
-        },
-        new Separator(),
-        {
-          name: "None",
-          value: "none",
-          disabled: false,
-        },
-      ],
-    });
+    this.validation_library =
+      this.validation_library ??
+      (await select({
+        message: "Select a package you want for validation",
+        choices: [
+          {
+            name: "Yup",
+            value: "yup",
+            description: "https://github.com/jquense/yup",
+          },
+          {
+            name: "Zod",
+            value: "zod",
+            description: "https://zod.dev/",
+          },
+          new Separator(),
+          {
+            name: "None",
+            value: "none",
+            disabled: false,
+          },
+        ],
+      }));
 
     // run commands to install the selected validation library
-    this.validation_library === "none" ||
-      (await this.addPackage(this.validation_library));
+    if (
+      this.validation_library === "yup" ||
+      this.validation_library === "zod"
+    ) {
+      await this.addPackage(this.validation_library);
+    } else if (this.validation_library === "none") {
+    } else {
+      throw new Error(
+        "unexpected validation library: " +
+          this.validation_library +
+          ". Valid options are: yup, zod, none",
+      );
+    }
 
-    this.database_type = await select({
-      message: "Select a database type (you can add more databases later)",
-      choices: [
-        {
-          name: "PostgreSQL",
-          value: "postgresql",
-          description:
-            "A powerful, open source object-relational database system",
-        },
-        {
-          name: "MySQL",
-          value: "mysql",
-          description: "The world's most popular open source database",
-        },
-        {
-          name: "SQLite",
-          value: "sqlite",
-          description:
-            "A C library that provides a lightweight disk-based database",
-        },
-      ],
-    });
+    this.database_type =
+      this.database_type ??
+      (await select({
+        message: "Select a database type (you can add more databases later)",
+        choices: [
+          {
+            name: "PostgreSQL",
+            value: "postgresql",
+            description:
+              "A powerful, open source object-relational database system",
+          },
+          {
+            name: "MySQL",
+            value: "mysql",
+            description: "The world's most popular open source database",
+          },
+          {
+            name: "SQLite",
+            value: "sqlite",
+            description:
+              "A C library that provides a lightweight disk-based database",
+          },
+        ],
+      }));
 
     if (this.database_type === "postgresql") {
       await this.addPackage("pg pg-cursor");
@@ -277,6 +321,209 @@ export class CreateProjectCommand extends Command {
       await this.addPackage("mysql2");
     } else if (this.database_type === "sqlite") {
       await this.addPackage("sqlite3");
+    } else {
+      throw new Error(
+        "unexpected database type: " +
+          this.database_type +
+          ". Valid options are: postgresql, mysql, sqlite",
+      );
+    }
+
+    // ask for cache library to use
+    this.cache_library =
+      this.cache_library ??
+      (await select({
+        message: "Select a cache library",
+        choices: [
+          {
+            name: "Redis",
+            value: "redis",
+            description: "Redis client for Node.js",
+          },
+          {
+            name: "Memcached",
+            value: "memcached",
+            description: "Memcached client for Node.js",
+          },
+          new Separator(),
+          {
+            name: "None",
+            value: "none",
+            disabled: false,
+          },
+        ],
+      }));
+
+    if (this.cache_library === "redis") {
+      await this.addPackage("redis");
+    } else if (this.cache_library === "memcached") {
+      await this.addPackage("memcached");
+    } else if (this.cache_library === "none") {
+    } else {
+      throw new Error(
+        "unexpected cache library: " +
+          this.cache_library +
+          ". Valid options are: redis, memcached, none",
+      );
+    }
+
+    // ask for mailer library to use
+    this.mailer_library =
+      this.mailer_library ??
+      (await select({
+        message: "Select a mailer library",
+        choices: [
+          {
+            name: "AWS SES",
+            value: "@aws-sdk/client-ses",
+            description: "AWS SDK for JavaScript v3 - SES client",
+          },
+          {
+            name: "Nodemailer",
+            value: "nodemailer",
+            description: "Send emails with Node.js",
+          },
+          new Separator(),
+          {
+            name: "None",
+            value: "none",
+            disabled: false,
+          },
+        ],
+      }));
+
+    if (this.mailer_library === "@aws-sdk/client-ses") {
+      await this.addPackage("@aws-sdk/client-ses");
+    } else if (this.mailer_library === "nodemailer") {
+      await this.addPackage("nodemailer");
+      await this.addPackage("@types/nodemailer", true);
+    } else if (this.mailer_library === "none") {
+    } else {
+      throw new Error(
+        "unexpected mailer library: " +
+          this.mailer_library +
+          ". Valid options are: @aws-sdk/client-ses, nodemailer, none",
+      );
+    }
+
+    // ask for queue library to use
+    this.queue_library =
+      this.queue_library ??
+      (await select({
+        message: "Select a queue library",
+        choices: [
+          {
+            name: "AWS SQS",
+            value: "@aws-sdk/client-sqs",
+            description: "AWS SDK for JavaScript v3 - SQS client",
+          },
+          {
+            name: "Azure Service Bus",
+            value: "@azure/service-bus",
+            description: "Azure Service Bus client for Node.js",
+          },
+          {
+            name: "Google Cloud Pub/Sub",
+            value: "@google-cloud/pubsub",
+            description: "Google Cloud Pub/Sub client for Node.js",
+          },
+          {
+            name: "RabbitMQ (amqplib)",
+            value: "amqplib",
+            description: "AMQP 0-9-1 client for Node.js",
+          },
+          {
+            name: "Redis",
+            value: "redis",
+            description: "Redis client for Node.js",
+          },
+          new Separator(),
+          {
+            name: "None",
+            value: "none",
+            disabled: false,
+          },
+        ],
+      }));
+
+    if (this.queue_library === "@aws-sdk/client-sqs") {
+      await this.addPackage("@aws-sdk/client-sqs");
+    } else if (this.queue_library === "@azure/service-bus") {
+      await this.addPackage("@azure/service-bus");
+    } else if (this.queue_library === "@google-cloud/pubsub") {
+      await this.addPackage("@google-cloud/pubsub");
+    } else if (this.queue_library === "amqplib") {
+      await this.addPackage("amqplib");
+      await this.addPackage("@types/amqplib", true);
+    } else if (this.queue_library === "redis") {
+      await this.addPackage("redis");
+    } else if (this.queue_library === "none") {
+    } else {
+      throw new Error(
+        "unexpected queue library: " +
+          this.queue_library +
+          ". Valid options are: @aws-sdk/client-sqs, @azure/service-bus, @google-cloud/pubsub, amqplib, redis, none",
+      );
+    }
+
+    // ask for storage library to use
+    this.storage_library =
+      this.storage_library ??
+      (await select({
+        message: "Select a storage library",
+        choices: [
+          {
+            name: "@aws-sdk/client-s3",
+            value: "@aws-sdk/client-s3",
+            description: "AWS SDK for JavaScript v3 - S3 client",
+          },
+          {
+            name: "@azure/storage-blob",
+            value: "@azure/storage-blob",
+            description: "Azure Storage Blob client for Node.js",
+          },
+          {
+            name: "@google-cloud/storage",
+            value: "@google-cloud/storage",
+            description: "Google Cloud Storage client for Node.js",
+          },
+          {
+            name: "basic-ftp",
+            value: "basic-ftp",
+            description: "FTP client for Node.js",
+          },
+          {
+            name: "ssh2-sftp-client",
+            value: "ssh2-sftp-client",
+            description: "SFTP client for Node.js",
+          },
+          new Separator(),
+          {
+            name: "None",
+            value: "none",
+            disabled: false,
+          },
+        ],
+      }));
+
+    if (this.storage_library === "@aws-sdk/client-s3") {
+      await this.addPackage("@aws-sdk/client-s3");
+    } else if (this.storage_library === "@azure/storage-blob") {
+      await this.addPackage("@azure/storage-blob");
+    } else if (this.storage_library === "@google-cloud/storage") {
+      await this.addPackage("@google-cloud/storage");
+    } else if (this.storage_library === "basic-ftp") {
+      await this.addPackage("basic-ftp");
+    } else if (this.storage_library === "ssh2-sftp-client") {
+      await this.addPackage("ssh2-sftp-client");
+      await this.addPackage("@types/ssh2-sftp-client", true);
+    } else if (this.storage_library === "none") {
+    } else {
+      throw new Error(
+        "unexpected storage library: " +
+          this.storage_library +
+          " . Valid options are: @aws-sdk/client-s3, @azure/storage-blob, @google-cloud/storage, basic-ftp, ssh2-sftp-client, none",
+      );
     }
 
     // add other packages
@@ -359,23 +606,25 @@ export class CreateProjectCommand extends Command {
 
   async setupGit() {
     // ask if user wants to initialize git repository
-    const initGit = await select({
-      message: "Initialize a git repository?",
-      choices: [
-        {
-          name: "Yes",
-          value: true,
-          description: "Initialize git and create first commit",
-        },
-        {
-          name: "No",
-          value: false,
-          description: "Skip git initialization",
-        },
-      ],
-    });
+    this.initGit =
+      this.initGit ??
+      (await select({
+        message: "Initialize a git repository?",
+        choices: [
+          {
+            name: "Yes",
+            value: true,
+            description: "Initialize git and create first commit",
+          },
+          {
+            name: "No",
+            value: false,
+            description: "Skip git initialization",
+          },
+        ],
+      }));
 
-    if (initGit) {
+    if (this.initGit) {
       const gitignoreContent =
         [
           "node_modules/",

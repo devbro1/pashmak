@@ -1,7 +1,7 @@
 import { Mailable } from "../Mailable.mjs";
 import { MailerProvider } from "../MailerProvider.mjs";
-import nodemailer from "nodemailer";
-import { prepareEmails } from "../helper.mjs";
+import type nodemailer from "nodemailer";
+import { loadPackage, prepareEmails } from "../helper.mjs";
 
 /**
  * Configuration options for the SMTPProvider.
@@ -19,14 +19,18 @@ export type SMTPProviderConfig = {
  */
 export class SMTPProvider implements MailerProvider {
   private defaultFrom: string = "";
-  private transporter;
+  private transporter: nodemailer.Transporter;
+  private static nodemailerModule: typeof nodemailer;
 
   /**
    * Creates a new SMTPProvider instance.
    * @param options - Provider configuration options
    */
   constructor(options: Partial<SMTPProviderConfig> = {}) {
-    this.transporter = nodemailer.createTransport(options.nodemailer_options);
+    if (!SMTPProvider.nodemailerModule) {
+      SMTPProvider.nodemailerModule = loadPackage("nodemailer");
+    }
+    this.transporter = SMTPProvider.nodemailerModule.createTransport(options.nodemailer_options);
     this.defaultFrom = options.default_from || "";
   }
 

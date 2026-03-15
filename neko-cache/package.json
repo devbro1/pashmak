@@ -34,15 +34,27 @@
     "@typescript-eslint/parser": "^7.1.1",
     "eslint": "8.57.0",
     "husky": "^9.1.7",
+    "memcached": "^2.2.2",
     "prettier": "^3.5.3",
-    "tsup": "^8.0.2",
+    "redis": "^4.6.0",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@devbro/neko-helper": "0.1.*",
+    "@devbro/neko-helper": "0.1.*"
+  },
+  "peerDependencies": {
     "memcached": "^2.2.2",
     "redis": "^4.6.0"
+  },
+  "peerDependenciesMeta": {
+    "memcached": {
+      "optional": true
+    },
+    "redis": {
+      "optional": true
+    }
   },
   "directories": {
     "doc": "docs",

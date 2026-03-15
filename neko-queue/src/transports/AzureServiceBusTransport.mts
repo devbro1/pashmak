@@ -1,10 +1,6 @@
 import { QueueTransportInterface } from '../Interfaces.mjs';
-import {
-  ServiceBusClient,
-  ServiceBusSender,
-  ServiceBusReceiver,
-  ServiceBusReceivedMessage,
-} from '@azure/service-bus';
+import type * as AzureServiceBus from '@azure/service-bus';
+import { loadPackage } from '../helper.mjs';
 
 /**
  * Configuration options for the Azure Service Bus transport.
@@ -38,7 +34,7 @@ type ListenerInfo = {
   /** Callback function to process messages. */
   callback: (message: string) => Promise<void>;
   /** Azure Service Bus receiver. */
-  receiver?: ServiceBusReceiver;
+  receiver?: AzureServiceBus.ServiceBusReceiver;
 };
 
 /**
@@ -50,16 +46,20 @@ export class AzureServiceBusTransport implements QueueTransportInterface {
     Omit<AzureServiceBusTransportConfig, 'connectionString' | 'messageTtl' | 'onError'>
   > &
     Pick<AzureServiceBusTransportConfig, 'connectionString' | 'messageTtl' | 'onError'>;
-  private client: ServiceBusClient | undefined = undefined;
-  private readonly senders = new Map<string, ServiceBusSender>();
+  private client: AzureServiceBus.ServiceBusClient | undefined = undefined;
+  private readonly senders = new Map<string, AzureServiceBus.ServiceBusSender>();
   private readonly listeners = new Map<string, ListenerInfo>();
   private listening = false;
+  private static azureModule: typeof AzureServiceBus;
 
   /**
    * Creates a new Azure Service Bus transport instance.
    * @param config - Configuration options for the Azure Service Bus transport
    */
   constructor(config: AzureServiceBusTransportConfig = {}) {
+    if (!AzureServiceBusTransport.azureModule) {
+      AzureServiceBusTransport.azureModule = loadPackage('@azure/service-bus');
+    }
     this.config = {
       connectionString: config.connectionString ?? process.env.AZURE_SERVICE_BUS_CONNECTION_STRING,
       queuePrefix: config.queuePrefix ?? 'neko-queue',
@@ -84,6 +84,7 @@ export class AzureServiceBusTransport implements QueueTransportInterface {
       throw new Error('Azure Service Bus connection string is required');
     }
 
+    const { ServiceBusClient } = AzureServiceBusTransport.azureModule;
     this.client = new ServiceBusClient(this.config.connectionString);
   }
 
@@ -101,7 +102,7 @@ export class AzureServiceBusTransport implements QueueTransportInterface {
    * @param channel - The channel name
    * @returns The Service Bus sender
    */
-  private getSender(channel: string): ServiceBusSender {
+  private getSender(channel: string): AzureServiceBus.ServiceBusSender {
     this.ensureClient();
 
     const queueName = this.getQueueName(channel);
@@ -121,7 +122,7 @@ export class AzureServiceBusTransport implements QueueTransportInterface {
    * @param channel - The channel name
    * @returns The Service Bus receiver
    */
-  private getReceiver(channel: string): ServiceBusReceiver {
+  private getReceiver(channel: string): AzureServiceBus.ServiceBusReceiver {
     this.ensureClient();
 
     const queueName = this.getQueueName(channel);
@@ -207,7 +208,7 @@ export class AzureServiceBusTransport implements QueueTransportInterface {
 
       receiver.subscribe(
         {
-          processMessage: async (message: ServiceBusReceivedMessage) => {
+          processMessage: async (message: AzureServiceBus.ServiceBusReceivedMessage) => {
             const messageId = (message.messageId ?? 'unknown') as string;
             // Convert body to string - inline to help DTS builder with type narrowing
             let bodyString: string;
