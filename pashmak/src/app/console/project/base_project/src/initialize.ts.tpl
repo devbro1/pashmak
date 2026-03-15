@@ -6,7 +6,7 @@ import * as config_data from "./config/default.mts";
 await config.load(loadConfigData(config_data));
 
 import { httpServer, logger } from "@devbro/pashmak/facades";
-import { startQueueListeners } from "@/app/queues";
+import { registerQueueListeners } from "@/app/queues";
 import { HttpError } from "@devbro/pashmak/http";
 
 import * as yup from "yup";
@@ -98,4 +98,4 @@ httpServer().setErrorHandler(async (err: Error, req: any, res: any) => {
     res.end(JSON.stringify({ error: "Internal Server Error" }));
   });
 
-startQueueListeners();
+registerQueueListeners();
