@@ -230,6 +230,12 @@ export class CreateProjectCommand extends Command {
           value: "eslint",
           description: "Find and fix problems in your JavaScript code",
         },
+        {
+          name: "Oxlint",
+          value: "oxlint",
+          description:
+            "Extremely fast JavaScript/TypeScript linter and formatter (oxlint + oxfmt)",
+        },
       ],
     });
 
@@ -244,6 +250,11 @@ export class CreateProjectCommand extends Command {
       packageJson.scripts.lint = "eslint . --ext .ts,.tsx";
       packageJson.scripts.format = "eslint . --ext .ts,.tsx --fix";
       this.addPackage("eslint", true);
+    } else if (this.linter === "oxlint") {
+      packageJson.scripts.lint = "oxlint .";
+      packageJson.scripts.format = "oxfmt .";
+      this.addPackage("oxlint", true);
+      this.addPackage("@oxc-project/oxfmt", true);
     }
     //save back to package.json
     await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
