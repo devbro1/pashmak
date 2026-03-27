@@ -64,7 +64,7 @@ export class Route {
       } else if (token.type === 'WILDCARD') {
         regexParts.push('(.+)');
       } else if (token.type === 'TEXT') {
-        regexParts.push(token.value.replace(/[-\/\\^$.*+?()[\]{}|]/g, '\\$&'));
+        regexParts.push(token.value.replace(/[-/\\^$.*+?()[\]{}|]/g, '\\$&'));
       }
     }
 

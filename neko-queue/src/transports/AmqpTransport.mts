@@ -189,10 +189,7 @@ export class AmqpTransport implements QueueTransportInterface {
    * @param channel - The channel (queue) name to listen to
    * @param callback - Callback function to process received messages
    */
-  async registerListener(
-    channel: string,
-    callback: (message: string) => Promise<void>
-  ): Promise<void> {
+  async registerListener(channel: string, callback: (message: string) => Promise<void>): Promise<void> {
     const existing = this.listeners.get(channel);
     if (existing) {
       existing.callback = callback;
@@ -279,9 +276,7 @@ export class AmqpTransport implements QueueTransportInterface {
 
     // Start consumers for all registered listeners
     await Promise.all(
-      Array.from(this.listeners.entries()).map(([channel, listener]) =>
-        this.startConsumer(channel, listener)
-      )
+      Array.from(this.listeners.entries()).map(([channel, listener]) => this.startConsumer(channel, listener))
     );
   }
 
@@ -328,10 +323,7 @@ export class AmqpTransport implements QueueTransportInterface {
    * @param error - The error that occurred
    * @param context - Context information about where the error occurred
    */
-  private handleError(
-    error: unknown,
-    context: { channel?: string; message?: ConsumeMessage }
-  ): void {
+  private handleError(error: unknown, context: { channel?: string; message?: ConsumeMessage }): void {
     const err = error instanceof Error ? error : new Error('Unknown error');
 
     if (this.config.onError) {

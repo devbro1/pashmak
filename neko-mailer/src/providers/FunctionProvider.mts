@@ -1,6 +1,6 @@
-import { Mailable } from "../Mailable.mjs";
-import { MailerProvider } from "../MailerProvider.mjs";
-import { prepareEmails } from "../helper.mjs";
+import { Mailable } from '../Mailable.mjs';
+import { MailerProvider } from '../MailerProvider.mjs';
+import { prepareEmails } from '../helper.mjs';
 
 /**
  * Configuration options for the FunctionProvider.
@@ -15,7 +15,7 @@ export type FunctionProviderConfig = {
  * Useful for testing or custom email sending logic.
  */
 export class FunctionProvider implements MailerProvider {
-  private defaultFrom: string = "";
+  private defaultFrom: string = '';
 
   /**
    * Creates a new FunctionProvider instance.
@@ -24,7 +24,7 @@ export class FunctionProvider implements MailerProvider {
    */
   constructor(
     private func: Function,
-    private config: FunctionProviderConfig,
+    private config: FunctionProviderConfig
   ) {
     this.defaultFrom = config.default_from;
   }

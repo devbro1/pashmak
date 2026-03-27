@@ -1,1 +1,1 @@
-export * from "@devbro/neko-mailer";
+export * from '@devbro/neko-mailer';

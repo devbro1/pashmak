@@ -1,16 +1,16 @@
-import { cli, db as database, logger } from "../../../facades.mjs";
-import { Command, Option } from "clipanion";
-import { context_provider } from "@devbro/neko-context";
-import path from "path";
-import fs from "fs/promises";
-import { config } from "@devbro/neko-config";
-import { Migration } from "@devbro/neko-sql";
-import * as t from "typanion";
+import { cli, db as database, logger } from '../../../facades.mjs';
+import { Command, Option } from 'clipanion';
+import { context_provider } from '@devbro/neko-context';
+import path from 'path';
+import fs from 'fs/promises';
+import { config } from '@devbro/neko-config';
+import { Migration } from '@devbro/neko-sql';
+import * as t from 'typanion';
 
 export class MigrateRollbackCommand extends Command {
-  static paths = [[`migrate`, "rollback"]];
+  static paths = [[`migrate`, 'rollback']];
 
-  steps = Option.String(`--steps`, "1", {
+  steps = Option.String(`--steps`, '1', {
     description: `how many migrations to rollback`,
     validator: t.isNumber(),
   });
@@ -21,14 +21,14 @@ export class MigrateRollbackCommand extends Command {
       const db = database();
       const schema = db.getSchema();
 
-      const migrationsDir = config.get("migration.path");
+      const migrationsDir = config.get('migration.path');
       let files: string[] = [];
 
       const dirEntries = await fs.readdir(migrationsDir);
-      files = dirEntries.filter((entry) => entry.endsWith(".ts")).sort();
+      files = dirEntries.filter((entry) => entry.endsWith('.ts')).sort();
 
       const migrations = await db.runQuery({
-        sql: "select * from migrations order by created_at DESC limit $1",
+        sql: 'select * from migrations order by created_at DESC limit $1',
         parts: [],
         bindings: [this.steps],
       });
@@ -37,14 +37,12 @@ export class MigrateRollbackCommand extends Command {
         const class_to_migrate = migration.filename;
         logger().info(`rolling back ${class_to_migrate}`);
 
-        const ClassToMigrate = (
-          await import(path.join(migrationsDir, class_to_migrate))
-        ).default;
+        const ClassToMigrate = (await import(path.join(migrationsDir, class_to_migrate))).default;
 
         const c: Migration = new ClassToMigrate();
         await c.down(db.getSchema());
         await db.runQuery({
-          sql: "delete from migrations where id = $1",
+          sql: 'delete from migrations where id = $1',
           parts: [],
           bindings: [migration.id],
         });

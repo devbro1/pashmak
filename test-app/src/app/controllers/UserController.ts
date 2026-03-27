@@ -1,5 +1,5 @@
-import { db, storage, logger } from "@devbro/pashmak/facades";
-import { ctx } from "@devbro/pashmak/context";
+import { db, storage, logger } from '@devbro/pashmak/facades';
+import { ctx } from '@devbro/pashmak/context';
 import {
   Request,
   Response,
@@ -11,10 +11,10 @@ import {
   Post,
   Put,
   Delete,
-} from "@devbro/pashmak/router";
-import { ValidatedRequest } from "@/helpers/validation";
+} from '@devbro/pashmak/router';
+import { ValidatedRequest } from '@/helpers/validation';
 
-@Controller("/api/v1/users")
+@Controller('/api/v1/users')
 export class UserController extends BaseController {
   @Get()
   async list() {}
@@ -22,12 +22,12 @@ export class UserController extends BaseController {
   @Post()
   async create() {}
 
-  @Get({ path: "/:id" })
-  async get(@Param("id") id: string) {}
+  @Get({ path: '/:id' })
+  async get(@Param('id') id: string) {}
 
-  @Put({ path: "/:id" })
-  async update(@Param("id") id: string) {}
+  @Put({ path: '/:id' })
+  async update(@Param('id') id: string) {}
 
-  @Delete({ path: "/:id" })
-  delete(@Param("id") id: string) {}
+  @Delete({ path: '/:id' })
+  delete(@Param('id') id: string) {}
 }

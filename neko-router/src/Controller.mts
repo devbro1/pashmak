@@ -44,8 +44,7 @@ function createHttpDecorator(data: {
 
     descriptor.value = async function (...args: any[]) {
       const paramCustomKeys = paramKeys.filter(
-        (key) =>
-          typeof key === 'string' && key.startsWith(`${methodName}:`) && key.endsWith(':custom')
+        (key) => typeof key === 'string' && key.startsWith(`${methodName}:`) && key.endsWith(':custom')
       );
       for (const paramKey of paramCustomKeys) {
         const paramIndex = parseInt((paramKey as string).split(':')[1]);
@@ -60,9 +59,7 @@ function createHttpDecorator(data: {
   };
 }
 
-export function Get(
-  data: { path?: string; middlewares?: MiddlewareProvider[] } = {}
-): MethodDecorator {
+export function Get(data: { path?: string; middlewares?: MiddlewareProvider[] } = {}): MethodDecorator {
   return createHttpDecorator({
     methods: ['GET', 'HEAD'],
     path: data.path || '/',
@@ -70,9 +67,7 @@ export function Get(
   });
 }
 
-export function Post(
-  data: { path?: string; middlewares?: MiddlewareProvider[] } = {}
-): MethodDecorator {
+export function Post(data: { path?: string; middlewares?: MiddlewareProvider[] } = {}): MethodDecorator {
   return createHttpDecorator({
     methods: ['POST'],
     path: data.path || '/',
@@ -80,9 +75,7 @@ export function Post(
   });
 }
 
-export function Put(
-  data: { path?: string; middlewares?: MiddlewareProvider[] } = {}
-): MethodDecorator {
+export function Put(data: { path?: string; middlewares?: MiddlewareProvider[] } = {}): MethodDecorator {
   return createHttpDecorator({
     methods: ['PUT'],
     path: data.path || '/',
@@ -90,9 +83,7 @@ export function Put(
   });
 }
 
-export function Patch(
-  data: { path?: string; middlewares?: MiddlewareProvider[] } = {}
-): MethodDecorator {
+export function Patch(data: { path?: string; middlewares?: MiddlewareProvider[] } = {}): MethodDecorator {
   return createHttpDecorator({
     methods: ['PATCH'],
     path: data.path || '/',
@@ -100,9 +91,7 @@ export function Patch(
   });
 }
 
-export function Delete(
-  data: { path?: string; middlewares?: MiddlewareProvider[] } = {}
-): MethodDecorator {
+export function Delete(data: { path?: string; middlewares?: MiddlewareProvider[] } = {}): MethodDecorator {
   return createHttpDecorator({
     methods: ['DELETE'],
     path: data.path || '/',
@@ -110,9 +99,7 @@ export function Delete(
   });
 }
 
-export function Options(
-  data: { path?: string; middlewares?: MiddlewareProvider[] } = {}
-): MethodDecorator {
+export function Options(data: { path?: string; middlewares?: MiddlewareProvider[] } = {}): MethodDecorator {
   return createHttpDecorator({
     methods: ['OPTIONS'],
     path: data.path || '/',
@@ -121,11 +108,7 @@ export function Options(
 }
 
 export function createParamDecorator(func: () => Promise<any> | (() => any)): ParameterDecorator {
-  return function MyParamDecorator(
-    target: Object,
-    propertyKey: string | symbol | undefined,
-    parameterIndex: number
-  ) {
+  return function MyParamDecorator(target: Object, propertyKey: string | symbol | undefined, parameterIndex: number) {
     Reflect.set(target.constructor, `${propertyKey?.toString()}:${parameterIndex}:custom`, func);
   };
 }

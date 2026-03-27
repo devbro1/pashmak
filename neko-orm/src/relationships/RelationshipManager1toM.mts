@@ -4,10 +4,10 @@ import { Case } from 'change-case-all';
 import { assocationOptions, RelationFactoryOptionsType } from './types.mjs';
 import { RelationshipManager } from './RelationshipManager.mjs';
 
-export class RelationshipManager1toM<
-  Source extends BaseModel,
-  Target extends BaseModel,
-> extends RelationshipManager<Source, Target> {
+export class RelationshipManager1toM<Source extends BaseModel, Target extends BaseModel> extends RelationshipManager<
+  Source,
+  Target
+> {
   constructor(options: RelationFactoryOptionsType) {
     super(options);
   }

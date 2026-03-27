@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { Cli } from "clipanion";
+import { Cli } from 'clipanion';
 
 const [node, app, ...args] = process.argv;
 const cli = new Cli({
@@ -9,7 +9,7 @@ const cli = new Cli({
   binaryVersion: `1.0.0`,
 });
 
-import { CreateProjectCommand } from "../app/console/project/CreateProjectCommand.mjs";
+import { CreateProjectCommand } from '../app/console/project/CreateProjectCommand.mjs';
 
 cli.register(CreateProjectCommand);
 
@@ -17,6 +17,6 @@ cli
   .runExit(args)
   .then(() => {})
   .catch((err: any) => {
-    console.error("Fatal error:", err.message);
+    console.error('Fatal error:', err.message);
     process.exit(1);
   });

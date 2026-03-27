@@ -1,17 +1,11 @@
-import { describe, expect, test } from "vitest";
-import {
-  SendGridProvider,
-  MailgunProvider,
-  PostmarkProvider,
-  ProtonMailProvider,
-  MailchimpProvider,
-} from "@/index";
+import { describe, expect, test } from 'vitest';
+import { SendGridProvider, MailgunProvider, PostmarkProvider, ProtonMailProvider, MailchimpProvider } from '@/index';
 
-describe("new provider tests", () => {
-  test("SendGrid provider can be instantiated", () => {
+describe('new provider tests', () => {
+  test('SendGrid provider can be instantiated', () => {
     const provider = new SendGridProvider({
-      api_key: "test-key",
-      default_from: "test@example.com",
+      api_key: 'test-key',
+      default_from: 'test@example.com',
     });
 
     expect(provider).toBeInstanceOf(SendGridProvider);
@@ -19,21 +13,21 @@ describe("new provider tests", () => {
     expect(provider.sendMail).toBeDefined();
   });
 
-  test("SendGrid provider respects default_from", () => {
+  test('SendGrid provider respects default_from', () => {
     const provider = new SendGridProvider({
-      api_key: "test-key",
-      default_from: "test@example.com",
+      api_key: 'test-key',
+      default_from: 'test@example.com',
     });
 
-    provider.setDefaultFrom("new@example.com");
+    provider.setDefaultFrom('new@example.com');
     expect(provider).toBeInstanceOf(SendGridProvider);
   });
 
-  test("Mailgun provider can be instantiated", () => {
+  test('Mailgun provider can be instantiated', () => {
     const provider = new MailgunProvider({
-      api_key: "test-key",
-      domain: "test.mailgun.org",
-      default_from: "test@example.com",
+      api_key: 'test-key',
+      domain: 'test.mailgun.org',
+      default_from: 'test@example.com',
     });
 
     expect(provider).toBeInstanceOf(MailgunProvider);
@@ -41,21 +35,21 @@ describe("new provider tests", () => {
     expect(provider.sendMail).toBeDefined();
   });
 
-  test("Mailgun provider supports EU region", () => {
+  test('Mailgun provider supports EU region', () => {
     const provider = new MailgunProvider({
-      api_key: "test-key",
-      domain: "test.mailgun.org",
-      default_from: "test@example.com",
+      api_key: 'test-key',
+      domain: 'test.mailgun.org',
+      default_from: 'test@example.com',
       eu: true,
     });
 
     expect(provider).toBeInstanceOf(MailgunProvider);
   });
 
-  test("Postmark provider can be instantiated", () => {
+  test('Postmark provider can be instantiated', () => {
     const provider = new PostmarkProvider({
-      server_token: "test-token",
-      default_from: "test@example.com",
+      server_token: 'test-token',
+      default_from: 'test@example.com',
     });
 
     expect(provider).toBeInstanceOf(PostmarkProvider);
@@ -63,13 +57,13 @@ describe("new provider tests", () => {
     expect(provider.sendMail).toBeDefined();
   });
 
-  test("ProtonMail provider can be instantiated", () => {
+  test('ProtonMail provider can be instantiated', () => {
     const provider = new ProtonMailProvider({
-      bridge_host: "127.0.0.1",
+      bridge_host: '127.0.0.1',
       bridge_port: 1025,
-      username: "test@proton.me",
-      password: "test-password",
-      default_from: "test@proton.me",
+      username: 'test@proton.me',
+      password: 'test-password',
+      default_from: 'test@proton.me',
     });
 
     expect(provider).toBeInstanceOf(ProtonMailProvider);
@@ -77,10 +71,10 @@ describe("new provider tests", () => {
     expect(provider.sendMail).toBeDefined();
   });
 
-  test("Mailchimp provider can be instantiated", () => {
+  test('Mailchimp provider can be instantiated', () => {
     const provider = new MailchimpProvider({
-      api_key: "test-key",
-      default_from: "test@example.com",
+      api_key: 'test-key',
+      default_from: 'test@example.com',
     });
 
     expect(provider).toBeInstanceOf(MailchimpProvider);

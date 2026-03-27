@@ -23,9 +23,9 @@ export function loadPackage(name: string) {
  */
 export function prepareEmails(emails: string | string[] | undefined): string[] {
   let rc: string[] = [];
-  if (typeof emails === "string") {
+  if (typeof emails === 'string') {
     rc = emails
-      .split(",")
+      .split(',')
       .map((email) => email.trim())
       .filter((email) => email.length > 0);
   } else if (Array.isArray(emails)) {

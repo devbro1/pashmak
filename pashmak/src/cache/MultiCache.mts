@@ -1,5 +1,5 @@
-import { JSONObject, JSONValue } from "@devbro/neko-helper";
-import { CacheProviderInterface } from "@devbro/neko-cache";
+import { JSONObject, JSONValue } from '@devbro/neko-helper';
+import { CacheProviderInterface } from '@devbro/neko-cache';
 
 export class MultiCache implements CacheProviderInterface {
   constructor(private caches: CacheProviderInterface[]) {}
@@ -13,11 +13,7 @@ export class MultiCache implements CacheProviderInterface {
     }
     return undefined;
   }
-  async put(
-    key: string,
-    value: JSONObject | JSONValue,
-    ttl?: number,
-  ): Promise<void> {
+  async put(key: string, value: JSONObject | JSONValue, ttl?: number): Promise<void> {
     await Promise.all(this.caches.map((cache) => cache.put(key, value, ttl)));
   }
   async delete(key: string): Promise<void> {

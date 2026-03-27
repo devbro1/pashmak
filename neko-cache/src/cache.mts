@@ -77,11 +77,7 @@ export class Cache {
    * @param options - Cache options including TTL (default: 3600 seconds)
    * @returns The cached value or the result of the callback
    */
-  async remember<T>(
-    key: JSONValue,
-    callback: () => Promise<T>,
-    options: cacheOptions = {}
-  ): Promise<T> {
+  async remember<T>(key: JSONValue, callback: () => Promise<T>, options: cacheOptions = {}): Promise<T> {
     options.ttl = options.ttl ?? 3600; // default TTL 1 hour
 
     const cached = await this.get<T>(key);

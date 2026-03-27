@@ -1,5 +1,5 @@
-import { FlexibleFactory } from "@devbro/neko-helper";
-import { MailerProvider } from "./MailerProvider.mjs";
+import { FlexibleFactory } from '@devbro/neko-helper';
+import { MailerProvider } from './MailerProvider.mjs';
 
 /**
  * Factory class for creating and registering mailer providers.
@@ -7,8 +7,7 @@ import { MailerProvider } from "./MailerProvider.mjs";
  */
 export class MailerProviderFactory {
   /** The singleton factory instance */
-  static instance: FlexibleFactory<MailerProvider> =
-    new FlexibleFactory<MailerProvider>();
+  static instance: FlexibleFactory<MailerProvider> = new FlexibleFactory<MailerProvider>();
 
   /**
    * Registers a mailer provider factory function.
@@ -16,10 +15,7 @@ export class MailerProviderFactory {
    * @param key - Unique identifier for the provider
    * @param factory - Factory function that creates the provider instance
    */
-  static register<T>(
-    key: string,
-    factory: (...args: any[]) => MailerProvider,
-  ): void {
+  static register<T>(key: string, factory: (...args: any[]) => MailerProvider): void {
     MailerProviderFactory.instance.register(key, factory);
   }
 

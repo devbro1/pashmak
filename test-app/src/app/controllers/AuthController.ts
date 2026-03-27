@@ -1,15 +1,15 @@
-import { createJwtToken, decodeJwtToken } from "../../helpers";
-import * as yup from "yup";
-import { User } from "../models/User";
-import { HttpBadRequestError } from "@devbro/pashmak/http";
-import { compareBcrypt } from "@devbro/pashmak/helper";
-import { config } from "@devbro/pashmak/config";
-import { JwtPayload } from "jsonwebtoken";
-import { BaseController, Controller, Get, Post } from "@devbro/pashmak/router";
-import { router } from "@devbro/pashmak/facades";
-import { ValidatedRequest } from "@/helpers/validation";
+import { createJwtToken, decodeJwtToken } from '../../helpers';
+import * as yup from 'yup';
+import { User } from '../models/User';
+import { HttpBadRequestError } from '@devbro/pashmak/http';
+import { compareBcrypt } from '@devbro/pashmak/helper';
+import { config } from '@devbro/pashmak/config';
+import { JwtPayload } from 'jsonwebtoken';
+import { BaseController, Controller, Get, Post } from '@devbro/pashmak/router';
+import { router } from '@devbro/pashmak/facades';
+import { ValidatedRequest } from '@/helpers/validation';
 
-@Controller("/api/v1/auth")
+@Controller('/api/v1/auth')
 export class AuthController extends BaseController {
   static loginValidation = yup.object({
     username: yup.string().required().min(1).max(255),
@@ -25,61 +25,52 @@ export class AuthController extends BaseController {
     const user = await User.findOne({ username: userInfo.username });
 
     if (!user || !(await compareBcrypt(userInfo.password, user.password))) {
-      throw new HttpBadRequestError("Invalid username or password");
+      throw new HttpBadRequestError('Invalid username or password');
     }
 
     if (!user.active) {
-      throw new HttpBadRequestError(
-        "This user is not active, please contact your admin.",
-      );
+      throw new HttpBadRequestError('This user is not active, please contact your admin.');
     }
 
     return {
       access_token: await createJwtToken(user.toJson()),
-      token_type: "Bearer",
-      refresh_token: await createJwtToken(
-        { refresh: true, user_id: user.id },
-        config.get("jwt.refresh_options"),
-      ),
-      expires_in: config.get("jwt.options.expiresIn", 3600) as number,
-      scope: "*",
+      token_type: 'Bearer',
+      refresh_token: await createJwtToken({ refresh: true, user_id: user.id }, config.get('jwt.refresh_options')),
+      expires_in: config.get('jwt.options.expiresIn', 3600) as number,
+      scope: '*',
     };
   }
 
-  @Post({ path: "/refresh" })
+  @Post({ path: '/refresh' })
   async refresh(@ValidatedRequest(AuthController.loginValidation) body: any) {
     const refresh_token = body.refresh_token;
     const payload = (await decodeJwtToken(refresh_token))! as JwtPayload;
 
     if (payload.refresh !== true) {
-      throw new HttpBadRequestError(
-        "bad token. invalid, expired, or signed with wrong key.",
-      );
+      throw new HttpBadRequestError('bad token. invalid, expired, or signed with wrong key.');
     }
 
     const user = await User.findOne({ id: payload.user_id });
 
     if (!user) {
-      throw new HttpBadRequestError("Invalid user_id");
+      throw new HttpBadRequestError('Invalid user_id');
     }
 
     if (!user.active) {
-      throw new HttpBadRequestError(
-        "This user is not active, please contact your admin.",
-      );
+      throw new HttpBadRequestError('This user is not active, please contact your admin.');
     }
 
     return {
       access_token: await createJwtToken(user.toJson()),
-      token_type: "Bearer",
-      scope: "*",
+      token_type: 'Bearer',
+      scope: '*',
     };
   }
 
-  @Get({ path: "/logout" })
+  @Get({ path: '/logout' })
   async logout() {
     // Invalidate the token on the client side, no server-side action needed
-    return { message: "Logged out successfully" };
+    return { message: 'Logged out successfully' };
   }
 }
 

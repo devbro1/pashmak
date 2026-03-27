@@ -30,10 +30,7 @@ export class MemcacheCacheProvider implements CacheProviderInterface {
     if (!MemcacheCacheProvider.memcachedModule) {
       MemcacheCacheProvider.memcachedModule = loadPackage('memcached');
     }
-    this.client = new MemcacheCacheProvider.memcachedModule(
-      config.location || 'localhost:11211',
-      config.options || {}
-    );
+    this.client = new MemcacheCacheProvider.memcachedModule(config.location || 'localhost:11211', config.options || {});
   }
 
   /**

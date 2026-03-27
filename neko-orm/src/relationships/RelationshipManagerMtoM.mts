@@ -4,10 +4,10 @@ import { assocationOptions, RelationFactoryOptionsType } from './types.mjs';
 import { RelationshipManager } from './RelationshipManager.mjs';
 import { Parameter } from '@devbro/neko-sql';
 
-export class RelationshipManagerMtoM<
-  Source extends BaseModel,
-  Target extends BaseModel,
-> extends RelationshipManager<Source, Target> {
+export class RelationshipManagerMtoM<Source extends BaseModel, Target extends BaseModel> extends RelationshipManager<
+  Source,
+  Target
+> {
   constructor(options: RelationFactoryOptionsType) {
     super(options);
   }
@@ -32,9 +32,7 @@ export class RelationshipManagerMtoM<
         insert_obj[p[0]] = obj[i][p[1]];
       }
 
-      insert_obj = this.preMtoMAssociate
-        ? await this.preMtoMAssociate(insert_obj, obj[i])
-        : insert_obj;
+      insert_obj = this.preMtoMAssociate ? await this.preMtoMAssociate(insert_obj, obj[i]) : insert_obj;
       await query.insert(insert_obj);
     }
   }

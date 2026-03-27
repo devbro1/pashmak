@@ -184,9 +184,7 @@ export function loadConfig(
   return loader.load();
 }
 
-export function loadConfigData<T extends Record<string, any>>(
-  obj: Record<string, any> & { default: T }
-): T {
+export function loadConfigData<T extends Record<string, any>>(obj: Record<string, any> & { default: T }): T {
   let envConfigs: Record<string, any> = {};
   const node_env = process.env.NODE_ENV || 'development';
   const envKey = `$${node_env}`;

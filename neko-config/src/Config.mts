@@ -5,7 +5,7 @@ import { Arr, JSONObject } from '@devbro/neko-helper';
 /**
  * Interface for defining typed configuration keys.
  * Can be augmented using module declaration to add type-safe keys.
- * 
+ *
  * @example
  * ```ts
  * declare module '@devbro/neko-config' {
@@ -17,6 +17,7 @@ import { Arr, JSONObject } from '@devbro/neko-helper';
  * }
  * ```
  */
+// biome-ignore lint/suspicious/noEmptyInterface: intentionally empty to support declaration merging via module augmentation
 export interface ConfigKeys {
   // By default, this is empty. Users can augment it with their own keys.
 }
@@ -43,7 +44,7 @@ export class Config {
     this.configs = {};
     this.options = {
       env: options.env || process.env.NODE_ENV || 'development',
-    }
+    };
   }
 
   /**
@@ -62,24 +63,23 @@ export class Config {
    * @param new_config_data - The configuration data to load
    */
   public async load(new_config_data: Record<string, any>): Promise<void> {
-    this.configs = Arr.deepClone(new_config_data)
+    this.configs = Arr.deepClone(new_config_data);
 
     // this.configs may contain $env references that need to be resolved
-    // for these reference we want to remove them 
+    // for these reference we want to remove them
     let applyEnvReferences = (value: JSONObject) => {
       let keys = Object.keys(value);
       let envValues: JSONObject | undefined = undefined;
-      for(let key of keys) {
-        if(key.startsWith('$') && key !== `$${this.options.env}` ) {
+      for (let key of keys) {
+        if (key.startsWith('$') && key !== `$${this.options.env}`) {
           delete value[key];
-        }
-        else if(key.startsWith('$') && key === `$${this.options.env}`) {
+        } else if (key.startsWith('$') && key === `$${this.options.env}`) {
           envValues = value[key] as JSONObject;
           delete value[key];
         }
       }
 
-      if(envValues !== undefined) {
+      if (envValues !== undefined) {
         value = Arr.deepMerge(value, envValues);
       }
 
@@ -89,7 +89,7 @@ export class Config {
     this.configs = await Arr.evaluateAllBranches(this.configs, applyEnvReferences);
     // resolve all promises
     this.configs = await Arr.evaluateAllNodes(this.configs, async (value) => {
-      if(value instanceof Promise) {
+      if (value instanceof Promise) {
         return await value;
       }
       return value;
@@ -103,14 +103,14 @@ export class Config {
    * @returns The configuration value or the default value
    */
   public get<K extends ConfigKey>(
-    key: K, 
+    key: K,
     default_value?: K extends keyof ConfigKeys ? ConfigKeys[K] : any
   ): K extends keyof ConfigKeys ? ConfigKeys[K] : any {
     try {
       const results = JSONPath({ path: key as string, json: this.configs });
       // @ts-ignore
       let rc = results.length > 0 ? results[0] : default_value;
-      if(typeof rc === 'function') {
+      if (typeof rc === 'function') {
         rc = rc();
       }
       return rc;
@@ -128,7 +128,7 @@ export class Config {
    * @returns The configuration value or the default value
    */
   public getOrFail<K extends ConfigKey>(
-    key: K, 
+    key: K,
     default_value?: K extends keyof ConfigKeys ? ConfigKeys[K] : any
   ): K extends keyof ConfigKeys ? ConfigKeys[K] : any {
     const results = JSONPath({ path: key as string, json: this.configs });

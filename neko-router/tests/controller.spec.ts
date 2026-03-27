@@ -25,12 +25,8 @@ describe('Controller Class', () => {
     expect(router.resolve({ url: '/api/v1/countries', method: 'GET' } as Request)).toBeDefined();
     expect(router.resolve({ url: '/api/v1/countries/', method: 'GET' } as Request)).toBeDefined();
 
-    expect(
-      router.resolve({ url: '/api/v1/countries/fakeId', method: 'GET' } as Request)
-    ).toBeDefined();
-    expect(
-      router.resolve({ url: '/api/v1/countries/fakeId/', method: 'GET' } as Request)
-    ).toBeDefined();
+    expect(router.resolve({ url: '/api/v1/countries/fakeId', method: 'GET' } as Request)).toBeDefined();
+    expect(router.resolve({ url: '/api/v1/countries/fakeId/', method: 'GET' } as Request)).toBeDefined();
 
     let req = { url: '/api/v1/countries', method: 'GET' } as Request;
     let resolved = router.resolve(req);

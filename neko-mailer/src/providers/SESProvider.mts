@@ -1,7 +1,7 @@
-import { Mailable } from "../Mailable.mjs";
-import { MailerProvider } from "../MailerProvider.mjs";
-import type * as AwsSes from "@aws-sdk/client-ses";
-import { loadPackage, prepareEmails } from "../helper.mjs";
+import { Mailable } from '../Mailable.mjs';
+import { MailerProvider } from '../MailerProvider.mjs';
+import type * as AwsSes from '@aws-sdk/client-ses';
+import { loadPackage, prepareEmails } from '../helper.mjs';
 
 /**
  * Configuration options for the SESProvider.
@@ -19,7 +19,7 @@ export type SESProviderConfig = {
  */
 export class SESProvider implements MailerProvider {
   private sesClient!: AwsSes.SESClient;
-  private defaultFrom: string = "";
+  private defaultFrom: string = '';
   private static sesModule: typeof AwsSes;
 
   /**
@@ -28,19 +28,19 @@ export class SESProvider implements MailerProvider {
    */
   constructor(options: Partial<SESProviderConfig> = {}) {
     if (!SESProvider.sesModule) {
-      SESProvider.sesModule = loadPackage("@aws-sdk/client-ses");
+      SESProvider.sesModule = loadPackage('@aws-sdk/client-ses');
     }
     const { SESClient } = SESProvider.sesModule;
     this.sesClient = new SESClient({
-      region: process.env.AWS_REGION || "us-east-1",
+      region: process.env.AWS_REGION || 'us-east-1',
       credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
       },
       ...options.sesClientConfig,
     });
 
-    this.defaultFrom = options.default_from || "";
+    this.defaultFrom = options.default_from || '';
   }
 
   /**

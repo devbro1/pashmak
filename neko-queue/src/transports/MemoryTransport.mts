@@ -31,10 +31,7 @@ export class MemoryTransport implements QueueTransportInterface {
     this.messageQueues.push({ channel, message });
   }
 
-  async registerListener(
-    channel: string,
-    callback: (message: string) => Promise<void>
-  ): Promise<void> {
+  async registerListener(channel: string, callback: (message: string) => Promise<void>): Promise<void> {
     this.channels.set(channel, callback);
   }
 

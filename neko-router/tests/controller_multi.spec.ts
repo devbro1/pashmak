@@ -77,9 +77,7 @@ describe('multiple Controller Class', () => {
 
     let req = { url: '/api/v1/countries/ABC', method: 'GET' } as Request;
     let resolved = router.resolve(req)!;
-    expect(await resolved.handler({ ...resolved.match(req) } as Request, {} as Response)).toBe(
-      'GET countries by id'
-    );
+    expect(await resolved.handler({ ...resolved.match(req) } as Request, {} as Response)).toBe('GET countries by id');
 
     req = { url: '/api/v1/provinces/capital', method: 'GET' } as Request;
     resolved = router.resolve(req)!;
@@ -101,9 +99,7 @@ describe('multiple Controller Class', () => {
     let req = { url: '/api/v1/cities/123', method: 'GET' } as Request;
     let resolved = router.resolve(req)!;
 
-    expect(await resolved.handler({ ...resolved.match(req) } as Request, {} as Response)).toBe(
-      'GET cities by id'
-    );
+    expect(await resolved.handler({ ...resolved.match(req) } as Request, {} as Response)).toBe('GET cities by id');
 
     req = { url: '/api/v1/cities', method: 'POST' } as Request;
     try {

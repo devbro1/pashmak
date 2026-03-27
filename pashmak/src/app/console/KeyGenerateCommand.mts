@@ -1,11 +1,11 @@
-import { Command, Option } from "clipanion";
-import { generateKeyPairSync } from "crypto";
-import fs from "fs/promises";
-import path from "path";
-import { logger, cli } from "../../facades.mjs";
+import { Command, Option } from 'clipanion';
+import { generateKeyPairSync } from 'crypto';
+import fs from 'fs/promises';
+import path from 'path';
+import { logger, cli } from '../../facades.mjs';
 
 export class KeyGenerateCommand extends Command {
-  static paths = [[`generate`, "key"]];
+  static paths = [[`generate`, 'key']];
 
   static usage = Command.Usage({
     category: `Main`,
@@ -25,49 +25,37 @@ export class KeyGenerateCommand extends Command {
   });
 
   async execute() {
-    logger().info("generating keys for jwt token and adding to .env file");
-    const { publicKey, privateKey } = generateKeyPairSync("rsa", {
+    logger().info('generating keys for jwt token and adding to .env file');
+    const { publicKey, privateKey } = generateKeyPairSync('rsa', {
       modulusLength: 2048, // 2048-bit key is standard for RS256
       publicKeyEncoding: {
-        type: "spki",
-        format: "pem",
+        type: 'spki',
+        format: 'pem',
       },
       privateKeyEncoding: {
-        type: "pkcs8",
-        format: "pem",
+        type: 'pkcs8',
+        format: 'pem',
       },
     });
 
-    let envfile = "";
+    let envfile = '';
     try {
-      envfile = await fs.readFile(path.join(process.cwd(), ".env"), "utf-8");
+      envfile = await fs.readFile(path.join(process.cwd(), '.env'), 'utf-8');
     } catch {}
     let old_public_key = envfile.match(/^jwt_secret_public=(.*)/m);
 
-    envfile = this.addEnvParam(
-      envfile,
-      "jwt_secret_public",
-      this.stripPemHeaders(publicKey),
-    );
-    envfile = this.addEnvParam(
-      envfile,
-      "jwt_secret_private",
-      this.stripPemHeaders(privateKey),
-    );
+    envfile = this.addEnvParam(envfile, 'jwt_secret_public', this.stripPemHeaders(publicKey));
+    envfile = this.addEnvParam(envfile, 'jwt_secret_private', this.stripPemHeaders(privateKey));
 
     if (this.rotate && old_public_key && old_public_key[1]) {
-      envfile = this.addEnvParam(
-        envfile,
-        "jwt_secret_public_retired",
-        old_public_key[1],
-      );
+      envfile = this.addEnvParam(envfile, 'jwt_secret_public_retired', old_public_key[1]);
     }
 
-    await fs.writeFile(path.join(process.cwd(), ".env"), envfile, "utf-8");
+    await fs.writeFile(path.join(process.cwd(), '.env'), envfile, 'utf-8');
   }
 
   addEnvParam(file: string, key: string, value: string) {
-    let regex = new RegExp(`^${key}=.*`, "gm");
+    let regex = new RegExp(`^${key}=.*`, 'gm');
     file = file.replace(regex, `${key}=${value}`);
     const match = file.match(regex);
 
@@ -79,9 +67,9 @@ export class KeyGenerateCommand extends Command {
 
   stripPemHeaders(pem: string) {
     return pem
-      .replace(/-----BEGIN [\w\s]+-----/g, "")
-      .replace(/-----END [\w\s]+-----/g, "")
-      .replace(/\r?\n|\r/g, "");
+      .replace(/-----BEGIN [\w\s]+-----/g, '')
+      .replace(/-----END [\w\s]+-----/g, '')
+      .replace(/\r?\n|\r/g, '');
   }
 }
 

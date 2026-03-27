@@ -48,10 +48,7 @@ export class RelationshipFactory {
       for (const key of options2.source.primaryKey) {
         options2.sourceToTargetKeyAssociation[key] = `${model_name}_${key}`;
       }
-    } else if (
-      options2.type === 'belongsTo' &&
-      Object.keys(options2.sourceToTargetKeyAssociation).length === 0
-    ) {
+    } else if (options2.type === 'belongsTo' && Object.keys(options2.sourceToTargetKeyAssociation).length === 0) {
       let model_name = Case.snake(options2.targetModel.name);
       let t_model = new options2.targetModel();
       // @ts-ignore
@@ -60,10 +57,7 @@ export class RelationshipFactory {
       }
     } else if (options2.type === 'belongsToMany') {
       if (options2.junctionTable === '') {
-        options2.junctionTable = [
-          Case.snake(options2.source.constructor.name),
-          Case.snake(options2.targetModel.name),
-        ]
+        options2.junctionTable = [Case.snake(options2.source.constructor.name), Case.snake(options2.targetModel.name)]
           .sort()
           .join('_');
       }
@@ -121,36 +115,28 @@ export class RelationshipFactory {
     options: Partial<RelationFactoryOptionsType>
   ): RelationshipManager1to1<Source, Target> {
     options.type = 'hasOne';
-    return new RelationshipManager1to1<Source, Target>(
-      RelationshipFactory.populateOptions(options)
-    );
+    return new RelationshipManager1to1<Source, Target>(RelationshipFactory.populateOptions(options));
   }
 
   static createHasMany<Source extends BaseModel, Target extends BaseModel>(
     options: Partial<RelationFactoryOptionsType>
   ): RelationshipManager1toM<Source, Target> {
     options.type = 'hasMany';
-    return new RelationshipManager1toM<Source, Target>(
-      RelationshipFactory.populateOptions(options)
-    );
+    return new RelationshipManager1toM<Source, Target>(RelationshipFactory.populateOptions(options));
   }
 
   static createBelongsTo<Source extends BaseModel, Target extends BaseModel>(
     options: Partial<RelationFactoryOptionsType>
   ): RelationshipManagerMto1<Source, Target> {
     options.type = 'belongsTo';
-    return new RelationshipManagerMto1<Source, Target>(
-      RelationshipFactory.populateOptions(options)
-    );
+    return new RelationshipManagerMto1<Source, Target>(RelationshipFactory.populateOptions(options));
   }
 
   static createBelongsToMany<Source extends BaseModel, Target extends BaseModel>(
     options: Partial<RelationFactoryOptionsType>
   ): RelationshipManagerMtoM<Source, Target> {
     options.type = 'belongsToMany';
-    return new RelationshipManagerMtoM<Source, Target>(
-      RelationshipFactory.populateOptions(options)
-    );
+    return new RelationshipManagerMtoM<Source, Target>(RelationshipFactory.populateOptions(options));
   }
 
   static createMorphedBelongsToMany<Source extends BaseModel, Target extends BaseModel>(
@@ -198,11 +184,7 @@ export class RelationshipFactory {
     let old_queryModifier = options.queryModifier || ((query: Query) => query);
 
     options.queryModifier = async (query: Query) => {
-      query.whereOp(
-        `${options.morphIdentifier}_type`,
-        '=',
-        snakeCase(options.source!.getClassName())
-      );
+      query.whereOp(`${options.morphIdentifier}_type`, '=', snakeCase(options.source!.getClassName()));
       return await old_queryModifier(query);
     };
 
@@ -213,16 +195,10 @@ export class RelationshipFactory {
     };
 
     options.preDeleteQueryModifier = async (query: Query) => {
-      query.whereOp(
-        `${options.morphIdentifier}_type`,
-        '=',
-        snakeCase(options.source!.getClassName())
-      );
+      query.whereOp(`${options.morphIdentifier}_type`, '=', snakeCase(options.source!.getClassName()));
       return query;
     };
 
-    return new RelationshipManagerMtoM<Source, Target>(
-      RelationshipFactory.populateOptions(options)
-    );
+    return new RelationshipManagerMtoM<Source, Target>(RelationshipFactory.populateOptions(options));
   }
 }

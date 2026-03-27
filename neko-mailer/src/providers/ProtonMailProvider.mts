@@ -1,7 +1,7 @@
-import { Mailable } from "../Mailable.mjs";
-import { MailerProvider } from "../MailerProvider.mjs";
-import type nodemailer from "nodemailer";
-import { loadPackage, prepareEmails } from "../helper.mjs";
+import { Mailable } from '../Mailable.mjs';
+import { MailerProvider } from '../MailerProvider.mjs';
+import type nodemailer from 'nodemailer';
+import { loadPackage, prepareEmails } from '../helper.mjs';
 
 /**
  * Configuration options for the ProtonMailProvider.
@@ -27,7 +27,7 @@ export type ProtonMailProviderConfig = {
  * @see https://proton.me/mail/bridge
  */
 export class ProtonMailProvider implements MailerProvider {
-  private defaultFrom: string = "";
+  private defaultFrom: string = '';
   private transporter: nodemailer.Transporter;
   private static nodemailerModule: typeof nodemailer;
 
@@ -37,18 +37,15 @@ export class ProtonMailProvider implements MailerProvider {
    */
   constructor(options: Partial<ProtonMailProviderConfig> = {}) {
     if (!ProtonMailProvider.nodemailerModule) {
-      ProtonMailProvider.nodemailerModule = loadPackage("nodemailer");
+      ProtonMailProvider.nodemailerModule = loadPackage('nodemailer');
     }
-    this.defaultFrom = options.default_from || "";
+    this.defaultFrom = options.default_from || '';
 
     // ProtonMail Bridge default settings
-    const host =
-      options.bridge_host || process.env.PROTONMAIL_BRIDGE_HOST || "127.0.0.1";
-    const port =
-      options.bridge_port ||
-      parseInt(process.env.PROTONMAIL_BRIDGE_PORT || "1025");
-    const username = options.username || process.env.PROTONMAIL_USERNAME || "";
-    const password = options.password || process.env.PROTONMAIL_PASSWORD || "";
+    const host = options.bridge_host || process.env.PROTONMAIL_BRIDGE_HOST || '127.0.0.1';
+    const port = options.bridge_port || parseInt(process.env.PROTONMAIL_BRIDGE_PORT || '1025');
+    const username = options.username || process.env.PROTONMAIL_USERNAME || '';
+    const password = options.password || process.env.PROTONMAIL_PASSWORD || '';
 
     this.transporter = ProtonMailProvider.nodemailerModule.createTransport({
       host,

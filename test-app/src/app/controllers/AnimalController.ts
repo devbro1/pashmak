@@ -1,39 +1,30 @@
-import { authenticate, logResponseMiddleware } from "../../middlewares";
-import { db, storage, logger } from "@devbro/pashmak/facades";
-import { ctx } from "@devbro/pashmak/context";
-import { Animal } from "../models/Animal";
-import {
-  Request,
-  Response,
-  Model,
-  Param,
-  BaseController,
-  Controller,
-  Get,
-  Post,
-} from "@devbro/pashmak/router";
-import { ValidatedRequest } from "@/helpers/validation";
-import { config } from "@devbro/pashmak/config";
+import { authenticate, logResponseMiddleware } from '../../middlewares';
+import { db, storage, logger } from '@devbro/pashmak/facades';
+import { ctx } from '@devbro/pashmak/context';
+import { Animal } from '../models/Animal';
+import { Request, Response, Model, Param, BaseController, Controller, Get, Post } from '@devbro/pashmak/router';
+import { ValidatedRequest } from '@/helpers/validation';
+import { config } from '@devbro/pashmak/config';
 
-@Controller("/api/v1/animals", { middlewares: [authenticate] })
+@Controller('/api/v1/animals', { middlewares: [authenticate] })
 export class AnimalController extends BaseController {
   @Get({ middlewares: [logResponseMiddleware] })
   async show() {
     const r = await db().runQuery({
-      sql: "select * from animals",
+      sql: 'select * from animals',
       parts: [],
       bindings: [],
     });
     return {
-      message: "GET animals",
+      message: 'GET animals',
       data: r,
     };
   }
 
   @Post()
   async store() {
-    const req = ctx().get<Request>("request");
-    logger().info({ msg: "request details", body: req.body, files: req.files });
+    const req = ctx().get<Request>('request');
+    logger().info({ msg: 'request details', body: req.body, files: req.files });
     const animal = new Animal();
     animal.fill(req.body);
     await animal.save();
@@ -41,23 +32,23 @@ export class AnimalController extends BaseController {
     return req.body;
   }
 
-  @Get({ path: "/file" })
+  @Get({ path: '/file' })
   async getFile() {
-    const res = ctx().get<Response>("response");
+    const res = ctx().get<Response>('response');
     await res.writeHead(200, {
-      "Content-Type": "image/jpeg",
+      'Content-Type': 'image/jpeg',
     });
 
-    (await storage().getStream("test.jpg")).pipe(res);
+    (await storage().getStream('test.jpg')).pipe(res);
   }
 
-  @Get({ path: "/file-details" })
+  @Get({ path: '/file-details' })
   async getFileDetails() {
-    return await storage().metadata("test.jpg");
+    return await storage().metadata('test.jpg');
   }
 
-  @Get({ path: "/:id" })
-  async showById(@Param("id") id: number, @Model(Animal, "id") mm: Animal) {
+  @Get({ path: '/:id' })
+  async showById(@Param('id') id: number, @Model(Animal, 'id') mm: Animal) {
     let p = config.get('port');
     console.log(p);
 

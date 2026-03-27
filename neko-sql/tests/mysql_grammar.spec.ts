@@ -98,8 +98,6 @@ describe('MySQL Schema Grammar', () => {
       table.string('phone');
     });
 
-    expect(fakeConnection.getLastSql().sql).toBe(
-      'alter table users add column phone varchar(255) NOT NULL'
-    );
+    expect(fakeConnection.getLastSql().sql).toBe('alter table users add column phone varchar(255) NOT NULL');
   });
 });

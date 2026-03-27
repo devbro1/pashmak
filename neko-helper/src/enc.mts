@@ -256,11 +256,7 @@ export namespace jwt {
    * // Returns: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
    * ```
    */
-  export function sign(
-    payload: string | object | Buffer,
-    secret: Secret,
-    options?: SignOptions
-  ): string {
+  export function sign(payload: string | object | Buffer, secret: Secret, options?: SignOptions): string {
     return jwtLib.sign(payload, secret, options);
   }
 
@@ -283,11 +279,7 @@ export namespace jwt {
    * }
    * ```
    */
-  export function verify(
-    token: string,
-    secret: Secret,
-    options?: VerifyOptions
-  ): string | JwtPayload {
+  export function verify(token: string, secret: Secret, options?: VerifyOptions): string | JwtPayload {
     return jwtLib.verify(token, secret, options);
   }
 
@@ -348,11 +340,7 @@ export namespace sign {
    * // Returns: true or false
    * ```
    */
-  export async function verifyEd25519(
-    publicKey: string,
-    signature: string,
-    data: string
-  ): Promise<boolean> {
+  export async function verifyEd25519(publicKey: string, signature: string, data: string): Promise<boolean> {
     const publicKeyBytes = Buffer.from(publicKey, 'hex');
     const signatureBytes = Buffer.from(signature, 'hex');
     const messageBytes = Buffer.from(data, 'utf8');

@@ -198,9 +198,7 @@ describe('GooglePubSubTransport', () => {
       mockTopic.exists.mockResolvedValueOnce([true]);
       mockTopic.publishMessage.mockRejectedValueOnce(new Error('Publish failed'));
 
-      await expect(transport.dispatch('test-channel', 'test message')).rejects.toThrow(
-        'Publish failed'
-      );
+      await expect(transport.dispatch('test-channel', 'test message')).rejects.toThrow('Publish failed');
     });
   });
 
@@ -297,9 +295,7 @@ describe('GooglePubSubTransport', () => {
 
       await transport.startListening();
 
-      const messageHandler = mockSubscription.on.mock.calls.find(
-        (call: any) => call[0] === 'message'
-      )?.[1];
+      const messageHandler = mockSubscription.on.mock.calls.find((call: any) => call[0] === 'message')?.[1];
 
       const mockMessage = {
         id: 'msg-1',
@@ -340,9 +336,7 @@ describe('GooglePubSubTransport', () => {
       await transport.registerListener('test-channel', callback);
       await transport.startListening();
 
-      const messageHandler = mockSubscription.on.mock.calls.find(
-        (call: any) => call[0] === 'message'
-      )?.[1];
+      const messageHandler = mockSubscription.on.mock.calls.find((call: any) => call[0] === 'message')?.[1];
 
       const mockMessage = {
         id: 'msg-1',
@@ -368,9 +362,7 @@ describe('GooglePubSubTransport', () => {
       await transport.registerListener('test-channel', callback);
       await transport.startListening();
 
-      const messageHandler = mockSubscription.on.mock.calls.find(
-        (call: any) => call[0] === 'message'
-      )?.[1];
+      const messageHandler = mockSubscription.on.mock.calls.find((call: any) => call[0] === 'message')?.[1];
 
       const mockMessage = {
         id: 'msg-1',
@@ -397,9 +389,7 @@ describe('GooglePubSubTransport', () => {
       await transport.registerListener('test-channel', callback);
       await transport.startListening();
 
-      const messageHandler = mockSubscription.on.mock.calls.find(
-        (call: any) => call[0] === 'message'
-      )?.[1];
+      const messageHandler = mockSubscription.on.mock.calls.find((call: any) => call[0] === 'message')?.[1];
 
       const mockMessage = {
         id: 'msg-1',
@@ -430,9 +420,7 @@ describe('GooglePubSubTransport', () => {
       await transport.registerListener('test-channel', vi.fn());
       await transport.startListening();
 
-      const errorHandler = mockSubscription.on.mock.calls.find(
-        (call: any) => call[0] === 'error'
-      )?.[1];
+      const errorHandler = mockSubscription.on.mock.calls.find((call: any) => call[0] === 'error')?.[1];
 
       const testError = new Error('Subscription error');
       errorHandler(testError);
@@ -560,10 +548,7 @@ describe('GooglePubSubTransport', () => {
       await transport.registerListener('channel2', vi.fn());
       await transport.startListening();
 
-      await Promise.all([
-        transport.dispatch('channel1', 'msg1'),
-        transport.dispatch('channel2', 'msg2'),
-      ]);
+      await Promise.all([transport.dispatch('channel1', 'msg1'), transport.dispatch('channel2', 'msg2')]);
 
       expect(mockPubSub.topic).toHaveBeenCalledWith('neko-queue-channel1');
       expect(mockPubSub.topic).toHaveBeenCalledWith('neko-queue-channel2');

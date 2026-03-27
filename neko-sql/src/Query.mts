@@ -1,14 +1,6 @@
 import { Connection } from './Connection.mjs';
 import { QueryGrammar } from './QueryGrammar.mjs';
-import {
-  CompiledSql,
-  JoinCondition,
-  Parameter,
-  selectType,
-  whereType,
-  havingType,
-  joinType,
-} from './types.mjs';
+import { CompiledSql, JoinCondition, Parameter, selectType, whereType, havingType, joinType } from './types.mjs';
 
 export type QueryParts = {
   select: selectType[];
@@ -48,11 +40,7 @@ export class Query {
     return this;
   }
 
-  whereNested(
-    func: (q: Query) => void,
-    joinCondition: JoinCondition = 'and',
-    negateCondition: boolean = false
-  ) {
+  whereNested(func: (q: Query) => void, joinCondition: JoinCondition = 'and', negateCondition: boolean = false) {
     const subQuery = new Query(this.connection, this.grammar);
     func(subQuery);
     this.parts.where.push({
@@ -110,11 +98,7 @@ export class Query {
     return this;
   }
 
-  whereNull(
-    column: string,
-    joinCondition: JoinCondition = 'and',
-    negateCondition: boolean = false
-  ): this {
+  whereNull(column: string, joinCondition: JoinCondition = 'and', negateCondition: boolean = false): this {
     this.parts.where.push({ type: 'null', column, joinCondition, negateCondition });
     return this;
   }

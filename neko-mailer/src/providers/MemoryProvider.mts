@@ -1,6 +1,6 @@
-import { Mailable } from "../Mailable.mjs";
-import { MailerProvider } from "../MailerProvider.mjs";
-import { prepareEmails } from "../helper.mjs";
+import { Mailable } from '../Mailable.mjs';
+import { MailerProvider } from '../MailerProvider.mjs';
+import { prepareEmails } from '../helper.mjs';
 
 /**
  * Configuration options for the MemoryProvider.
@@ -15,7 +15,7 @@ export type MemoryProviderConfig = {
  * Useful for testing without actually sending emails.
  */
 export class MemoryProvider implements MailerProvider {
-  private defaultFrom: string = "";
+  private defaultFrom: string = '';
   /** Array of emails that have been "sent" (stored in memory) */
   public sentEmails: {
     from: string;
@@ -32,7 +32,7 @@ export class MemoryProvider implements MailerProvider {
    * @param config - Provider configuration options
    */
   constructor(private config: Partial<MemoryProviderConfig> = {}) {
-    this.defaultFrom = config.default_from || "";
+    this.defaultFrom = config.default_from || '';
   }
 
   /**

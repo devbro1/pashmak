@@ -24,9 +24,7 @@ export class AzureBlobStorageProvider implements StorageProviderInterface {
         sharedKeyCredential
       );
     } else if (sasToken) {
-      this.blobServiceClient = new BlobServiceClient(
-        `https://${accountName}.blob.core.windows.net?${sasToken}`
-      );
+      this.blobServiceClient = new BlobServiceClient(`https://${accountName}.blob.core.windows.net?${sasToken}`);
     } else {
       throw new Error('Either accountKey or sasToken is required for Azure Blob Storage');
     }

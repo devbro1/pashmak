@@ -513,10 +513,7 @@ export class BaseModel {
    * // Create instance from existing record
    * const existingUser = User.newInstance({ id: 1, name: 'John' }, true);
    */
-  public static newInstance<T extends BaseModel>(
-    initialData: any = {},
-    exists: boolean = false
-  ): T {
+  public static newInstance<T extends BaseModel>(initialData: any = {}, exists: boolean = false): T {
     let rc = new this(initialData);
     rc._exists = exists;
     return rc as T;

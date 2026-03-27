@@ -1,8 +1,8 @@
-export * from "@devbro/neko-cache";
+export * from '@devbro/neko-cache';
 
-import { Query } from "@devbro/neko-sql";
-import { cache } from "../facades.mjs";
-import { JSONValue } from "@devbro/neko-helper";
+import { Query } from '@devbro/neko-sql';
+import { cache } from '../facades.mjs';
+import { JSONValue } from '@devbro/neko-helper';
 
 export type CacheQueryOptions = {
   ttl?: number;
@@ -10,17 +10,10 @@ export type CacheQueryOptions = {
   cache_label?: string;
 };
 
-export async function cacheQuery(
-  q: Query,
-  options: CacheQueryOptions = {},
-): ReturnType<Query["get"]> {
+export async function cacheQuery(q: Query, options: CacheQueryOptions = {}): ReturnType<Query['get']> {
   options.ttl = options.ttl ?? 3600; // default TTL 1 hour
-  options.cache_label = options.cache_label ?? "default";
+  options.cache_label = options.cache_label ?? 'default';
   const sql = q.toSql();
 
-  return await cache(options.cache_label).remember(
-    sql as JSONValue,
-    async () => await q.get(),
-    options,
-  );
+  return await cache(options.cache_label).remember(sql as JSONValue, async () => await q.get(), options);
 }

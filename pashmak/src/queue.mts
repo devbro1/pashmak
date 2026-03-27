@@ -1,9 +1,9 @@
-export * from "@devbro/neko-queue";
-import { QueueTransportInterface } from "@devbro/neko-queue";
-import { Query } from "@devbro/neko-sql";
-import { db, logger } from "./facades.mjs";
-import { createRepeater } from "@devbro/neko-helper";
-import { context_provider } from "@devbro/neko-context";
+export * from '@devbro/neko-queue';
+import { QueueTransportInterface } from '@devbro/neko-queue';
+import { Query } from '@devbro/neko-sql';
+import { db, logger } from './facades.mjs';
+import { createRepeater } from '@devbro/neko-helper';
+import { context_provider } from '@devbro/neko-context';
 
 export type DatabaseTransportConfig = {
   queue_table: string;
@@ -15,8 +15,8 @@ export type DatabaseTransportConfig = {
 
 export class DatabaseTransport implements QueueTransportInterface {
   private config: DatabaseTransportConfig = {
-    queue_table: "queue_messages",
-    db_connection: "default",
+    queue_table: 'queue_messages',
+    db_connection: 'default',
     listen_interval: 60, // seconds
     message_limit: 10, // messages per each fetch
     max_retry_count: 5, // maximum retry count for failed messages
@@ -33,20 +33,20 @@ export class DatabaseTransport implements QueueTransportInterface {
         let messages = await conn
           .getQuery()
           .table(this.config.queue_table)
-          .whereOp("channel", "in", Array.from(this.channels.keys()))
-          .whereOp("status", "in", ["pending", "failed"])
-          .whereOp("retried_count", "<", this.config.max_retry_count)
+          .whereOp('channel', 'in', Array.from(this.channels.keys()))
+          .whereOp('status', 'in', ['pending', 'failed'])
+          .whereOp('retried_count', '<', this.config.max_retry_count)
           .limit(this.config.message_limit)
-          .orderBy("last_tried_at", "asc")
+          .orderBy('last_tried_at', 'asc')
           .get();
         for (let msg of messages) {
           try {
             await conn
               .getQuery()
               .table(this.config.queue_table)
-              .whereOp("id", "=", msg.id)
+              .whereOp('id', '=', msg.id)
               .update({
-                status: "processing",
+                status: 'processing',
                 updated_at: new Date(),
                 last_tried_at: new Date(),
                 retried_count: (msg.retried_count || 0) + 1,
@@ -54,16 +54,12 @@ export class DatabaseTransport implements QueueTransportInterface {
             let callback = this.channels.get(msg.channel)!;
             await callback(msg.message);
             // mark message as processed
-            await conn
-              .getQuery()
-              .table(this.config.queue_table)
-              .whereOp("id", "=", msg.id)
-              .update({
-                status: "processed",
-                updated_at: new Date(),
-              });
+            await conn.getQuery().table(this.config.queue_table).whereOp('id', '=', msg.id).update({
+              status: 'processed',
+              updated_at: new Date(),
+            });
           } catch (error) {
-            logger().error("Error processing message:", {
+            logger().error('Error processing message:', {
               error,
               message_id: msg.id,
               channel: msg.channel,
@@ -71,17 +67,16 @@ export class DatabaseTransport implements QueueTransportInterface {
 
             await q
               .table(this.config.queue_table)
-              .whereOp("id", "=", msg.id)
+              .whereOp('id', '=', msg.id)
               .update({
-                status: "failed",
+                status: 'failed',
                 updated_at: new Date(),
-                process_message:
-                  (error as Error).message || "Error processing message",
+                process_message: (error as Error).message || 'Error processing message',
               });
           }
         }
       } catch (error) {
-        logger().error("Error in DatabaseTransport listen interval:", {
+        logger().error('Error in DatabaseTransport listen interval:', {
           error,
         });
       }
@@ -90,10 +85,7 @@ export class DatabaseTransport implements QueueTransportInterface {
 
   constructor(config: Partial<DatabaseTransportConfig> = {}) {
     this.config = { ...this.config, ...config };
-    this.repeater = createRepeater(
-      this.processMessage,
-      this.config.listen_interval * 1000,
-    );
+    this.repeater = createRepeater(this.processMessage, this.config.listen_interval * 1000);
   }
 
   async dispatch(channel: string, message: string): Promise<void> {
@@ -109,16 +101,13 @@ export class DatabaseTransport implements QueueTransportInterface {
       created_at: new Date(),
       updated_at: new Date(),
       last_tried_at: null,
-      process_message: "",
+      process_message: '',
       retried_count: 0,
-      status: "pending",
+      status: 'pending',
     });
   }
 
-  async registerListener(
-    channel: string,
-    callback: (message: string) => Promise<void>,
-  ): Promise<void> {
+  async registerListener(channel: string, callback: (message: string) => Promise<void>): Promise<void> {
     this.channels.set(channel, callback);
   }
 
