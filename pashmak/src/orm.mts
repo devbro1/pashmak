@@ -1,1 +1,1 @@
-export * from '@devbro/neko-orm';
+export * from "@devbro/neko-orm";

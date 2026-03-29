@@ -1,8 +1,8 @@
-import { BaseModel, Attribute } from '@devbro/pashmak/orm';
-import { encryptPassword, isBcryptHash } from '@devbro/pashmak/helper';
+import { BaseModel, Attribute } from "@devbro/pashmak/orm";
+import { encryptPassword, isBcryptHash } from "@devbro/pashmak/helper";
 
 export class User extends BaseModel {
-  protected guarded: string[] = ['password'];
+  protected guarded: string[] = ["password"];
   @Attribute({ primaryKey: true, incrementingPrimaryKey: true })
   declare id: number;
 

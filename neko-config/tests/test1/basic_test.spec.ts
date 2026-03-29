@@ -334,12 +334,12 @@ describe('Config class tests', () => {
     test('functional values', () => {
       let c = new Config();
       c.load({
-        v1: () => 100,
-        v2: 200,
+        'v1' : () => 100,
+        'v2': 200
       });
 
       expect(c.get('v2')).toBe(200);
       expect(c.get('v1')).toBe(100);
-    });
+    })
   });
 });

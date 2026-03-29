@@ -3,7 +3,9 @@
  * @param func - a function that will be called to create the instance.
  * @returns A function that return a singleton instance of the type T for a given label.
  */
-export function createSingleton<T>(func: (...args: any[]) => T): (label?: string, ...args: any[]) => T {
+export function createSingleton<T>(
+  func: (...args: any[]) => T
+): (label?: string, ...args: any[]) => T {
   const instance: Record<string, T> = {};
   return (label = 'default', ...args: any[]): T => {
     if (!instance[label]) {
@@ -96,7 +98,9 @@ export function chainer<T>(initial: T): Chainer<T> {
  * @returns True if the variable is a class, false otherwise
  */
 export function isClass(variable: any) {
-  return typeof variable === 'function' && /^class\s/.test(Function.prototype.toString.call(variable));
+  return (
+    typeof variable === 'function' && /^class\s/.test(Function.prototype.toString.call(variable))
+  );
 }
 
 /**

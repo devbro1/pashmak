@@ -55,14 +55,18 @@ export class AWSS3StorageProvider implements StorageProviderInterface {
 
   async getJson(path: string): Promise<object> {
     const { GetObjectCommand } = AWSS3StorageProvider.awsS3Module;
-    const data = await this.s3.send(new GetObjectCommand({ Bucket: this.config.bucket, Key: path }));
+    const data = await this.s3.send(
+      new GetObjectCommand({ Bucket: this.config.bucket, Key: path })
+    );
     const body = await this.streamToString(data.Body as Stream);
     return JSON.parse(body);
   }
 
   async getString(path: string): Promise<string> {
     const { GetObjectCommand } = AWSS3StorageProvider.awsS3Module;
-    const data = await this.s3.send(new GetObjectCommand({ Bucket: this.config.bucket, Key: path }));
+    const data = await this.s3.send(
+      new GetObjectCommand({ Bucket: this.config.bucket, Key: path })
+    );
     return await this.streamToString(data.Body as Stream);
   }
 
@@ -83,7 +87,9 @@ export class AWSS3StorageProvider implements StorageProviderInterface {
 
   async getBuffer(path: string): Promise<Buffer> {
     const { GetObjectCommand } = AWSS3StorageProvider.awsS3Module;
-    const data = await this.s3.send(new GetObjectCommand({ Bucket: this.config.bucket, Key: path }));
+    const data = await this.s3.send(
+      new GetObjectCommand({ Bucket: this.config.bucket, Key: path })
+    );
     const chunks: Uint8Array[] = [];
     const stream = data.Body as Readable;
 
@@ -96,13 +102,17 @@ export class AWSS3StorageProvider implements StorageProviderInterface {
 
   async getStream(path: string): Promise<ReadStream> {
     const { GetObjectCommand } = AWSS3StorageProvider.awsS3Module;
-    const data = await this.s3.send(new GetObjectCommand({ Bucket: this.config.bucket, Key: path }));
+    const data = await this.s3.send(
+      new GetObjectCommand({ Bucket: this.config.bucket, Key: path })
+    );
     return data.Body as unknown as ReadStream;
   }
 
   async metadata(path: string): Promise<Metadata> {
     const { HeadObjectCommand } = AWSS3StorageProvider.awsS3Module;
-    const metadata = await this.s3.send(new HeadObjectCommand({ Bucket: this.config.bucket, Key: path }));
+    const metadata = await this.s3.send(
+      new HeadObjectCommand({ Bucket: this.config.bucket, Key: path })
+    );
     return {
       size: metadata.ContentLength || 0,
       mimeType: metadata.ContentType || 'unknown',

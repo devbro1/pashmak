@@ -27,7 +27,10 @@ export type GooglePubSubTransportConfig = {
   /** Message retention duration in seconds. Defaults to 604800 (7 days). */
   retentionDurationSeconds?: number;
   /** Custom error handler callback. */
-  onError?: (error: Error, context: { channel?: string; messageId?: string; body?: string }) => void;
+  onError?: (
+    error: Error,
+    context: { channel?: string; messageId?: string; body?: string }
+  ) => void;
 };
 
 /**
@@ -203,7 +206,10 @@ export class GooglePubSubTransport implements QueueTransportInterface {
    * @param channel - The channel (topic) name to listen to
    * @param callback - Callback function to process received messages
    */
-  async registerListener(channel: string, callback: (message: string) => Promise<void>): Promise<void> {
+  async registerListener(
+    channel: string,
+    callback: (message: string) => Promise<void>
+  ): Promise<void> {
     const existing = this.listeners.get(channel);
     if (existing) {
       existing.callback = callback;
@@ -262,7 +268,9 @@ export class GooglePubSubTransport implements QueueTransportInterface {
     this.listening = true;
 
     await Promise.all(
-      Array.from(this.listeners.entries()).map(([channel, listener]) => this.startSubscription(channel, listener))
+      Array.from(this.listeners.entries()).map(([channel, listener]) =>
+        this.startSubscription(channel, listener)
+      )
     );
   }
 
@@ -319,7 +327,10 @@ export class GooglePubSubTransport implements QueueTransportInterface {
    * @param error - The error that occurred
    * @param context - Context information about where the error occurred
    */
-  private handleError(error: unknown, context: { channel?: string; messageId?: string; body?: string }): void {
+  private handleError(
+    error: unknown,
+    context: { channel?: string; messageId?: string; body?: string }
+  ): void {
     const err = error instanceof Error ? error : new Error('Unknown error');
 
     if (this.config.onError) {

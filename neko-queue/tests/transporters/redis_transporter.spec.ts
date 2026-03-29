@@ -148,7 +148,10 @@ describe('RedisTransport', () => {
 
       await transport.dispatch('test-channel', 'test message');
 
-      expect(mockClient.lPush).toHaveBeenCalledWith('my-app:queue:test-channel', expect.any(String));
+      expect(mockClient.lPush).toHaveBeenCalledWith(
+        'my-app:queue:test-channel',
+        expect.any(String)
+      );
     });
 
     it('should use custom error handler', async () => {
@@ -193,8 +196,12 @@ describe('RedisTransport', () => {
       transport = new RedisTransport();
 
       // Delay connection
-      mockClient.connect.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 50)));
-      mockSubscriber.connect.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 50)));
+      mockClient.connect.mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 50))
+      );
+      mockSubscriber.connect.mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 50))
+      );
 
       // Make concurrent calls
       await Promise.all([
@@ -272,8 +279,14 @@ describe('RedisTransport', () => {
       await transport.dispatch('channel1', 'message1');
       await transport.dispatch('channel2', 'message2');
 
-      expect(mockClient.lPush).toHaveBeenCalledWith('neko-queue:queue:channel1', expect.any(String));
-      expect(mockClient.lPush).toHaveBeenCalledWith('neko-queue:queue:channel2', expect.any(String));
+      expect(mockClient.lPush).toHaveBeenCalledWith(
+        'neko-queue:queue:channel1',
+        expect.any(String)
+      );
+      expect(mockClient.lPush).toHaveBeenCalledWith(
+        'neko-queue:queue:channel2',
+        expect.any(String)
+      );
     });
 
     it('should throw error if client not available', async () => {
@@ -333,7 +346,10 @@ describe('RedisTransport', () => {
       await transport.startListening();
       await transport.registerListener('test-channel', callback);
 
-      expect(mockSubscriber.subscribe).toHaveBeenCalledWith('neko-queue:notify:test-channel', expect.any(Function));
+      expect(mockSubscriber.subscribe).toHaveBeenCalledWith(
+        'neko-queue:notify:test-channel',
+        expect.any(Function)
+      );
     });
   });
 
@@ -363,7 +379,11 @@ describe('RedisTransport', () => {
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(callback).toHaveBeenCalledWith('test message');
-      expect(mockClient.lRem).toHaveBeenCalledWith('neko-queue:processing:test-channel', 1, expect.any(String));
+      expect(mockClient.lRem).toHaveBeenCalledWith(
+        'neko-queue:processing:test-channel',
+        1,
+        expect.any(String)
+      );
     });
 
     it('should use rPopLPush for atomic message retrieval', async () => {
@@ -593,8 +613,14 @@ describe('RedisTransport', () => {
       await transport.registerListener('channel2', vi.fn());
       await transport.startListening();
 
-      expect(mockSubscriber.subscribe).toHaveBeenCalledWith('neko-queue:notify:channel1', expect.any(Function));
-      expect(mockSubscriber.subscribe).toHaveBeenCalledWith('neko-queue:notify:channel2', expect.any(Function));
+      expect(mockSubscriber.subscribe).toHaveBeenCalledWith(
+        'neko-queue:notify:channel1',
+        expect.any(Function)
+      );
+      expect(mockSubscriber.subscribe).toHaveBeenCalledWith(
+        'neko-queue:notify:channel2',
+        expect.any(Function)
+      );
     });
 
     it('should not start listening twice', async () => {
@@ -723,8 +749,14 @@ describe('RedisTransport', () => {
       await transport.dispatch('channel2', 'msg2-1');
       await transport.dispatch('channel1', 'msg1-2');
 
-      expect(mockClient.lPush).toHaveBeenCalledWith('neko-queue:queue:channel1', expect.any(String));
-      expect(mockClient.lPush).toHaveBeenCalledWith('neko-queue:queue:channel2', expect.any(String));
+      expect(mockClient.lPush).toHaveBeenCalledWith(
+        'neko-queue:queue:channel1',
+        expect.any(String)
+      );
+      expect(mockClient.lPush).toHaveBeenCalledWith(
+        'neko-queue:queue:channel2',
+        expect.any(String)
+      );
     });
 
     it('should handle graceful shutdown', async () => {
@@ -820,7 +852,11 @@ describe('RedisTransport', () => {
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(callback).toHaveBeenCalledTimes(3);
-      expect(mockClient.lRem).toHaveBeenCalledWith('neko-queue:processing:test-channel', 1, expect.any(String));
+      expect(mockClient.lRem).toHaveBeenCalledWith(
+        'neko-queue:processing:test-channel',
+        1,
+        expect.any(String)
+      );
     });
   });
 });

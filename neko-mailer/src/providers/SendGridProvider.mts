@@ -1,6 +1,6 @@
-import { Mailable } from '../Mailable.mjs';
-import { MailerProvider } from '../MailerProvider.mjs';
-import { prepareEmails } from '../helper.mjs';
+import { Mailable } from "../Mailable.mjs";
+import { MailerProvider } from "../MailerProvider.mjs";
+import { prepareEmails } from "../helper.mjs";
 
 /**
  * Configuration options for the SendGridProvider.
@@ -17,7 +17,7 @@ export type SendGridProviderConfig = {
  * Supports API key from configuration or SENDGRID_API_KEY environment variable.
  */
 export class SendGridProvider implements MailerProvider {
-  private defaultFrom: string = '';
+  private defaultFrom: string = "";
   private apiKey: string;
 
   /**
@@ -25,8 +25,8 @@ export class SendGridProvider implements MailerProvider {
    * @param options - Provider configuration options
    */
   constructor(options: Partial<SendGridProviderConfig> = {}) {
-    this.apiKey = options.api_key || process.env.SENDGRID_API_KEY || '';
-    this.defaultFrom = options.default_from || '';
+    this.apiKey = options.api_key || process.env.SENDGRID_API_KEY || "";
+    this.defaultFrom = options.default_from || "";
   }
 
   /**
@@ -43,7 +43,10 @@ export class SendGridProvider implements MailerProvider {
    * @param required - Whether the field is required
    * @returns Array of email objects or undefined if not required and empty
    */
-  private mapToEmailObjects(emails: string[], required: boolean = false): { email: string }[] | undefined {
+  private mapToEmailObjects(
+    emails: string[],
+    required: boolean = false,
+  ): { email: string }[] | undefined {
     if (emails.length === 0 && !required) {
       return undefined;
     }
@@ -66,11 +69,11 @@ export class SendGridProvider implements MailerProvider {
       html: await mail.getHtmlContent(),
     };
 
-    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
-      method: 'POST',
+    const response = await fetch("https://api.sendgrid.com/v3/mail/send", {
+      method: "POST",
       headers: {
         Authorization: `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         personalizations: [
@@ -84,11 +87,11 @@ export class SendGridProvider implements MailerProvider {
         from: { email: msg.from },
         content: [
           {
-            type: 'text/plain',
+            type: "text/plain",
             value: msg.text,
           },
           {
-            type: 'text/html',
+            type: "text/html",
             value: msg.html,
           },
         ],
@@ -96,7 +99,9 @@ export class SendGridProvider implements MailerProvider {
     });
 
     if (!response.ok) {
-      throw new Error(`SendGrid API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `SendGrid API error: ${response.status} ${response.statusText}`,
+      );
     }
   }
 }

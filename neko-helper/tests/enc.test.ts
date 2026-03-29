@@ -35,7 +35,9 @@ describe('Enc Utilities', () => {
 
     describe('sha256', () => {
       it('should generate SHA-256 hash of a string', () => {
-        expect(Enc.hash.sha256('hello world')).toBe('b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9');
+        expect(Enc.hash.sha256('hello world')).toBe(
+          'b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9'
+        );
       });
 
       it('should generate different hashes for different inputs', () => {

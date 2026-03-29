@@ -87,16 +87,28 @@ describe('Router tests', () => {
 
     expect(router.routes.length).toBe(4);
 
-    let cr1 = router.getCompiledRoute({ url: '/api/v1/router1', method: 'GET' } as Request, {} as Response);
+    let cr1 = router.getCompiledRoute(
+      { url: '/api/v1/router1', method: 'GET' } as Request,
+      {} as Response
+    );
     expect(cr1?.getMiddlewares().length).toBe(1);
 
-    let cr = router.getCompiledRoute({ url: '/m1/api/v1/repeat3mid', method: 'GET' } as Request, {} as Response);
+    let cr = router.getCompiledRoute(
+      { url: '/m1/api/v1/repeat3mid', method: 'GET' } as Request,
+      {} as Response
+    );
     expect(cr?.getMiddlewares().length).toBe(6);
 
-    let cr2 = router.getCompiledRoute({ url: '/m1/api/v1/countries', method: 'GET' } as Request, {} as Response);
+    let cr2 = router.getCompiledRoute(
+      { url: '/m1/api/v1/countries', method: 'GET' } as Request,
+      {} as Response
+    );
     expect(cr2?.getMiddlewares().length).toBe(5);
 
-    let cr3 = router.getCompiledRoute({ url: '/m1/api/v1/onemid', method: 'GET' } as Request, {} as Response);
+    let cr3 = router.getCompiledRoute(
+      { url: '/m1/api/v1/onemid', method: 'GET' } as Request,
+      {} as Response
+    );
     expect(cr3?.getMiddlewares().length).toBe(4);
   });
 
@@ -134,16 +146,28 @@ describe('Router tests', () => {
 
     expect(router.routes.length).toBe(4);
 
-    let cr1 = router.getCompiledRoute({ url: '/api/v1/router1', method: 'GET' } as Request, {} as Response);
+    let cr1 = router.getCompiledRoute(
+      { url: '/api/v1/router1', method: 'GET' } as Request,
+      {} as Response
+    );
     expect(cr1?.getMiddlewares().length).toBe(1);
 
-    let cr = router.getCompiledRoute({ url: '/api/v1/repeat3mid', method: 'GET' } as Request, {} as Response);
+    let cr = router.getCompiledRoute(
+      { url: '/api/v1/repeat3mid', method: 'GET' } as Request,
+      {} as Response
+    );
     expect(cr?.getMiddlewares().length).toBe(6);
 
-    let cr2 = router.getCompiledRoute({ url: '/api/v1/countries', method: 'GET' } as Request, {} as Response);
+    let cr2 = router.getCompiledRoute(
+      { url: '/api/v1/countries', method: 'GET' } as Request,
+      {} as Response
+    );
     expect(cr2?.getMiddlewares().length).toBe(5);
 
-    let cr3 = router.getCompiledRoute({ url: '/api/v1/onemid', method: 'GET' } as Request, {} as Response);
+    let cr3 = router.getCompiledRoute(
+      { url: '/api/v1/onemid', method: 'GET' } as Request,
+      {} as Response
+    );
     expect(cr3?.getMiddlewares().length).toBe(4);
   });
 });

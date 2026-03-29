@@ -20,7 +20,17 @@ function toUpperFirst(str: string) {
   return str.substring(0, 1).toUpperCase() + str.substring(1);
 }
 export abstract class QueryGrammar {
-  sqlParts: string[] = ['select', 'table', 'join', 'where', 'groupBy', 'having', 'orderBy', 'limit', 'offset'];
+  sqlParts: string[] = [
+    'select',
+    'table',
+    'join',
+    'where',
+    'groupBy',
+    'having',
+    'orderBy',
+    'limit',
+    'offset',
+  ];
 
   toSql(query: Query): CompiledSql {
     let rc = this.toSqlParts(query);
@@ -270,7 +280,10 @@ export abstract class QueryGrammar {
     };
   }
 
-  compileInsert(query: Query, data: Record<string, Parameter> | Record<string, Parameter>[]): CompiledSql {
+  compileInsert(
+    query: Query,
+    data: Record<string, Parameter> | Record<string, Parameter>[]
+  ): CompiledSql {
     let parts = ['insert', 'into', query.parts.table, '('];
     const bindings: Parameter[] = [];
 

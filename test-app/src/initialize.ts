@@ -1,13 +1,13 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
 
-import { bootstrap } from '@devbro/pashmak';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { bootstrap } from "@devbro/pashmak";
+import { dirname } from "path";
+import { fileURLToPath } from "url";
 
 const { config: config_data } = await loadConfig({
   cwd: dirname(fileURLToPath(import.meta.url)),
-  configFile: './config/default',
+  configFile: "./config/default",
 });
 
 await bootstrap({
@@ -15,7 +15,7 @@ await bootstrap({
   config_data,
 });
 
-console.log('Registering service providers...');
+console.log("Registering service providers...");
 await import(`./app/console`);
 await import(`./routes`);
 await import(`./schedules`);

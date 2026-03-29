@@ -23,12 +23,15 @@ export function Attribute(options: AttributeOptions = {}) {
   return function (target: any, propertyKey: string) {
     if (options.primaryKey === true) {
       target._primary_keys = [...(target._primary_keys || []), propertyKey];
-      target._incrementing_primary_keys = target._incrementing_primary_keys ?? options.incrementingPrimaryKey ?? true;
+      target._incrementing_primary_keys =
+        target._incrementing_primary_keys ?? options.incrementingPrimaryKey ?? true;
     }
 
     Object.defineProperty(target, propertyKey, {
       get: function () {
-        return options.getter ? options.getter(this, this._attributes[propertyKey]) : this._attributes[propertyKey];
+        return options.getter
+          ? options.getter(this, this._attributes[propertyKey])
+          : this._attributes[propertyKey];
       },
       set(value: any) {
         this._dirties.add(propertyKey);

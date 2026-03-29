@@ -1,5 +1,5 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from "vitest";
 
-describe('basic tests', () => {
-  test('basic testing', async () => {});
+describe("basic tests", () => {
+  test("basic testing", async () => {});
 });

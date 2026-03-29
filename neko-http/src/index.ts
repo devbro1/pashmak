@@ -31,8 +31,9 @@ export class HttpServer {
   }
 
   getHttpHanlder() {
+    const me = this;
     return (req: IncomingMessage, res: ServerResponse) => {
-      return this.handle(req, res);
+      return me.handle(req, res);
     };
   }
 
@@ -52,7 +53,9 @@ export class HttpServer {
     res.end('Internal Server Error');
   }
 
-  setErrorHandler(handler: (err: Error, req: IncomingMessage, res: ServerResponse) => Promise<void>) {
+  setErrorHandler(
+    handler: (err: Error, req: IncomingMessage, res: ServerResponse) => Promise<void>
+  ) {
     this.errorHandler = handler;
   }
 
@@ -115,7 +118,10 @@ export class HttpServer {
     });
   }
 
-  async handleOptionsRequest(req: Request, res: ServerResponse): Promise<CompiledRoute | undefined> {
+  async handleOptionsRequest(
+    req: Request,
+    res: ServerResponse
+  ): Promise<CompiledRoute | undefined> {
     if (this.options.handleOptionsMethod === false) {
       return undefined;
     }
@@ -135,11 +141,15 @@ export class HttpServer {
     //remove duplicates
     methods = Array.from(new Set(methods));
 
-    let r: Route = new Route(['OPTIONS'], req.url || '/', async (req: Request, res: ServerResponse) => {
-      res.statusCode = 204; // No Content
-      res.setHeader('Access-Control-Allow-Methods', methods.join(', '));
-      return;
-    });
+    let r: Route = new Route(
+      ['OPTIONS'],
+      req.url || '/',
+      async (req: Request, res: ServerResponse) => {
+        res.statusCode = 204; // No Content
+        res.setHeader('Access-Control-Allow-Methods', methods.join(', '));
+        return;
+      }
+    );
 
     let cr = new CompiledRoute(r, req, res, this.router?.getMiddlewares() || []);
 

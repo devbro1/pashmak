@@ -105,7 +105,9 @@ describe('raw queries', () => {
     expect(await query.count()).toBe(6);
 
     query.orderBy('job_title', 'desc');
-    expect(query.toSql().sql).toBe('select * from jobs where job_title ilike ? order by job_title desc');
+    expect(query.toSql().sql).toBe(
+      'select * from jobs where job_title ilike ? order by job_title desc'
+    );
 
     const result3 = await query.get();
     expect(result3[0].job_id).toBe(14);
@@ -201,7 +203,9 @@ describe('raw queries', () => {
     query.whereRaw('(meow = ? or region_name ilike ?)', [2, 'E%']);
 
     const sql = query.toSql();
-    expect(sql.sql).toBe('select * from regions where region_id = ? and (meow = ? or region_name ilike ?)');
+    expect(sql.sql).toBe(
+      'select * from regions where region_id = ? and (meow = ? or region_name ilike ?)'
+    );
     expect(sql.bindings).toStrictEqual([1, 2, 'E%']);
   });
 
@@ -220,7 +224,9 @@ describe('raw queries', () => {
       .table('departments')
       .select(['departments.department_name', 'emp_sub.employee_id', 'emp_sub.salary'])
       .whereOp('departments.location_id', '>', 1000)
-      .innerJoin(subquery, [{ column1: 'departments.department_id', column2: 'emp_sub.department_id' }]);
+      .innerJoin(subquery, [
+        { column1: 'departments.department_id', column2: 'emp_sub.department_id' },
+      ]);
 
     const expectedSql =
       'select departments.department_name, emp_sub.employee_id, emp_sub.salary from departments inner join (select employee_id, department_id, salary from employees where salary > ?) as emp_sub on (departments.department_id = emp_sub.department_id) where departments.location_id > ?';

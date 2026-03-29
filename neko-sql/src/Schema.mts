@@ -112,6 +112,8 @@ export class Schema {
    * }
    */
   async tableExists(table_name: string): Promise<boolean> {
-    return (await this.connection?.runQuery(this.grammar.compileTableExists(table_name)))[0]['exists'];
+    return (await this.connection?.runQuery(this.grammar.compileTableExists(table_name)))[0][
+      'exists'
+    ];
   }
 }

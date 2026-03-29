@@ -1,4 +1,4 @@
-import { BaseModel, Attribute } from '@devbro/pashmak/orm';
+import { BaseModel, Attribute } from "@devbro/pashmak/orm";
 
 export class Animal extends BaseModel {
   @Attribute({ primaryKey: true })
@@ -8,7 +8,7 @@ export class Animal extends BaseModel {
   declare name: string;
 
   @Attribute()
-  sound: string = '';
+  sound: string = "";
 
   @Attribute()
   weight: number = 0;

@@ -1,6 +1,13 @@
 import { describe, test, expect, afterAll } from 'vitest';
 import { PostgresqlConnection } from '../src/databases/postgresql/PostgresqlConnection.mjs';
-import { Blueprint, Connection, MysqlConnection, Schema, SchemaGrammar, SqliteConnection } from '../src';
+import {
+  Blueprint,
+  Connection,
+  MysqlConnection,
+  Schema,
+  SchemaGrammar,
+  SqliteConnection,
+} from '../src';
 
 const randName = Math.random().toString(36).substring(7);
 let db_name = (process.env.DB_NAME || 'test_db') + `_${randName}`;
@@ -106,7 +113,11 @@ describe('long test', () => {
       .update({ first_name: 'updated_test2' });
 
     // re-verify second row
-    const secondRow = await conn.getQuery().table('users').whereOp('email', '=', 'test2@gmail.com').first();
+    const secondRow = await conn
+      .getQuery()
+      .table('users')
+      .whereOp('email', '=', 'test2@gmail.com')
+      .first();
     expect(secondRow).toBeDefined();
     expect(secondRow.first_name).toBe('updated_test2');
 
@@ -114,7 +125,11 @@ describe('long test', () => {
     await conn.getQuery().table('users').whereOp('email', '=', 'test3@gmail.com').delete();
 
     // verify third row does not exists
-    const thirdRow = await conn.getQuery().table('users').whereOp('email', '=', 'test3@gmail.com').first();
+    const thirdRow = await conn
+      .getQuery()
+      .table('users')
+      .whereOp('email', '=', 'test3@gmail.com')
+      .first();
     expect(thirdRow).toBeUndefined();
 
     // verify total count is now 3
@@ -129,13 +144,21 @@ describe('long test', () => {
       first_name: 'test5_transaction',
     });
 
-    let transactionRow = await conn.getQuery().table('users').whereOp('email', '=', 'test5@gmail.com').first();
+    let transactionRow = await conn
+      .getQuery()
+      .table('users')
+      .whereOp('email', '=', 'test5@gmail.com')
+      .first();
     expect(transactionRow).toBeDefined();
     expect(transactionRow.first_name).toBe('test5_transaction');
 
     await conn.commit();
 
-    transactionRow = await conn.getQuery().table('users').whereOp('email', '=', 'test5@gmail.com').first();
+    transactionRow = await conn
+      .getQuery()
+      .table('users')
+      .whereOp('email', '=', 'test5@gmail.com')
+      .first();
     expect(transactionRow).toBeDefined();
     expect(transactionRow.first_name).toBe('test5_transaction');
 
@@ -146,13 +169,21 @@ describe('long test', () => {
       first_name: 'test6_transaction',
     });
 
-    transactionRow = await conn.getQuery().table('users').whereOp('email', '=', 'test6@gmail.com').first();
+    transactionRow = await conn
+      .getQuery()
+      .table('users')
+      .whereOp('email', '=', 'test6@gmail.com')
+      .first();
     expect(transactionRow).toBeDefined();
     expect(transactionRow.first_name).toBe('test6_transaction');
 
     await conn.rollback();
 
-    transactionRow = await conn.getQuery().table('users').whereOp('email', '=', 'test6@gmail.com').first();
+    transactionRow = await conn
+      .getQuery()
+      .table('users')
+      .whereOp('email', '=', 'test6@gmail.com')
+      .first();
     expect(transactionRow).toBeUndefined();
 
     // depending on db, insertedId might be 6 or 7

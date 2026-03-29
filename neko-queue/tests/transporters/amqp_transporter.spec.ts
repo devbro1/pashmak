@@ -123,9 +123,12 @@ describe('AmqpTransport - Unit Tests', () => {
       expect(mockChannel.assertExchange).toHaveBeenCalledWith('my-exchange', 'direct', {
         durable: true,
       });
-      expect(mockChannel.publish).toHaveBeenCalledWith('my-exchange', 'routing-key', expect.any(Buffer), {
-        persistent: true,
-      });
+      expect(mockChannel.publish).toHaveBeenCalledWith(
+        'my-exchange',
+        'routing-key',
+        expect.any(Buffer),
+        { persistent: true }
+      );
     });
 
     test('should use queue name prefix', async () => {
@@ -145,7 +148,9 @@ describe('AmqpTransport - Unit Tests', () => {
 
       // Simulate drain event
       setTimeout(() => {
-        const drainCallback = mockChannel.once.mock.calls.find((call: any[]) => call[0] === 'drain')?.[1];
+        const drainCallback = mockChannel.once.mock.calls.find(
+          (call: any[]) => call[0] === 'drain'
+        )?.[1];
         if (drainCallback) drainCallback();
       }, 10);
 
@@ -333,7 +338,11 @@ describe('AmqpTransport - Unit Tests', () => {
       await transport.registerListener('test-channel', callback);
       await transport.startListening();
 
-      expect(mockChannel.bindQueue).toHaveBeenCalledWith('test-channel', 'test-exchange', 'test-channel');
+      expect(mockChannel.bindQueue).toHaveBeenCalledWith(
+        'test-channel',
+        'test-exchange',
+        'test-channel'
+      );
     });
 
     test('should stop listening and cancel consumers', async () => {
@@ -395,7 +404,9 @@ describe('AmqpTransport - Unit Tests', () => {
       await transport.dispatch('test', 'Message');
 
       // Get the error handler
-      const errorCallback = mockConnection.on.mock.calls.find((call: any[]) => call[0] === 'error')?.[1];
+      const errorCallback = mockConnection.on.mock.calls.find(
+        (call: any[]) => call[0] === 'error'
+      )?.[1];
 
       if (errorCallback) {
         errorCallback(new Error('Connection error'));

@@ -1,21 +1,21 @@
-import { ctx } from '@devbro/neko-context';
-import { BaseModel } from '@devbro/neko-orm';
-import { Request, Response } from '@devbro/neko-router';
-import { HttpNotFoundError } from '@devbro/neko-http/errors';
-import { createParamDecorator } from '@devbro/neko-router';
-export * from '@devbro/neko-router';
+import { ctx } from "@devbro/neko-context";
+import { BaseModel } from "@devbro/neko-orm";
+import { Request, Response } from "@devbro/neko-router";
+import { HttpNotFoundError } from "@devbro/neko-http/errors";
+import { createParamDecorator } from "@devbro/neko-router";
+export * from "@devbro/neko-router";
 
 export function Model(
   model: typeof BaseModel,
-  param_name: string = 'id',
-  model_field: string = 'id'
+  param_name: string = "id",
+  model_field: string = "id",
 ): ParameterDecorator {
   return createParamDecorator(async () => {
     let rc = await model.findOne({
-      [model_field]: ctx().get<Request>('request').params[param_name],
+      [model_field]: ctx().get<Request>("request").params[param_name],
     });
     if (!rc) {
-      throw new HttpNotFoundError('Object not found', 'OBJECT_NOT_FOUND');
+      throw new HttpNotFoundError("Object not found", "OBJECT_NOT_FOUND");
     }
 
     return rc;
@@ -24,12 +24,15 @@ export function Model(
 
 export function Param(param_name: string): ParameterDecorator {
   return createParamDecorator(() => {
-    return ctx().get<Request>('request').params[param_name] || undefined;
+    return ctx().get<Request>("request").params[param_name] || undefined;
   });
 }
 
-export function ApiDocumentation(open_api_url: string, renderer: 'redoc' | 'rapidoc' = 'redoc') {
-  if (renderer === 'redoc') {
+export function ApiDocumentation(
+  open_api_url: string,
+  renderer: "redoc" | "rapidoc" = "redoc",
+) {
+  if (renderer === "redoc") {
     return (req: Request, res: Response) => {
       let html = `<!DOCTYPE html>
 <html>
@@ -56,12 +59,12 @@ export function ApiDocumentation(open_api_url: string, renderer: 'redoc' | 'rapi
   </body>
 </html>`;
 
-      res.setHeader('Content-Type', 'text/html');
+      res.setHeader("Content-Type", "text/html");
       return html;
     };
   }
 
-  if (renderer === 'rapidoc') {
+  if (renderer === "rapidoc") {
     return (req: Request, res: Response) => {
       let html = `<!DOCTYPE html>
 <html>
@@ -90,7 +93,7 @@ export function ApiDocumentation(open_api_url: string, renderer: 'redoc' | 'rapi
   </body>
 </html>`;
 
-      res.setHeader('Content-Type', 'text/html');
+      res.setHeader("Content-Type", "text/html");
       return html;
     };
   }

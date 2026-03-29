@@ -344,18 +344,12 @@ export function spellOrdinal(num: number): string {
  * round([1.5, NaN, 2.7], {precision: 0}) // [2, NaN, 3]
  * ```
  */
-export function round(number: number, options?: { precision?: number; method?: 'round' | 'ceil' | 'floor' }): number;
-export function round(
-  number: number[],
-  options?: { precision?: number; method?: 'round' | 'ceil' | 'floor' }
-): number[];
-export function round(
-  number: number | number[],
-  { precision = 1, method = 'round' }: { precision?: number; method?: 'round' | 'ceil' | 'floor' } = {}
-): number | number[] {
+export function round(number: number, options?: {precision?: number, method?: 'round' | 'ceil' | 'floor'}): number;
+export function round(number: number[], options?: {precision?: number, method?: 'round' | 'ceil' | 'floor'}): number[];
+export function round(number: number | number[], {precision = 1, method= 'round'}: {precision?: number, method?: 'round' | 'ceil' | 'floor'} = {}): number | number[] {
   if (Array.isArray(number)) {
-    return number.map((n) => {
-      return round(n, { precision, method });
+    return number.map(n => {
+      return round(n, {precision, method});
     });
   }
 
@@ -367,7 +361,6 @@ export function round(
       return Math.ceil(number * factor) / factor;
     case 'floor':
       return Math.floor(number * factor) / factor;
-    // biome-ignore lint/complexity/noUselessSwitchCase: explicit case for 'round' to document supported methods
     case 'round':
     default:
       return Math.round(number * factor) / factor;

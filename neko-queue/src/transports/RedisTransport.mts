@@ -31,7 +31,10 @@ export type RedisTransportConfig = {
   /** Polling interval (in milliseconds) for checking messages. Defaults to 1000. */
   pollInterval?: number;
   /** Custom error handler callback. */
-  onError?: (error: Error, context: { channel?: string; messageId?: string; body?: string }) => void;
+  onError?: (
+    error: Error,
+    context: { channel?: string; messageId?: string; body?: string }
+  ) => void;
 };
 
 /**
@@ -227,7 +230,10 @@ export class RedisTransport implements QueueTransportInterface {
    * @param channel - The channel (queue) name to listen to
    * @param callback - Callback function to process received messages
    */
-  async registerListener(channel: string, callback: (message: string) => Promise<void>): Promise<void> {
+  async registerListener(
+    channel: string,
+    callback: (message: string) => Promise<void>
+  ): Promise<void> {
     const existing = this.listeners.get(channel);
     if (existing) {
       existing.callback = callback;
@@ -376,7 +382,9 @@ export class RedisTransport implements QueueTransportInterface {
 
     // Start processing for all registered listeners
     await Promise.all(
-      Array.from(this.listeners.entries()).map(([channel, listener]) => this.startChannelProcessing(channel, listener))
+      Array.from(this.listeners.entries()).map(([channel, listener]) =>
+        this.startChannelProcessing(channel, listener)
+      )
     );
   }
 
@@ -429,7 +437,10 @@ export class RedisTransport implements QueueTransportInterface {
    * @param error - The error that occurred
    * @param context - Context information about where the error occurred
    */
-  private handleError(error: unknown, context: { channel?: string; messageId?: string; body?: string }): void {
+  private handleError(
+    error: unknown,
+    context: { channel?: string; messageId?: string; body?: string }
+  ): void {
     const err = error instanceof Error ? error : new Error('Unknown error');
 
     if (this.config.onError) {

@@ -5,7 +5,8 @@ import { PostgresqlConnection } from '../src/databases/postgresql/PostgresqlConn
 describe('database management', () => {
   let conn: Connection | null;
   // Use timestamp + random string for better uniqueness in parallel test runs
-  const testDbName = 'test_db_mgmt_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+  const testDbName =
+    'test_db_mgmt_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
 
   const db_config = {
     host: process.env.DB_HOST,
@@ -73,7 +74,8 @@ describe('database management', () => {
 
   test('listDatabases returns array of database names', async () => {
     // Create a test database first
-    const tempDbName = 'test_list_db_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+    const tempDbName =
+      'test_list_db_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
     await conn!.createDatabase(tempDbName);
 
     // List all databases
@@ -90,7 +92,8 @@ describe('database management', () => {
 
   test('existsDatabase returns true for existing database', async () => {
     // Create a test database first
-    const tempDbName = 'test_exists_db_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+    const tempDbName =
+      'test_exists_db_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
     await conn!.createDatabase(tempDbName);
 
     // Check if it exists

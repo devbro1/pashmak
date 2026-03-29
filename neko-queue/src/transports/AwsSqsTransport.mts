@@ -67,10 +67,18 @@ export class AwsSqsTransport implements QueueTransportInterface {
   private readonly config: Required<
     Omit<
       AwsSqsTransportConfig,
-      'client' | 'endpoint' | 'messageGroupId' | 'onError' | 'credentials' | 'errorVisibilityTimeout'
+      | 'client'
+      | 'endpoint'
+      | 'messageGroupId'
+      | 'onError'
+      | 'credentials'
+      | 'errorVisibilityTimeout'
     >
   > &
-    Pick<AwsSqsTransportConfig, 'endpoint' | 'messageGroupId' | 'onError' | 'credentials' | 'errorVisibilityTimeout'>;
+    Pick<
+      AwsSqsTransportConfig,
+      'endpoint' | 'messageGroupId' | 'onError' | 'credentials' | 'errorVisibilityTimeout'
+    >;
   private readonly queueUrls = new Map<string, string>();
   private readonly queueUrlPromises = new Map<string, Promise<string>>();
   private readonly listeners = new Map<string, ListenerInfo>();
@@ -132,7 +140,9 @@ export class AwsSqsTransport implements QueueTransportInterface {
     const command = new SendMessageCommand({
       QueueUrl: queueUrl,
       MessageBody: message,
-      MessageGroupId: queueName.endsWith('.fifo') ? (this.config.messageGroupId ?? channel) : undefined,
+      MessageGroupId: queueName.endsWith('.fifo')
+        ? (this.config.messageGroupId ?? channel)
+        : undefined,
     });
     await this.client.send(command);
   }
@@ -143,7 +153,10 @@ export class AwsSqsTransport implements QueueTransportInterface {
    * @param channel - The channel (queue) name to listen to
    * @param callback - Callback function to process received messages
    */
-  async registerListener(channel: string, callback: (message: string) => Promise<void>): Promise<void> {
+  async registerListener(
+    channel: string,
+    callback: (message: string) => Promise<void>
+  ): Promise<void> {
     const existing = this.listeners.get(channel);
     if (existing) {
       existing.callback = callback;
@@ -233,14 +246,17 @@ export class AwsSqsTransport implements QueueTransportInterface {
    * @param listener - The listener info containing the callback
    * @param signal - Abort signal to stop the polling loop
    */
-  private async pollLoop(channel: string, listener: ListenerInfo, signal: AbortSignal): Promise<void> {
+  private async pollLoop(
+    channel: string,
+    listener: ListenerInfo,
+    signal: AbortSignal
+  ): Promise<void> {
     let queueUrl: string = listener.queueUrl ?? (await this.ensureQueueUrl(channel));
     let counter = 0;
 
     while (!signal.aborted && this.listening) {
       try {
-        const { ReceiveMessageCommand, DeleteMessageCommand, ChangeMessageVisibilityCommand } =
-          AwsSqsTransport.sqsModule;
+        const { ReceiveMessageCommand, DeleteMessageCommand, ChangeMessageVisibilityCommand } = AwsSqsTransport.sqsModule;
         const receiveCommand = new ReceiveMessageCommand({
           QueueUrl: queueUrl,
           MaxNumberOfMessages: this.config.maxNumberOfMessages,

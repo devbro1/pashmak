@@ -1,7 +1,7 @@
-import './initialize';
-import { logger, cli } from '@devbro/pashmak/facades';
+import "./initialize";
+import { logger, cli } from "@devbro/pashmak/facades";
 
-logger().info('start of everything');
+logger().info("start of everything");
 
 const [node, app, ...args] = process.argv;
 cli()

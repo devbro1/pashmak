@@ -25,7 +25,9 @@ describe('Batch Insert Support', () => {
       { name: 'Bob', email: 'bob@example.com' },
     ]);
 
-    expect(sql.sql).toBe('insert into users ( name , email ) values ( ? , ? ) , ( ? , ? ) , ( ? , ? )');
+    expect(sql.sql).toBe(
+      'insert into users ( name , email ) values ( ? , ? ) , ( ? , ? ) , ( ? , ? )'
+    );
     expect(sql.bindings).toStrictEqual([
       'John',
       'john@example.com',
@@ -56,7 +58,12 @@ describe('Batch Insert Support', () => {
     ]);
 
     expect(sql.sql).toBe('insert into users ( name , email ) values ( ? , ? ) , ( ? , ? )');
-    expect(sql.bindings).toStrictEqual(['John', 'john@example.com', 'Jane', 'jane@example.com']);
+    expect(sql.bindings).toStrictEqual([
+      'John',
+      'john@example.com',
+      'Jane',
+      'jane@example.com',
+    ]);
   });
 
   test('should compile single insert query (SQLite)', () => {
@@ -79,7 +86,9 @@ describe('Batch Insert Support', () => {
       { name: 'Bob', email: 'bob@example.com' },
     ]);
 
-    expect(sql.sql).toBe('insert into users ( name , email ) values ( ? , ? ) , ( ? , ? ) , ( ? , ? )');
+    expect(sql.sql).toBe(
+      'insert into users ( name , email ) values ( ? , ? ) , ( ? , ? ) , ( ? , ? )'
+    );
     expect(sql.bindings).toStrictEqual([
       'John',
       'john@example.com',
@@ -148,8 +157,15 @@ describe('Batch Insert Support', () => {
       { name: 'Jane', email: 'jane@example.com' },
     ]);
 
-    expect(sql.sql).toBe('insert into users ( name , email ) values ( ? , ? ) , ( ? , ? ) RETURNING id');
-    expect(sql.bindings).toStrictEqual(['John', 'john@example.com', 'Jane', 'jane@example.com']);
+    expect(sql.sql).toBe(
+      'insert into users ( name , email ) values ( ? , ? ) , ( ? , ? ) RETURNING id'
+    );
+    expect(sql.bindings).toStrictEqual([
+      'John',
+      'john@example.com',
+      'Jane',
+      'jane@example.com',
+    ]);
   });
 
   test('should compile insertGetId with array (SQLite)', () => {
@@ -161,7 +177,14 @@ describe('Batch Insert Support', () => {
       { name: 'Jane', email: 'jane@example.com' },
     ]);
 
-    expect(sql.sql).toBe('insert into users ( name , email ) values ( ? , ? ) , ( ? , ? ) RETURNING id');
-    expect(sql.bindings).toStrictEqual(['John', 'john@example.com', 'Jane', 'jane@example.com']);
+    expect(sql.sql).toBe(
+      'insert into users ( name , email ) values ( ? , ? ) , ( ? , ? ) RETURNING id'
+    );
+    expect(sql.bindings).toStrictEqual([
+      'John',
+      'john@example.com',
+      'Jane',
+      'jane@example.com',
+    ]);
   });
 });

@@ -3,10 +3,10 @@ import { BaseModel } from '../baseModel.mjs';
 import { assocationOptions, RelationFactoryOptionsType } from './types.mjs';
 import { RelationshipManager } from './RelationshipManager.mjs';
 
-export class RelationshipManager1to1<Source extends BaseModel, Target extends BaseModel> extends RelationshipManager<
-  Source,
-  Target
-> {
+export class RelationshipManager1to1<
+  Source extends BaseModel,
+  Target extends BaseModel,
+> extends RelationshipManager<Source, Target> {
   constructor(options: RelationFactoryOptionsType) {
     super(options);
   }

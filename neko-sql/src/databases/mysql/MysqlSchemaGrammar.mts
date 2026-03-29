@@ -2,7 +2,7 @@ import { SchemaGrammar } from '../../SchemaGrammar.mjs';
 import { Column } from '../../Blueprint.mjs';
 
 export class MysqlSchemaGrammar extends SchemaGrammar {
-  compileColumn(column: Column): string {
+   compileColumn(column: Column): string {
     const rc = [`${column.columnName}`];
 
     if (column.properties.type === 'string') {

@@ -18,7 +18,11 @@ export type LexerToken = {
   value: string;
 };
 
-export type HandlerType = (req: Request, res: Response, next?: (() => any) | undefined) => Promise<any> | any;
+export type HandlerType = (
+  req: Request,
+  res: Response,
+  next?: (() => any) | undefined
+) => Promise<any> | any;
 
 export type ControllerDecoratorOptions = {
   middlewares?: MiddlewareProvider[];

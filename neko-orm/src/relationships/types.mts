@@ -6,7 +6,14 @@ export type assocationOptions = {
 };
 
 export type RelationFactoryOptionsType = {
-  type: 'hasMany' | 'belongsTo' | 'hasOne' | 'belongsToMany' | 'oneToMany' | 'manyToMany' | 'manyToOne';
+  type:
+    | 'hasMany'
+    | 'belongsTo'
+    | 'hasOne'
+    | 'belongsToMany'
+    | 'oneToMany'
+    | 'manyToMany'
+    | 'manyToOne';
   source: BaseModel;
   targetModel: typeof BaseModel;
   sourceToTargetKeyAssociation: Record<string, string>;

@@ -1,1 +1,1 @@
-export * from '@devbro/neko-sql';
+export * from "@devbro/neko-sql";

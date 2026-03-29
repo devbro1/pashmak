@@ -1,4 +1,9 @@
-import { RedisCacheProvider, MemoryCacheProvider, FileCacheProvider, MemcacheCacheProvider } from '@/index';
+import {
+  RedisCacheProvider,
+  MemoryCacheProvider,
+  FileCacheProvider,
+  MemcacheCacheProvider,
+} from '@/index';
 import { Cache } from '@/index';
 import { describe, expect, test } from 'vitest';
 import { sleep } from '@devbro/neko-helper';

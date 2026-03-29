@@ -12,15 +12,17 @@ export class Global {
   static getOrThrow<T>(key: string | string[]): T {
     const rc = this.get<T>(key);
     if (rc === undefined) {
-      throw new Error(`Key ${Global.generateInternalKey(key)} not found in Global`);
+      throw new Error(
+        `Key ${Global.generateInternalKey(key)} not found in Global`,
+      );
     }
     return rc;
   }
 
   static generateInternalKey(key: string | string[]) {
-    let new_key = '';
+    let new_key = "";
     if (Array.isArray(key)) {
-      new_key = key.join('.');
+      new_key = key.join(".");
     } else {
       new_key = key;
     }

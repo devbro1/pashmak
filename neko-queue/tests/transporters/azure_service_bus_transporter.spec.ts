@@ -51,7 +51,8 @@ describe('AzureServiceBusTransport', () => {
 
     it('should create instance with custom config', () => {
       transport = new AzureServiceBusTransport({
-        connectionString: 'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
+        connectionString:
+          'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
         queuePrefix: 'test-prefix',
         maxConcurrentCalls: 5,
       });
@@ -75,7 +76,8 @@ describe('AzureServiceBusTransport', () => {
 
     it('should initialize client lazily on first operation', async () => {
       transport = new AzureServiceBusTransport({
-        connectionString: 'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
+        connectionString:
+          'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
       });
       expect(ServiceBusClient).not.toHaveBeenCalled();
       await transport.dispatch('test-channel', 'message');
@@ -86,7 +88,8 @@ describe('AzureServiceBusTransport', () => {
   describe('Sender Management', () => {
     beforeEach(() => {
       transport = new AzureServiceBusTransport({
-        connectionString: 'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
+        connectionString:
+          'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
       });
     });
 
@@ -112,7 +115,8 @@ describe('AzureServiceBusTransport', () => {
 
     it('should use custom queue prefix', async () => {
       transport = new AzureServiceBusTransport({
-        connectionString: 'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
+        connectionString:
+          'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
         queuePrefix: 'custom',
       });
       await transport.dispatch('test-channel', 'message');
@@ -123,7 +127,8 @@ describe('AzureServiceBusTransport', () => {
   describe('Message Dispatch', () => {
     beforeEach(() => {
       transport = new AzureServiceBusTransport({
-        connectionString: 'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
+        connectionString:
+          'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
       });
     });
 
@@ -137,7 +142,8 @@ describe('AzureServiceBusTransport', () => {
 
     it('should send message with TTL when configured', async () => {
       transport = new AzureServiceBusTransport({
-        connectionString: 'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
+        connectionString:
+          'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
         messageTtl: 60000,
       });
       await transport.dispatch('test-channel', 'test-message');
@@ -151,14 +157,17 @@ describe('AzureServiceBusTransport', () => {
     it('should handle dispatch errors with custom error handler', async () => {
       const errorHandler = vi.fn();
       transport = new AzureServiceBusTransport({
-        connectionString: 'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
+        connectionString:
+          'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
         onError: errorHandler,
       });
 
       const testError = new Error('Send failed');
       mockSender.sendMessages.mockRejectedValueOnce(testError);
 
-      await expect(transport.dispatch('test-channel', 'test-message')).rejects.toThrow('Send failed');
+      await expect(transport.dispatch('test-channel', 'test-message')).rejects.toThrow(
+        'Send failed'
+      );
       expect(errorHandler).toHaveBeenCalledWith(testError, {
         channel: 'test-channel',
         body: 'test-message',
@@ -169,7 +178,8 @@ describe('AzureServiceBusTransport', () => {
   describe('Receiver Management', () => {
     beforeEach(() => {
       transport = new AzureServiceBusTransport({
-        connectionString: 'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
+        connectionString:
+          'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
       });
     });
 
@@ -184,7 +194,8 @@ describe('AzureServiceBusTransport', () => {
 
     it('should create receiver with receiveAndDelete mode when auto-complete enabled', async () => {
       transport = new AzureServiceBusTransport({
-        connectionString: 'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
+        connectionString:
+          'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
         autoCompleteMessages: true,
       });
       await transport.registerListener('test-channel', async () => {});
@@ -197,7 +208,8 @@ describe('AzureServiceBusTransport', () => {
 
     it('should create receiver with custom max auto lock renewal duration', async () => {
       transport = new AzureServiceBusTransport({
-        connectionString: 'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
+        connectionString:
+          'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
         maxAutoLockRenewalDurationInMs: 600000,
       });
       await transport.registerListener('test-channel', async () => {});
@@ -212,7 +224,8 @@ describe('AzureServiceBusTransport', () => {
   describe('Listener Registration', () => {
     beforeEach(() => {
       transport = new AzureServiceBusTransport({
-        connectionString: 'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
+        connectionString:
+          'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
       });
     });
 
@@ -251,7 +264,8 @@ describe('AzureServiceBusTransport', () => {
   describe('Message Processing', () => {
     beforeEach(() => {
       transport = new AzureServiceBusTransport({
-        connectionString: 'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
+        connectionString:
+          'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
       });
     });
 
@@ -279,7 +293,8 @@ describe('AzureServiceBusTransport', () => {
       const errorHandler = vi.fn();
 
       transport = new AzureServiceBusTransport({
-        connectionString: 'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
+        connectionString:
+          'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
         onError: errorHandler,
       });
 
@@ -304,7 +319,8 @@ describe('AzureServiceBusTransport', () => {
     it('should not complete/abandon in receiveAndDelete mode', async () => {
       const callback = vi.fn();
       transport = new AzureServiceBusTransport({
-        connectionString: 'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
+        connectionString:
+          'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
         autoCompleteMessages: true,
       });
 
@@ -346,7 +362,8 @@ describe('AzureServiceBusTransport', () => {
     it('should handle processError callback', async () => {
       const errorHandler = vi.fn();
       transport = new AzureServiceBusTransport({
-        connectionString: 'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
+        connectionString:
+          'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
         onError: errorHandler,
       });
 
@@ -364,7 +381,8 @@ describe('AzureServiceBusTransport', () => {
 
     it('should pass maxConcurrentCalls to subscribe options', async () => {
       transport = new AzureServiceBusTransport({
-        connectionString: 'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
+        connectionString:
+          'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
         maxConcurrentCalls: 10,
       });
 
@@ -384,7 +402,8 @@ describe('AzureServiceBusTransport', () => {
   describe('Lifecycle Management', () => {
     beforeEach(() => {
       transport = new AzureServiceBusTransport({
-        connectionString: 'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
+        connectionString:
+          'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
       });
     });
 
@@ -424,7 +443,8 @@ describe('AzureServiceBusTransport', () => {
     it('should handle errors during stopListening', async () => {
       const errorHandler = vi.fn();
       transport = new AzureServiceBusTransport({
-        connectionString: 'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
+        connectionString:
+          'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
         onError: errorHandler,
       });
 
@@ -445,7 +465,8 @@ describe('AzureServiceBusTransport', () => {
   describe('Integration Scenarios', () => {
     beforeEach(() => {
       transport = new AzureServiceBusTransport({
-        connectionString: 'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
+        connectionString:
+          'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=key',
       });
     });
 
@@ -506,7 +527,10 @@ describe('AzureServiceBusTransport', () => {
       const callback = vi.fn();
       await transport.registerListener('late-channel', callback);
 
-      expect(mockClient.createReceiver).toHaveBeenCalledWith('neko-queue-late-channel', expect.any(Object));
+      expect(mockClient.createReceiver).toHaveBeenCalledWith(
+        'neko-queue-late-channel',
+        expect.any(Object)
+      );
       expect(mockReceiver.subscribe).toHaveBeenCalled();
     });
   });

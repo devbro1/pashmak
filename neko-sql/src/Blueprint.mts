@@ -201,8 +201,12 @@ export class Blueprint {
   }
 
   timestamps() {
-    this.columns.push(new Column('created_at', 'timestampz').default(new Expression('CURRENT_TIMESTAMP')));
-    this.columns.push(new Column('updated_at', 'timestampz').default(new Expression('CURRENT_TIMESTAMP')));
+    this.columns.push(
+      new Column('created_at', 'timestampz').default(new Expression('CURRENT_TIMESTAMP'))
+    );
+    this.columns.push(
+      new Column('updated_at', 'timestampz').default(new Expression('CURRENT_TIMESTAMP'))
+    );
   }
 
   date(columnName: string) {

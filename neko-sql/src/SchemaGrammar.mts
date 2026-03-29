@@ -210,7 +210,10 @@ export class SchemaGrammar {
     };
   }
 
-  protected compileSchemaWhereClause(schema: string | string[] | undefined, column: string): string {
+  protected compileSchemaWhereClause(
+    schema: string | string[] | undefined,
+    column: string
+  ): string {
     if (Array.isArray(schema) && schema.length > 0) {
       return `${column} in (${this.quoteString(schema)})`;
     } else if (schema && typeof schema === 'string') {
@@ -251,7 +254,9 @@ export class SchemaGrammar {
   }
 
   protected compileIndex(tableName: string, index: IndexConstraint): CompiledSql {
-    const indexName = index.indexName || `${tableName}_${index.columns.join('_')}_${index.unique ? 'unique' : 'index'}`;
+    const indexName =
+      index.indexName ||
+      `${tableName}_${index.columns.join('_')}_${index.unique ? 'unique' : 'index'}`;
     const uniqueKeyword = index.unique ? 'unique ' : '';
     const indexType = index._type ? ` using ${index._type}` : '';
 

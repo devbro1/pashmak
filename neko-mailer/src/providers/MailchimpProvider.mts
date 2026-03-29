@@ -1,6 +1,6 @@
-import { Mailable } from '../Mailable.mjs';
-import { MailerProvider } from '../MailerProvider.mjs';
-import { prepareEmails } from '../helper.mjs';
+import { Mailable } from "../Mailable.mjs";
+import { MailerProvider } from "../MailerProvider.mjs";
+import { prepareEmails } from "../helper.mjs";
 
 /**
  * Configuration options for the MailchimpProvider.
@@ -17,7 +17,7 @@ export type MailchimpProviderConfig = {
  */
 interface MailchimpRecipient {
   email: string;
-  status: 'sent' | 'queued' | 'scheduled' | 'rejected' | 'invalid';
+  status: "sent" | "queued" | "scheduled" | "rejected" | "invalid";
   reject_reason?: string;
   _id?: string;
 }
@@ -27,7 +27,7 @@ interface MailchimpRecipient {
  * Supports API key from configuration or MAILCHIMP_API_KEY environment variable.
  */
 export class MailchimpProvider implements MailerProvider {
-  private defaultFrom: string = '';
+  private defaultFrom: string = "";
   private apiKey: string;
 
   /**
@@ -35,8 +35,8 @@ export class MailchimpProvider implements MailerProvider {
    * @param options - Provider configuration options
    */
   constructor(options: Partial<MailchimpProviderConfig> = {}) {
-    this.apiKey = options.api_key || process.env.MAILCHIMP_API_KEY || '';
-    this.defaultFrom = options.default_from || '';
+    this.apiKey = options.api_key || process.env.MAILCHIMP_API_KEY || "";
+    this.defaultFrom = options.default_from || "";
   }
 
   /**
@@ -63,32 +63,39 @@ export class MailchimpProvider implements MailerProvider {
       text: await mail.getTextContent(),
       html: await mail.getHtmlContent(),
       to: [
-        ...toEmails.map((email) => ({ email, type: 'to' })),
-        ...ccEmails.map((email) => ({ email, type: 'cc' })),
-        ...bccEmails.map((email) => ({ email, type: 'bcc' })),
+        ...toEmails.map((email) => ({ email, type: "to" })),
+        ...ccEmails.map((email) => ({ email, type: "cc" })),
+        ...bccEmails.map((email) => ({ email, type: "bcc" })),
       ],
     };
 
-    const response = await fetch('https://mandrillapp.com/api/1.0/messages/send', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await fetch(
+      "https://mandrillapp.com/api/1.0/messages/send",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          key: this.apiKey,
+          message,
+        }),
       },
-      body: JSON.stringify({
-        key: this.apiKey,
-        message,
-      }),
-    });
+    );
 
     if (!response.ok) {
-      throw new Error(`Mailchimp API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Mailchimp API error: ${response.status} ${response.statusText}`,
+      );
     }
 
     const result: MailchimpRecipient[] = await response.json();
 
     // Check if any email was rejected
     if (Array.isArray(result)) {
-      const rejected = result.filter((r) => r.status === 'rejected' || r.status === 'invalid');
+      const rejected = result.filter(
+        (r) => r.status === "rejected" || r.status === "invalid",
+      );
       if (rejected.length > 0) {
         throw new Error(`Mailchimp rejected ${rejected.length} email(s)`);
       }

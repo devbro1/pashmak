@@ -16,7 +16,16 @@ export type whereRaw = { type: 'raw'; sql: string; bindings: Parameter[] };
 export type whereNull = { type: 'null'; column: string };
 export type whereType = whereBasic & (whereOp | whereOpColumn | whereNested | whereNull | whereRaw);
 
-export type Parameter = string | number | Date | boolean | null | Expression | undefined | number[] | string[];
+export type Parameter =
+  | string
+  | number
+  | Date
+  | boolean
+  | null
+  | Expression
+  | undefined
+  | number[]
+  | string[];
 export type JoinCondition = 'and' | 'or';
 export type CompiledSql = { sql: string; parts: (string | number)[]; bindings: Parameter[] };
 

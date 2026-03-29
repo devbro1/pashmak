@@ -292,7 +292,9 @@ describe('AwsSqsTransport - Unit Tests', () => {
       expect(callback).toHaveBeenCalled();
       // Should call ChangeMessageVisibility to reset visibility timeout
 
-      const changeVisibilityCall = mockSend.mock.calls.find((call: any) => call[0].type === 'ChangeMessageVisibility');
+      const changeVisibilityCall = mockSend.mock.calls.find(
+        (call: any) => call[0].type === 'ChangeMessageVisibility'
+      );
       expect(changeVisibilityCall).toBeDefined();
     });
 
@@ -443,7 +445,9 @@ describe('AwsSqsTransport - Unit Tests', () => {
       await sleep(100);
       await transport.stopListening();
 
-      const receiveMessageCall = mockSend.mock.calls.find((call: any) => call[0].type === 'ReceiveMessage');
+      const receiveMessageCall = mockSend.mock.calls.find(
+        (call: any) => call[0].type === 'ReceiveMessage'
+      );
       expect(receiveMessageCall[0].params.WaitTimeSeconds).toBe(20);
     });
 
@@ -498,7 +502,9 @@ describe('AwsSqsTransport - Unit Tests', () => {
       await sleep(500);
       await transport.stopListening();
 
-      const changeVisibilityCall = mockSend.mock.calls.find((call: any) => call[0].type === 'ChangeMessageVisibility');
+      const changeVisibilityCall = mockSend.mock.calls.find(
+        (call: any) => call[0].type === 'ChangeMessageVisibility'
+      );
       expect(changeVisibilityCall).toBeUndefined();
     });
 

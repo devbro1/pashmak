@@ -100,7 +100,9 @@ describe('raw queries', () => {
       await query1.whereOp('country_id', '=', 'UK').update({ country_name: 'United Kingdom Eh' });
       expect((await query2.get())[0].country_name).toBe('United Kingdom');
 
-      await query1.whereOp('country_id', '=', 'UK').update({ country_nameAAA: 'non existing field' });
+      await query1
+        .whereOp('country_id', '=', 'UK')
+        .update({ country_nameAAA: 'non existing field' });
 
       await query1.getConnection()?.commit();
       expect(1).toBe(2); // should never get to this line

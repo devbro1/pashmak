@@ -44,9 +44,13 @@ describe('Router tests', () => {
       })
       .addMiddleware([m1, m2]);
 
-    router.addRoute(['GET'], '/api/v1/countries/:countryId', async (req: Request, res: Response) => {
-      return 'GET PARAM countries ' + req.params?.countryId;
-    });
+    router.addRoute(
+      ['GET'],
+      '/api/v1/countries/:countryId',
+      async (req: Request, res: Response) => {
+        return 'GET PARAM countries ' + req.params?.countryId;
+      }
+    );
 
     router.addRoute(['GET'], '/api/v1/dates', async (req: Request, res: Response) => {
       let d1 = new Date('2023-10-01T00:00:00Z');
@@ -117,34 +121,49 @@ describe('Router tests', () => {
       return '';
     });
 
-    expect(router.resolve({ url: '/api/v1/nomid', method: 'GET' } as Request)?.getMiddlewares().length).toBe(0);
-
-    expect(router.resolve({ url: '/api/v1/oneGlobal', method: 'GET' } as Request)?.getMiddlewares().length).toBe(0);
+    expect(
+      router.resolve({ url: '/api/v1/nomid', method: 'GET' } as Request)?.getMiddlewares().length
+    ).toBe(0);
 
     expect(
-      router.getCompiledRoute({ url: '/api/v1/oneGlobal', method: 'GET' } as Request, {} as Response)?.getMiddlewares()
+      router.resolve({ url: '/api/v1/oneGlobal', method: 'GET' } as Request)?.getMiddlewares()
         .length
+    ).toBe(0);
+
+    expect(
+      router
+        .getCompiledRoute({ url: '/api/v1/oneGlobal', method: 'GET' } as Request, {} as Response)
+        ?.getMiddlewares().length
     ).toBe(1);
 
-    expect(router.resolve({ url: '/api/v1/globnown', method: 'GET' } as Request)?.getMiddlewares().length).toBe(2);
+    expect(
+      router.resolve({ url: '/api/v1/globnown', method: 'GET' } as Request)?.getMiddlewares().length
+    ).toBe(2);
 
     expect(
-      router.getCompiledRoute({ url: '/api/v1/globnown', method: 'GET' } as Request, {} as Response)?.getMiddlewares()
-        .length
+      router
+        .getCompiledRoute({ url: '/api/v1/globnown', method: 'GET' } as Request, {} as Response)
+        ?.getMiddlewares().length
     ).toBe(3);
 
-    expect(router.resolve({ url: '/api/v1/postglob', method: 'GET' } as Request)?.getMiddlewares().length).toBe(0);
+    expect(
+      router.resolve({ url: '/api/v1/postglob', method: 'GET' } as Request)?.getMiddlewares().length
+    ).toBe(0);
 
     expect(
-      router.getCompiledRoute({ url: '/api/v1/postglob', method: 'GET' } as Request, {} as Response)?.getMiddlewares()
-        .length
+      router
+        .getCompiledRoute({ url: '/api/v1/postglob', method: 'GET' } as Request, {} as Response)
+        ?.getMiddlewares().length
     ).toBe(1);
 
-    expect(router.resolve({ url: '/api/v1/nomid', method: 'GET' } as Request)?.getMiddlewares().length).toBe(0);
+    expect(
+      router.resolve({ url: '/api/v1/nomid', method: 'GET' } as Request)?.getMiddlewares().length
+    ).toBe(0);
 
     expect(
-      router.getCompiledRoute({ url: '/api/v1/nomid', method: 'GET' } as Request, {} as Response)?.getMiddlewares()
-        .length
+      router
+        .getCompiledRoute({ url: '/api/v1/nomid', method: 'GET' } as Request, {} as Response)
+        ?.getMiddlewares().length
     ).toBe(1);
   });
 });

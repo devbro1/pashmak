@@ -222,7 +222,9 @@ export class PostgresqlConnection extends ConnectionAbs {
       return result.rows.length > 0;
     }
 
-    const result = await this.connection!.query('SELECT 1 FROM pg_database WHERE datname = $1', [name]);
+    const result = await this.connection!.query('SELECT 1 FROM pg_database WHERE datname = $1', [
+      name,
+    ]);
     return result.rows.length > 0;
   }
 }

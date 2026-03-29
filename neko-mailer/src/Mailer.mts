@@ -1,9 +1,9 @@
-import { Mailable } from 'Mailable.mjs';
-import { MailerProvider } from 'MailerProvider.mjs';
-import { EventEmittor, EventManager } from '@devbro/neko-helper';
+import { Mailable } from "Mailable.mjs";
+import { MailerProvider } from "MailerProvider.mjs";
+import { EventEmittor, EventManager } from "@devbro/neko-helper";
 
 /** Available mailer events */
-export const MailerEvents = ['sent', 'failed'];
+export const MailerEvents = ["sent", "failed"];
 /** Type representing mailer events */
 export type MailerEvent = (typeof MailerEvents)[number];
 
@@ -12,7 +12,7 @@ export type MailerEvent = (typeof MailerEvents)[number];
  * Provides a unified interface for sending emails through various providers
  * with event notifications for sent and failed emails.
  */
-export class Mailer implements EventEmittor<['sent', 'failed']> {
+export class Mailer implements EventEmittor<["sent", "failed"]> {
   private eventManager = new EventManager<MailerEvent[]>();
 
   /**
@@ -62,9 +62,9 @@ export class Mailer implements EventEmittor<['sent', 'failed']> {
   async send(mail: Mailable): Promise<void> {
     try {
       await this.provider.sendMail(mail);
-      await this.eventManager.emit('sent', { mail });
+      await this.eventManager.emit("sent", { mail });
     } catch (error) {
-      await this.eventManager.emit('failed', { mail, error });
+      await this.eventManager.emit("failed", { mail, error });
       throw error;
     }
   }

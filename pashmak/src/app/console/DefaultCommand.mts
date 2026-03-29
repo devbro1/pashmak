@@ -1,5 +1,5 @@
-import { Command, Option } from 'clipanion';
-import { cli } from '../../facades.mjs';
+import { Command, Option } from "clipanion";
+import { cli } from "../../facades.mjs";
 
 export class DefaultCommand extends Command {
   static usage = Command.Usage({
@@ -18,9 +18,11 @@ export class DefaultCommand extends Command {
     const commandList = cli().registrations; //.definitions().map((def:any) => def.paths.map((path:any) => path.join(' '))).flat();
 
     const paths: string[] = [];
-    commandList.forEach((index, val) => paths.push(index.builder.paths[0]?.join(' ') || ''));
+    commandList.forEach((index, val) =>
+      paths.push(index.builder.paths[0]?.join(" ") || ""),
+    );
 
-    console.log('Available commands:');
+    console.log("Available commands:");
     for (const cmd of paths) {
       if (cmd) {
         console.log(cmd);
