@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-cache",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "Driver-agnostic caching library that keeps your data close and your latency lower",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
@@ -20,9 +20,9 @@
     "test": "vitest run",
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
-    "format": "eslint . --fix --ext ts,tsx --report-unused-disable-directives --max-warnings 0 ",
+    "format": "biome check --write .",
     "prepare": "husky",
-    "prettier": "prettier --write .",
+    "prettier": "biome format --write .",
     "clean": "rm -rf dist"
   },
   "author": "Farzad Meow Khalafi",
@@ -30,12 +30,8 @@
   "devDependencies": {
     "@types/memcached": "^2.2.10",
     "@types/node": "^24.1.0",
-    "@typescript-eslint/eslint-plugin": "^7.1.1",
-    "@typescript-eslint/parser": "^7.1.1",
-    "eslint": "8.57.0",
     "husky": "^9.1.7",
     "memcached": "^2.2.2",
-    "prettier": "^3.5.3",
     "redis": "^4.6.0",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",

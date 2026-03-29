@@ -1,6 +1,6 @@
 {
   "name": "test-app",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "testing application for the entire repo",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -15,9 +15,9 @@
     "test": "vitest run",
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
-    "format": "eslint . --fix --ext ts,tsx --report-unused-disable-directives --max-warnings 0 ",
+    "format": "biome check --write .",
     "prepare": "husky",
-    "prettier": "prettier --write .",
+    "prettier": "biome format --write .",
     "dev": "nodemon --watch src --ext ts,tsx,mts,json --signal SIGTERM --exec \"tsx -r tsconfig-paths/register src/index.ts start --http | npx pino-pretty\"",
     "pdev": "tsx -r tsconfig-paths/register src/index.ts",
     "clean": "rm -rf dist"

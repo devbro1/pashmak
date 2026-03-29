@@ -1,6 +1,6 @@
 {
   "name": "@devbro/pashmak",
-  "version": "0.1.58",
+  "version": "0.1.59",
   "description": "A pragmatic, batteries-included framework that gets out of your way and lets you ship - because building apps should be fun again",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
@@ -109,9 +109,9 @@
     "test": "vitest run",
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
-    "format": "eslint . --fix --ext ts,tsx --report-unused-disable-directives --max-warnings 0 ",
+    "format": "biome check --write .",
     "prepare": "husky",
-    "prettier": "prettier --write .",
+    "prettier": "biome format --write .",
     "clean": "rm -rf dist",
     "cli": "tsx -r tsconfig-paths/register src/bin/pashmak_cli.ts"
   },

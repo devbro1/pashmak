@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-config",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "description": "Structured configuration loading and management for TypeScript apps - tame your config files like a pro",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
@@ -20,9 +20,9 @@
     "test": "vitest run",
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
-    "format": "eslint . --fix --ext ts,tsx --report-unused-disable-directives --max-warnings 0 ",
+    "format": "biome check --write .",
     "prepare": "husky",
-    "prettier": "prettier --write .",
+    "prettier": "biome format --write .",
     "clean": "rm -rf dist"
   },
   "author": "Farzad Meow Khalafi",
@@ -30,11 +30,7 @@
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.1.0",
-    "@typescript-eslint/eslint-plugin": "^7.1.1",
-    "@typescript-eslint/parser": "^7.1.1",
-    "eslint": "8.57.0",
     "husky": "^9.1.7",
-    "prettier": "^3.5.3",
     "tsup": "^8.0.2",
     "typescript": "^5.9.3"
   },

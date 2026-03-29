@@ -14,7 +14,9 @@
     "prep_for_release": "node scripts/prep_for.js",
     "publish_to_npm": "node scripts/publish_to_npm.js",
     "bump_versions": "node scripts/bump_versions.js",
-    "bump": "node scripts/bump_versions.js"
+    "bump": "node scripts/bump_versions.js",
+    "format": "biome check --write .",
+    "format:check": "biome check ."
   },
   "workspaces": [
     "docs",
@@ -34,5 +36,8 @@
     "test-app",
     "pashmak"
   ],
-  "dependencies": {}
+  "dependencies": {},
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.9"
+  }
 }

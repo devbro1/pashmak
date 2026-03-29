@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-mailer",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "Flexible email delivery library supporting multiple transport adapters - your messages, delivered with style",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
@@ -24,9 +24,9 @@
     "test": "vitest run",
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
-    "format": "eslint . --fix --ext ts,tsx --report-unused-disable-directives --max-warnings 0 ",
+    "format": "biome check --write .",
     "prepare": "husky",
-    "prettier": "prettier --write .",
+    "prettier": "biome format --write .",
     "clean": "rm -rf dist"
   },
   "author": "Farzad Meow Khalafi",
