@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-router",
-  "version": "0.1.20",
+  "version": "0.1.21",
   "description": "Fast, flexible URI-to-controller router that maps every request to exactly the right destination",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
