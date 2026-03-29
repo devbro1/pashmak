@@ -1,9 +1,10 @@
 import { MiddlewareFactory } from './MiddlewareFactory.mjs';
-import { HandlerType, HttpMethod, MiddlewareProvider } from './types.mjs';
+import { HandlerType, HttpMethod, MiddlewareProvider, RouteCheck } from './types.mjs';
 import { LexerToken, Request, Response } from './types.mjs';
 
 export class Route {
   private middlewares: MiddlewareProvider[] = [];
+  private checks: RouteCheck[] = [];
   private urlRegex: RegExp;
   constructor(
     public methods: HttpMethod[],
@@ -129,6 +130,15 @@ export class Route {
 
   getMiddlewares() {
     return this.middlewares;
+  }
+
+  addCheck(checks: RouteCheck | RouteCheck[]) {
+    this.checks = this.checks.concat(checks);
+    return this;
+  }
+
+  getChecks() {
+    return [...this.checks];
   }
 
   callHanlder(request: Request, response: Response) {

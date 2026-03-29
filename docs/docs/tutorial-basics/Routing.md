@@ -233,3 +233,102 @@ router().addRouter("", authnedRouter); // prefix can be empty string
 When returning a json response, `undefined` is not considered a valid value.
 As a work around, all values of `undefined` will be converted to `null` during
 response.
+
+## Route Checks
+
+Route checks are predicate functions that gate whether a route (or an entire router) is eligible to handle a request. They are evaluated _before_ the route handler runs, and if any check returns `false` the route is skipped — allowing the router to continue looking for the next matching candidate.
+
+A `RouteCheck` has the following signature:
+
+```ts
+type RouteCheck = (req: Request, res: Response) => boolean;
+```
+
+### Route-level checks
+
+Attach one or more checks directly to a route with `addCheck()`. All checks must pass for that route to be selected.
+
+```ts
+import { router } from "@devbro/pashmak/facades";
+import { Request, Response } from "@devbro/pashmak/router";
+
+// Two routes share the same URL but are differentiated by the Accept-Version header
+router()
+  .addRoute(["GET"], "/api/users", async (req: Request, res: Response) => {
+    return { version: 1, users: [] };
+  })
+  .addCheck((req) => req.headers?.["accept-version"] === "1");
+
+router()
+  .addRoute(["GET"], "/api/users", async (req: Request, res: Response) => {
+    return { version: 2, users: [] };
+  })
+  .addCheck((req) => req.headers?.["accept-version"] === "2");
+```
+
+A request with `Accept-Version: 1` will be served by the first handler, and `Accept-Version: 2` by the second. If no check passes, the router returns `undefined` (404).
+
+### Router-level checks
+
+Attach checks to a `Router` instance with `addCheck()`. These are evaluated first, before any individual route checks. If a router-level check fails, **all routes in that router are skipped**.
+
+```ts
+import { Router } from "@devbro/pashmak/router";
+import { router } from "@devbro/pashmak/facades";
+
+const v2Router = new Router();
+v2Router.addCheck((req) => req.headers?.["accept-version"] === "2");
+
+v2Router.addRoute(
+  ["GET"],
+  "/api/users",
+  async (req: Request, res: Response) => {
+    return { version: 2, users: [] };
+  },
+);
+
+v2Router.addRoute(
+  ["GET"],
+  "/api/orders",
+  async (req: Request, res: Response) => {
+    return { version: 2, orders: [] };
+  },
+);
+
+router().addRouter("/api", v2Router);
+```
+
+Any request that does not carry `Accept-Version: 2` will bypass all routes in `v2Router`.
+
+### Combining router-level and route-level checks
+
+When a sub-router is mounted via `addRouter()`, its checks are propagated into each of its routes. This means a route inside a sub-router must satisfy **both** the router's checks **and** its own checks:
+
+```ts
+const subRouter = new Router();
+subRouter.addCheck((req) => req.headers?.["accept-version"] === "2"); // router-level
+
+subRouter
+  .addRoute(["GET"], "/api/feature", async (req: Request, res: Response) => {
+    return { feature: "enabled" };
+  })
+  .addCheck((req) => req.headers?.["x-feature"] === "enabled"); // route-level
+
+router().addRouter("", subRouter);
+// The /api/feature route requires BOTH accept-version: 2 AND x-feature: enabled
+```
+
+### Multiple checks
+
+`addCheck()` accepts a single function or an array of functions. All checks are evaluated in order and all must return `true`:
+
+```ts
+route.addCheck([
+  (req) => req.headers?.["accept-version"] === "2",
+  (req) => req.headers?.["x-feature"] === "enabled",
+]);
+
+// same as
+route.addCheck((req) => req.headers?.["accept-version"] === "2");
+route.addCheck((req) => req.headers?.["x-feature"] === "enabled");
+```
