@@ -70,12 +70,6 @@ yarn publish_to_npm
 
 # Start the documentation dev server
 yarn workspace docs dev
-
-# Lint and format all files
-yarn format
-
-# Check linting/formatting without writing
-yarn format:check
 ```
 
 ---
@@ -104,7 +98,7 @@ Whenever you change the source code of a package (under its `src/` directory), *
 
 - All source files must be TypeScript (`.ts`). No plain `.js` in `src/`.
 - This is an **ESM-first** project — use `import`/`export`, not `require`/`module.exports`.
-- Run the linter before submitting changes: the repo uses **Biome** (configured at the root `biome.json`) for linting and formatting across all packages. Run `yarn format:check` from the root to check, or `yarn format` to auto-fix.
+- Run the linter before submitting changes: each package has its own ESLint + Prettier config.
 - Tests use **vitest** — add or update tests for any changed logic.
 
 ### 4. Dependency Management
@@ -116,7 +110,7 @@ Whenever you change the source code of a package (under its `src/` directory), *
 ### 5. Pull Request Checklist
 
 Before finalising a PR, verify:
-- [ ] Lint/Biome passes (`yarn format:check` from root)
+- [ ] Lint/prettier passes
 - [ ] Documentation updated (README and/or `docs/`)
 - [ ] Tests added or updated to cover changes
 - [ ] JSDoc added for any new public function/class

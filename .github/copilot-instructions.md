@@ -64,7 +64,7 @@ Each package has the structure:
 
 - **TypeScript only** in `src/` — no `.js` source files.
 - **ESM first** — use `import`/`export`. Avoid CommonJS `require`.
-- **Linting:** [Biome](https://biomejs.dev/) — single `biome.json` at the repo root covers all packages. Run `yarn format:check` to check or `yarn format` to auto-fix.
+- **Linting:** ESLint + Prettier (configs vary per package).
 - **Testing:** vitest — add or update tests for all changed logic.
 - **Dependencies:** keep new dependencies minimal; prefer existing utilities already in the monorepo.
 
@@ -77,6 +77,4 @@ yarn build:all          # Build all packages
 yarn test:all           # Run all tests
 yarn bump               # Bump patch versions for packages with changes
 yarn workspace docs dev # Start the documentation dev server
-yarn format             # Lint and format all files (biome check --write .)
-yarn format:check       # Check linting/formatting without writing (biome check .)
 ```

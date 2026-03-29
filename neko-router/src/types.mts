@@ -30,3 +30,5 @@ export type MiddlewareProvider =
   | ((request: Request, response: Response, next: () => Promise<void>) => Promise<void>);
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS';
+
+export type RouteCheck = (req: Request, res: Response) => boolean;
