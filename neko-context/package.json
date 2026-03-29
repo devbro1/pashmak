@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-context",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Lightweight context and dependency injection for TypeScript apps - cleaner than globals, smarter than passing things around everywhere",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
