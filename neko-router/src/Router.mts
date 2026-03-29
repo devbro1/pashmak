@@ -2,13 +2,14 @@ import { CompiledRoute } from './CompiledRoute.mjs';
 import { BaseController } from './Controller.mjs';
 import { MiddlewareFactory } from './MiddlewareFactory.mjs';
 import { Route } from './Route.mjs';
-import { HandlerType, HttpMethod, MiddlewareProvider } from './types.mjs';
+import { HandlerType, HttpMethod, MiddlewareProvider, RouteCheck } from './types.mjs';
 import { Request, Response } from './types.mjs';
 import path from 'path';
 import urlJoin from 'url-join';
 
 export class Router {
   private middlewares: MiddlewareProvider[] = [];
+  private checks: RouteCheck[] = [];
   routes: Route[] = [];
   addRoute(methods: HttpMethod[], path: string, handler: HandlerType) {
     const route: Route = new Route(methods, path, handler);
@@ -18,6 +19,15 @@ export class Router {
 
   getMiddlewares() {
     return [...this.middlewares];
+  }
+
+  addCheck(checks: RouteCheck | RouteCheck[]) {
+    this.checks = this.checks.concat(checks);
+    return this;
+  }
+
+  getChecks() {
+    return [...this.checks];
   }
 
   addController(controller: typeof BaseController) {
@@ -37,7 +47,9 @@ export class Router {
       let path2 = urlJoin('/', path, route.path);
       this.addRoute(route.methods, path2, route.handler)
         .addMiddleware(router.getMiddlewares())
-        .addMiddleware(route.getMiddlewares());
+        .addMiddleware(route.getMiddlewares())
+        .addCheck(router.getChecks())
+        .addCheck(route.getChecks());
     }
   }
 
@@ -66,16 +78,36 @@ export class Router {
   }
 
   getCompiledRoute(request: Request, response: Response) {
-    const route = this.resolve(request);
-    if (!route) {
-      return undefined;
-    }
-    const match = route.match(request);
-    if (!match) {
-      return undefined;
+    for (const check of this.checks) {
+      if (!check(request, response)) {
+        return undefined;
+      }
     }
 
-    request.params = match.params;
-    return new CompiledRoute(route, request, response, this.middlewares);
+    for (const route of this.routes) {
+      if (!route.test(request)) {
+        continue;
+      }
+      const match = route.match(request);
+      if (!match) {
+        continue;
+      }
+
+      let allChecksPass = true;
+      for (const check of route.getChecks()) {
+        if (!check(request, response)) {
+          allChecksPass = false;
+          break;
+        }
+      }
+      if (!allChecksPass) {
+        continue;
+      }
+
+      request.params = match.params;
+      return new CompiledRoute(route, request, response, this.middlewares);
+    }
+
+    return undefined;
   }
 }
