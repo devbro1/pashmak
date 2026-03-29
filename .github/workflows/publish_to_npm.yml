@@ -1,5 +1,6 @@
 name: Publish Package to npmjs
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
@@ -13,14 +14,14 @@ jobs:
     env:
       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       # Setup .npmrc file to publish to npm
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: "24.x"
           registry-url: "https://registry.npmjs.org"
       - name: Cache node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             **/node_modules
