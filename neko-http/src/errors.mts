@@ -400,3 +400,19 @@ export class HttpNetworkAuthenticationRequiredError extends HttpError {
     super(511, message, code, details);
   }
 }
+
+export class BunNotAvailableError extends Error {
+  constructor(
+    message: string = 'Bun runtime is not available. Cannot use preferBun option when running on Node.js.'
+  ) {
+    super(message);
+    this.name = 'BunNotAvailableError';
+  }
+}
+
+export class BunConfigurationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'BunConfigurationError';
+  }
+}
