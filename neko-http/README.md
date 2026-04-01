@@ -43,6 +43,8 @@ npm install @devbro/neko-http @devbro/neko-router @devbro/neko-context
 - **Middleware Support**: Global and route-specific middleware
 - **Body Parsing**: Automatic JSON and form data parsing
 - **File Uploads**: Multipart form data support
+- **HTTP/2 Support**: Native HTTP/2 via `node:http2` (h2c and h2 with TLS)
+- **Bun.serve Support**: Opt-in to `Bun.serve` for faster performance on Bun runtime
 - **Testing**: Easy testing with supertest integration
 - **Type Safety**: Full TypeScript support with generic types
 - **Performance**: Built on native Node.js HTTP server for maximum speed
@@ -759,6 +761,93 @@ it('should require authentication', async () => {
 ```
 
 ## Advanced Features
+
+### HTTP/2 Support
+
+Enable HTTP/2 by passing `useHttp2: true` in the constructor options. When combined with `enableHttps`, a secure HTTP/2 (h2) server is created. Without TLS, an unencrypted HTTP/2 server is created (h2c).
+
+```typescript
+import { HttpServer } from '@devbro/neko-http';
+import { Router } from '@devbro/neko-router';
+import { readFileSync } from 'node:fs';
+
+const router = new Router();
+router.addRoute(['GET'], '/', () => ({ message: 'Hello via HTTP/2!' }));
+
+// Unencrypted HTTP/2 (h2c)
+const server = new HttpServer({ useHttp2: true });
+server.setRouter(router);
+await server.listen(3000, () => console.log('HTTP/2 server on port 3000'));
+
+// Encrypted HTTP/2 (h2) with TLS
+const secureServer = new HttpServer({ useHttp2: true });
+secureServer.enableHttps({
+  key: readFileSync('server.key', 'utf8'),
+  cert: readFileSync('server.cert', 'utf8'),
+});
+secureServer.setRouter(router);
+await secureServer.listen(443, () => console.log('HTTPS/2 server on port 443'));
+```
+
+### Bun.serve Support
+
+When running on [Bun](https://bun.sh), you can opt in to `Bun.serve` for better performance by passing `preferBun: true`.
+
+```typescript
+import { HttpServer } from '@devbro/neko-http';
+import { Router } from '@devbro/neko-router';
+
+const router = new Router();
+router.addRoute(['GET'], '/', () => ({ message: 'Hello via Bun.serve!' }));
+
+const server = new HttpServer({ preferBun: true });
+server.setRouter(router);
+await server.listen(3000, () => {});
+```
+
+If `preferBun: true` is set while running on Node.js, a `BunNotAvailableError` is thrown at `listen` time.
+
+```typescript
+import { HttpServer, BunNotAvailableError } from '@devbro/neko-http';
+
+const server = new HttpServer({ preferBun: true });
+
+try {
+  await server.listen(3000, () => {});
+} catch (err) {
+  if (err instanceof BunNotAvailableError) {
+    console.error('Must run with Bun to use preferBun mode');
+  }
+}
+```
+
+#### Bun with TLS
+
+Pass TLS certificates via `enableHttps` and set `preferBun: true`. The certificates are forwarded to Bun's `tls` option:
+
+```typescript
+const server = new HttpServer({ preferBun: true });
+server.enableHttps({ key: '...', cert: '...' });
+await server.listen(443, () => {});
+```
+
+#### Configuration Errors with Bun
+
+Using `preferBun: true` and `useHttp2: true` together throws a `BunConfigurationError` because `Bun.serve` handles HTTP/2 automatically when TLS is configured — the `useHttp2` flag is not needed.
+
+```typescript
+import { HttpServer, BunConfigurationError } from '@devbro/neko-http';
+
+const server = new HttpServer({ preferBun: true, useHttp2: true });
+
+try {
+  await server.listen(3000, () => {});
+} catch (err) {
+  if (err instanceof BunConfigurationError) {
+    console.error('Invalid configuration:', err.message);
+  }
+}
+```
 
 ### Graceful Shutdown
 

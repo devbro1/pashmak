@@ -1,7 +1,18 @@
 import { IncomingMessage, ServerResponse, createServer } from 'node:http';
-import { createServer as createServerSecured } from 'https';
+import { createServer as createServerSecured } from 'node:https';
+import {
+  createServer as createHttp2Server,
+  createSecureServer as createHttp2SecureServer,
+} from 'node:http2';
+import { Readable } from 'node:stream';
 import { CompiledRoute, HttpMethod, Route, Router } from '@devbro/neko-router';
-import { HttpError, HttpNotFoundError, HttpUnsupportedMediaTypeError } from './errors.mjs';
+import {
+  BunConfigurationError,
+  BunNotAvailableError,
+  HttpError,
+  HttpNotFoundError,
+  HttpUnsupportedMediaTypeError,
+} from './errors.mjs';
 import { Request } from '@devbro/neko-router';
 import { context_provider, ctx } from '@devbro/neko-context';
 import formidable from 'formidable';
@@ -10,6 +21,8 @@ import qs from 'qs';
 import { firstValues } from 'formidable/src/helpers/firstValues.js';
 export * from './errors.mjs';
 
+const isBunRuntime = (): boolean => typeof (globalThis as Record<string, unknown>).Bun !== 'undefined';
+
 export class HttpServer {
   private https_certs: undefined | { key: string; cert: string } = undefined;
 
@@ -17,6 +30,8 @@ export class HttpServer {
     private options: {
       uploadPath?: string;
       handleOptionsMethod?: boolean;
+      useHttp2?: boolean;
+      preferBun?: boolean;
     } = { uploadPath: '/tmp/uploads', handleOptionsMethod: true }
   ) {}
   private requestId: number = 1;
@@ -192,14 +207,151 @@ export class HttpServer {
     this.https_certs = options;
   }
 
+  private async bunHandler(bunReq: globalThis.Request): Promise<globalThis.Response> {
+    const bodyBuffer = bunReq.body ? Buffer.from(await bunReq.arrayBuffer()) : Buffer.alloc(0);
+
+    const readable = new Readable({
+      read() {
+        this.push(bodyBuffer);
+        this.push(null);
+      },
+    });
+
+    const url = new URL(bunReq.url);
+
+    const req = Object.assign(readable, {
+      method: bunReq.method,
+      url: url.pathname + url.search,
+      headers: Object.fromEntries(bunReq.headers.entries()),
+      httpVersion: '1.1',
+      httpVersionMajor: 1,
+      httpVersionMinor: 1,
+    }) as unknown as IncomingMessage;
+
+    const responseState = {
+      statusCode: 200,
+      headers: {} as Record<string, string | string[]>,
+      body: [] as Buffer[],
+      ended: false,
+    };
+
+    const res = {
+      get statusCode() {
+        return responseState.statusCode;
+      },
+      set statusCode(code: number) {
+        responseState.statusCode = code;
+      },
+      get writableEnded() {
+        return responseState.ended;
+      },
+      get finished() {
+        return responseState.ended;
+      },
+      headersSent: false,
+      setHeader(name: string, value: string | string[]) {
+        responseState.headers[name.toLowerCase()] = value;
+      },
+      getHeader(name: string) {
+        return responseState.headers[name.toLowerCase()];
+      },
+      removeHeader(name: string) {
+        delete responseState.headers[name.toLowerCase()];
+      },
+      writeHead(code: number, hdrs?: Record<string, string | string[]>) {
+        responseState.statusCode = code;
+        if (hdrs) {
+          for (const [k, v] of Object.entries(hdrs)) {
+            responseState.headers[k.toLowerCase()] = v;
+          }
+        }
+        return this;
+      },
+      write(chunk: unknown) {
+        if (chunk) {
+          responseState.body.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk as string));
+        }
+        return true;
+      },
+      end(chunk?: unknown) {
+        if (chunk) {
+          responseState.body.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk as string));
+        }
+        responseState.ended = true;
+      },
+      on() {
+        return this;
+      },
+      once() {
+        return this;
+      },
+      emit() {
+        return false;
+      },
+    } as unknown as ServerResponse;
+
+    await this.handle(req, res);
+
+    const responseHeaders = new Headers();
+    for (const [key, value] of Object.entries(responseState.headers)) {
+      if (Array.isArray(value)) {
+        for (const v of value) {
+          responseHeaders.append(key, v);
+        }
+      } else {
+        responseHeaders.set(key, value);
+      }
+    }
+
+    return new Response(responseState.body.length > 0 ? Buffer.concat(responseState.body) : null, {
+      status: responseState.statusCode,
+      headers: responseHeaders,
+    });
+  }
+
   async listen(port: number, callback: () => void) {
+    if (this.options.preferBun) {
+      if (!isBunRuntime()) {
+        throw new BunNotAvailableError();
+      }
+      if (this.options.useHttp2) {
+        throw new BunConfigurationError(
+          'useHttp2 is not compatible with preferBun. Bun.serve handles HTTP/2 automatically when TLS is configured.'
+        );
+      }
+
+      const me = this;
+      const bunGlobal = globalThis as unknown as { Bun: { serve: (opts: Record<string, unknown>) => unknown } };
+      return bunGlobal.Bun.serve({
+        port,
+        tls: this.https_certs
+          ? { key: this.https_certs.key, cert: this.https_certs.cert }
+          : undefined,
+        async fetch(req: globalThis.Request) {
+          return me.bunHandler(req);
+        },
+      });
+    }
+
     let server;
 
-    if (this.https_certs) {
+    if (this.options.useHttp2) {
+      if (this.https_certs) {
+        server = createHttp2SecureServer(
+          this.https_certs,
+          this.getHttpHanlder() as unknown as Parameters<typeof createHttp2SecureServer>[1]
+        );
+      } else {
+        server = createHttp2Server(
+          this.getHttpHanlder() as unknown as Parameters<typeof createHttp2Server>[0]
+        );
+      }
+    } else if (this.https_certs) {
       server = createServerSecured(this.https_certs, this.getHttpHanlder());
     } else {
       server = createServer(this.getHttpHanlder());
     }
+
     return server.listen(port, callback);
   }
 }
