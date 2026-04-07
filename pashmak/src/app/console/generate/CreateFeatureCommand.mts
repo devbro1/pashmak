@@ -167,10 +167,11 @@ export class CreateFeatureCommand extends Command {
       withCron: this.withCron,
     };
 
+    handlebars.registerHelper("eq", (a: unknown, b: unknown) => a === b);
+
     const renderTpl = async (tplName: string, destFile: string) => {
       const tplPath = path.join(dirname as string, `./${tplName}`);
       const raw = (await fs.readFile(tplPath)).toString();
-      handlebars.registerHelper("eq", (a: unknown, b: unknown) => a === b);
       const compiled = handlebars.compile(raw);
       await fs.writeFile(path.join(featureDir, destFile), compiled(tplData));
       this.context.stdout.write(`  Created ${destFile}\n`);
@@ -206,7 +207,7 @@ export class CreateFeatureCommand extends Command {
 
     // Post-creation: update routes.ts if controller was created
     if (this.withController) {
-      await this.addControllerToRoutes(rootDir, className, classNameLower, routeName);
+      await this.addControllerToRoutes(rootDir, className, classNameLower);
     }
 
     // Post-creation: update src/app/models/index.ts if model was created
@@ -231,7 +232,6 @@ export class CreateFeatureCommand extends Command {
     rootDir: string,
     className: string,
     classNameLower: string,
-    routeName: string,
   ) {
     const routesPath = path.join(rootDir, "src", "routes.ts");
     try {
