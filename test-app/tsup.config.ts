@@ -12,6 +12,7 @@ export default defineConfig([
     skipNodeModulesBundle: true,
   },
   {
+    // since db migration code is loaded dynamically, we need to build it separately to prevent excess files from being created
     entry: ["src/database/migrations/*.ts"],
     outDir: "dist/database/migrations",
     format: ["esm"], // Build for commonJS and ESmodules

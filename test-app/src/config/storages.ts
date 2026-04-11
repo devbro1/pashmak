@@ -2,6 +2,10 @@ import path from "path";
 import os from "os";
 
 export default {
-  engine: "local",
-  basePath: path.join(os.tmpdir(), "/app-storage/"),
+  default: {
+    provider: "local",
+    config: {
+      basePath: path.join(os.tmpdir(), "/app-storage/"),
+    },
+  },
 };
