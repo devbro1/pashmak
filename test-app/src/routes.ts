@@ -1,9 +1,7 @@
 import { Request, Response } from "@devbro/pashmak/router";
-import { router as routerFunc, db as dbf } from "@devbro/pashmak/facades";
-import { sleep } from "@devbro/pashmak/helper";
+import { router as routerFunc } from "@devbro/pashmak/facades";
 import { HelloController } from "./app/controllers/HelloController";
 import { loggerMiddleware } from "./middlewares";
-import { TestController } from "./app/features/test/TestController";
 
 const router = routerFunc();
 

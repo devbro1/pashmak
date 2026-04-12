@@ -1,4 +1,4 @@
-import { {{className}}Model } from "./{{className}}Model";
+import { {{className}}Model } from "@/app/features/{{classNameLower}}/{{className}}Model";
 
 export const {{classNameLower}}QueryScopes = {
   active(query: any) {

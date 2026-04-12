@@ -6,8 +6,10 @@ import {
   Put,
   Delete,
   Param,
+  Request,
 } from "@devbro/pashmak/router";
-import { {{className}}Service } from "./{{className}}Service";
+import { ctx } from "@devbro/pashmak/context";
+import { {{className}}Service } from "@/app/features/{{classNameLower}}/{{className}}Service";
 
 @Controller("/api/v1/{{routeName}}")
 export class {{className}}Controller extends BaseController {
@@ -15,7 +17,8 @@ export class {{className}}Controller extends BaseController {
 
   @Get()
   async list() {
-    return await this.service.list();
+    const params = ctx().get<Request>('request').query!;
+    return await this.service.list(params);
   }
 
   @Post()

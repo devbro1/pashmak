@@ -28,10 +28,7 @@ export class CreateFeatureCommand extends Command {
         `Create a feature with only a controller and service`,
         `create feature --controller --service MyFeature`,
       ],
-      [
-        `Create a feature interactively`,
-        `create feature`,
-      ],
+      [`Create a feature interactively`, `create feature`],
     ],
   });
 
@@ -82,12 +79,18 @@ export class CreateFeatureCommand extends Command {
     required: false,
   });
 
+  withMigration = Option.Boolean("--migration", {
+    description: "Create a database migration file",
+    required: false,
+  });
+
   async execute() {
     // Resolve feature name interactively if not provided
     if (!this.featureName) {
       this.featureName = await input({
         message: "Enter feature name (e.g. User, BlogPost):",
-        validate: (v) => (v.trim().length > 0 ? true : "Feature name is required"),
+        validate: (v) =>
+          v.trim().length > 0 ? true : "Feature name is required",
       });
     }
 
@@ -100,7 +103,8 @@ export class CreateFeatureCommand extends Command {
       this.withQueryScopes ||
       this.withValidations ||
       this.withQueue ||
-      this.withCron;
+      this.withCron ||
+      this.withMigration;
 
     // If no flags given, ask interactively
     if (!anyFlagGiven) {
@@ -115,6 +119,7 @@ export class CreateFeatureCommand extends Command {
           { name: "Validations", value: "validations" },
           { name: "Queue", value: "queue" },
           { name: "Cron", value: "cron" },
+          { name: "Migration", value: "migration" },
         ],
       });
 
@@ -126,6 +131,7 @@ export class CreateFeatureCommand extends Command {
       this.withValidations = choices.includes("validations");
       this.withQueue = choices.includes("queue");
       this.withCron = choices.includes("cron");
+      this.withMigration = choices.includes("migration");
     } else if (this.all) {
       this.withController = true;
       this.withService = true;
@@ -135,6 +141,7 @@ export class CreateFeatureCommand extends Command {
       this.withValidations = true;
       this.withQueue = true;
       this.withCron = true;
+      this.withMigration = true;
     }
 
     const rootDir = process.cwd();
@@ -142,10 +149,18 @@ export class CreateFeatureCommand extends Command {
     const classNameLower = Case.camel(this.featureName);
     const routeName = Case.kebab(pluralize(this.featureName));
     const tableName = Case.snake(pluralize(this.featureName));
-    const featureDir = path.join(rootDir, "src", "app", "features", classNameLower);
+    const featureDir = path.join(
+      rootDir,
+      "src",
+      "app",
+      "features",
+      classNameLower,
+    );
 
     await fs.mkdir(featureDir, { recursive: true });
-    this.context.stdout.write(`Creating feature "${className}" in ${featureDir}\n`);
+    this.context.stdout.write(
+      `Creating feature "${className}" in ${featureDir}\n`,
+    );
 
     let dirname = typeof __dirname === "string" ? __dirname : undefined;
     if (!dirname) {
@@ -165,12 +180,16 @@ export class CreateFeatureCommand extends Command {
       withValidations: this.withValidations,
       withQueue: this.withQueue,
       withCron: this.withCron,
+      withMigration: this.withMigration,
     };
 
     handlebars.registerHelper("eq", (a: unknown, b: unknown) => a === b);
 
     const renderTpl = async (tplName: string, destFile: string) => {
-      const tplPath = path.join(dirname as string, `./${tplName}`);
+      const tplPath = path.join(
+        dirname as string,
+        `./create_new_feature/${tplName}`,
+      );
       const raw = (await fs.readFile(tplPath)).toString();
       const compiled = handlebars.compile(raw);
       await fs.writeFile(path.join(featureDir, destFile), compiled(tplData));
@@ -204,6 +223,14 @@ export class CreateFeatureCommand extends Command {
     if (this.withCron) {
       await renderTpl("feature-cron.tpl", `${className}Cron.ts`);
     }
+    if (this.withMigration) {
+      await this.addMigrationFile(
+        rootDir,
+        className,
+        tableName,
+        dirname as string,
+      );
+    }
 
     // Post-creation: update routes.ts if controller was created
     if (this.withController) {
@@ -225,7 +252,9 @@ export class CreateFeatureCommand extends Command {
       await this.addCronToSchedules(rootDir, className, classNameLower);
     }
 
-    this.context.stdout.write(`\nFeature "${className}" created successfully!\n`);
+    this.context.stdout.write(
+      `\nFeature "${className}" created successfully!\n`,
+    );
   }
 
   async addControllerToRoutes(
@@ -236,7 +265,9 @@ export class CreateFeatureCommand extends Command {
     const routesPath = path.join(rootDir, "src", "routes.ts");
     try {
       let content = await fs.readFile(routesPath, "utf-8");
-      const importLine = `import { ${className}Controller } from "./app/features/${classNameLower}/${className}Controller";`;
+      const importLine =
+        `import { ${className}Controller } from "@/app/features/${classNameLower}/${className}Controller"` +
+        `;`;
       const addControllerLine = `router.addController(${className}Controller);`;
 
       if (content.includes(importLine)) {
@@ -256,7 +287,9 @@ export class CreateFeatureCommand extends Command {
       content = content.trimEnd() + "\n" + addControllerLine + "\n";
 
       await fs.writeFile(routesPath, content);
-      this.context.stdout.write(`  Updated src/routes.ts with ${className}Controller\n`);
+      this.context.stdout.write(
+        `  Updated src/routes.ts with ${className}Controller\n`,
+      );
     } catch (e: any) {
       if (e.code === "ENOENT") {
         this.context.stdout.write(
@@ -268,9 +301,21 @@ export class CreateFeatureCommand extends Command {
     }
   }
 
-  async addModelToIndex(rootDir: string, className: string, classNameLower: string) {
-    const modelIndexPath = path.join(rootDir, "src", "app", "models", "index.ts");
-    const exportLine = `export * from "../features/${classNameLower}/${className}Model";`;
+  async addModelToIndex(
+    rootDir: string,
+    className: string,
+    classNameLower: string,
+  ) {
+    const modelIndexPath = path.join(
+      rootDir,
+      "src",
+      "app",
+      "models",
+      "index.ts",
+    );
+    const exportLine =
+      `export * from "@/app/features/${classNameLower}/${className}Model"` +
+      `;`;
     try {
       let content = await fs.readFile(modelIndexPath, "utf-8");
       if (content.includes(exportLine)) {
@@ -297,8 +342,16 @@ export class CreateFeatureCommand extends Command {
     className: string,
     classNameLower: string,
   ) {
-    const queuesIndexPath = path.join(rootDir, "src", "app", "queues", "index.ts");
-    const importLine = `import { ${className}Queue } from "../features/${classNameLower}/${className}Queue";`;
+    const queuesIndexPath = path.join(
+      rootDir,
+      "src",
+      "app",
+      "queues",
+      "index.ts",
+    );
+    const importLine =
+      `import { ${className}Queue } from "@/app/features/${classNameLower}/${className}Queue"` +
+      `;`;
     const listenerLine = `  rc.${classNameLower} = ${className}Queue.listen();`;
     try {
       let content = await fs.readFile(queuesIndexPath, "utf-8");
@@ -357,6 +410,39 @@ export class CreateFeatureCommand extends Command {
         throw e;
       }
     }
+  }
+
+  async addMigrationFile(
+    rootDir: string,
+    className: string,
+    tableName: string,
+    dirname: string,
+  ) {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const secondsOfDay = String(
+      date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds(),
+    ).padStart(5, "0");
+
+    const filename = `${year}_${month}_${day}_${secondsOfDay}_create_${tableName}.ts`;
+    const migrationsDir = path.join(rootDir, "src", "database", "migrations");
+    await fs.mkdir(migrationsDir, { recursive: true });
+
+    const tplPath = path.join(
+      dirname,
+      "./create_new_feature/feature-migration.tpl",
+    );
+    const raw = (await fs.readFile(tplPath)).toString();
+    const compiled = handlebars.compile(raw);
+    await fs.writeFile(
+      path.join(migrationsDir, filename),
+      compiled({ className, tableName }),
+    );
+    this.context.stdout.write(
+      `  Created src/database/migrations/${filename}\n`,
+    );
   }
 
   async catch(error: unknown) {

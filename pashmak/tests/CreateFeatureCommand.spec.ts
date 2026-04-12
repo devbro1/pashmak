@@ -34,13 +34,7 @@ describe("CreateFeatureCommand", () => {
   test("should create feature with all files when --all flag is given", async () => {
     await runCommand(["create", "feature", "--all", "BlogPost"]);
 
-    const featureDir = path.join(
-      testDir,
-      "src",
-      "app",
-      "features",
-      "blogPost",
-    );
+    const featureDir = path.join(testDir, "src", "app", "features", "blogPost");
 
     const files = await fs.readdir(featureDir);
     expect(files).toContain("index.ts");
@@ -63,13 +57,7 @@ describe("CreateFeatureCommand", () => {
       "Product",
     ]);
 
-    const featureDir = path.join(
-      testDir,
-      "src",
-      "app",
-      "features",
-      "product",
-    );
+    const featureDir = path.join(testDir, "src", "app", "features", "product");
 
     const files = await fs.readdir(featureDir);
     expect(files).toContain("index.ts");
@@ -115,13 +103,7 @@ describe("CreateFeatureCommand", () => {
   test("controller template should include correct route name", async () => {
     await runCommand(["create", "feature", "--controller", "BlogPost"]);
 
-    const featureDir = path.join(
-      testDir,
-      "src",
-      "app",
-      "features",
-      "blogPost",
-    );
+    const featureDir = path.join(testDir, "src", "app", "features", "blogPost");
     const controllerContent = await fs.readFile(
       path.join(featureDir, "BlogPostController.ts"),
       "utf-8",
@@ -139,13 +121,7 @@ describe("CreateFeatureCommand", () => {
       "Invoice",
     ]);
 
-    const featureDir = path.join(
-      testDir,
-      "src",
-      "app",
-      "features",
-      "invoice",
-    );
+    const featureDir = path.join(testDir, "src", "app", "features", "invoice");
     const indexContent = await fs.readFile(
       path.join(featureDir, "index.ts"),
       "utf-8",
@@ -172,7 +148,7 @@ describe("CreateFeatureCommand", () => {
     );
     expect(routesContent).toContain("PaymentController");
     expect(routesContent).toContain(
-      `import { PaymentController } from "./app/features/payment/PaymentController"`,
+      `import { PaymentController } from "@/app/features/payment/PaymentController"`,
     );
     expect(routesContent).toContain("router.addController(PaymentController)");
   });
@@ -194,7 +170,7 @@ describe("CreateFeatureCommand", () => {
     );
     expect(modelsIndexContent).toContain("CategoryModel");
     expect(modelsIndexContent).toContain(
-      `export * from "../features/category/CategoryModel"`,
+      `export * from "@/app/features/category/CategoryModel"`,
     );
   });
 
@@ -215,7 +191,7 @@ describe("CreateFeatureCommand", () => {
     );
     expect(queuesContent).toContain("NotificationQueue");
     expect(queuesContent).toContain(
-      `import { NotificationQueue } from "../features/notification/NotificationQueue"`,
+      `import { NotificationQueue } from "@/app/features/notification/NotificationQueue"`,
     );
     expect(queuesContent).toContain("NotificationQueue.listen()");
   });

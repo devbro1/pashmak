@@ -1,8 +1,8 @@
-import { {{className}}Model } from "./{{className}}Model";
+import { {{className}}Model } from "@/app/features/{{classNameLower}}/{{className}}Model";
 
 export class {{className}}Repository {
-  async findAll(): Promise<{{className}}Model[]> {
-    return await {{className}}Model.all();
+  async getQuery() {
+    return {{className}}Model.getQuery();
   }
 
   async findById(id: string): Promise<{{className}}Model | null> {
