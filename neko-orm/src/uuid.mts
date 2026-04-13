@@ -1,4 +1,4 @@
-import { randomBytes } from 'crypto';
+import { randomBytes, randomUUID } from 'crypto';
 
 /**
  * UUID type alias for string-based UUID values.
@@ -41,7 +41,7 @@ export function generateUUIDv7(): UUID {
  * @returns A UUID v4 string
  */
 export function generateUUIDv4(): UUID {
-  return crypto.randomUUID();
+  return randomUUID();
 }
 
 /**

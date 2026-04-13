@@ -103,4 +103,3 @@ describe('UUID support', () => {
     expect(event._uuid_primary_key).toBe(false);
   });
 });
-
