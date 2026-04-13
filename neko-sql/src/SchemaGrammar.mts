@@ -135,6 +135,10 @@ export class SchemaGrammar {
 
     if (column.properties.default !== null) {
       rc.push('default ' + this.escape(column.properties.default));
+    } else if (column.properties.uuidDefault) {
+      // PostgreSQL: gen_random_uuid() is built-in since pg 13, or via pgcrypto extension.
+      // For UUID v7, install pg_uuidv7 extension and override the default to uuid_generate_v7().
+      rc.push('default gen_random_uuid()');
     }
 
     return rc.join(' ');

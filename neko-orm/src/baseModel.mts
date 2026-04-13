@@ -5,7 +5,6 @@ import pluralize from 'pluralize';
 import { snakeCase } from 'change-case-all';
 import { GlobalScope } from './GlobalScope.mjs';
 import { LocalScopeQuery } from './LocalScopeQuery.mjs';
-import { generateUUID } from './uuid.mjs';
 
 export type saveObjectOptions = {
   updateTimestamps: boolean;
@@ -143,19 +142,9 @@ export class BaseModel {
       }
       await q.update(params);
     } else if (this._incrementing_primary_keys) {
-      if (this._uuid_primary_key) {
-        for (const key of this._primary_keys) {
-          if (!this[key]) {
-            this[key] = generateUUID();
-          }
-          params[key] = this[key];
-        }
-        await q.insert(params);
-      } else {
-        result = await q.insertGetId(params, { primaryKey: this._primary_keys });
-        for (const key of this._primary_keys) {
-          this[key] = result[0][key];
-        }
+      result = await q.insertGetId(params, { primaryKey: this._primary_keys });
+      for (const key of this._primary_keys) {
+        this[key] = result[0][key];
       }
     } else {
       for (const key of this._primary_keys) {

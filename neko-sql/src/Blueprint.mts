@@ -22,6 +22,8 @@ export type ColumnPropertiesType = {
   nullable: boolean;
   unique: boolean;
   default: Parameter;
+  /** When true, the grammar will add a DB-level UUID generation function as the DEFAULT */
+  uuidDefault: boolean;
 };
 export class Column {
   columnName: string = '';
@@ -31,6 +33,7 @@ export class Column {
     nullable: false,
     unique: false,
     default: null,
+    uuidDefault: false,
   };
 
   constructor(columnName: string, type: ColumnPropertiesType['type']) {
@@ -197,6 +200,7 @@ export class Blueprint {
   id(options: { uuid?: boolean } = {}) {
     if (options.uuid) {
       const rc = new Column('id', 'uuid');
+      rc.properties.uuidDefault = true;
       this.columns.push(rc);
       this.primaryKeys.push('id');
       return rc;

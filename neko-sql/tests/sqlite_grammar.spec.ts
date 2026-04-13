@@ -14,6 +14,7 @@ describe('SQLite Schema Grammar', () => {
       table.string('name');
     });
 
+    // SQLite has no native UUID function so no DEFAULT is added
     expect(fakeConnection.getLastSql().sql).toBe(
       'create table users (id TEXT not null, name varchar(255) not null,primary key (id))'
     );

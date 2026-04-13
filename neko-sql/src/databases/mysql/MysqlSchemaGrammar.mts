@@ -51,6 +51,9 @@ export class MysqlSchemaGrammar extends SchemaGrammar {
 
     if (column.properties.default !== null) {
       rc.push('default ' + this.escape(column.properties.default));
+    } else if (column.properties.uuidDefault) {
+      // MySQL: UUID() generates a UUID v1. Available in MySQL 8.0+.
+      rc.push('DEFAULT (UUID())');
     }
 
     return rc.join(' ');

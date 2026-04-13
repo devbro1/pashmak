@@ -112,8 +112,9 @@ describe('MySQL Schema Grammar', () => {
       table.string('name');
     });
 
+    // MySQL: DEFAULT (UUID()) is added automatically (MySQL 8.0+, generates UUID v1)
     expect(fakeConnection.getLastSql().sql).toBe(
-      'create table users (id CHAR(36) NOT NULL, name varchar(255) NOT NULL,primary key (id))'
+      'create table users (id CHAR(36) NOT NULL DEFAULT (UUID()), name varchar(255) NOT NULL,primary key (id))'
     );
   });
 
@@ -126,6 +127,7 @@ describe('MySQL Schema Grammar', () => {
       table.uuid('token');
     });
 
+    // Standalone uuid() column has no auto-default
     expect(fakeConnection.getLastSql().sql).toBe(
       'create table tokens (id INT AUTO_INCREMENT NOT NULL, token CHAR(36) NOT NULL,primary key (id))'
     );

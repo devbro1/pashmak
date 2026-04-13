@@ -69,8 +69,9 @@ describe('raw schemas', () => {
       table.string('name');
     });
 
+    // PostgreSQL: DEFAULT gen_random_uuid() is added automatically
     expect(fakeConnection.getLastSql().sql).toBe(
-      'create table users (id uuid not null, name varchar(255) not null,primary key (id))'
+      'create table users (id uuid not null default gen_random_uuid(), name varchar(255) not null,primary key (id))'
     );
   });
 
@@ -83,6 +84,7 @@ describe('raw schemas', () => {
       table.uuid('token');
     });
 
+    // Standalone uuid() column has no auto-default — user controls the value
     expect(fakeConnection.getLastSql().sql).toBe(
       'create table tokens (id serial not null, token uuid not null,primary key (id))'
     );

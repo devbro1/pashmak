@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest';
 import { Attribute, BaseModel } from '../../src';
-import { UUID, generateUUID, generateUUIDv4, generateUUIDv7 } from '../../src/uuid.mjs';
+import { UUID } from '../../src/uuid.mjs';
 import { FakeConnection } from './FakeConnection';
 
 describe('UUID support', () => {
-  test('generates UUID for primary key on save', async () => {
+  test('UUID primary key uses insertGetId (db-level generation)', async () => {
     const conn = new FakeConnection();
     BaseModel.setConnection(conn);
 
@@ -18,70 +18,45 @@ describe('UUID support', () => {
       declare title: string;
     }
 
-    // insert returns empty, refresh SELECT returns the row
-    conn.results.push([]);
-    conn.results.push([{ id: '018f1234-5678-7abc-8def-000000000000', title: 'Hello' }]);
+    // insertGetId returns the DB-generated UUID (e.g. via RETURNING id for PostgreSQL)
+    conn.results.push([{ id: '018f4e2a-b1c3-7d4e-8f5a-1234567890ab' }]);
+    // refresh() SELECT
+    conn.results.push([{ id: '018f4e2a-b1c3-7d4e-8f5a-1234567890ab', title: 'Hello' }]);
 
     const article = new Article({ title: 'Hello' });
     expect(article.id).toBeUndefined();
 
     await article.save();
 
-    // UUID should be set on the instance (after refresh it holds the mocked value)
-    expect(article.id).toBeDefined();
-    expect(typeof article.id).toBe('string');
-
-    // The INSERT query should include a UUID and not use RETURNING
+    // The INSERT query should NOT include the id (DB generates it)
     const insertSql = conn.sqls[0];
     expect(insertSql.sql).toContain('insert into articles');
-    expect(insertSql.sql).toContain('id');
-    expect(insertSql.sql).not.toContain('RETURNING');
-    // One of the INSERT bindings should be a UUID v7
-    const uuidBinding = insertSql.bindings.find(
-      (b) => typeof b === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-7/i.test(b)
-    );
-    expect(uuidBinding).toBeDefined();
-    expect(uuidBinding).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+    // id should NOT be in the insert bindings (DB DEFAULT generates it)
+    expect(insertSql.sql).not.toMatch(/insert into articles \( id/);
+    // The UUID returned by the DB should be set on the model (via insertGetId RETURNING)
+    expect(article.id).toBe('018f4e2a-b1c3-7d4e-8f5a-1234567890ab');
   });
 
-  test('uses provided UUID if already set', async () => {
-    const conn = new FakeConnection();
-    BaseModel.setConnection(conn);
-
-    class Widget extends BaseModel {
+  test('UUID primary key is flagged in _uuid_primary_key', () => {
+    class Post extends BaseModel {
       protected hasTimestamps = false;
 
       @Attribute({ primaryKey: true, incrementingPrimaryKey: true, uuid: true })
       declare id: UUID;
 
       @Attribute()
-      declare name: string;
+      declare title: string;
     }
 
-    const predefinedId = '12345678-1234-7aaa-8bbb-123456789abc';
-    // insert returns empty, refresh SELECT returns the row
-    conn.results.push([]);
-    conn.results.push([{ id: predefinedId, name: 'Widget A' }]);
-
-    const widget = new Widget({ id: predefinedId, name: 'Widget A' });
-    expect(widget.id).toBe(predefinedId);
-
-    await widget.save();
-
-    // Should keep the predefined UUID
-    expect(widget.id).toBe(predefinedId);
-    expect(conn.sqls[0].bindings).toContain(predefinedId);
+    const post = new Post();
+    expect(post._uuid_primary_key).toBe(true);
+    expect(post._uuid_fields).toContain('id');
   });
 
-  test('generateUUIDv7 produces valid v7 UUIDs', () => {
-    const v7 = generateUUIDv7();
-    expect(v7).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
-
-    const v4 = generateUUIDv4();
-    expect(v4).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
-
-    const uuid = generateUUID();
-    expect(uuid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+  test('UUID type alias', () => {
+    // UUID is just a string alias
+    const id: UUID = '018f4e2a-b1c3-7d4e-8f5a-1234567890ab';
+    expect(typeof id).toBe('string');
   });
 
   test('uuid non-primary-key field tracked in _uuid_fields', () => {
@@ -103,3 +78,4 @@ describe('UUID support', () => {
     expect(event._uuid_primary_key).toBe(false);
   });
 });
+
