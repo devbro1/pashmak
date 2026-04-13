@@ -1,6 +1,8 @@
 import { Expression } from './Expression.mjs';
 import { Query } from './Query.mjs';
 
+export type UUID = string;
+
 export type selectType = string;
 export type whereBasic = { joinCondition: JoinCondition; negateCondition: boolean };
 export type whereOp = { type: 'operation'; column: string; operation: string; value: Parameter };

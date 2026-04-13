@@ -59,4 +59,32 @@ describe('raw schemas', () => {
       `create table users (id serial not null, created_at timestamp with time zone not null default CURRENT_TIMESTAMP, updated_at timestamp with time zone not null default CURRENT_TIMESTAMP, role_id integer not null,primary key (id),FOREIGN KEY (role_id) references roles(id) on delete cascade on update cascade)`
     );
   });
+
+  test('uuid id column', async () => {
+    const fakeConnection = new FakeConnection();
+
+    const schema = new Schema(fakeConnection, new SchemaGrammar());
+    await schema.createTable('users', (table: Blueprint) => {
+      table.id({ uuid: true });
+      table.string('name');
+    });
+
+    expect(fakeConnection.getLastSql().sql).toBe(
+      'create table users (id uuid not null, name varchar(255) not null,primary key (id))'
+    );
+  });
+
+  test('uuid standalone column', async () => {
+    const fakeConnection = new FakeConnection();
+
+    const schema = new Schema(fakeConnection, new SchemaGrammar());
+    await schema.createTable('tokens', (table: Blueprint) => {
+      table.id();
+      table.uuid('token');
+    });
+
+    expect(fakeConnection.getLastSql().sql).toBe(
+      'create table tokens (id serial not null, token uuid not null,primary key (id))'
+    );
+  });
 });

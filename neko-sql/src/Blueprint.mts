@@ -16,7 +16,8 @@ export type ColumnPropertiesType = {
     | 'serial'
     | 'json'
     | 'jsonb'
-    | 'raw';
+    | 'raw'
+    | 'uuid';
   length: number;
   nullable: boolean;
   unique: boolean;
@@ -193,10 +194,22 @@ export class Blueprint {
     return rc;
   }
 
-  id() {
+  id(options: { uuid?: boolean } = {}) {
+    if (options.uuid) {
+      const rc = new Column('id', 'uuid');
+      this.columns.push(rc);
+      this.primaryKeys.push('id');
+      return rc;
+    }
     const rc = new Column('id', 'serial');
     this.columns.push(rc);
     this.primaryKeys.push('id');
+    return rc;
+  }
+
+  uuid(columnName: string) {
+    const rc = new Column(columnName, 'uuid');
+    this.columns.push(rc);
     return rc;
   }
 

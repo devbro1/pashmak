@@ -364,7 +364,9 @@ await schema.dropTable('users');
 ### Available Column Types
 
 ```typescript
-table.id(); // Auto-incrementing ID
+table.id(); // Auto-incrementing integer ID
+table.id({ uuid: true }); // UUID primary key (v7 time-ordered)
+table.uuid('column'); // UUID column
 table.integer('column'); // Integer
 table.bigInteger('column'); // Big integer
 table.string('column', 255); // VARCHAR
@@ -384,6 +386,32 @@ column.default(value); // Set default value
 column.unique(); // Add unique constraint
 column.unsigned(); // Unsigned (for numbers)
 column.primary(); // Set as primary key
+```
+
+### UUID Column Type
+
+The `uuid` column type maps to the most appropriate native type per database:
+
+| Database   | SQL Type  |
+|------------|-----------|
+| PostgreSQL | `uuid`    |
+| MySQL      | `CHAR(36)`|
+| SQLite     | `TEXT`    |
+
+```typescript
+// UUID primary key
+await schema.createTable('users', (table) => {
+  table.id({ uuid: true }); // creates a uuid primary key column
+  table.string('name');
+  table.timestamps();
+});
+
+// Standalone UUID column
+await schema.createTable('events', (table) => {
+  table.id();
+  table.uuid('correlation_id');
+  table.string('name');
+});
 ```
 
 ## Transactions

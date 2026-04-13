@@ -111,6 +111,12 @@ await schema.createTable("products", (table) => {
   // Auto-increment ID
   table.id();
 
+  // UUID primary key (recommended for distributed systems)
+  // table.id({ uuid: true });
+
+  // UUID column (standalone)
+  table.uuid("external_id");
+
   // String types
   table.string("name", 255); // VARCHAR(255)
   table.text("description"); // TEXT
@@ -140,6 +146,24 @@ await schema.createTable("products", (table) => {
 
   // raw, whatever custom column you want to create
   table.raw("area GEOGRAPHY(POLYGON, 4326)");
+});
+```
+
+### UUID Primary Keys
+
+Use `table.id({ uuid: true })` to create a UUID-based primary key. The underlying column type depends on the database:
+
+| Database   | Column Type |
+|------------|-------------|
+| PostgreSQL | `uuid`      |
+| MySQL      | `CHAR(36)`  |
+| SQLite     | `TEXT`      |
+
+```typescript
+await schema.createTable("posts", (table) => {
+  table.id({ uuid: true }); // UUID primary key
+  table.string("title");
+  table.timestamps();
 });
 ```
 

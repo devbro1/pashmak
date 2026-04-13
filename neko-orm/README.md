@@ -127,6 +127,10 @@ export class Product extends BaseModel {
   @Attribute({ primaryKey: true, incrementingPrimaryKey: true })
   declare id: number;
 
+  // UUID primary key (auto-generated as UUID v7 on first save)
+  @Attribute({ primaryKey: true, incrementingPrimaryKey: true, uuid: true })
+  declare id: UUID;
+
   // Required field
   @Attribute({ required: true })
   declare name: string;
@@ -143,6 +147,35 @@ export class Product extends BaseModel {
   @Attribute({ columnName: 'is_active' })
   declare active: boolean;
 }
+```
+
+### UUID Primary Keys
+
+Models can use UUID primary keys instead of auto-incrementing integers. When a UUID primary key model is saved for the first time, a UUID v7 (time-ordered) is automatically generated in the application layer.
+
+```ts
+import { BaseModel, Attribute, UUID } from '@devbro/neko-orm';
+
+export class Post extends BaseModel {
+  protected tableName = 'posts';
+
+  @Attribute({ primaryKey: true, incrementingPrimaryKey: true, uuid: true })
+  declare id: UUID;
+
+  @Attribute()
+  declare title: string;
+}
+
+// UUID is automatically generated on first save
+const post = await Post.create({ title: 'Hello World' });
+console.log(post.id); // e.g. '018f4e2a-b1c3-7d4e-8f5a-1234567890ab'
+```
+
+You can also set the UUID explicitly before saving:
+
+```ts
+const post = new Post({ id: '018f4e2a-b1c3-7d4e-8f5a-1234567890ab', title: 'Custom ID' });
+await post.save(); // Uses the provided UUID
 ```
 
 ## CRUD Operations

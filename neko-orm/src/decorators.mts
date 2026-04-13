@@ -11,6 +11,7 @@ export function castDbDate(value: Date): string {
 type AttributeOptions = {
   primaryKey?: boolean;
   incrementingPrimaryKey?: boolean;
+  uuid?: boolean;
   caster?: Function;
   mutator?: Function;
   setter?: Function;
@@ -25,6 +26,14 @@ export function Attribute(options: AttributeOptions = {}) {
       target._primary_keys = [...(target._primary_keys || []), propertyKey];
       target._incrementing_primary_keys =
         target._incrementing_primary_keys ?? options.incrementingPrimaryKey ?? true;
+
+      if (options.uuid === true) {
+        target._uuid_primary_key = true;
+      }
+    }
+
+    if (options.uuid === true) {
+      target._uuid_fields = [...(target._uuid_fields || []), propertyKey];
     }
 
     Object.defineProperty(target, propertyKey, {

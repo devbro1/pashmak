@@ -36,6 +36,33 @@ every attribute that comes from database must get a @Attribute() decorator. It w
 
 every model will need a unique identified that you mark using `primaryKey:true`. If the value of your primary key is auto-calculated in the database during insert, then `incrementingPrimaryKey: true` will let model know to get the newly generated id after create.
 
+### UUID Primary Keys
+
+You can use UUID as a primary key instead of an auto-incrementing integer. When `uuid: true` is set, a UUID v7 (time-ordered) is automatically generated before the first insert.
+
+```typescript
+import { BaseModel, Attribute, UUID } from "@devbro/pashmak/orm";
+
+export class Post extends BaseModel {
+  @Attribute({ primaryKey: true, incrementingPrimaryKey: true, uuid: true })
+  declare id: UUID;
+
+  @Attribute()
+  declare title: string;
+}
+
+// UUID is auto-generated on first save
+const post = await Post.create({ title: 'Hello World' });
+console.log(post.id); // e.g. '018f4e2a-b1c3-7d4e-8f5a-1234567890ab'
+```
+
+You can also provide your own UUID:
+
+```typescript
+const post = new Post({ id: '018f4e2a-b1c3-7d4e-8f5a-1234567890ab', title: 'Custom ID' });
+await post.save();
+```
+
 ## Default Value
 
 If you need to set default value for an attribute, you will need to do so through @Attribute decorator. If you assign default value directly, then expect unexpected behavior where default value overrides actual value during model constructor.

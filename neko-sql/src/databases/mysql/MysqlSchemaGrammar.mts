@@ -31,6 +31,8 @@ export class MysqlSchemaGrammar extends SchemaGrammar {
       rc.push('json');
     } else if (column.properties.type === 'jsonb') {
       rc.push('jsonb');
+    } else if (column.properties.type === 'uuid') {
+      rc.push('CHAR(36)');
     } else if (column.properties.type === 'raw') {
       return column.columnName;
     } else {
