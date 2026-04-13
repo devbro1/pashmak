@@ -1,4 +1,3 @@
-import { TestQueue } from "../features/test/TestQueue";
 import { queue } from "@devbro/pashmak/facades";
 
 export function registerQueueListeners() {
