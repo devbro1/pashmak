@@ -19,6 +19,7 @@
     "skipLibCheck": true,
     "baseUrl": "./src",
     "paths": {
+      "app/*": ["./app/*"],
       "@/*": ["./*"]
     }
   }

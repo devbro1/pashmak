@@ -1,14 +1,9 @@
-import * as yup from "yup";
-import { z } from "zod";
 import { ctx } from "@devbro/pashmak/context";
 import { Request, createParamDecorator } from "@devbro/pashmak/router";
+import * as yup from "yup";
 
 export function ValidatedRequest(
-  validationRules:
-    | yup.ObjectSchema<any>
-    | (() => yup.ObjectSchema<any>)
-    | z.ZodType<any>
-    | (() => z.ZodType<any>),
+  validationRules: yup.ObjectSchema<any> | (() => yup.ObjectSchema<any>),
 ): ParameterDecorator {
   return createParamDecorator(async () => {
     const schema =
@@ -17,12 +12,7 @@ export function ValidatedRequest(
         : validationRules;
     const requestBody = ctx().get<Request>("request").body;
 
-    // Check if it's a Zod schema by checking for parse method
-    if ("parse" in schema && typeof schema.parse === "function") {
-      return await schema.parseAsync(requestBody);
-    }
-
-    // Otherwise, treat it as Yup schema
+    // treat it as Yup schema
     const rc = await (schema as yup.ObjectSchema<any>)
       .noUnknown()
       .validate(requestBody, { abortEarly: false });

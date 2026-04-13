@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import { config, loadConfigData } from "@devbro/pashmak/config";
-import * as config_data from "./config/default.mts";
+import * as config_data from "./config/default.mjs";
 await config.load(loadConfigData(config_data));
 
 import { httpServer, logger } from "@devbro/pashmak/facades";

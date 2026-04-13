@@ -15,28 +15,8 @@ scheduler().setContextWrapper(
 
 scheduler()
   .call(async () => {
-    logger().info("Hello World");
-    const d = db();
-    const r = await d.runQuery({
-      sql: "select * from users",
-      parts: [],
-      bindings: [],
-    });
-    logger().info({ msg: "query result", data: r });
+    logger().info("scheduled Hello meow World");
   })
   .setCronTime("* * * * *")
-  .setRunOnStart(true);
-
-scheduler()
-  .call(async () => {
-    logger().info("Hello World2");
-    const d = db();
-    const r = await d.runQuery({
-      sql: "select * from usersQWEQWE",
-      parts: [],
-      bindings: [],
-    });
-  })
-  .setName("bad cron job")
-  .setCronTime("* * * * *")
+  .setName("hello world cron job")
   .setRunOnStart(true);
