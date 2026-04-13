@@ -31,8 +31,8 @@ import {
   FTPStorageProvider,
   SFTPStorageProvider,
 } from "@devbro/neko-storage";
-import { MultiCache } from "./cache/MultiCache.mts";
-import { cache } from "./facades.mts";
+import { MultiCache } from "./cache/MultiCache.mjs";
+import { cache } from "./facades.mjs";
 
 export class FlexibleFactory<T> {
   registry: Map<string, any> = new Map();

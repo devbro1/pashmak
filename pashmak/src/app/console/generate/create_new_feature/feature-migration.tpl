@@ -1,0 +1,15 @@
+import { Migration } from '@devbro/pashmak/sql';
+import { Schema, Blueprint } from "@devbro/pashmak/sql";
+
+export default class Create{{className}}Table extends Migration {
+  async up(schema: Schema) {
+    await schema.createTable("{{tableName}}", (table: Blueprint) => {
+      table.id();
+      table.timestamps();
+    });
+  }
+
+  async down(schema: Schema) {
+    await schema.dropTableIfExists("{{tableName}}");
+  }
+}

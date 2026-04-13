@@ -1,2 +1,1 @@
-// export * from "./YourFirstCommand";
-export {};
+export * from "./YourFirstCommand";

@@ -1,11 +1,23 @@
 import { ctxSafe } from "@devbro/pashmak/context";
-import { LogMessage } from "@devbro/pashmak/logger";
 
 export default {
-  level: process.env.NODE_ENV === "test" ? "silent" : "info",
-  extrasFunction: (message: LogMessage) => {
-    let requestId = ctxSafe()?.get("requestId");
-    requestId && (message.requestId = requestId);
-    return message;
+  default: {
+    level: "info",
+    extrasFunction: (message: any) => {
+      let requestId = ctxSafe()?.get("requestId");
+      requestId && (message.requestId = requestId);
+      return message;
+    },
+  },
+};
+
+export const $test = {
+  default: {
+    level: "silent",
+    extrasFunction: (message: any) => {
+      let requestId = ctxSafe()?.get("requestId");
+      requestId && (message.requestId = requestId);
+      return message;
+    },
   },
 };

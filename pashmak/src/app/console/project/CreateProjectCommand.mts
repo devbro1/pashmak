@@ -204,6 +204,7 @@ export class CreateProjectCommand extends Command {
     } else if (this.executor === "tsx") {
       packageJson.scripts.dev =
         "tsx --watch -r tsconfig-paths/register src/index.ts start --all | npx pino-pretty";
+      packageJson.scripts.cli = "tsx -r tsconfig-paths/register src/index.ts";
       packageJson.scripts.start = "tsx dist/index.js";
       packageJson.scripts.build = "tsc";
       packageJson.scripts.test = "vitest";
