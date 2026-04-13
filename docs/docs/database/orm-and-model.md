@@ -202,6 +202,55 @@ await user.save();
 console.log(user.isDirty()); // false - changes have been saved
 ```
 
+### isClean()
+
+The `isClean()` method is the inverse of `isDirty()`. It returns `true` when no attributes have been modified since the last save/create/reload.
+
+**Usage:**
+
+```ts
+// Check if nothing has been modified
+if (user.isClean()) {
+  console.log("No unsaved changes");
+}
+
+// Check if a specific attribute has NOT been modified
+if (user.isClean("email")) {
+  console.log("Email is unchanged");
+}
+
+// Check if all of the given attributes are unchanged
+if (user.isClean(["email", "username"])) {
+  console.log("Both email and username are unchanged");
+}
+```
+
+**Parameters:**
+
+- `attribute` (optional): Can be:
+  - `undefined` - checks if no attribute is dirty
+  - `string` - checks if a specific attribute is clean
+  - `string[]` - checks if none of the specified attributes are dirty
+
+**Returns:**
+
+- `boolean` - `true` if the specified attribute(s) have NOT been modified, `false` otherwise
+
+**Example:**
+
+```ts
+let user = await User.find(123);
+console.log(user.isClean()); // true - no changes yet
+
+user.username = "newusername";
+console.log(user.isClean()); // false - has unsaved changes
+console.log(user.isClean("username")); // false - username was changed
+console.log(user.isClean("email")); // true - email was not changed
+
+await user.save();
+console.log(user.isClean()); // true - changes have been saved
+```
+
 ### `created_at` and `updated_at` timestamps
 
 every model comes with standard `created_at` and `updated_at` fields. you can use these fields to track when they were created and updated last.
