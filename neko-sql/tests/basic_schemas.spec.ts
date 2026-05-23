@@ -15,7 +15,7 @@ describe('raw schemas', () => {
   test('basic schema to create a table', async () => {
     const fakeConnection = new FakeConnection();
 
-    const schema = new Schema(fakeConnection, new SchemaGrammar());
+    const schema = new Schema(fakeConnection, new PostgresqlSchemaGrammar());
     await schema.createTable('users', (table: Blueprint) => {
       table.id();
       table.timestamps();
@@ -47,7 +47,7 @@ describe('raw schemas', () => {
   test('foreign key', async () => {
     const fakeConnection = new FakeConnection();
 
-    const schema = new Schema(fakeConnection, new SchemaGrammar());
+    const schema = new Schema(fakeConnection, new PostgresqlSchemaGrammar());
     await schema.createTable('users', (table: Blueprint) => {
       table.id();
       table.timestamps();
@@ -58,5 +58,42 @@ describe('raw schemas', () => {
     expect(fakeConnection.getLastSql().sql).toBe(
       `create table users (id serial not null, created_at timestamp with time zone not null default CURRENT_TIMESTAMP, updated_at timestamp with time zone not null default CURRENT_TIMESTAMP, role_id integer not null,primary key (id),FOREIGN KEY (role_id) references roles(id) on delete cascade on update cascade)`
     );
+  });
+
+  test('uuid column type', async () => {
+    const fakeConnection = new FakeConnection();
+    await fakeConnection.getSchema().createTable('users', (table: Blueprint) => {
+      table.uuid('external_id').default(fakeConnection.getSchemaGrammar().getDefaultUuid());
+    });
+    expect(fakeConnection.getLastSql().sql).toBe(
+      'create table users (external_id uuid not null default gen_random_uuid())'
+    );
+  });
+
+  test('uuid column nullable', async () => {
+    const fakeConnection = new FakeConnection();
+    const schema = new Schema(fakeConnection, new PostgresqlSchemaGrammar());
+    await schema.createTable('users', (table: Blueprint) => {
+      table.uuid('external_id').nullable();
+    });
+    expect(fakeConnection.getLastSql().sql).toBe('create table users (external_id uuid null)');
+  });
+
+  test('uuid column with getDefaultUuid()', async () => {
+    const grammar = new PostgresqlSchemaGrammar();
+    const fakeConnection = new FakeConnection();
+    const schema = new Schema(fakeConnection, grammar);
+    await schema.createTable('users', (table: Blueprint) => {
+      table.uuid('id').default(grammar.getDefaultUuid());
+      table.primary(['id']);
+    });
+    expect(fakeConnection.getLastSql().sql).toBe(
+      'create table users (id uuid not null default gen_random_uuid(),primary key (id))'
+    );
+  });
+
+  test('getDefaultUuid returns gen_random_uuid() expression', () => {
+    const grammar = new PostgresqlSchemaGrammar();
+    expect(grammar.getDefaultUuid().toCompiledSql().sql).toBe('gen_random_uuid()');
   });
 });

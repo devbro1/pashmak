@@ -33,7 +33,7 @@ export abstract class SchemaGrammar {
         return this.compileForeignKey(v);
       });
     }
-    sql += [columns, primaryKeys, ...foreignKeys].join(',') + ')';
+    sql += [columns, primaryKeys, ...foreignKeys].filter((s) => s !== '').join(',') + ')';
 
     const compiledSql = { sql, parts: [], bindings: [] };
 

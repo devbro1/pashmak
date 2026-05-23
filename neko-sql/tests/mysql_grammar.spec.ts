@@ -102,4 +102,42 @@ describe('MySQL Schema Grammar', () => {
       'alter table users add column phone varchar(255) NOT NULL'
     );
   });
+
+  test('should create table with uuid column', async () => {
+    const fakeConnection = new FakeConnection();
+    const schema = new Schema(fakeConnection, new MysqlSchemaGrammar());
+    await schema.createTable('users', (table: Blueprint) => {
+      table.uuid('external_id');
+    });
+    expect(fakeConnection.getLastSql().sql).toBe(
+      'create table users (external_id CHAR(36) NOT NULL)'
+    );
+  });
+
+  test('should create table with nullable uuid column', async () => {
+    const fakeConnection = new FakeConnection();
+    const schema = new Schema(fakeConnection, new MysqlSchemaGrammar());
+    await schema.createTable('users', (table: Blueprint) => {
+      table.uuid('external_id').nullable();
+    });
+    expect(fakeConnection.getLastSql().sql).toBe('create table users (external_id CHAR(36) null)');
+  });
+
+  test('should create table with uuid column using getDefaultUuid()', async () => {
+    const grammar = new MysqlSchemaGrammar();
+    const fakeConnection = new FakeConnection();
+    const schema = new Schema(fakeConnection, grammar);
+    await schema.createTable('users', (table: Blueprint) => {
+      table.uuid('id').default(grammar.getDefaultUuid());
+      table.primary(['id']);
+    });
+    expect(fakeConnection.getLastSql().sql).toBe(
+      'create table users (id CHAR(36) NOT NULL default UUID(),primary key (id))'
+    );
+  });
+
+  test('getDefaultUuid returns UUID() expression', () => {
+    const grammar = new MysqlSchemaGrammar();
+    expect(grammar.getDefaultUuid().toCompiledSql().sql).toBe('UUID()');
+  });
 });
