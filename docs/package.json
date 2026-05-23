@@ -1,6 +1,6 @@
 {
   "name": "docs",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "Official Pashmak documentation site - because even great code deserves great docs",
   "private": true,
   "scripts": {
