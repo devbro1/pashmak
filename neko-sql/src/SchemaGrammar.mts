@@ -2,7 +2,12 @@ import { Blueprint, Column, ForeignKeyConstraint, IndexConstraint } from './Blue
 import { Expression } from './Expression.mjs';
 import { CompiledSql, Parameter } from './types.mjs';
 
-export class SchemaGrammar {
+export abstract class SchemaGrammar {
+  /**
+   * Get the default expression for generating a UUID value. This is used when a column is defined with type 'uuid' and no default value is provided. The specific implementation of this method will depend on the database being used, as different databases have different functions for generating UUIDs inside database.
+   */
+  abstract getDefaultUuid(): Expression;
+
   toSql(blueprint: Blueprint): string {
     if (!blueprint.existingTable) {
       return this.compileCreateTable(blueprint).sql;
@@ -115,6 +120,8 @@ export class SchemaGrammar {
       rc.push('json');
     } else if (column.properties.type === 'jsonb') {
       rc.push('jsonb');
+    } else if (column.properties.type === 'uuid') {
+      rc.push('uuid');
     } else if (column.properties.type === 'raw') {
       return column.columnName;
     } else {
