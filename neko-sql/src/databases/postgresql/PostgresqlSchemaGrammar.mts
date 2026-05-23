@@ -25,4 +25,9 @@ export class PostgresqlSchemaGrammar extends SchemaGrammar {
   getDefaultUuid(): Expression {
     return new Expression('gen_random_uuid()');
   }
+
+  getDefaultUuidV7(): Expression {
+    // Requires the pg_uuidv7 extension: https://github.com/fboulnois/pg_uuidv7
+    return new Expression('uuid_generate_v7()');
+  }
 }

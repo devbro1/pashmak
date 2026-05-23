@@ -62,4 +62,18 @@ export class SqliteSchemaGrammar extends SchemaGrammar {
       "lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-' || '4' || substr(lower(hex(randomblob(2))),2) || '-' || substr('89ab',abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))),2) || '-' || lower(hex(randomblob(6)))"
     );
   }
+
+  getDefaultUuidV7(): Expression {
+    // UUID v7: 48-bit ms timestamp | 0111 (ver) | 12-bit random | 10 (var) | 62-bit random
+    // Uses unixepoch('subsec') (SQLite ≥3.38) for millisecond-precision Unix timestamp.
+    return new Expression(
+      'lower(' +
+        "printf('%08x', (cast(unixepoch('subsec') * 1000 as integer) >> 16) & 0xffffffff) || '-' || " +
+        "printf('%04x', cast(unixepoch('subsec') * 1000 as integer) & 0xffff) || '-' || " +
+        "'7' || substr(hex(randomblob(2)), 2) || '-' || " +
+        "substr('89ab', abs(random()) % 4 + 1, 1) || substr(hex(randomblob(2)), 2) || '-' || " +
+        'hex(randomblob(6))' +
+        ')'
+    );
+  }
 }

@@ -8,6 +8,11 @@ export abstract class SchemaGrammar {
    */
   abstract getDefaultUuid(): Expression;
 
+  /**
+   * Get the default expression for generating a UUID v7 value. UUID v7 is time-ordered (Unix timestamp in milliseconds as the most-significant bits), making it index-friendly. The specific implementation depends on the database.
+   */
+  abstract getDefaultUuidV7(): Expression;
+
   toSql(blueprint: Blueprint): string {
     if (!blueprint.existingTable) {
       return this.compileCreateTable(blueprint).sql;

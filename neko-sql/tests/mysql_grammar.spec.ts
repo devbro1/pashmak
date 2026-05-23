@@ -140,4 +140,38 @@ describe('MySQL Schema Grammar', () => {
     const grammar = new MysqlSchemaGrammar();
     expect(grammar.getDefaultUuid().toCompiledSql().sql).toBe('UUID()');
   });
+
+  test('should create table with uuid column using getDefaultUuidV7()', async () => {
+    const grammar = new MysqlSchemaGrammar();
+    const fakeConnection = new FakeConnection();
+    const schema = new Schema(fakeConnection, grammar);
+    await schema.createTable('users', (table: Blueprint) => {
+      table.uuid('id').default(grammar.getDefaultUuidV7());
+      table.primary(['id']);
+    });
+    const expectedDefault =
+      'LOWER(CONCAT(' +
+      "LPAD(HEX((FLOOR(UNIX_TIMESTAMP(NOW(3)) * 1000) >> 16) & 0xFFFFFFFF), 8, '0'), '-'," +
+      "LPAD(HEX(FLOOR(UNIX_TIMESTAMP(NOW(3)) * 1000) & 0xFFFF), 4, '0'), '-'," +
+      "CONCAT('7', LPAD(HEX(FLOOR(RAND() * 0xFFF)), 3, '0')), '-'," +
+      "CONCAT(ELT(1 + FLOOR(RAND() * 4), '8', '9', 'a', 'b'), LPAD(HEX(FLOOR(RAND() * 0xFFF)), 3, '0')), '-'," +
+      "LPAD(HEX(FLOOR(RAND() * 0xFFFFFFFFFFFF)), 12, '0')" +
+      '))';
+    expect(fakeConnection.getLastSql().sql).toBe(
+      `create table users (id CHAR(36) NOT NULL default ${expectedDefault},primary key (id))`
+    );
+  });
+
+  test('getDefaultUuidV7 returns correct MySQL expression', () => {
+    const grammar = new MysqlSchemaGrammar();
+    const expectedDefault =
+      'LOWER(CONCAT(' +
+      "LPAD(HEX((FLOOR(UNIX_TIMESTAMP(NOW(3)) * 1000) >> 16) & 0xFFFFFFFF), 8, '0'), '-'," +
+      "LPAD(HEX(FLOOR(UNIX_TIMESTAMP(NOW(3)) * 1000) & 0xFFFF), 4, '0'), '-'," +
+      "CONCAT('7', LPAD(HEX(FLOOR(RAND() * 0xFFF)), 3, '0')), '-'," +
+      "CONCAT(ELT(1 + FLOOR(RAND() * 4), '8', '9', 'a', 'b'), LPAD(HEX(FLOOR(RAND() * 0xFFF)), 3, '0')), '-'," +
+      "LPAD(HEX(FLOOR(RAND() * 0xFFFFFFFFFFFF)), 12, '0')" +
+      '))';
+    expect(grammar.getDefaultUuidV7().toCompiledSql().sql).toBe(expectedDefault);
+  });
 });

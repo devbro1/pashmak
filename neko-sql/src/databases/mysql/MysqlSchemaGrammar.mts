@@ -60,4 +60,18 @@ export class MysqlSchemaGrammar extends SchemaGrammar {
   getDefaultUuid(): Expression {
     return new Expression('UUID()');
   }
+
+  getDefaultUuidV7(): Expression {
+    // UUID v7: 48-bit ms timestamp | 0111 (ver) | 12-bit random | 10 (var) | 62-bit random
+    // Uses UNIX_TIMESTAMP(NOW(3)) for millisecond-precision Unix timestamp.
+    return new Expression(
+      'LOWER(CONCAT(' +
+        "LPAD(HEX((FLOOR(UNIX_TIMESTAMP(NOW(3)) * 1000) >> 16) & 0xFFFFFFFF), 8, '0'), '-'," +
+        "LPAD(HEX(FLOOR(UNIX_TIMESTAMP(NOW(3)) * 1000) & 0xFFFF), 4, '0'), '-'," +
+        "CONCAT('7', LPAD(HEX(FLOOR(RAND() * 0xFFF)), 3, '0')), '-'," +
+        "CONCAT(ELT(1 + FLOOR(RAND() * 4), '8', '9', 'a', 'b'), LPAD(HEX(FLOOR(RAND() * 0xFFF)), 3, '0')), '-'," +
+        "LPAD(HEX(FLOOR(RAND() * 0xFFFFFFFFFFFF)), 12, '0')" +
+        '))'
+    );
+  }
 }

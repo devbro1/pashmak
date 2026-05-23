@@ -96,4 +96,22 @@ describe('raw schemas', () => {
     const grammar = new PostgresqlSchemaGrammar();
     expect(grammar.getDefaultUuid().toCompiledSql().sql).toBe('gen_random_uuid()');
   });
+
+  test('uuid column with getDefaultUuidV7()', async () => {
+    const grammar = new PostgresqlSchemaGrammar();
+    const fakeConnection = new FakeConnection();
+    const schema = new Schema(fakeConnection, grammar);
+    await schema.createTable('users', (table: Blueprint) => {
+      table.uuid('id').default(grammar.getDefaultUuidV7());
+      table.primary(['id']);
+    });
+    expect(fakeConnection.getLastSql().sql).toBe(
+      'create table users (id uuid not null default uuid_generate_v7(),primary key (id))'
+    );
+  });
+
+  test('getDefaultUuidV7 returns uuid_generate_v7() expression', () => {
+    const grammar = new PostgresqlSchemaGrammar();
+    expect(grammar.getDefaultUuidV7().toCompiledSql().sql).toBe('uuid_generate_v7()');
+  });
 });
