@@ -8,6 +8,8 @@ export function castDbDate(value: Date): string {
   return format(value, 'yyyy-MM-dd HH:mm:ss.SSS');
 }
 
+export const uuidV4Default = () => crypto.randomUUID();
+
 type AttributeOptions = {
   primaryKey?: boolean;
   incrementingPrimaryKey?: boolean;
@@ -15,7 +17,7 @@ type AttributeOptions = {
   mutator?: Function;
   setter?: Function;
   getter?: Function;
-  default?: any;
+  default?: any | (() => any);
   guarded?: boolean;
 };
 

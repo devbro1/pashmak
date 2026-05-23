@@ -16,7 +16,7 @@ export class BaseModel {
   protected fillable: string[] = [];
   protected primaryKey: string[] = ['id'];
   declare _incrementing_primary_keys: boolean;
-  public id: number | undefined = undefined;
+  declare id: number | string | undefined;
   static connection: Connection | (() => Connection) | undefined;
   protected _exists: boolean = false;
   declare _guarded: string[];
@@ -48,7 +48,9 @@ export class BaseModel {
     this._dirties = new Set<string>();
 
     this.scopes = this.scopes || [];
-    this._attributes = { ...this._default_values };
+    this._attributes = Object.fromEntries(
+      Object.entries(this._default_values).map(([k, v]) => [k, typeof v === 'function' ? v() : v])
+    );
     this.fill(initialData);
   }
 
@@ -241,7 +243,7 @@ export class BaseModel {
    * const user = await User.find(1, { withGlobalScopes: false });
    */
   public static async find<T extends typeof BaseModel>(
-    id: number,
+    id: number | string,
     options = { withGlobalScopes: true }
   ): Promise<InstanceType<T> | undefined> {
     return this.findByPrimaryKey<T>({ id }, options);
@@ -304,7 +306,7 @@ export class BaseModel {
    * }
    */
   public static async findorFail<T extends typeof BaseModel>(
-    id: number,
+    id: number | string,
     options = { withGlobalScopes: true }
   ): Promise<InstanceType<T>> {
     const rc = await this.find<T>(id, options);
