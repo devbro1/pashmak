@@ -105,7 +105,6 @@ export class BaseModel {
 
     if (!this._incrementing_primary_keys || this._exists) {
       for (const key of this._primary_keys) {
-        // @ts-expect-error
         params[key] = this[key];
       }
     }
@@ -133,7 +132,6 @@ export class BaseModel {
     let result: any;
     if (this._exists) {
       for (const pkey of this._primary_keys) {
-        // @ts-expect-error
         q.whereOp(pkey, '=', this[pkey]);
       }
       await q.update(params);
@@ -167,7 +165,6 @@ export class BaseModel {
   public async delete() {
     const q: Query = await this.getQuery();
     for (const pkey of this._primary_keys) {
-      // @ts-expect-error
       q.whereOp(pkey, '=', this[pkey]);
     }
     await q.delete();
@@ -188,7 +185,6 @@ export class BaseModel {
   public async refresh() {
     const q: Query = await this.getQuery();
     for (const pkey of this._primary_keys) {
-      // @ts-expect-error
       q.whereOp(pkey, '=', this[pkey]);
     }
     q.limit(1);
@@ -209,7 +205,7 @@ export class BaseModel {
    */
   async fillAndMutate(r: object) {
     for (const k in r) {
-      // @ts-expect-error
+      // @ts-ignore
       this[k] = r[k];
 
       if (this[k] === null) {
@@ -465,7 +461,6 @@ export class BaseModel {
   public fill(data: Record<string, Parameter>) {
     for (const key of [...this._primary_keys, ...this._fillable]) {
       if (key in data) {
-        // @ts-expect-error
         this[key] = data[key];
       }
     }

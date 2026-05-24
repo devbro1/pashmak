@@ -1,11 +1,10 @@
-// @ts-expect-error - no type definitions available for sql-tokenizer
 import { sqlTokenizer } from 'sql-tokenizer';
 import type { CompiledSql } from './types.mjs';
 
 export class Expression {
   constructor(
     private sql = '',
-    private bindings = []
+    private bindings: any[] = []
   ) {}
 
   toCompiledSql(): CompiledSql {

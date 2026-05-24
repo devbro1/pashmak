@@ -1,5 +1,4 @@
 import { Arr } from '@devbro/neko-helper';
-// @ts-expect-error - no type definitions available for sql-tokenizer
 import { sqlTokenizer } from 'sql-tokenizer';
 import type { Query } from './Query.mjs';
 import type {

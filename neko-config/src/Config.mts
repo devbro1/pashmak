@@ -106,7 +106,6 @@ export class Config {
   ): K extends keyof ConfigKeys ? ConfigKeys[K] : any {
     try {
       const results = JSONPath({ path: key as string, json: this.configs });
-      // @ts-expect-error
       let rc = results.length > 0 ? results[0] : default_value;
       if (typeof rc === 'function') {
         rc = rc();

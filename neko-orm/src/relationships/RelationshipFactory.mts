@@ -54,7 +54,6 @@ export class RelationshipFactory {
     ) {
       const model_name = Case.snake(options2.targetModel.name);
       const t_model = new options2.targetModel();
-      // @ts-expect-error
       for (const key of t_model._primary_keys) {
         options2.sourceToTargetKeyAssociation[`${model_name}_${key}`] = `${key}`;
       }
