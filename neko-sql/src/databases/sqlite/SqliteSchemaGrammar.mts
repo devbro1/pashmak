@@ -1,4 +1,4 @@
-import { Column } from '../../Blueprint.mjs';
+import type { Column } from '../../Blueprint.mjs';
 import { Expression } from '../../Expression.mjs';
 import { SchemaGrammar } from '../../SchemaGrammar.mjs';
 

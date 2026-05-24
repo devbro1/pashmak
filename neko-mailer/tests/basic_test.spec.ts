@@ -1,5 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { Mailer, Mailable, MailerProvider, FunctionProvider } from "@/index";
+import {
+  FunctionProvider,
+  type Mailable,
+  Mailer,
+  type MailerProvider,
+} from "@/index";
 
 describe("basic tests", () => {
   test("basic testing", async () => {

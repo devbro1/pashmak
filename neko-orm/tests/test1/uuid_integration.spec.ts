@@ -1,6 +1,6 @@
-import { describe, expect, test, beforeAll, afterAll } from 'vitest';
-import { PostgresqlConnection, Connection } from '@devbro/neko-sql';
+import { type Connection, PostgresqlConnection } from '@devbro/neko-sql';
 import { execSync } from 'child_process';
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { Attribute, BaseModel, uuidV4Default } from '../../src';
 
 describe('uuid integration tests', () => {

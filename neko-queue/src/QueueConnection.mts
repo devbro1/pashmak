@@ -1,10 +1,13 @@
-import { QueueConnectionInterface, QueueMessageInterface } from './Interfaces.mjs';
-import { QueueTransportInterface } from './Interfaces.mjs';
 import { isClass, isFunction } from '@devbro/neko-helper';
+import type {
+  QueueConnectionInterface,
+  QueueMessageInterface,
+  QueueTransportInterface,
+} from './Interfaces.mjs';
 
-export class QueueConnection<M extends Record<string, QueueMessageInterface>>
-  implements QueueConnectionInterface<M>
-{
+export class QueueConnection<
+  M extends Record<string, QueueMessageInterface>,
+> implements QueueConnectionInterface<M> {
   constructor(private transport: QueueTransportInterface) {}
 
   async dispatch<C extends keyof M>(channel: C, message: M[C] | string): Promise<void> {
@@ -19,7 +22,7 @@ export class QueueConnection<M extends Record<string, QueueMessageInterface>>
       mmsg = JSON.stringify(message);
     }
 
-    let msg: string = typeof mmsg === 'string' ? mmsg : JSON.stringify(mmsg);
+    const msg: string = typeof mmsg === 'string' ? mmsg : JSON.stringify(mmsg);
     return await this.transport.dispatch(channel as string, msg);
   }
 
@@ -27,9 +30,9 @@ export class QueueConnection<M extends Record<string, QueueMessageInterface>>
     channel: C,
     message_processor: { new (...args: any[]): M[C] } | Function
   ) {
-    if (typeof isClass(message_processor)) {
+    if (isClass(message_processor)) {
       this.transport.registerListener(channel as string, async (message: string) => {
-        // @ts-ignore
+        // @ts-expect-error
         const msgObj = new message_processor();
         await msgObj.setMessage(message);
         if (!(await msgObj.validateMessage())) {

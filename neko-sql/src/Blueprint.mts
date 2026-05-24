@@ -1,6 +1,8 @@
 import { Expression } from './Expression.mjs';
-export { Column } from './Column.mjs';
+
 export type { ColumnPropertiesType } from './Column.mjs';
+export { Column } from './Column.mjs';
+
 import { Column } from './Column.mjs';
 
 // Index constraint for creating database indexes

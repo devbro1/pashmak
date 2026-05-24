@@ -1,5 +1,5 @@
 import { Middleware } from './Middleware.mjs';
-import { Request, Response } from './types.mjs';
+import type { Request, Response } from './types.mjs';
 
 export async function runNext(
   middlewares: Middleware[],

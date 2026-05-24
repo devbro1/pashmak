@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest';
+import type { Blueprint } from '../src/Blueprint.mjs';
 import { MysqlQueryGrammar } from '../src/databases/mysql/MysqlQueryGrammar.mjs';
 import { MysqlSchemaGrammar } from '../src/databases/mysql/MysqlSchemaGrammar.mjs';
 import { Query } from '../src/Query.mjs';
 import { Schema } from '../src/Schema.mjs';
-import { Blueprint } from '../src/Blueprint.mjs';
 import { FakeConnection } from './FakeConnection';
 
 describe('MySQL Query Grammar', () => {

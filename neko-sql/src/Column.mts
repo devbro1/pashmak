@@ -1,4 +1,4 @@
-import { Parameter } from './types.mjs';
+import type { Parameter } from './types.mjs';
 
 export type ColumnPropertiesType = {
   type:

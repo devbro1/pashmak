@@ -1,10 +1,10 @@
 import type * as BasicFtp from 'basic-ftp';
-import { Metadata, FTPStorageProviderConfig } from '../types.mjs';
-import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
-import { ReadStream } from 'fs';
-import Stream, { Readable, PassThrough } from 'stream';
+import type { ReadStream } from 'fs';
 import * as mime from 'mime-types';
+import Stream, { PassThrough, Readable } from 'stream';
 import { loadPackage } from '../helper.mjs';
+import type { StorageProviderInterface } from '../StorageProviderInterface.mjs';
+import type { FTPStorageProviderConfig, Metadata } from '../types.mjs';
 
 export class FTPStorageProvider implements StorageProviderInterface {
   private static ftpModule: typeof BasicFtp;

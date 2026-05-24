@@ -1,9 +1,9 @@
-import { Schema } from './Schema.mjs';
-import { Query } from './Query.mjs';
-import { CompiledSql } from './types.mjs';
-import { QueryGrammar } from './QueryGrammar.mjs';
-import { SchemaGrammar } from './SchemaGrammar.mjs';
-import { EventEmittor } from '@devbro/neko-helper';
+import type { EventEmittor } from '@devbro/neko-helper';
+import type { Query } from './Query.mjs';
+import type { QueryGrammar } from './QueryGrammar.mjs';
+import type { Schema } from './Schema.mjs';
+import type { SchemaGrammar } from './SchemaGrammar.mjs';
+import type { CompiledSql } from './types.mjs';
 
 export type connection_events = 'connect' | 'disconnect' | 'query' | 'error';
 export abstract class Connection implements EventEmittor<connection_events[]> {

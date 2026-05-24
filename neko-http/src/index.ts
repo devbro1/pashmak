@@ -1,11 +1,22 @@
-import { IncomingMessage, ServerResponse, createServer } from 'node:http';
-import { createServer as createServerSecured } from 'node:https';
+import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import {
-  createServer as createHttp2Server,
   createSecureServer as createHttp2SecureServer,
+  createServer as createHttp2Server,
 } from 'node:http2';
+import { createServer as createServerSecured } from 'node:https';
 import { Readable } from 'node:stream';
-import { CompiledRoute, HttpMethod, Route, Router } from '@devbro/neko-router';
+import { context_provider, ctx } from '@devbro/neko-context';
+import {
+  CompiledRoute,
+  type HttpMethod,
+  type Request,
+  Route,
+  type Router,
+} from '@devbro/neko-router';
+import formidable from 'formidable';
+// @ts-expect-error
+import { firstValues } from 'formidable/src/helpers/firstValues.js';
+import qs from 'qs';
 import {
   BunConfigurationError,
   BunNotAvailableError,
@@ -13,15 +24,11 @@ import {
   HttpNotFoundError,
   HttpUnsupportedMediaTypeError,
 } from './errors.mjs';
-import { Request } from '@devbro/neko-router';
-import { context_provider, ctx } from '@devbro/neko-context';
-import formidable from 'formidable';
-import qs from 'qs';
-// @ts-ignore
-import { firstValues } from 'formidable/src/helpers/firstValues.js';
+
 export * from './errors.mjs';
 
-const isBunRuntime = (): boolean => typeof (globalThis as Record<string, unknown>).Bun !== 'undefined';
+const isBunRuntime = (): boolean =>
+  typeof (globalThis as Record<string, unknown>).Bun !== 'undefined';
 
 export class HttpServer {
   private https_certs: undefined | { key: string; cert: string } = undefined;
@@ -46,9 +53,8 @@ export class HttpServer {
   }
 
   getHttpHanlder() {
-    const me = this;
     return (req: IncomingMessage, res: ServerResponse) => {
-      return me.handle(req, res);
+      return this.handle(req, res);
     };
   }
 
@@ -103,7 +109,7 @@ export class HttpServer {
             keepExtensions: true,
           });
 
-          let [fields, files] = await form.parse(req);
+          const [fields, files] = await form.parse(req);
           req.body = firstValues(form, fields);
           req.files = firstValues(form, files);
 
@@ -156,7 +162,7 @@ export class HttpServer {
     //remove duplicates
     methods = Array.from(new Set(methods));
 
-    let r: Route = new Route(
+    const r: Route = new Route(
       ['OPTIONS'],
       req.url || '/',
       async (req: Request, res: ServerResponse) => {
@@ -166,7 +172,7 @@ export class HttpServer {
       }
     );
 
-    let cr = new CompiledRoute(r, req, res, this.router?.getMiddlewares() || []);
+    const cr = new CompiledRoute(r, req, res, this.router?.getMiddlewares() || []);
 
     return cr;
   }
@@ -321,7 +327,9 @@ export class HttpServer {
       }
 
       const me = this;
-      const bunGlobal = globalThis as unknown as { Bun: { serve: (opts: Record<string, unknown>) => unknown } };
+      const bunGlobal = globalThis as unknown as {
+        Bun: { serve: (opts: Record<string, unknown>) => unknown };
+      };
       return bunGlobal.Bun.serve({
         port,
         tls: this.https_certs
@@ -333,7 +341,7 @@ export class HttpServer {
       });
     }
 
-    let server;
+    let server: any;
 
     if (this.options.useHttp2) {
       if (this.https_certs) {

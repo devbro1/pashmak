@@ -14,7 +14,7 @@ export class DefaultCommand extends Command {
   });
 
   async execute() {
-    // @ts-ignore
+    // @ts-expect-error
     const commandList = cli().registrations; //.definitions().map((def:any) => def.paths.map((path:any) => path.join(' '))).flat();
 
     const paths: string[] = [];

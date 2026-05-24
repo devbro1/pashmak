@@ -1,15 +1,14 @@
-import path from "path";
-import os from "os";
+import { type DotPaths, loadConfigData } from "@devbro/pashmak/config";
 import { getEnv } from "@devbro/pashmak/helper";
-import { dirname } from "path";
+import os from "os";
+import path, { dirname } from "path";
 import { fileURLToPath } from "url";
-import { loadConfigData, DotPaths } from "@devbro/pashmak/config";
+import * as caches_config from "./caches";
 import * as databases_config from "./databases";
-import * as storages_config from "./storages";
+import * as loggers_config from "./loggers";
 import * as mailers_config from "./mailers";
 import * as queues_config from "./queues";
-import * as caches_config from "./caches";
-import * as loggers_config from "./loggers";
+import * as storages_config from "./storages";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

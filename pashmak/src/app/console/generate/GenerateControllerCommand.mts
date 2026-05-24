@@ -1,12 +1,12 @@
-import { cli } from "../../../facades.mjs";
-import { Command, Option } from "clipanion";
-import { Case } from "change-case-all";
-import path from "path";
-import * as fs from "fs/promises";
 import { config } from "@devbro/neko-config";
+import { Case } from "change-case-all";
+import { Command, Option } from "clipanion";
+import * as fs from "fs/promises";
 import handlebars from "handlebars";
-import { fileURLToPath } from "url";
+import path from "path";
 import pluralize from "pluralize";
+import { fileURLToPath } from "url";
+import { cli } from "../../../facades.mjs";
 
 export class GenerateControllerCommand extends Command {
   static paths = [

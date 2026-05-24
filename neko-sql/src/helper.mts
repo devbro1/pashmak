@@ -7,7 +7,7 @@ export function loadPackage(name: string) {
   try {
     return req(name);
   } catch (error: any) {
-    // @ts-ignore
+    // @ts-expect-error
     if (Error.isError(error) && error.code === 'MODULE_NOT_FOUND') {
       error.message = `Package "${name}" is not installed. Please install proper db driver to use this database connection.`;
     }

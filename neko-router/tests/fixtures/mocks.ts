@@ -1,4 +1,4 @@
-import { IncomingMessage, ServerResponse } from 'http';
+import type { IncomingMessage, ServerResponse } from 'http';
 import { vi } from 'vitest';
 
 export function createMockResponse(): ServerResponse<IncomingMessage> & { body: string } {

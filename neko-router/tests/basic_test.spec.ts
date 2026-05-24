@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { Middleware, Router } from '../src';
-import { Request, Response } from '../src/types.mjs';
+import type { Request, Response } from '../src/types.mjs';
 
 class m1 extends Middleware {
   protected constructor(params: any) {
@@ -53,8 +53,8 @@ describe('Router tests', () => {
     );
 
     router.addRoute(['GET'], '/api/v1/dates', async (req: Request, res: Response) => {
-      let d1 = new Date('2023-10-01T00:00:00Z');
-      let d2 = new Date('2024-04-04T04:04:04Z');
+      const d1 = new Date('2023-10-01T00:00:00Z');
+      const d2 = new Date('2024-04-04T04:04:04Z');
       return {
         data: [d1, d2],
       };
@@ -63,9 +63,9 @@ describe('Router tests', () => {
     let req = { url: '/api/v1/countries', method: 'GET' } as Request;
     let resolved = router.resolve(req);
     expect(resolved).toBeDefined();
-    // @ts-ignore
+    // @ts-expect-error
     expect(Object.keys(resolved?.match(req) || {})).toEqual(['url', 'params']);
-    // @ts-ignore
+    // @ts-expect-error
     expect(await resolved.handler({}, {})).toBe('GET countries');
 
     resolved = router.resolve({ url: '/api/v1/countries/ABC', method: 'HEAD' } as Request);
@@ -73,7 +73,7 @@ describe('Router tests', () => {
 
     req = { url: '/api/v1/countries/ABC', method: 'GET' } as Request;
     resolved = router.resolve(req);
-    // @ts-ignore
+    // @ts-expect-error
     expect(await resolved.handler({ ...resolved.match(req) }, {})).toBe('GET PARAM countries ABC');
 
     resolved = router.resolve({ url: '/api/v1/jobs', method: 'GET' } as Request);

@@ -1,10 +1,10 @@
-import { describe, expect, test, beforeEach, afterAll } from 'vitest';
-import { Storage, LocalStorageProvider } from '../src/';
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { randomUUID } from 'crypto';
-import * as os from 'os';
 import { sleep } from '@devbro/neko-helper';
+import { randomUUID } from 'crypto';
+import * as fs from 'fs/promises';
+import * as os from 'os';
+import * as path from 'path';
+import { afterAll, beforeEach, describe, expect, test } from 'vitest';
+import { LocalStorageProvider, Storage } from '../src/';
 
 describe('LocalStorage', () => {
   const basePath = path.resolve(os.tmpdir(), `test-storage-${randomUUID()}`);

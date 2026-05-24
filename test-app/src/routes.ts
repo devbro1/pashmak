@@ -1,4 +1,3 @@
-import { Request, Response } from "@devbro/pashmak/router";
 import { router as routerFunc } from "@devbro/pashmak/facades";
 import { HelloController } from "./app/controllers/HelloController";
 import { loggerMiddleware } from "./middlewares";

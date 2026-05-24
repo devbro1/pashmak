@@ -1,5 +1,5 @@
-import { Expression } from './Expression.mjs';
-import { Query } from './Query.mjs';
+import type { Expression } from './Expression.mjs';
+import type { Query } from './Query.mjs';
 
 export type selectType = string;
 export type whereBasic = { joinCondition: JoinCondition; negateCondition: boolean };

@@ -1,6 +1,6 @@
-import { QueueTransportInterface } from '../Interfaces.mjs';
 import type * as AwsSqs from '@aws-sdk/client-sqs';
 import { loadPackage } from '../helper.mjs';
+import type { QueueTransportInterface } from '../Interfaces.mjs';
 
 /**
  * Configuration options for the SQS transport.
@@ -251,12 +251,13 @@ export class AwsSqsTransport implements QueueTransportInterface {
     listener: ListenerInfo,
     signal: AbortSignal
   ): Promise<void> {
-    let queueUrl: string = listener.queueUrl ?? (await this.ensureQueueUrl(channel));
-    let counter = 0;
+    const queueUrl: string = listener.queueUrl ?? (await this.ensureQueueUrl(channel));
+    const counter = 0;
 
     while (!signal.aborted && this.listening) {
       try {
-        const { ReceiveMessageCommand, DeleteMessageCommand, ChangeMessageVisibilityCommand } = AwsSqsTransport.sqsModule;
+        const { ReceiveMessageCommand, DeleteMessageCommand, ChangeMessageVisibilityCommand } =
+          AwsSqsTransport.sqsModule;
         const receiveCommand = new ReceiveMessageCommand({
           QueueUrl: queueUrl,
           MaxNumberOfMessages: this.config.maxNumberOfMessages,

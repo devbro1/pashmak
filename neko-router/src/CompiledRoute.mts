@@ -1,10 +1,9 @@
+import { isClass } from '@devbro/neko-helper';
 import { Stream } from 'stream';
 import { Middleware } from './Middleware.mjs';
 import { MiddlewareFactory } from './MiddlewareFactory.mjs';
-import { Route } from './Route.mjs';
-import { HandlerType, MiddlewareProvider } from './types.mjs';
-import { Request, Response } from './types.mjs';
-import { isClass } from '@devbro/neko-helper';
+import type { Route } from './Route.mjs';
+import type { HandlerType, MiddlewareProvider, Request, Response } from './types.mjs';
 
 export class CompiledRoute {
   constructor(
@@ -66,7 +65,7 @@ export class CompiledRoute {
 
       const result: Record<string, any> = {};
       for (const key in value) {
-        if (Object.prototype.hasOwnProperty.call(value, key)) {
+        if (Object.hasOwn(value, key)) {
           result[key] = traverse(value[key]);
         }
       }

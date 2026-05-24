@@ -1,4 +1,4 @@
-import { Schema } from './Schema.mjs';
+import type { Schema } from './Schema.mjs';
 
 export abstract class Migration {
   abstract up(schema: Schema): Promise<void>;

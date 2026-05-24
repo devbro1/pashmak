@@ -1,11 +1,14 @@
-import { Middleware } from "@devbro/neko-router";
-import { Request, Response } from "@devbro/neko-router";
-import { PostgresqlConnection, SqliteConnection, SqliteConfig } from "@devbro/neko-sql";
-import { PoolConfig } from "pg";
-import { Connection } from "@devbro/neko-sql";
-import { BaseModel } from "@devbro/neko-orm";
-import { ctx } from "@devbro/neko-context";
 import { config } from "@devbro/neko-config";
+import { ctx } from "@devbro/neko-context";
+import { BaseModel } from "@devbro/neko-orm";
+import { Middleware, type Request, type Response } from "@devbro/neko-router";
+import {
+  type Connection,
+  PostgresqlConnection,
+  type SqliteConfig,
+  SqliteConnection,
+} from "@devbro/neko-sql";
+import type { PoolConfig } from "pg";
 import { Global } from "./global.mjs";
 
 export class DatabaseServiceProvider extends Middleware {
@@ -14,8 +17,10 @@ export class DatabaseServiceProvider extends Middleware {
     res: Response,
     next: () => Promise<void>,
   ): Promise<void> {
-    const db_configs: Record<string, { provider: string; config: PoolConfig | SqliteConfig }> =
-      config.get("databases");
+    const db_configs: Record<
+      string,
+      { provider: string; config: PoolConfig | SqliteConfig }
+    > = config.get("databases");
 
     const conns = [];
     try {

@@ -1,20 +1,20 @@
-import { Query } from './Query.mjs';
-import {
-  Parameter,
+import { Arr } from '@devbro/neko-helper';
+// @ts-expect-error - no type definitions available for sql-tokenizer
+import { sqlTokenizer } from 'sql-tokenizer';
+import type { Query } from './Query.mjs';
+import type {
   CompiledSql,
+  havingType,
+  joinType,
+  Parameter,
   selectType,
+  whereNested,
   whereNull,
   whereOp,
-  whereType,
-  whereRaw,
-  havingType,
   whereOpColumn,
-  joinType,
-  whereNested,
+  whereRaw,
+  whereType,
 } from './types.mjs';
-// @ts-ignore - no type definitions available for sql-tokenizer
-import { sqlTokenizer } from 'sql-tokenizer';
-import { Arr } from '@devbro/neko-helper';
 
 function toUpperFirst(str: string) {
   return str.substring(0, 1).toUpperCase() + str.substring(1);
@@ -33,7 +33,7 @@ export abstract class QueryGrammar {
   ];
 
   toSql(query: Query): CompiledSql {
-    let rc = this.toSqlParts(query);
+    const rc = this.toSqlParts(query);
     rc.sql = this.joinArray(rc.parts);
     return rc;
   }
@@ -43,9 +43,9 @@ export abstract class QueryGrammar {
     let bindings: Parameter[] = [];
 
     for (const part of this.sqlParts) {
-      // @ts-ignore
+      // @ts-expect-error
       const funcName: keyof this = 'compile' + toUpperFirst(part);
-      // @ts-ignore
+      // @ts-expect-error
       const r = this[funcName](query.parts[part]);
       bindings = [...bindings, ...r.bindings];
       parts = [...parts, ...r.parts];
@@ -59,19 +59,19 @@ export abstract class QueryGrammar {
   }
 
   compileCount(query: Query): CompiledSql {
-    let sql = '';
+    const sql = '';
     let bindings: Parameter[] = [];
     let parts: (string | number)[] = [];
 
     for (const part of this.sqlParts) {
-      // @ts-ignore
+      // @ts-expect-error
       let parts2 = query.parts[part];
       if (part === 'select') {
         parts2 = ['count(*) as count'];
       }
-      // @ts-ignore
+      // @ts-expect-error
       const funcName: keyof this = 'compile' + toUpperFirst(part);
-      // @ts-ignore
+      // @ts-expect-error
       const r = this[funcName](parts2);
       bindings = [...bindings, ...r.bindings];
       parts = [...parts, ...r.parts];
@@ -110,7 +110,7 @@ export abstract class QueryGrammar {
   }
 
   compileTable(tableName: string): CompiledSql {
-    let parts = [];
+    const parts = [];
     if (tableName.length) {
       parts.push('from');
       parts.push(tableName);
@@ -120,12 +120,12 @@ export abstract class QueryGrammar {
   }
 
   compileJoin(joins: joinType[]): CompiledSql {
-    let sql = '';
+    const sql = '';
     let bindings: Parameter[] = [];
     let parts: (string | number)[] = [];
 
     for (const j of joins) {
-      let table = '';
+      const table = '';
       let table_bindings: any[] = [];
 
       parts.push(j.type);
@@ -167,7 +167,7 @@ export abstract class QueryGrammar {
         parts.push('not');
       }
       const funcName = 'compileWhere' + toUpperFirst(w.type);
-      // @ts-ignore
+      // @ts-expect-error
       const wh = this[funcName](w);
       sql += wh.sql;
       parts = parts.concat(wh.parts);
@@ -190,7 +190,7 @@ export abstract class QueryGrammar {
     const subQuery = w.query;
     let parts: (string | number)[] = [];
     const { sql, parts: parts2, bindings } = subQuery.grammar.compileWhere(subQuery.parts.where);
-    let sql2 = sql.replace(/^where /, '');
+    const sql2 = sql.replace(/^where /, '');
     parts2.shift();
     parts.push('(');
     parts = parts.concat(parts2);
@@ -250,7 +250,7 @@ export abstract class QueryGrammar {
 
   compileLimit(limit: number | null): CompiledSql {
     let rc = '';
-    let parts: (string | number)[] = [];
+    const parts: (string | number)[] = [];
     if (limit !== null) {
       rc = 'limit ' + limit;
       parts.push('limit');
@@ -262,7 +262,7 @@ export abstract class QueryGrammar {
 
   compileOffset(offset: number | null): CompiledSql {
     let rc = '';
-    let parts: (string | number)[] = [];
+    const parts: (string | number)[] = [];
     if (offset !== null) {
       rc = 'offset ' + offset;
       parts.push('offset');
@@ -370,7 +370,7 @@ export abstract class QueryGrammar {
     let parts: (string | number)[] = [];
     const bindings: Parameter[] = [];
 
-    let isql = this.compileInsert(query, data);
+    const isql = this.compileInsert(query, data);
     parts = isql.parts;
     bindings.push(...isql.bindings);
 
@@ -415,7 +415,7 @@ export abstract class QueryGrammar {
         parts.push('not');
       }
       const funcName = 'compileHaving' + toUpperFirst(w.type);
-      // @ts-ignore
+      // @ts-expect-error
       const wh = this[funcName](w);
       parts = parts.concat(wh.parts);
       sql += wh.sql;

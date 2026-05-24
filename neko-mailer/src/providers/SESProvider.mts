@@ -1,7 +1,7 @@
-import { Mailable } from "../Mailable.mjs";
-import { MailerProvider } from "../MailerProvider.mjs";
 import type * as AwsSes from "@aws-sdk/client-ses";
 import { loadPackage, prepareEmails } from "../helper.mjs";
+import type { Mailable } from "../Mailable.mjs";
+import type { MailerProvider } from "../MailerProvider.mjs";
 
 /**
  * Configuration options for the SESProvider.

@@ -1,11 +1,10 @@
-import { describe, expect, test, beforeAll, afterAll } from 'vitest';
-import { PostgresqlConnection } from '@devbro/neko-sql';
-import { Connection } from '@devbro/neko-sql';
-import { execSync } from 'child_process';
-import { Country, Job, Region, JobV2 } from '../fixtures/models';
-import { BaseModel } from '../../src';
-import { faker } from '@faker-js/faker';
 import { sleep } from '@devbro/neko-helper';
+import { type Connection, PostgresqlConnection } from '@devbro/neko-sql';
+import { faker } from '@faker-js/faker';
+import { execSync } from 'child_process';
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import { BaseModel } from '../../src';
+import { Country, Job, JobV2, Region } from '../fixtures/models';
 
 describe('raw queries', () => {
   let conn: Connection;
@@ -88,7 +87,7 @@ describe('raw queries', () => {
 
   test('time stamp testing', async () => {
     BaseModel.setConnection(() => conn);
-    let res = await conn.runQuery({
+    const res = await conn.runQuery({
       sql: 'SELECT MAX(region_id) as last_id FROM regions',
       bindings: [],
       parts: [],
@@ -99,7 +98,7 @@ describe('raw queries', () => {
       parts: [],
     });
 
-    let r1 = new Region({
+    const r1 = new Region({
       region_name: faker.location.state(),
     });
 
@@ -111,7 +110,7 @@ describe('raw queries', () => {
     expect(r1.created_at.toISOString()).toBe(r1.updated_at.toISOString());
     expect(r1.created_at.constructor.name).toBe('Date');
     expect(r1.updated_at.constructor.name).toBe('Date');
-    let first_created = r1.created_at.toISOString();
+    const first_created = r1.created_at.toISOString();
 
     await sleep(1500);
     await r1.save({ updateTimestamps: false });
@@ -128,10 +127,10 @@ describe('raw queries', () => {
   });
 
   test('default value', async () => {
-    let a = new JobV2();
+    const a = new JobV2();
     expect(a.max_salary).toBe(444);
 
-    let b = new JobV2({
+    const b = new JobV2({
       max_salary: 555,
     });
 

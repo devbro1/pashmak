@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GooglePubSubTransport } from '../../src/transports/GooglePubSubTransport.mjs';
 
 // Mock @google-cloud/pubsub

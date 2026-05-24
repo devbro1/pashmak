@@ -1,10 +1,10 @@
+import { PostgresqlSchemaGrammar, type QueryGrammar } from '../src';
 import { Connection } from '../src/Connection.mjs';
-import { Schema } from '../src/Schema.mjs';
-import { CompiledSql } from '../src/types.mjs';
-import { SchemaGrammar } from '../src/SchemaGrammar.mjs';
-import { Query } from '../src/Query.mjs';
 import { PostgresqlQueryGrammar } from '../src/databases/postgresql/PostgresqlQueryGrammar.mjs';
-import { PostgresqlSchemaGrammar, QueryGrammar } from '../src';
+import { Query } from '../src/Query.mjs';
+import { Schema } from '../src/Schema.mjs';
+import type { SchemaGrammar } from '../src/SchemaGrammar.mjs';
+import type { CompiledSql } from '../src/types.mjs';
 
 class FakeConnection extends Connection {
   last_sql: CompiledSql = { sql: '', bindings: [] };

@@ -359,20 +359,20 @@ export function deepClone<T = any>(obj: T, visited = new WeakMap()): T {
   }
 
   // Handle primitive
-  if(typeof obj === 'number' || typeof obj === 'string' || typeof obj === 'boolean') {
+  if (typeof obj === 'number' || typeof obj === 'string' || typeof obj === 'boolean') {
     return obj;
   }
 
-  if(typeof obj === 'function') {
+  if (typeof obj === 'function') {
     return obj;
   }
 
-  if(obj instanceof Promise) {
+  if (obj instanceof Promise) {
     return obj;
   }
 
-  if(typeof obj === 'symbol') {
-    // @ts-ignore
+  if (typeof obj === 'symbol') {
+    // @ts-expect-error
     return Symbol(obj.description);
   }
 
@@ -400,9 +400,9 @@ export function deepClone<T = any>(obj: T, visited = new WeakMap()): T {
   if (Object.prototype.toString.call(obj) === '[object Object]') {
     const objCopy: Record<string, any> = {};
     visited.set(obj as any, objCopy);
-    
+
     for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      if (Object.hasOwn(obj, key)) {
         const value = (obj as any)[key];
         objCopy[key] = deepClone(value, visited);
       }
@@ -411,9 +411,9 @@ export function deepClone<T = any>(obj: T, visited = new WeakMap()): T {
   }
 
   //clonable Objects
-  // @ts-ignore
-  if(typeof obj === 'object' && typeof obj?.clone === 'function') {
-    // @ts-ignore
+  // @ts-expect-error
+  if (typeof obj === 'object' && typeof obj?.clone === 'function') {
+    // @ts-expect-error
     return obj.clone();
   }
 
@@ -446,7 +446,7 @@ export function deepMerge(
   const result: Record<string, any> = deepClone(firstObj);
 
   for (const key in secondObj) {
-    if (!secondObj.hasOwnProperty(key)) {
+    if (!Object.hasOwn(secondObj, key)) {
       continue;
     }
     const secondValue = secondObj[key];
@@ -538,23 +538,24 @@ export async function evaluateAllNodes<T>(
   return rc;
 }
 
-
 /**
  * traverse an object and apply a function to all branches (objects and arrays)
- * @param obj object to be traversed 
+ * @param obj object to be traversed
  * @param func function to be applied to each branch
  * @returns traversed object
  */
-export async function evaluateAllBranches(obj: Record<string, any>, func: (node: any) => any): Promise<Record<string, any>> {
+export async function evaluateAllBranches(
+  obj: Record<string, any>,
+  func: (node: any) => any
+): Promise<Record<string, any>> {
   const rc: Record<string, any> = Array.isArray(obj) ? [] : {};
 
   for (const key in obj) {
     const value = obj[key];
 
-    if(value instanceof Promise) {
+    if (value instanceof Promise) {
       rc[key] = await func(await value);
-    }
-    else if (value !== null && (typeof value === 'object' || Array.isArray(value))) {
+    } else if (value !== null && (typeof value === 'object' || Array.isArray(value))) {
       rc[key] = await func(await evaluateAllBranches(value, func));
     } else {
       rc[key] = value;

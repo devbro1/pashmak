@@ -4,7 +4,7 @@ export default defineConfig([
   {
     entry: ["src/**/*.ts", "src/**/*.mts"],
     format: ["esm"], // Build for commonJS and ESmodules
-    outDir: 'dist/esm',
+    outDir: "dist/esm",
     dts: true, // Generate declaration file (.d.ts)
     splitting: false,
     sourcemap: true,
@@ -15,7 +15,7 @@ export default defineConfig([
   },
   {
     entry: ["src/**/*.ts", "src/**/*.mts"],
-    outDir: 'dist/cjs',
+    outDir: "dist/cjs",
     format: ["cjs"], // Build for commonJS and ESmodules
     dts: false, // Generate declaration file (.d.ts)
     splitting: false,

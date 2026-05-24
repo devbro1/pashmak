@@ -1,6 +1,6 @@
-import { Blueprint, Column, ForeignKeyConstraint, IndexConstraint } from './Blueprint.mjs';
+import type { Blueprint, Column, ForeignKeyConstraint, IndexConstraint } from './Blueprint.mjs';
 import { Expression } from './Expression.mjs';
-import { CompiledSql, Parameter } from './types.mjs';
+import type { CompiledSql, Parameter } from './types.mjs';
 
 export abstract class SchemaGrammar {
   /**

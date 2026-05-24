@@ -1,12 +1,19 @@
-import { Middleware, Request, Response } from "@devbro/neko-router";
-import { logger, db, cache } from "./facades.mjs";
-import { HttpTooManyRequestsError } from "@devbro/neko-http";
 import { config } from "@devbro/neko-config";
-import { Connection } from "@devbro/neko-sql";
-import { Global } from './global.mjs';
-import { ctx } from './context.mjs';
+import { HttpTooManyRequestsError } from "@devbro/neko-http";
 import { BaseModel } from "@devbro/neko-orm";
-import { MysqlConnection, PostgresqlConnection, SqliteConnection, SqliteConfig, PostgresqlConfig, MysqlConfig } from "@devbro/neko-sql";
+import { Middleware, type Request, type Response } from "@devbro/neko-router";
+import {
+  type Connection,
+  type MysqlConfig,
+  MysqlConnection,
+  type PostgresqlConfig,
+  PostgresqlConnection,
+  type SqliteConfig,
+  SqliteConnection,
+} from "@devbro/neko-sql";
+import { ctx } from "./context.mjs";
+import { cache, db, logger } from "./facades.mjs";
+import { Global } from "./global.mjs";
 
 export function cors(
   options: { allowedOrigins?: (string | RegExp)[] } = {},
@@ -100,7 +107,7 @@ export class RateLimiterMiddleware extends Middleware {
     if (RateLimiterMiddleware.singletonInstance) {
       return RateLimiterMiddleware.singletonInstance;
     }
-    let default_params: RateLimiterMiddlewareParams = {
+    const default_params: RateLimiterMiddlewareParams = {
       generateIdentifier: (req: Request) =>
         req.socket.remoteAddress || "unknown",
       maxRequests: 200,
@@ -108,9 +115,10 @@ export class RateLimiterMiddleware extends Middleware {
       windowCount: 4,
     };
     const merged_params = { ...default_params, ...params };
-    return (RateLimiterMiddleware.singletonInstance = new RateLimiterMiddleware(
+    RateLimiterMiddleware.singletonInstance = new RateLimiterMiddleware(
       merged_params,
-    ));
+    );
+    return RateLimiterMiddleware.singletonInstance;
   }
 
   constructor(private params: RateLimiterMiddlewareParams) {
@@ -122,10 +130,10 @@ export class RateLimiterMiddleware extends Middleware {
     res: Response,
     next: () => Promise<void>,
   ): Promise<void> {
-    let window = parseInt(
+    const window = parseInt(
       (Date.now() / 1000 / this.params.windowTimeSize).toString(),
     );
-    let key = `rate_limiter:${this.params.generateIdentifier(req)}:${window}`;
+    const key = `rate_limiter:${this.params.generateIdentifier(req)}:${window}`;
     let count: number = (await cache().get(key)) || 0;
     if (!count) {
       await cache().put(
@@ -163,13 +171,18 @@ export class DatabaseProviderMiddleware extends Middleware {
     res: Response,
     next: () => Promise<void>,
   ): Promise<void> {
-    const db_configs: Record<string, { provider: string; config: PostgresqlConfig | MysqlConfig | SqliteConfig }> =
-      config.get("databases");
+    const db_configs: Record<
+      string,
+      {
+        provider: string;
+        config: PostgresqlConfig | MysqlConfig | SqliteConfig;
+      }
+    > = config.get("databases");
 
     const conns = [];
     try {
       for (const [name, db_config] of Object.entries(db_configs)) {
-        if(ctx().get(["database", name])) {
+        if (ctx().get(["database", name])) {
           return;
         }
         const conn = await this.getConnection(db_config);
@@ -200,7 +213,9 @@ export class DatabaseProviderMiddleware extends Middleware {
     config: PostgresqlConfig | MysqlConfig | SqliteConfig;
   }): Connection {
     if (db_config.provider === "postgresql") {
-      const conn = new PostgresqlConnection(db_config.config as PostgresqlConfig);
+      const conn = new PostgresqlConnection(
+        db_config.config as PostgresqlConfig,
+      );
       return conn;
     }
 
@@ -209,7 +224,7 @@ export class DatabaseProviderMiddleware extends Middleware {
       return conn;
     }
 
-    if(db_config.provider === "mysql") {
+    if (db_config.provider === "mysql") {
       const conn = new MysqlConnection(db_config.config as MysqlConfig);
       return conn;
     }

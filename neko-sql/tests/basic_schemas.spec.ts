@@ -1,12 +1,13 @@
-import { describe, expect, test, beforeAll, afterAll } from 'vitest';
-import { Schema } from '../src/Schema.mjs';
-import { CompiledSql } from '../src/types.mjs';
-import { Blueprint } from '../src/Blueprint.mjs';
-import { SchemaGrammar } from '../src/SchemaGrammar.mjs';
-import { Query } from '../src/Query.mjs';
-import { PostgresqlQueryGrammar } from '../src/databases/postgresql/PostgresqlQueryGrammar.mjs';
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { PostgresqlSchemaGrammar, QueryGrammar } from '../src';
+import type { Blueprint } from '../src/Blueprint.mjs';
+import { PostgresqlQueryGrammar } from '../src/databases/postgresql/PostgresqlQueryGrammar.mjs';
+import { Query } from '../src/Query.mjs';
+import { Schema } from '../src/Schema.mjs';
+import { SchemaGrammar } from '../src/SchemaGrammar.mjs';
+import { CompiledSql } from '../src/types.mjs';
 import { FakeConnection } from './FakeConnection';
+
 describe('raw schemas', () => {
   beforeAll(async () => {});
 

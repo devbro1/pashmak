@@ -4,7 +4,7 @@ import { FakeConnection } from './FakeConnection';
 
 describe('raw queries', () => {
   test('table name', async () => {
-    let conn = new FakeConnection();
+    const conn = new FakeConnection();
 
     BaseModel.setConnection(conn);
     class ExternalLink extends BaseModel {
@@ -22,7 +22,7 @@ describe('raw queries', () => {
     await ExternalLink.findOne({ id: 1 });
     expect(conn.getLastSql().sql).toBe('select * from external_links where id = ? limit 1');
 
-    let el = new ExternalLink({ age: 10 });
+    const el = new ExternalLink({ age: 10 });
     await el.save();
     expect(conn.sqls[1].sql).toBe(
       'insert into external_links ( age , updated_at , created_at ) values ( ? , ? , ? ) RETURNING id'

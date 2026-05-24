@@ -1,6 +1,6 @@
-import { describe, expect, test } from 'vitest';
-import { MemoryTransport, QueueConnection, QueueMessageInterface } from '../../src';
 import { sleep } from '@devbro/neko-helper';
+import { describe, expect, test } from 'vitest';
+import { MemoryTransport, QueueConnection, type QueueMessageInterface } from '../../src';
 
 class TestMessage implements QueueMessageInterface {
   static count = 0;
@@ -13,7 +13,7 @@ class TestMessage implements QueueMessageInterface {
   async setMessage(value: string): Promise<void> {
     this.message = value;
   }
-  async validateMessage(): Promise<Boolean> {
+  async validateMessage(): Promise<boolean> {
     return true;
   }
   async processMessage(): Promise<void> {
@@ -27,7 +27,7 @@ describe('basic tests', () => {
     const memory_transport = new MemoryTransport({ interval: 1000 });
     const qc = new QueueConnection(memory_transport);
 
-    let m = new TestMessage();
+    const m = new TestMessage();
     await m.setMessage('Hello, World!');
 
     qc.listen('test_channel', TestMessage);

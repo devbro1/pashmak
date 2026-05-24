@@ -1,8 +1,8 @@
-import { Query } from '@devbro/neko-sql';
-import { BaseModel } from '../baseModel.mjs';
+import type { Query } from '@devbro/neko-sql';
 import { Case } from 'change-case-all';
-import { assocationOptions, RelationFactoryOptionsType } from './types.mjs';
+import type { BaseModel } from '../baseModel.mjs';
 import { RelationshipManager } from './RelationshipManager.mjs';
+import type { assocationOptions, RelationFactoryOptionsType } from './types.mjs';
 
 export class RelationshipManager1toM<
   Source extends BaseModel,
@@ -13,11 +13,11 @@ export class RelationshipManager1toM<
   }
 
   async toArray(): Promise<Target[]> {
-    let q = await this.getQuery();
-    let rows = await q.get();
+    const q = await this.getQuery();
+    const rows = await q.get();
 
     return rows.map((row: any) => {
-      let model = this.targetModel.newInstance(row, true);
+      const model = this.targetModel.newInstance(row, true);
       return model;
     });
   }
@@ -27,7 +27,7 @@ export class RelationshipManager1toM<
       obj = [obj];
     }
 
-    let updates: Record<string, any> = {};
+    const updates: Record<string, any> = {};
     Object.entries(this.target_keys).forEach(([local_key, target_key]) => {
       updates[target_key] = this.sourceObject[local_key];
     });
@@ -46,7 +46,7 @@ export class RelationshipManager1toM<
       obj = [obj];
     }
 
-    let updates: Record<string, any> = {};
+    const updates: Record<string, any> = {};
     Object.entries(this.target_keys).forEach(([local_key, target_key]) => {
       updates[target_key] = undefined;
     });
@@ -62,7 +62,7 @@ export class RelationshipManager1toM<
   }
 
   async getBaseQuery(): Promise<Query> {
-    let q: Query = await this.targetModel.getQuery();
+    const q: Query = await this.targetModel.getQuery();
     Object.entries(this.target_keys).map(([local_key, target_key]) => {
       q.whereOp(target_key, '=', this.sourceObject[local_key]);
     });
@@ -71,12 +71,12 @@ export class RelationshipManager1toM<
   }
 
   async *[Symbol.asyncIterator]() {
-    let q = await this.getQuery();
+    const q = await this.getQuery();
 
-    let cur = await q.getCursor();
+    const cur = await q.getCursor();
     let has = true;
     while (has) {
-      let row = await cur.read(1);
+      const row = await cur.read(1);
       if (row.length) {
         yield this.targetModel.newInstance(row[0], true);
       } else {

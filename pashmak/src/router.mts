@@ -1,8 +1,12 @@
 import { ctx } from "@devbro/neko-context";
-import { BaseModel } from "@devbro/neko-orm";
-import { Request, Response } from "@devbro/neko-router";
 import { HttpNotFoundError } from "@devbro/neko-http/errors";
-import { createParamDecorator } from "@devbro/neko-router";
+import type { BaseModel } from "@devbro/neko-orm";
+import {
+  createParamDecorator,
+  type Request,
+  type Response,
+} from "@devbro/neko-router";
+
 export * from "@devbro/neko-router";
 
 export function Model(
@@ -11,7 +15,7 @@ export function Model(
   model_field: string = "id",
 ): ParameterDecorator {
   return createParamDecorator(async () => {
-    let rc = await model.findOne({
+    const rc = await model.findOne({
       [model_field]: ctx().get<Request>("request").params[param_name],
     });
     if (!rc) {
@@ -34,7 +38,7 @@ export function ApiDocumentation(
 ) {
   if (renderer === "redoc") {
     return (req: Request, res: Response) => {
-      let html = `<!DOCTYPE html>
+      const html = `<!DOCTYPE html>
 <html>
   <head>
     <title>Redoc</title>
@@ -66,7 +70,7 @@ export function ApiDocumentation(
 
   if (renderer === "rapidoc") {
     return (req: Request, res: Response) => {
-      let html = `<!DOCTYPE html>
+      const html = `<!DOCTYPE html>
 <html>
   <head>
     <title>Redoc</title>

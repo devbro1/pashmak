@@ -1,7 +1,7 @@
-import { describe, expect, test, beforeEach, vi } from "vitest";
+import type { CacheProviderInterface } from "@devbro/neko-cache";
+import type { JSONObject, JSONValue } from "@devbro/neko-helper";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import { MultiCache } from "../src/cache/MultiCache.mjs";
-import { CacheProviderInterface } from "@devbro/neko-cache";
-import { JSONObject, JSONValue } from "@devbro/neko-helper";
 
 // Mock cache provider for testing
 class MockCache implements CacheProviderInterface {

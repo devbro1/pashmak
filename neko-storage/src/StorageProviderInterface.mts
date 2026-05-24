@@ -1,6 +1,6 @@
-import { ReadStream } from 'fs';
-import { Stream } from 'stream';
-import { Metadata } from './types.mjs';
+import type { ReadStream } from 'fs';
+import type { Stream } from 'stream';
+import type { Metadata } from './types.mjs';
 
 export interface StorageProviderInterface {
   exists(path: string): Promise<boolean>;

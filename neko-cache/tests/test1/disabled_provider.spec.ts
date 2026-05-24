@@ -1,19 +1,19 @@
+import { sleep } from '@devbro/neko-helper';
+import { describe, expect, test } from 'vitest';
 import {
-  RedisCacheProvider,
-  MemoryCacheProvider,
+  Cache,
+  DisabledCacheProvider,
   FileCacheProvider,
   MemcacheCacheProvider,
-  DisabledCacheProvider,
+  MemoryCacheProvider,
+  RedisCacheProvider,
 } from '@/index';
-import { Cache } from '@/index';
-import { describe, expect, test } from 'vitest';
-import { sleep } from '@devbro/neko-helper';
 
 describe('disabled cache provider', () => {
   test('general happy path', async () => {
-    let provider = new DisabledCacheProvider();
+    const provider = new DisabledCacheProvider();
 
-    let cache = new Cache(provider);
+    const cache = new Cache(provider);
 
     await cache.put('test_key_obj', { value: 123 }, 10);
     let v = await cache.get('test_key_obj');

@@ -1,8 +1,7 @@
-import { Query } from '@devbro/neko-sql';
-import { BaseModel } from '../baseModel.mjs';
-import { assocationOptions, RelationFactoryOptionsType } from './types.mjs';
+import type { Parameter, Query } from '@devbro/neko-sql';
+import type { BaseModel } from '../baseModel.mjs';
 import { RelationshipManager } from './RelationshipManager.mjs';
-import { Parameter } from '@devbro/neko-sql';
+import type { assocationOptions, RelationFactoryOptionsType } from './types.mjs';
 
 export class RelationshipManagerMtoM<
   Source extends BaseModel,
@@ -58,6 +57,7 @@ export class RelationshipManagerMtoM<
 
       Object.entries(this.junctionToTargetAssociation).map(([junction_key, target_key]) => {
         query.whereOp(junction_key, '=', obj[i][target_key]);
+        return undefined;
       });
 
       query = this.preDeleteQueryModifier ? await this.preDeleteQueryModifier(query) : query;
@@ -66,8 +66,8 @@ export class RelationshipManagerMtoM<
     }
   }
   async getBaseQuery(): Promise<Query> {
-    let target = new this.targetModel();
-    let q: Query = await (this.sourceObject.constructor as typeof BaseModel).getQuery();
+    const target = new this.targetModel();
+    const q: Query = await (this.sourceObject.constructor as typeof BaseModel).getQuery();
     q.select([`${target.getTablename()}.*`]);
 
     q.innerJoin(
@@ -104,11 +104,11 @@ export class RelationshipManagerMtoM<
   }
 
   async toArray(): Promise<Target[]> {
-    let q = await this.getQuery();
-    let rows = await q.get();
+    const q = await this.getQuery();
+    const rows = await q.get();
 
     return rows.map((row: any) => {
-      let model = this.targetModel.newInstance(row, true);
+      const model = this.targetModel.newInstance(row, true);
       return model;
     });
   }

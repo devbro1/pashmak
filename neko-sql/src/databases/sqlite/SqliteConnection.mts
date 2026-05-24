@@ -1,13 +1,13 @@
-import { connection_events, Connection as ConnectionAbs } from '../../Connection.mjs';
-import type Database from 'better-sqlite3';
-import { CompiledSql } from '../../types.mjs';
-import { Query } from '../../Query.mjs';
-import { SqliteQueryGrammar } from './SqliteQueryGrammar.mjs';
-import { Schema } from '../../Schema.mjs';
-import { SqliteSchemaGrammar } from './SqliteSchemaGrammar.mjs';
 import { EventManager } from '@devbro/neko-helper';
+import type Database from 'better-sqlite3';
 import * as fs from 'fs';
+import { Connection as ConnectionAbs, type connection_events } from '../../Connection.mjs';
 import { loadPackage } from '../../helper.mjs';
+import { Query } from '../../Query.mjs';
+import { Schema } from '../../Schema.mjs';
+import type { CompiledSql } from '../../types.mjs';
+import { SqliteQueryGrammar } from './SqliteQueryGrammar.mjs';
+import { SqliteSchemaGrammar } from './SqliteSchemaGrammar.mjs';
 
 /**
  * Configuration options for SQLite database connection

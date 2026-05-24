@@ -25,7 +25,7 @@ export function createSingleton<T>(
  * @returns
  */
 export function createRepeater(fn: Function, interval: number) {
-  let timer: undefined | number = undefined;
+  let timer: undefined | number;
 
   return {
     start() {
@@ -50,7 +50,7 @@ class Chainer<T> extends Promise<T> {
   private chainPromise: Promise<T>;
 
   constructor(initial: T) {
-    let chainPromise = Promise.resolve(initial);
+    const chainPromise = Promise.resolve(initial);
     super((resolve, reject) => {
       chainPromise.then(resolve).catch(reject);
     });

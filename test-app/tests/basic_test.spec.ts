@@ -1,8 +1,8 @@
 import "@/initialize";
 
-import { describe, expect, test } from "vitest";
-import supertest from "supertest";
 import { httpServer } from "@devbro/pashmak/facades";
+import supertest from "supertest";
+import { describe, expect, test } from "vitest";
 
 describe("basic tests", () => {
   test("funcational controller", async () => {
@@ -10,7 +10,7 @@ describe("basic tests", () => {
 
     const s = supertest(server.getHttpHanlder());
 
-    let r = await s.get("/api/v1/meow");
+    const r = await s.get("/api/v1/meow");
     expect(r.status).toBe(200);
     expect(r.text).toContain("meow meow!");
   });
@@ -20,7 +20,7 @@ describe("basic tests", () => {
 
     const s = supertest(server.getHttpHanlder());
 
-    let r = await s.get("/api/v1/hello");
+    const r = await s.get("/api/v1/hello");
     expect(r.status).toBe(200);
     expect(r.text).toContain("Hello world!");
   });

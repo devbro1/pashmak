@@ -1,6 +1,6 @@
 import { ctx } from "@devbro/pashmak/context";
-import { Request, createParamDecorator } from "@devbro/pashmak/router";
-import * as yup from "yup";
+import { createParamDecorator, type Request } from "@devbro/pashmak/router";
+import type * as yup from "yup";
 
 export function ValidatedRequest(
   validationRules: yup.ObjectSchema<any> | (() => yup.ObjectSchema<any>),

@@ -1,9 +1,10 @@
-import { describe, expect, test, beforeAll, afterAll } from 'vitest';
-import { Schema } from '../src/Schema.mjs';
-import { Blueprint } from '../src/Blueprint.mjs';
-import { SchemaGrammar } from '../src/SchemaGrammar.mjs';
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { PostgresqlSchemaGrammar, QueryGrammar } from '../src';
+import type { Blueprint } from '../src/Blueprint.mjs';
+import { Schema } from '../src/Schema.mjs';
+import { SchemaGrammar } from '../src/SchemaGrammar.mjs';
 import { FakeConnection } from './FakeConnection';
+
 describe('alter table schemas', () => {
   beforeAll(async () => {});
 

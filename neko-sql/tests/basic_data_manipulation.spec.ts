@@ -1,13 +1,13 @@
-import { describe, expect, test, beforeAll, afterAll } from 'vitest';
-import { Connection } from '../src/Connection.mjs';
-import { Schema } from '../src/Schema.mjs';
-import { Blueprint } from '../src/Blueprint.mjs';
-import { SchemaGrammar } from '../src/SchemaGrammar.mjs';
-import { PostgresqlConnection } from '../src/databases/postgresql/PostgresqlConnection.mjs';
+import { faker } from '@faker-js/faker';
 import { execSync } from 'child_process';
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import type { Blueprint } from '../src/Blueprint.mjs';
+import type { Connection } from '../src/Connection.mjs';
+import { PostgresqlConnection } from '../src/databases/postgresql/PostgresqlConnection.mjs';
 import { PostgresqlQueryGrammar } from '../src/databases/postgresql/PostgresqlQueryGrammar.mjs';
 import { Query } from '../src/Query.mjs';
-import { faker } from '@faker-js/faker';
+import { Schema } from '../src/Schema.mjs';
+import { SchemaGrammar } from '../src/SchemaGrammar.mjs';
 
 let conn: Connection | null;
 const randName = Math.random().toString(36).substring(7);

@@ -1,10 +1,10 @@
-import { describe, expect, test, beforeAll, afterAll } from 'vitest';
-import { PostgresqlConnection, Connection } from '@devbro/neko-sql';
-import { execSync } from 'child_process';
-import { User, Profile, Post, Comment, Image, Tag, Viewer } from '../fixtures/models_blog';
-import { BaseModel } from '../../src';
-import { faker } from '@faker-js/faker';
 import { sleep } from '@devbro/neko-helper';
+import { type Connection, PostgresqlConnection } from '@devbro/neko-sql';
+import { faker } from '@faker-js/faker';
+import { execSync } from 'child_process';
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import { BaseModel } from '../../src';
+import { Comment, Image, Post, Profile, Tag, User, Viewer } from '../fixtures/models_blog';
 
 describe('relationships', () => {
   let conn: Connection;
@@ -41,28 +41,28 @@ describe('relationships', () => {
   });
 
   test('user and profile 1to1', async () => {
-    let user1: User = await User.create({
+    const user1: User = await User.create({
       username: faker.internet.username(),
     });
 
-    let user2: User = await User.create({
+    const user2: User = await User.create({
       username: faker.internet.username(),
     });
 
-    let user3: User = await User.create({
+    const user3: User = await User.create({
       username: faker.internet.username(),
     });
 
-    let profile1: Profile = await Profile.create({
+    const profile1: Profile = await Profile.create({
       bio: faker.lorem.paragraph(),
     });
 
-    let profile2: Profile = await Profile.create({
+    const profile2: Profile = await Profile.create({
       bio: faker.lorem.paragraph(),
       user_id: user2.id,
     });
 
-    let profile3: Profile = await Profile.create({
+    const profile3: Profile = await Profile.create({
       bio: faker.lorem.paragraph(),
     });
 
@@ -92,27 +92,27 @@ describe('relationships', () => {
   });
 
   test('user hasMany posts 1toM', async () => {
-    let user1: User = await User.create({
+    const user1: User = await User.create({
       username: faker.internet.username(),
     });
 
-    let user2: User = await User.create({
+    const user2: User = await User.create({
       username: faker.internet.username(),
     });
 
-    let post1: Post = await Post.create({
+    const post1: Post = await Post.create({
       title: faker.lorem.words(3),
       content: faker.lorem.words(10),
       author_id: user1.id,
     });
 
-    let post2: Post = await Post.create({
+    const post2: Post = await Post.create({
       title: faker.lorem.words(3),
       content: faker.lorem.words(10),
       author_id: user1.id,
     });
 
-    let post3: Post = await Post.create({
+    const post3: Post = await Post.create({
       title: faker.lorem.words(3),
       content: faker.lorem.words(10),
       author_id: user2.id,
@@ -135,30 +135,30 @@ describe('relationships', () => {
   });
 
   test('post is visited by many viewers MtoM', async () => {
-    let post1: Post = await Post.create({
+    const post1: Post = await Post.create({
       title: faker.lorem.words(3),
       content: faker.lorem.words(10),
     });
 
-    let post2: Post = await Post.create({
+    const post2: Post = await Post.create({
       title: faker.lorem.words(3),
       content: faker.lorem.words(10),
     });
 
-    let post3: Post = await Post.create({
+    const post3: Post = await Post.create({
       title: faker.lorem.words(3),
       content: faker.lorem.words(10),
     });
 
-    let viewer1: Viewer = await Viewer.create({
+    const viewer1: Viewer = await Viewer.create({
       ip: faker.internet.ip(),
     });
 
-    let viewer2: Viewer = await Viewer.create({
+    const viewer2: Viewer = await Viewer.create({
       ip: faker.internet.ip(),
     });
 
-    let viewer3: Viewer = await Viewer.create({
+    const viewer3: Viewer = await Viewer.create({
       ip: faker.internet.ip(),
     });
 
@@ -185,25 +185,25 @@ describe('relationships', () => {
   });
 
   test('queryModifier', async () => {
-    let user1: User = await User.create({
+    const user1: User = await User.create({
       username: faker.internet.username(),
     });
 
-    let post1: Post = await Post.create({
+    const post1: Post = await Post.create({
       title: faker.lorem.words(3),
       content: faker.lorem.words(10),
       author_id: user1.id,
       rating: 3,
     });
 
-    let post2: Post = await Post.create({
+    const post2: Post = await Post.create({
       title: faker.lorem.words(3),
       content: faker.lorem.words(10),
       author_id: user1.id,
       rating: 9,
     });
 
-    let post3: Post = await Post.create({
+    const post3: Post = await Post.create({
       title: faker.lorem.words(3),
       content: faker.lorem.words(10),
       author_id: user1.id,
@@ -211,8 +211,8 @@ describe('relationships', () => {
     });
 
     expect((await user1.posts().toArray()).length).toBe(3);
-    let posts = await user1.topPosts().toArray();
-    let post_ids = posts.map((p) => p.id);
+    const posts = await user1.topPosts().toArray();
+    const post_ids = posts.map((p) => p.id);
     expect(posts.length).toBe(2);
     expect(post_ids).not.toContain(post1.id);
     expect(post_ids).toContain(post2.id);
@@ -220,43 +220,43 @@ describe('relationships', () => {
   });
 
   test('post and images have many comments 1toM, 1to1', async () => {
-    let user1: User = await User.create({
+    const user1: User = await User.create({
       username: faker.internet.username(),
     });
 
-    let post1: Post = await Post.create({
+    const post1: Post = await Post.create({
       title: faker.lorem.words(3),
       content: faker.lorem.words(10),
     });
 
-    let post2: Post = await Post.create({
+    const post2: Post = await Post.create({
       title: faker.lorem.words(3),
       content: faker.lorem.words(10),
     });
 
-    let image1: Image = await Image.create({
+    const image1: Image = await Image.create({
       title: faker.lorem.words(2),
     });
 
-    let image2: Image = await Image.create({
+    const image2: Image = await Image.create({
       title: faker.lorem.words(2),
     });
 
-    let image3: Image = await Image.create({
+    const image3: Image = await Image.create({
       title: faker.lorem.words(2),
     });
 
-    let comment1 = await Comment.create<Comment>({
+    const comment1 = await Comment.create<Comment>({
       content: faker.lorem.sentence(),
       author_id: user1.id,
     });
 
-    let comment2 = await Comment.create<Comment>({
+    const comment2 = await Comment.create<Comment>({
       content: faker.lorem.sentence(),
       author_id: user1.id,
     });
 
-    let comment3 = await Comment.create<Comment>({
+    const comment3 = await Comment.create<Comment>({
       content: faker.lorem.sentence(),
       author_id: user1.id,
     });
@@ -301,37 +301,37 @@ describe('relationships', () => {
   });
 
   test('post and image have many tags MtoM', async () => {
-    let post1: Post = await Post.create({
+    const post1: Post = await Post.create({
       title: faker.lorem.words(3),
       content: faker.lorem.words(10),
     });
 
-    let post2: Post = await Post.create({
+    const post2: Post = await Post.create({
       title: faker.lorem.words(3),
       content: faker.lorem.words(10),
     });
 
-    let image1: Image = await Image.create({
+    const image1: Image = await Image.create({
       title: faker.lorem.words(2),
     });
 
-    let image2: Image = await Image.create({
+    const image2: Image = await Image.create({
       title: faker.lorem.words(2),
     });
 
-    let image3: Image = await Image.create({
+    const image3: Image = await Image.create({
       title: faker.lorem.words(2),
     });
 
-    let tag1: Tag = await Tag.create({
+    const tag1: Tag = await Tag.create({
       name: faker.lorem.word(),
     });
 
-    let tag2: Tag = await Tag.create({
+    const tag2: Tag = await Tag.create({
       name: faker.lorem.word(),
     });
 
-    let tag3: Tag = await Tag.create({
+    const tag3: Tag = await Tag.create({
       name: faker.lorem.word(),
     });
 

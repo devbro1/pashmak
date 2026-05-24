@@ -1,6 +1,6 @@
-import { Query } from '@devbro/neko-sql';
-import { BaseModel } from '../baseModel.mjs';
-import { RelationFactoryOptionsType } from './types.mjs';
+import type { Query } from '@devbro/neko-sql';
+import type { BaseModel } from '../baseModel.mjs';
+import type { RelationFactoryOptionsType } from './types.mjs';
 
 export abstract class RelationshipManager<Source extends BaseModel, Target extends BaseModel> {
   protected sourceObject: BaseModel;
@@ -38,7 +38,7 @@ export abstract class RelationshipManager<Source extends BaseModel, Target exten
   abstract getBaseQuery(): Promise<Query>;
 
   async getQuery(): Promise<Query> {
-    let query: Query = await this.getBaseQuery();
+    const query: Query = await this.getBaseQuery();
     return await this.queryModifier(query);
   }
 }

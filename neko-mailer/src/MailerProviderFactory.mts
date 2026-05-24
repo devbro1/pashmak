@@ -1,5 +1,5 @@
 import { FlexibleFactory } from "@devbro/neko-helper";
-import { MailerProvider } from "./MailerProvider.mjs";
+import type { MailerProvider } from "./MailerProvider.mjs";
 
 /**
  * Factory class for creating and registering mailer providers.

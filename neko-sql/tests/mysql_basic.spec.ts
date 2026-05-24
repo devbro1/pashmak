@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { MysqlConnection } from '../src/databases/mysql/MysqlConnection.mjs';
 
 describe('MySQL basic operations', () => {

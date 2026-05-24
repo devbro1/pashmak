@@ -1,12 +1,12 @@
-import { connection_events, Connection as ConnectionAbs } from '../../Connection.mjs';
-import type mysql from 'mysql2/promise';
-import { CompiledSql } from '../../types.mjs';
-import { Query } from '../../Query.mjs';
-import { MysqlQueryGrammar } from './MysqlQueryGrammar.mjs';
-import { Schema } from '../../Schema.mjs';
-import { MysqlSchemaGrammar } from './MysqlSchemaGrammar.mjs';
 import { EventManager } from '@devbro/neko-helper';
+import type mysql from 'mysql2/promise';
+import { Connection as ConnectionAbs, type connection_events } from '../../Connection.mjs';
 import { loadPackage } from '../../helper.mjs';
+import { Query } from '../../Query.mjs';
+import { Schema } from '../../Schema.mjs';
+import type { CompiledSql } from '../../types.mjs';
+import { MysqlQueryGrammar } from './MysqlQueryGrammar.mjs';
+import { MysqlSchemaGrammar } from './MysqlSchemaGrammar.mjs';
 
 export type MysqlConfig = mysql.PoolOptions;
 

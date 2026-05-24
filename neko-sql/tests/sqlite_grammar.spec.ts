@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
+import type { Blueprint } from '../src/Blueprint.mjs';
 import { SqliteSchemaGrammar } from '../src/databases/sqlite/SqliteSchemaGrammar.mjs';
 import { Schema } from '../src/Schema.mjs';
-import { Blueprint } from '../src/Blueprint.mjs';
 import { FakeConnection } from './FakeConnection';
 
 describe('SQLite Schema Grammar', () => {

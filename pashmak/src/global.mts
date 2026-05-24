@@ -2,15 +2,15 @@ export class Global {
   static _vars: Record<string, any> = {};
 
   static set(key: string | string[], value: any) {
-    this._vars[Global.generateInternalKey(key)] = value;
+    Global._vars[Global.generateInternalKey(key)] = value;
   }
 
   static get<T>(key: string | string[]): T | undefined {
-    return this._vars[Global.generateInternalKey(key)] as T;
+    return Global._vars[Global.generateInternalKey(key)] as T;
   }
 
   static getOrThrow<T>(key: string | string[]): T {
-    const rc = this.get<T>(key);
+    const rc = Global.get<T>(key);
     if (rc === undefined) {
       throw new Error(
         `Key ${Global.generateInternalKey(key)} not found in Global`,

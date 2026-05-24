@@ -1,6 +1,6 @@
-import { describe, it, expect, afterAll } from 'vitest';
-import { SqliteConnection } from '../src/databases/sqlite/SqliteConnection.mjs';
 import * as fs from 'fs';
+import { afterAll, describe, expect, it } from 'vitest';
+import { SqliteConnection } from '../src/databases/sqlite/SqliteConnection.mjs';
 
 const TEST_DB = `/tmp/test_sqlite_${Math.random().toString(36).substring(7)}.db`;
 
