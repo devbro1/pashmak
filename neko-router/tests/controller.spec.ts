@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { Middleware, Router } from '../src';
-import { Request, Response } from '../src/types.mjs';
-import { BaseController, Get, Controller } from '../src/Controller.mjs';
+import { BaseController, Controller, Get } from '../src/Controller.mjs';
+import { type Request, Response } from '../src/types.mjs';
 
 @Controller('/api/v1/countries')
 class CountryController extends BaseController {
@@ -34,12 +34,12 @@ describe('Controller Class', () => {
 
     let req = { url: '/api/v1/countries', method: 'GET' } as Request;
     let resolved = router.resolve(req);
-    // @ts-ignore
+    // @ts-expect-error
     expect(await resolved.handler({ ...resolved.match(req) }, {})).toBe('GET countries');
 
     req = { url: '/api/v1/countries/ABC', method: 'GET' } as Request;
     resolved = router.resolve(req);
-    // @ts-ignore
+    // @ts-expect-error
     expect(await resolved.handler({ ...resolved.match(req) }, {})).toBe('GET countries by id');
   });
 });

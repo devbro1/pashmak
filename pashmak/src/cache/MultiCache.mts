@@ -1,5 +1,5 @@
-import { JSONObject, JSONValue } from "@devbro/neko-helper";
-import { CacheProviderInterface } from "@devbro/neko-cache";
+import type { CacheProviderInterface } from "@devbro/neko-cache";
+import type { JSONObject, JSONValue } from "@devbro/neko-helper";
 
 export class MultiCache implements CacheProviderInterface {
   constructor(private caches: CacheProviderInterface[]) {}
@@ -33,9 +33,9 @@ export class MultiCache implements CacheProviderInterface {
   }
 
   async increment(key: string, amount?: number): Promise<number> {
-    let rc = undefined;
+    let rc: number | undefined;
     for (const cache of this.caches) {
-      let rc2 = await cache.increment(key, amount);
+      const rc2 = await cache.increment(key, amount);
       if (rc === undefined) {
         rc = rc2;
       }

@@ -1,10 +1,14 @@
-import { Connection, connection_events } from '@devbro/neko-sql';
-import { Schema } from '@devbro/neko-sql';
-import { CompiledSql } from '@devbro/neko-sql';
-import { SchemaGrammar } from '@devbro/neko-sql';
-import { Query } from '@devbro/neko-sql';
-import { PostgresqlQueryGrammar } from '@devbro/neko-sql';
-import { PostgresqlSchemaGrammar, QueryGrammar } from '@devbro/neko-sql';
+import {
+  type CompiledSql,
+  Connection,
+  type connection_events,
+  PostgresqlQueryGrammar,
+  PostgresqlSchemaGrammar,
+  Query,
+  type QueryGrammar,
+  Schema,
+  type SchemaGrammar,
+} from '@devbro/neko-sql';
 
 class FakeConnection extends Connection {
   on(event: connection_events, listener: (...args: any[]) => void): this {

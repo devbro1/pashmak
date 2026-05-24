@@ -1,8 +1,18 @@
-import { Blueprint, Column, ForeignKeyConstraint, IndexConstraint } from './Blueprint.mjs';
+import type { Blueprint, Column, ForeignKeyConstraint, IndexConstraint } from './Blueprint.mjs';
 import { Expression } from './Expression.mjs';
-import { CompiledSql, Parameter } from './types.mjs';
+import type { CompiledSql, Parameter } from './types.mjs';
 
-export class SchemaGrammar {
+export abstract class SchemaGrammar {
+  /**
+   * Get the default expression for generating a UUID value. This is used when a column is defined with type 'uuid' and no default value is provided. The specific implementation of this method will depend on the database being used, as different databases have different functions for generating UUIDs inside database.
+   */
+  abstract getDefaultUuid(): Expression;
+
+  /**
+   * Get the default expression for generating a UUID v7 value. UUID v7 is time-ordered (Unix timestamp in milliseconds as the most-significant bits), making it index-friendly. The specific implementation depends on the database.
+   */
+  abstract getDefaultUuidV7(): Expression;
+
   toSql(blueprint: Blueprint): string {
     if (!blueprint.existingTable) {
       return this.compileCreateTable(blueprint).sql;
@@ -28,7 +38,7 @@ export class SchemaGrammar {
         return this.compileForeignKey(v);
       });
     }
-    sql += [columns, primaryKeys, ...foreignKeys].join(',') + ')';
+    sql += [columns, primaryKeys, ...foreignKeys].filter((s) => s !== '').join(',') + ')';
 
     const compiledSql = { sql, parts: [], bindings: [] };
 
@@ -115,6 +125,8 @@ export class SchemaGrammar {
       rc.push('json');
     } else if (column.properties.type === 'jsonb') {
       rc.push('jsonb');
+    } else if (column.properties.type === 'uuid') {
+      rc.push('uuid');
     } else if (column.properties.type === 'raw') {
       return column.columnName;
     } else {

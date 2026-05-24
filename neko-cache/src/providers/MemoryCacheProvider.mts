@@ -1,5 +1,5 @@
-import { JSONObject, JSONValue } from '@devbro/neko-helper';
-import { CacheProviderInterface } from '../CacheProviderInterface.mjs';
+import type { JSONObject, JSONValue } from '@devbro/neko-helper';
+import type { CacheProviderInterface } from '../CacheProviderInterface.mjs';
 
 /**
  * Configuration options for the in-memory cache provider.

@@ -32,7 +32,7 @@ export function abbreviate(num: number): string {
   if (tier === 0) return num.toString();
 
   const suffix = suffixes[tier];
-  const scale = Math.pow(10, tier * 3);
+  const scale = 10 ** (tier * 3);
   const scaled = num / scale;
 
   if (scaled % 1 === 0) {
@@ -118,7 +118,7 @@ export function fileSize(num: number): string {
   const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
   const base = 1024;
   const unitIndex = Math.floor(Math.log(Math.abs(num)) / Math.log(base));
-  const size = num / Math.pow(base, unitIndex);
+  const size = num / base ** unitIndex;
 
   return `${size % 1 === 0 ? size : size.toFixed(1)} ${units[unitIndex]}`;
 }
@@ -344,18 +344,30 @@ export function spellOrdinal(num: number): string {
  * round([1.5, NaN, 2.7], {precision: 0}) // [2, NaN, 3]
  * ```
  */
-export function round(number: number, options?: {precision?: number, method?: 'round' | 'ceil' | 'floor'}): number;
-export function round(number: number[], options?: {precision?: number, method?: 'round' | 'ceil' | 'floor'}): number[];
-export function round(number: number | number[], {precision = 1, method= 'round'}: {precision?: number, method?: 'round' | 'ceil' | 'floor'} = {}): number | number[] {
+export function round(
+  number: number,
+  options?: { precision?: number; method?: 'round' | 'ceil' | 'floor' }
+): number;
+export function round(
+  number: number[],
+  options?: { precision?: number; method?: 'round' | 'ceil' | 'floor' }
+): number[];
+export function round(
+  number: number | number[],
+  {
+    precision = 1,
+    method = 'round',
+  }: { precision?: number; method?: 'round' | 'ceil' | 'floor' } = {}
+): number | number[] {
   if (Array.isArray(number)) {
-    return number.map(n => {
-      return round(n, {precision, method});
+    return number.map((n) => {
+      return round(n, { precision, method });
     });
   }
 
   if (isNaN(number)) return NaN;
 
-  const factor = Math.pow(10, precision);
+  const factor = 10 ** precision;
   switch (method) {
     case 'ceil':
       return Math.ceil(number * factor) / factor;

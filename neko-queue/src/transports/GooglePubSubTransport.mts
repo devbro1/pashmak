@@ -1,6 +1,6 @@
-import { QueueTransportInterface } from '../Interfaces.mjs';
 import type * as GooglePubSubModule from '@google-cloud/pubsub';
 import { loadPackage } from '../helper.mjs';
+import type { QueueTransportInterface } from '../Interfaces.mjs';
 
 /**
  * Configuration options for the Google Pub/Sub transport.

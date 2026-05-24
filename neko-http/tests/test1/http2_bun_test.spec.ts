@@ -1,8 +1,7 @@
-import { describe, expect, test } from 'vitest';
-import { HttpServer, BunNotAvailableError, BunConfigurationError } from '../../src';
-import { Router } from '@devbro/neko-router';
-import { Request, Response } from '@devbro/neko-router';
 import * as http2 from 'node:http2';
+import { type Request, type Response, Router } from '@devbro/neko-router';
+import { describe, expect, test } from 'vitest';
+import { BunConfigurationError, BunNotAvailableError, HttpServer } from '../../src';
 
 describe('HTTP/2 and Bun.serve support', () => {
   test('throws BunNotAvailableError when preferBun is true on Node.js', async () => {

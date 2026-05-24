@@ -1,7 +1,7 @@
-import { Query } from '../../Query.mjs';
-import { QueryGrammar } from '../../QueryGrammar.mjs';
-import { CompiledSql, Parameter } from '../../types.mjs';
 import { Arr } from '@devbro/neko-helper';
+import type { Query } from '../../Query.mjs';
+import { QueryGrammar } from '../../QueryGrammar.mjs';
+import type { CompiledSql, Parameter } from '../../types.mjs';
 
 export class SqliteQueryGrammar extends QueryGrammar {
   constructor() {

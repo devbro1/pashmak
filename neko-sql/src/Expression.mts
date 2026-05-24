@@ -1,6 +1,6 @@
-import { CompiledSql } from './types.mjs';
-// @ts-ignore - no type definitions available for sql-tokenizer
+// @ts-expect-error - no type definitions available for sql-tokenizer
 import { sqlTokenizer } from 'sql-tokenizer';
+import type { CompiledSql } from './types.mjs';
 
 export class Expression {
   constructor(

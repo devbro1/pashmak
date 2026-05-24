@@ -1,9 +1,10 @@
 export * from "@devbro/neko-queue";
-import { QueueTransportInterface } from "@devbro/neko-queue";
-import { Query } from "@devbro/neko-sql";
-import { db, logger } from "./facades.mjs";
-import { createRepeater } from "@devbro/neko-helper";
+
 import { context_provider } from "@devbro/neko-context";
+import { createRepeater } from "@devbro/neko-helper";
+import type { QueueTransportInterface } from "@devbro/neko-queue";
+import type { Query } from "@devbro/neko-sql";
+import { db, logger } from "./facades.mjs";
 
 export type DatabaseTransportConfig = {
   queue_table: string;
@@ -29,8 +30,8 @@ export class DatabaseTransport implements QueueTransportInterface {
     await context_provider.run(async () => {
       const conn = db(this.config.db_connection);
       try {
-        let q: Query = conn.getQuery();
-        let messages = await conn
+        const q: Query = conn.getQuery();
+        const messages = await conn
           .getQuery()
           .table(this.config.queue_table)
           .whereOp("channel", "in", Array.from(this.channels.keys()))
@@ -39,7 +40,7 @@ export class DatabaseTransport implements QueueTransportInterface {
           .limit(this.config.message_limit)
           .orderBy("last_tried_at", "asc")
           .get();
-        for (let msg of messages) {
+        for (const msg of messages) {
           try {
             await conn
               .getQuery()
@@ -51,7 +52,7 @@ export class DatabaseTransport implements QueueTransportInterface {
                 last_tried_at: new Date(),
                 retried_count: (msg.retried_count || 0) + 1,
               });
-            let callback = this.channels.get(msg.channel)!;
+            const callback = this.channels.get(msg.channel)!;
             await callback(msg.message);
             // mark message as processed
             await conn
@@ -98,11 +99,11 @@ export class DatabaseTransport implements QueueTransportInterface {
 
   async dispatch(channel: string, message: string): Promise<void> {
     const conn = db(this.config.db_connection);
-    let schema = conn.getSchema();
+    const schema = conn.getSchema();
     if ((await schema.tableExists(this.config.queue_table)) === false) {
       return;
     }
-    let q: Query = conn.getQuery();
+    const q: Query = conn.getQuery();
     await q.table(this.config.queue_table).insert({
       channel: channel,
       message: message,

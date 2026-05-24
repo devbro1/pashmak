@@ -6,7 +6,16 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignore": ["**/dist/**", "**/node_modules/**"]
+    "includes": [
+      "**",
+      "!docs",
+      "!**/dist",
+      "!**/node_modules",
+      "!**/coverage",
+      "!**/.git",
+      "!**/.github",
+      "!neko-config/tests/fixtures/configs_generic/invalid.json"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -14,20 +23,30 @@
     "indentWidth": 2,
     "lineWidth": 120
   },
-  "organizeImports": {
-    "enabled": true
-  },
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true
+      "recommended": true,
+      "suspicious": {
+        "noAssignInExpressions": "off",
+        "useIterableCallbackReturn": "off",
+        "noNonNullAssertedOptionalChain": "off",
+        "noAsyncPromiseExecutor": "off",
+        "noExplicitAny": "off"
+      },
+      "correctness": {
+        "noUnsafeOptionalChaining": "off",
+        "noUnusedFunctionParameters": "off"
+      }
     }
   },
   "javascript": {
     "formatter": {
       "quoteStyle": "single",
       "trailingCommas": "es5"
+    },
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
     }
   }
 }
-

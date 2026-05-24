@@ -1,4 +1,4 @@
-import { JSONValue, JSONObject } from '@devbro/neko-helper';
+import type { JSONObject, JSONValue } from '@devbro/neko-helper';
 
 /**
  * Interface that all cache providers must implement.

@@ -1,10 +1,10 @@
+import { PostgresqlSchemaGrammar, type QueryGrammar } from '../src';
 import { Connection } from '../src/Connection.mjs';
-import { Schema } from '../src/Schema.mjs';
-import { CompiledSql } from '../src/types.mjs';
-import { SchemaGrammar } from '../src/SchemaGrammar.mjs';
-import { Query } from '../src/Query.mjs';
 import { PostgresqlQueryGrammar } from '../src/databases/postgresql/PostgresqlQueryGrammar.mjs';
-import { PostgresqlSchemaGrammar, QueryGrammar } from '../src';
+import { Query } from '../src/Query.mjs';
+import { Schema } from '../src/Schema.mjs';
+import type { SchemaGrammar } from '../src/SchemaGrammar.mjs';
+import type { CompiledSql } from '../src/types.mjs';
 
 class FakeConnection extends Connection {
   last_sql: CompiledSql = { sql: '', bindings: [] };
@@ -42,11 +42,11 @@ class FakeConnection extends Connection {
   }
 
   getQuery() {
-    return new Query(null, new PostgresqlQueryGrammar());
+    return new Query(this, this.getQueryGrammar());
   }
 
   getSchema() {
-    return new Schema(null, new PostgresqlSchemaGrammar());
+    return new Schema(this, this.getSchemaGrammar());
   }
 
   async beginTransaction(): Promise<void> {
@@ -65,12 +65,22 @@ class FakeConnection extends Connection {
     throw new Error('Function not implemented.');
   }
 
+  private queryGrammar = new PostgresqlQueryGrammar();
   getQueryGrammar(): QueryGrammar {
-    return new PostgresqlQueryGrammar();
+    return this.queryGrammar;
   }
 
+  setQueryGrammar(grammar: QueryGrammar) {
+    this.queryGrammar = grammar;
+  }
+
+  private schemaGrammar = new PostgresqlSchemaGrammar();
   getSchemaGrammar(): SchemaGrammar {
-    return new PostgresqlSchemaGrammar();
+    return this.schemaGrammar;
+  }
+
+  setSchemaGrammar(grammar: SchemaGrammar) {
+    this.schemaGrammar = grammar;
   }
 
   async createDatabase(name: string): Promise<void> {

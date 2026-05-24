@@ -1,9 +1,9 @@
-import { HttpBadRequestError, HttpForbiddenError } from "@devbro/pashmak/http";
-import jwt from "jsonwebtoken";
 import { config } from "@devbro/pashmak/config";
-import { BaseModel, RelationshipManagerMtoM } from "@devbro/pashmak/orm";
 import { ctx } from "@devbro/pashmak/context";
 import { logger } from "@devbro/pashmak/facades";
+import { HttpBadRequestError, HttpForbiddenError } from "@devbro/pashmak/http";
+import type { BaseModel, RelationshipManagerMtoM } from "@devbro/pashmak/orm";
+import jwt from "jsonwebtoken";
 
 export function createJwtToken(data: any, token_params: jwt.SignOptions = {}) {
   const secret = config.get("jwt.secret") as string;
@@ -80,22 +80,22 @@ export type VarOrArray<T> = T | T[];
 export function requirePermissions(
   required_permissions: VarOrArray<string>,
 ): MethodDecorator {
-  return function (
+  return (
     _target: any,
     _propertyKey: string | symbol,
     descriptor: PropertyDescriptor,
-  ) {
+  ) => {
     const originalMethod = descriptor.value!;
 
     descriptor.value = async function (...args: any[]) {
-      let auth_user = getAuthenticatedUser();
+      const auth_user = getAuthenticatedUser();
 
       const permissionsArray = Array.isArray(required_permissions)
         ? required_permissions
         : [required_permissions];
 
       let user_can_any = false;
-      for (let permission of permissionsArray) {
+      for (const permission of permissionsArray) {
         if (auth_user.can(permission)) {
           user_can_any = true;
           break;

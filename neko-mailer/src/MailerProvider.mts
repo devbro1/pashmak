@@ -1,4 +1,4 @@
-import { Mailable } from "Mailable.mjs";
+import type { Mailable } from "Mailable.mjs";
 
 /**
  * Interface that all mailer providers must implement.

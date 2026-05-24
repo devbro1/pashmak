@@ -1,10 +1,10 @@
-import type SFTPClientType from 'ssh2-sftp-client';
-import { Metadata, SFTPStorageProviderConfig } from '../types.mjs';
-import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
-import { ReadStream } from 'fs';
-import Stream, { Readable, PassThrough } from 'stream';
+import type { ReadStream } from 'fs';
 import * as mime from 'mime-types';
+import type SFTPClientType from 'ssh2-sftp-client';
+import Stream, { PassThrough, Readable } from 'stream';
 import { loadPackage } from '../helper.mjs';
+import type { StorageProviderInterface } from '../StorageProviderInterface.mjs';
+import type { Metadata, SFTPStorageProviderConfig } from '../types.mjs';
 
 export class SFTPStorageProvider implements StorageProviderInterface {
   private static sftpModule: typeof SFTPClientType;

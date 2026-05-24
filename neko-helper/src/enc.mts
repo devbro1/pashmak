@@ -1,14 +1,14 @@
-import jwtLib from 'jsonwebtoken';
-import type { Secret, SignOptions, VerifyOptions, DecodeOptions, JwtPayload } from 'jsonwebtoken';
-import crypto from 'crypto';
 import * as ed from '@noble/ed25519';
 import { md5 as nobleMd5, sha1 as nobleSha1 } from '@noble/hashes/legacy.js';
 import { sha256 as nobleSha256, sha512 as nobleSha512 } from '@noble/hashes/sha2.js';
 import { sha3_256 as nobleSha3_256, sha3_512 as nobleSha3_512 } from '@noble/hashes/sha3.js';
+import crypto from 'crypto';
+import type { DecodeOptions, JwtPayload, Secret, SignOptions, VerifyOptions } from 'jsonwebtoken';
+import jwtLib from 'jsonwebtoken';
 import {
-  isBcryptHash as cryptoIsBcryptHash,
-  encryptPassword as cryptoEncryptPassword,
   compareBcrypt,
+  encryptPassword as cryptoEncryptPassword,
+  isBcryptHash as cryptoIsBcryptHash,
 } from './crypto.mjs';
 
 // Setup ed25519 hashing function

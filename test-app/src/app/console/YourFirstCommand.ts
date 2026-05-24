@@ -1,5 +1,5 @@
-import { Command, Option } from "clipanion";
 import { cli } from "@devbro/pashmak/facades";
+import { Command, Option } from "clipanion";
 
 export class YourFirstCommand extends Command {
   static paths = [[`hello`]];

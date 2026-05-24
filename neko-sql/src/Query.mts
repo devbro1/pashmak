@@ -1,13 +1,13 @@
-import { Connection } from './Connection.mjs';
-import { QueryGrammar } from './QueryGrammar.mjs';
-import {
+import type { Connection } from './Connection.mjs';
+import type { QueryGrammar } from './QueryGrammar.mjs';
+import type {
   CompiledSql,
+  havingType,
   JoinCondition,
+  joinType,
   Parameter,
   selectType,
   whereType,
-  havingType,
-  joinType,
 } from './types.mjs';
 
 export type QueryParts = {
@@ -182,12 +182,12 @@ export class Query {
   }
 
   async get() {
-    let sql = this.toSql();
+    const sql = this.toSql();
     return await this.connection?.runQuery(sql);
   }
 
   async first() {
-    let rc = await this.connection?.runQuery(this.toSql());
+    const rc = await this.connection?.runQuery(this.toSql());
     if (rc && Array.isArray(rc) && rc.length > 0) {
       return rc[0];
     }
@@ -246,13 +246,13 @@ export class Query {
     type: joinType['type'],
     conditions: (whereType | { column1: string; column2: string })[]
   ): this {
-    let conditions_corrected: whereType[] = [];
+    const conditions_corrected: whereType[] = [];
     for (const cond of conditions) {
       conditions_corrected.push({
         joinCondition: 'and',
         negateCondition: false,
         type: 'operationColumn',
-        // @ts-ignore
+        // @ts-expect-error
         operation: '=',
         ...cond,
       });

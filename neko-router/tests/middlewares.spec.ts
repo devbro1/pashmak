@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'vitest';
-import { Middleware, Router, Route, CompiledRoute } from '../src';
-import { Request, Response } from '../src/types.mjs';
+import { type CompiledRoute, Middleware, Route, Router } from '../src';
+import type { Request, Response } from '../src/types.mjs';
 import { createMockResponse } from './fixtures/mocks';
+
 class m1 extends Middleware {
   protected constructor(params: any) {
     super();
@@ -11,7 +12,7 @@ class m1 extends Middleware {
     return new m1(params);
   }
   async call(req: Request, res: Response, next: () => Promise<void>): Promise<void> {
-    // @ts-ignore
+    // @ts-expect-error
     req.parts.m1 = 'm1';
     await next();
   }
@@ -26,7 +27,7 @@ class m2 extends Middleware {
     return new m2(params);
   }
   async call(req: Request, res: Response, next: () => Promise<void>): Promise<void> {
-    // @ts-ignore
+    // @ts-expect-error
     req.parts.m2 = 'm2';
     await next();
   }
@@ -41,7 +42,7 @@ class m3 extends Middleware {
     return new m3(params);
   }
   async call(req: Request, res: Response, next: () => Promise<void>): Promise<void> {
-    // @ts-ignore
+    // @ts-expect-error
     req.parts.m3 = 'm3';
     await next();
   }
@@ -57,7 +58,7 @@ describe('Router tests', () => {
       })
       .addMiddleware([m1, m2, m3]);
 
-    // @ts-ignore
+    // @ts-expect-error
     const req = { url: '/api/v1/countries', method: 'GET', parts: {} } as Request & { parts: any };
     const res = createMockResponse();
     const resolved: CompiledRoute | undefined = router.getCompiledRoute(req, res);

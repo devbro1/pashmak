@@ -1,6 +1,6 @@
-import { QueueTransportInterface } from '../Interfaces.mjs';
 import type * as AzureServiceBus from '@azure/service-bus';
 import { loadPackage } from '../helper.mjs';
+import type { QueueTransportInterface } from '../Interfaces.mjs';
 
 /**
  * Configuration options for the Azure Service Bus transport.

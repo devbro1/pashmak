@@ -1,19 +1,20 @@
-import {
-  RedisCacheProvider,
-  MemoryCacheProvider,
-  FileCacheProvider,
-  MemcacheCacheProvider,
-} from '@/index';
-import { Cache } from '@/index';
-import { describe, expect, test } from 'vitest';
 import { sleep } from '@devbro/neko-helper';
 import * as os from 'os';
+import { describe, expect, test } from 'vitest';
+import {
+  Cache,
+  type CacheProviderInterface,
+  FileCacheProvider,
+  MemcacheCacheProvider,
+  MemoryCacheProvider,
+  RedisCacheProvider,
+} from '@/index';
 
 const PROVIDERS = ['redis', 'memory', 'file', 'memcache'] as const;
 
 describe.each(PROVIDERS)('cache provider %s', (provider_name) => {
   test('general happy path', async () => {
-    let provider;
+    let provider: CacheProviderInterface | undefined;
     if (provider_name === 'redis') {
       provider = new RedisCacheProvider({ url: `redis://${process.env.REDIS_HOST}:6379` });
     } else if (provider_name === 'memory') {
@@ -24,7 +25,7 @@ describe.each(PROVIDERS)('cache provider %s', (provider_name) => {
       provider = new MemcacheCacheProvider({ location: [`${process.env.MEMCACHE_HOST}:11211`] });
     }
 
-    let cache = new Cache(provider!);
+    const cache = new Cache(provider!);
 
     await cache.put('test_key_obj', { value: 123 }, 10);
     let v = await cache.get('test_key_obj');

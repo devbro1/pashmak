@@ -1,5 +1,5 @@
-import { BaseModel, Attribute } from '../../src';
-import { Region } from './Region.model';
+import { Attribute, BaseModel } from '../../src';
+import type { Region } from './Region.model';
 
 export class Country extends BaseModel {
   protected tableName: string = 'countries';

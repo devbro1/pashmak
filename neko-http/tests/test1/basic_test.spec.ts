@@ -1,8 +1,7 @@
+import { type Request, type Response, Router } from '@devbro/neko-router';
+import supertest from 'supertest';
 import { describe, expect, test } from 'vitest';
 import { HttpServer } from '../../src';
-import supertest from 'supertest';
-import { Router } from '@devbro/neko-router';
-import { Request, Response } from '@devbro/neko-router';
 
 describe('general http server', () => {
   test('basic testing', async () => {

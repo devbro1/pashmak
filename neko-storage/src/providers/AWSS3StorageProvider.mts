@@ -1,9 +1,9 @@
-import { Metadata, AWSS3StorageProviderConfig } from '../types.mjs';
 import type * as AwsS3 from '@aws-sdk/client-s3';
-import { ReadStream } from 'fs';
-import Stream, { Readable } from 'stream';
-import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
+import type { ReadStream } from 'fs';
+import Stream, { type Readable } from 'stream';
 import { loadPackage } from '../helper.mjs';
+import type { StorageProviderInterface } from '../StorageProviderInterface.mjs';
+import type { AWSS3StorageProviderConfig, Metadata } from '../types.mjs';
 
 export class AWSS3StorageProvider implements StorageProviderInterface {
   private s3!: AwsS3.S3Client;

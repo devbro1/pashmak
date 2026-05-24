@@ -1,17 +1,18 @@
 import dotenv from "dotenv";
+
 dotenv.config();
 
 import { config, loadConfigData } from "@devbro/pashmak/config";
 import * as config_data from "./config/default.mts";
+
 await config.load(loadConfigData(config_data));
 
+import type { Middleware, Request, Response } from "@devbro/neko-router";
 import { httpServer, logger } from "@devbro/pashmak/facades";
-import { registerQueueListeners } from "@/app/queues";
 import { HttpError } from "@devbro/pashmak/http";
-
-import * as yup from "yup";
-import { Request, Response, Middleware } from "@devbro/neko-router";
 import { DatabaseProviderMiddleware } from "@devbro/pashmak/middlewares";
+import * as yup from "yup";
+import { registerQueueListeners } from "@/app/queues";
 
 import "@devbro/pashmak";
 
@@ -21,9 +22,9 @@ import "./schedules";
 
 import { context_provider } from "@devbro/neko-context";
 
-import { Connection } from "@devbro/neko-sql";
-import { Global } from "@devbro/pashmak/global";
+import type { Connection } from "@devbro/neko-sql";
 import { ctx } from "@devbro/pashmak/context";
+import { Global } from "@devbro/pashmak/global";
 import { BaseModel } from "@devbro/pashmak/orm";
 
 context_provider.setPreLoader(async (f: Function) => {

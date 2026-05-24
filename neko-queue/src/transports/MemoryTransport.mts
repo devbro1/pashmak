@@ -1,5 +1,5 @@
-import { QueueTransportInterface } from '../Interfaces.mjs';
 import { createRepeater } from '@devbro/neko-helper';
+import type { QueueTransportInterface } from '../Interfaces.mjs';
 
 export type MemoryTransportConfig = {
   interval: number; // interval in milliseconds to check for messages

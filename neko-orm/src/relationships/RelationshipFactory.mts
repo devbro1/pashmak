@@ -1,15 +1,15 @@
-import { Query } from '@devbro/neko-sql';
-import { BaseModel } from '../baseModel.mjs';
+import type { Query } from '@devbro/neko-sql';
 import { Case, snakeCase } from 'change-case-all';
+import { BaseModel } from '../baseModel.mjs';
 import { RelationshipManager1to1 } from './RelationshipManager1to1.mjs';
 import { RelationshipManager1toM } from './RelationshipManager1toM.mjs';
 import { RelationshipManagerMto1 } from './RelationshipManagerMto1.mjs';
 import { RelationshipManagerMtoM } from './RelationshipManagerMtoM.mjs';
-import { RelationFactoryOptionsType } from './types.mjs';
+import type { RelationFactoryOptionsType } from './types.mjs';
 
 export class RelationshipFactory {
   static populateOptions(options: Partial<RelationFactoryOptionsType>): RelationFactoryOptionsType {
-    let options2: RelationFactoryOptionsType = {
+    const options2: RelationFactoryOptionsType = {
       source: BaseModel.newInstance(),
       targetModel: BaseModel,
       type: 'hasMany',
@@ -43,8 +43,8 @@ export class RelationshipFactory {
       ['hasOne', 'hasMany'].includes(options2.type) &&
       Object.keys(options2.sourceToTargetKeyAssociation).length === 0
     ) {
-      let model_name = Case.snake(options2.source.constructor.name);
-      // @ts-ignore
+      const model_name = Case.snake(options2.source.constructor.name);
+      // @ts-expect-error
       for (const key of options2.source.primaryKey) {
         options2.sourceToTargetKeyAssociation[key] = `${model_name}_${key}`;
       }
@@ -52,9 +52,9 @@ export class RelationshipFactory {
       options2.type === 'belongsTo' &&
       Object.keys(options2.sourceToTargetKeyAssociation).length === 0
     ) {
-      let model_name = Case.snake(options2.targetModel.name);
-      let t_model = new options2.targetModel();
-      // @ts-ignore
+      const model_name = Case.snake(options2.targetModel.name);
+      const t_model = new options2.targetModel();
+      // @ts-expect-error
       for (const key of t_model._primary_keys) {
         options2.sourceToTargetKeyAssociation[`${model_name}_${key}`] = `${key}`;
       }
@@ -70,19 +70,19 @@ export class RelationshipFactory {
 
       if (Object.keys(options2.sourceToJunctionKeyAssociation).length === 0) {
         options2.sourceToJunctionKeyAssociation = {};
-        let model_name = Case.snake(options2.source.constructor.name);
-        // @ts-ignore
+        const model_name = Case.snake(options2.source.constructor.name);
+        // @ts-expect-error
         for (const key of options2.source.primaryKey) {
           options2.sourceToJunctionKeyAssociation[key] = `${model_name}_${key}`;
         }
       }
       if (Object.keys(options2.junctionToTargetAssociation).length === 0) {
         options2.junctionToTargetAssociation = {};
-        let model_name = Case.snake(options2.targetModel.name);
+        const model_name = Case.snake(options2.targetModel.name);
 
-        let target = new options2.targetModel();
+        const target = new options2.targetModel();
 
-        // @ts-ignore
+        // @ts-expect-error
         for (const key of target.primaryKey) {
           options2.junctionToTargetAssociation[`${model_name}_${key}`] = key;
         }
@@ -90,8 +90,8 @@ export class RelationshipFactory {
     }
 
     if (options2.morphIdentifier) {
-      let morph_type = options2.morphIdentifier + '_type';
-      let morph_id = options2.morphIdentifier + '_id';
+      const morph_type = options2.morphIdentifier + '_type';
+      const morph_id = options2.morphIdentifier + '_id';
       if (['hasOne', 'hasMany'].includes(options2.type)) {
         options2.queryModifier = async (query: Query) => {
           query.whereOp(morph_type, '=', snakeCase(options2.source.getClassName()));
@@ -179,23 +179,23 @@ export class RelationshipFactory {
     options.junctionToTargetAssociation = options.junctionToTargetAssociation || {};
 
     if (Object.keys(options.sourceToJunctionKeyAssociation).length === 0) {
-      let model_name = Case.snake(options.morphIdentifier);
-      // @ts-ignore
+      const model_name = Case.snake(options.morphIdentifier);
+      // @ts-expect-error
       for (const key of options.source.primaryKey) {
         options.sourceToJunctionKeyAssociation[key] = `${model_name}_${key}`;
       }
     }
 
     if (Object.keys(options.junctionToTargetAssociation).length === 0) {
-      let target_name = Case.snake(options.targetModel.getClassName());
-      let target = new options.targetModel();
-      // @ts-ignore
+      const target_name = Case.snake(options.targetModel.getClassName());
+      const target = new options.targetModel();
+      // @ts-expect-error
       for (const key of target.primaryKey) {
         options.junctionToTargetAssociation[`${target_name}_${key}`] = key;
       }
     }
 
-    let old_queryModifier = options.queryModifier || ((query: Query) => query);
+    const old_queryModifier = options.queryModifier || ((query: Query) => query);
 
     options.queryModifier = async (query: Query) => {
       query.whereOp(

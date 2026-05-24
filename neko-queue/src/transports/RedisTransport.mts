@@ -1,6 +1,6 @@
-import { QueueTransportInterface } from '../Interfaces.mjs';
 import type { RedisClientType } from 'redis';
 import { loadPackage } from '../helper.mjs';
+import type { QueueTransportInterface } from '../Interfaces.mjs';
 
 /**
  * Configuration options for the Redis transport.

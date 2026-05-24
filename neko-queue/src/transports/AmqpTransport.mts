@@ -1,6 +1,6 @@
-import { QueueTransportInterface } from '../Interfaces.mjs';
 import type { Channel, Connection, ConsumeMessage } from 'amqplib';
 import { loadPackage } from '../helper.mjs';
+import type { QueueTransportInterface } from '../Interfaces.mjs';
 
 /**
  * Configuration options for the AMQP transport.

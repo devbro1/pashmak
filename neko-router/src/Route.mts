@@ -1,6 +1,13 @@
 import { MiddlewareFactory } from './MiddlewareFactory.mjs';
-import { HandlerType, HttpMethod, MiddlewareProvider, RouteCheck } from './types.mjs';
-import { LexerToken, Request, Response } from './types.mjs';
+import type {
+  HandlerType,
+  HttpMethod,
+  LexerToken,
+  MiddlewareProvider,
+  Request,
+  Response,
+  RouteCheck,
+} from './types.mjs';
 
 export class Route {
   private middlewares: MiddlewareProvider[] = [];
@@ -65,7 +72,7 @@ export class Route {
       } else if (token.type === 'WILDCARD') {
         regexParts.push('(.+)');
       } else if (token.type === 'TEXT') {
-        regexParts.push(token.value.replace(/[-\/\\^$.*+?()[\]{}|]/g, '\\$&'));
+        regexParts.push(token.value.replace(/[-/\\^$.*+?()[\]{}|]/g, '\\$&'));
       }
     }
 

@@ -1,6 +1,6 @@
-import { describe, expect, test, beforeEach, vi, afterEach } from 'vitest';
-import { AmqpTransport } from '../../src/transports/AmqpTransport.mjs';
 import { sleep } from '@devbro/neko-helper';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { AmqpTransport } from '../../src/transports/AmqpTransport.mjs';
 
 // Mock amqplib
 vi.mock('amqplib', () => {
@@ -127,7 +127,9 @@ describe('AmqpTransport - Unit Tests', () => {
         'my-exchange',
         'routing-key',
         expect.any(Buffer),
-        { persistent: true }
+        {
+          persistent: true,
+        }
       );
     });
 

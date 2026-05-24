@@ -1,6 +1,6 @@
 import { Blueprint } from './Blueprint.mjs';
-import { Connection } from './Connection.mjs';
-import { SchemaGrammar } from './SchemaGrammar.mjs';
+import type { Connection } from './Connection.mjs';
+import type { SchemaGrammar } from './SchemaGrammar.mjs';
 
 /**
  * Schema builder for creating and managing database tables.

@@ -1,6 +1,6 @@
-import { describe, expect, test, beforeEach, afterEach } from 'vitest';
-import { ConfigLoader, loadConfig } from '@/ConfigLoader.mjs';
 import * as path from 'path';
+import { afterEach, beforeEach, describe, expect, test } from 'vitest';
+import { ConfigLoader, loadConfig } from '@/ConfigLoader.mjs';
 
 const fixturesPath = path.join(__dirname, '../fixtures/configs_generic');
 

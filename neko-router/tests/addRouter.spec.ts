@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { Middleware, Router } from '../src';
-import { Request, Response } from '../src/types.mjs';
+import type { Request, Response } from '../src/types.mjs';
 
 class m1 extends Middleware {
   public static getInstance(params: any): Middleware {
@@ -87,25 +87,25 @@ describe('Router tests', () => {
 
     expect(router.routes.length).toBe(4);
 
-    let cr1 = router.getCompiledRoute(
+    const cr1 = router.getCompiledRoute(
       { url: '/api/v1/router1', method: 'GET' } as Request,
       {} as Response
     );
     expect(cr1?.getMiddlewares().length).toBe(1);
 
-    let cr = router.getCompiledRoute(
+    const cr = router.getCompiledRoute(
       { url: '/m1/api/v1/repeat3mid', method: 'GET' } as Request,
       {} as Response
     );
     expect(cr?.getMiddlewares().length).toBe(6);
 
-    let cr2 = router.getCompiledRoute(
+    const cr2 = router.getCompiledRoute(
       { url: '/m1/api/v1/countries', method: 'GET' } as Request,
       {} as Response
     );
     expect(cr2?.getMiddlewares().length).toBe(5);
 
-    let cr3 = router.getCompiledRoute(
+    const cr3 = router.getCompiledRoute(
       { url: '/m1/api/v1/onemid', method: 'GET' } as Request,
       {} as Response
     );
@@ -146,25 +146,25 @@ describe('Router tests', () => {
 
     expect(router.routes.length).toBe(4);
 
-    let cr1 = router.getCompiledRoute(
+    const cr1 = router.getCompiledRoute(
       { url: '/api/v1/router1', method: 'GET' } as Request,
       {} as Response
     );
     expect(cr1?.getMiddlewares().length).toBe(1);
 
-    let cr = router.getCompiledRoute(
+    const cr = router.getCompiledRoute(
       { url: '/api/v1/repeat3mid', method: 'GET' } as Request,
       {} as Response
     );
     expect(cr?.getMiddlewares().length).toBe(6);
 
-    let cr2 = router.getCompiledRoute(
+    const cr2 = router.getCompiledRoute(
       { url: '/api/v1/countries', method: 'GET' } as Request,
       {} as Response
     );
     expect(cr2?.getMiddlewares().length).toBe(5);
 
-    let cr3 = router.getCompiledRoute(
+    const cr3 = router.getCompiledRoute(
       { url: '/api/v1/onemid', method: 'GET' } as Request,
       {} as Response
     );

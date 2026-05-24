@@ -2,7 +2,7 @@ import { Command, Option } from "clipanion";
 import { generateKeyPairSync } from "crypto";
 import fs from "fs/promises";
 import path from "path";
-import { logger, cli } from "../../facades.mjs";
+import { cli, logger } from "../../facades.mjs";
 
 export class KeyGenerateCommand extends Command {
   static paths = [[`generate`, "key"]];
@@ -42,7 +42,7 @@ export class KeyGenerateCommand extends Command {
     try {
       envfile = await fs.readFile(path.join(process.cwd(), ".env"), "utf-8");
     } catch {}
-    let old_public_key = envfile.match(/^jwt_secret_public=(.*)/m);
+    const old_public_key = envfile.match(/^jwt_secret_public=(.*)/m);
 
     envfile = this.addEnvParam(
       envfile,
@@ -67,7 +67,7 @@ export class KeyGenerateCommand extends Command {
   }
 
   addEnvParam(file: string, key: string, value: string) {
-    let regex = new RegExp(`^${key}=.*`, "gm");
+    const regex = new RegExp(`^${key}=.*`, "gm");
     file = file.replace(regex, `${key}=${value}`);
     const match = file.match(regex);
 

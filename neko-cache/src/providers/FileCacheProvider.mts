@@ -1,7 +1,7 @@
+import type { JSONObject, JSONValue } from '@devbro/neko-helper';
 import * as fs from 'fs';
 import * as path from 'path';
-import { CacheProviderInterface } from '../CacheProviderInterface.mjs';
-import { JSONObject, JSONValue } from '@devbro/neko-helper';
+import type { CacheProviderInterface } from '../CacheProviderInterface.mjs';
 
 /**
  * Configuration options for the file-based cache provider.

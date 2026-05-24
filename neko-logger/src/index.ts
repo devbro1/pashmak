@@ -1,4 +1,4 @@
-import pino, { LoggerOptions } from 'pino';
+import pino, { type LoggerOptions } from 'pino';
 
 export type MapObject = Record<string, object | string | number | boolean | undefined>;
 export type LogLevel = 'info' | 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';

@@ -1,10 +1,8 @@
-import { Connection } from '@devbro/neko-sql';
-import { Query } from '@devbro/neko-sql';
-import { Parameter } from '@devbro/neko-sql';
-import pluralize from 'pluralize';
+import { type Connection, type Parameter, Query } from '@devbro/neko-sql';
 import { snakeCase } from 'change-case-all';
-import { GlobalScope } from './GlobalScope.mjs';
-import { LocalScopeQuery } from './LocalScopeQuery.mjs';
+import pluralize from 'pluralize';
+import type { GlobalScope } from './GlobalScope.mjs';
+import type { LocalScopeQuery } from './LocalScopeQuery.mjs';
 
 export type saveObjectOptions = {
   updateTimestamps: boolean;
@@ -16,7 +14,7 @@ export class BaseModel {
   protected fillable: string[] = [];
   protected primaryKey: string[] = ['id'];
   declare _incrementing_primary_keys: boolean;
-  public id: number | undefined = undefined;
+  declare id: number | string | undefined;
   static connection: Connection | (() => Connection) | undefined;
   protected _exists: boolean = false;
   declare _guarded: string[];
@@ -48,7 +46,9 @@ export class BaseModel {
     this._dirties = new Set<string>();
 
     this.scopes = this.scopes || [];
-    this._attributes = { ...this._default_values };
+    this._attributes = Object.fromEntries(
+      Object.entries(this._default_values).map(([k, v]) => [k, typeof v === 'function' ? v() : v])
+    );
     this.fill(initialData);
   }
 
@@ -67,7 +67,7 @@ export class BaseModel {
    * @returns The name of the model class
    */
   static getClassName() {
-    return this.name;
+    return BaseModel.name;
   }
 
   /**
@@ -105,7 +105,7 @@ export class BaseModel {
 
     if (!this._incrementing_primary_keys || this._exists) {
       for (const key of this._primary_keys) {
-        // @ts-ignore
+        // @ts-expect-error
         params[key] = this[key];
       }
     }
@@ -130,10 +130,10 @@ export class BaseModel {
       }
     }
 
-    let result;
+    let result: any;
     if (this._exists) {
       for (const pkey of this._primary_keys) {
-        // @ts-ignore
+        // @ts-expect-error
         q.whereOp(pkey, '=', this[pkey]);
       }
       await q.update(params);
@@ -167,7 +167,7 @@ export class BaseModel {
   public async delete() {
     const q: Query = await this.getQuery();
     for (const pkey of this._primary_keys) {
-      // @ts-ignore
+      // @ts-expect-error
       q.whereOp(pkey, '=', this[pkey]);
     }
     await q.delete();
@@ -188,11 +188,11 @@ export class BaseModel {
   public async refresh() {
     const q: Query = await this.getQuery();
     for (const pkey of this._primary_keys) {
-      // @ts-ignore
+      // @ts-expect-error
       q.whereOp(pkey, '=', this[pkey]);
     }
     q.limit(1);
-    let r = await q.get();
+    const r = await q.get();
     if (r.length === 0) {
       throw new Error('No record found');
     }
@@ -209,7 +209,7 @@ export class BaseModel {
    */
   async fillAndMutate(r: object) {
     for (const k in r) {
-      // @ts-ignore
+      // @ts-expect-error
       this[k] = r[k];
 
       if (this[k] === null) {
@@ -241,10 +241,10 @@ export class BaseModel {
    * const user = await User.find(1, { withGlobalScopes: false });
    */
   public static async find<T extends typeof BaseModel>(
-    id: number,
+    id: number | string,
     options = { withGlobalScopes: true }
   ): Promise<InstanceType<T> | undefined> {
-    return this.findByPrimaryKey<T>({ id }, options);
+    return BaseModel.findByPrimaryKey<T>({ id }, options);
   }
 
   /**
@@ -268,15 +268,15 @@ export class BaseModel {
     conditions: object,
     options = { withGlobalScopes: true }
   ): Promise<T | undefined> {
-    let self = new this();
-    let q: Query = await (self.constructor as typeof BaseModel).getQuery(options);
+    const self = new BaseModel();
+    const q: Query = await (self.constructor as typeof BaseModel).getQuery(options);
 
     for (const [key, value] of Object.entries(conditions)) {
       q.whereOp(key, '=', value);
     }
     q.limit(1);
 
-    let r = await q.get();
+    const r = await q.get();
     if (r.length === 0) {
       return undefined;
     }
@@ -304,10 +304,10 @@ export class BaseModel {
    * }
    */
   public static async findorFail<T extends typeof BaseModel>(
-    id: number,
+    id: number | string,
     options = { withGlobalScopes: true }
   ): Promise<InstanceType<T>> {
-    const rc = await this.find<T>(id, options);
+    const rc = await BaseModel.find<T>(id, options);
     if (!rc) {
       throw new Error('Not found');
     }
@@ -337,8 +337,8 @@ export class BaseModel {
     keys: Record<string, Parameter>,
     options = { withGlobalScopes: true }
   ): Promise<any> {
-    let self = new this();
-    let q: Query = await (self.constructor as typeof BaseModel).getQuery(options);
+    const self = new BaseModel();
+    const q: Query = await (self.constructor as typeof BaseModel).getQuery(options);
 
     q.select([...self._primary_keys, ...self._fillable]);
     for (const key of self._primary_keys) {
@@ -346,7 +346,7 @@ export class BaseModel {
     }
     q.limit(1);
 
-    let r = await q.get();
+    const r = await q.get();
     if (r.length === 0) {
       return undefined;
     }
@@ -432,12 +432,12 @@ export class BaseModel {
   ): ReturnType<typeof this.prototype.getLocalScopesQuery> {
     const opts = { ...options, withGlobalScopes: true };
     let QueryClass = Query;
-    if (typeof this.getLocalScopesQuery === 'function') {
-      QueryClass = this.getLocalScopesQuery();
+    if (typeof BaseModel.getLocalScopesQuery === 'function') {
+      QueryClass = BaseModel.getLocalScopesQuery();
     }
-    const conn = this.getConnection();
+    const conn = BaseModel.getConnection();
     let rc = new QueryClass(conn, conn.getQueryGrammar());
-    const self = new this();
+    const self = new BaseModel();
 
     rc.table(self.tableName);
 
@@ -464,7 +464,7 @@ export class BaseModel {
   public fill(data: Record<string, Parameter>) {
     for (const key of [...this._primary_keys, ...this._fillable]) {
       if (key in data) {
-        // @ts-ignore
+        // @ts-expect-error
         this[key] = data[key];
       }
     }
@@ -517,7 +517,7 @@ export class BaseModel {
     initialData: any = {},
     exists: boolean = false
   ): T {
-    let rc = new this(initialData);
+    const rc = new BaseModel(initialData);
     rc._exists = exists;
     return rc as T;
   }
@@ -536,7 +536,7 @@ export class BaseModel {
    * console.log(user.id); // Auto-generated ID
    */
   public static async create<T extends BaseModel>(initialData: any = {}): Promise<T> {
-    let rc = new this(initialData);
+    const rc = new BaseModel(initialData);
     await rc.save();
     return rc as T;
   }

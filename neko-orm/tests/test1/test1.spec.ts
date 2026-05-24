@@ -1,20 +1,20 @@
-import { describe, expect, test, beforeAll, afterAll } from 'vitest';
-import { PostgresqlConnection, Connection, Query } from '@devbro/neko-sql';
-import { execSync } from 'child_process';
+import { Connection, PostgresqlConnection, Query } from '@devbro/neko-sql';
 import { faker } from '@faker-js/faker';
-import { FakeConnection } from './FakeConnection';
+import { execSync } from 'child_process';
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { Attribute, BaseModel } from '../../src';
+import { FakeConnection } from './FakeConnection';
 
 describe('query related tests', () => {
   test('P1', async () => {
-    let conn = new FakeConnection();
+    const conn = new FakeConnection();
     BaseModel.setConnection(conn);
     class ExternalLink extends BaseModel {
       @Attribute()
       declare age: number;
 
       static override getQuery(): Query & { active: (active: boolean) => Query } {
-        let rc = super.getQuery();
+        const rc = BaseModel.getQuery();
         rc.active = function (active: boolean) {
           return this.whereOp('is_active', '=', active);
         };
@@ -24,7 +24,7 @@ describe('query related tests', () => {
 
     expect(conn).toBeInstanceOf(FakeConnection);
 
-    let q = ExternalLink.getQuery().active(true);
+    const q = ExternalLink.getQuery().active(true);
     expect(q).toBeInstanceOf(Query);
 
     expect(q.toSql().sql).toBe('select * from external_links where is_active = ?');

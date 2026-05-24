@@ -1,6 +1,6 @@
-import { describe, expect, test, beforeAll } from "vitest";
 import { config } from "@devbro/neko-config";
 import path from "path";
+import { beforeAll, describe, expect, test } from "vitest";
 
 // Configure storage for testing
 beforeAll(() => {

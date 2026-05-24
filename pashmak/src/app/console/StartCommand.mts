@@ -1,8 +1,7 @@
-import { Command, Option } from "clipanion";
 import { config } from "@devbro/neko-config";
-
-import { cli, httpServer, logger, scheduler, queue } from "../../facades.mjs";
 import { PostgresqlConnection } from "@devbro/neko-sql";
+import { Command, Option } from "clipanion";
+import { cli, httpServer, logger, queue, scheduler } from "../../facades.mjs";
 
 export class StartCommand extends Command {
   scheduler = Option.Boolean(`--scheduler`, false);
@@ -16,7 +15,7 @@ export class StartCommand extends Command {
     if (
       [this.all, this.http, this.scheduler || this.cron, this.queue].filter(
         (x) => x,
-      ).length == 0
+      ).length === 0
     ) {
       this.context.stdout.write(
         `No service was selected. please check -h for details\n`,

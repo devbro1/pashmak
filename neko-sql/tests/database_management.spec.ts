@@ -1,5 +1,5 @@
-import { describe, expect, test, beforeAll, afterAll } from 'vitest';
-import { Connection } from '../src/Connection.mjs';
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import type { Connection } from '../src/Connection.mjs';
 import { PostgresqlConnection } from '../src/databases/postgresql/PostgresqlConnection.mjs';
 
 describe('database management', () => {

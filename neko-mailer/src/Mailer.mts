@@ -1,6 +1,6 @@
-import { Mailable } from "Mailable.mjs";
-import { MailerProvider } from "MailerProvider.mjs";
-import { EventEmittor, EventManager } from "@devbro/neko-helper";
+import type { Mailable } from "Mailable.mjs";
+import type { MailerProvider } from "MailerProvider.mjs";
+import { type EventEmittor, EventManager } from "@devbro/neko-helper";
 
 /** Available mailer events */
 export const MailerEvents = ["sent", "failed"];

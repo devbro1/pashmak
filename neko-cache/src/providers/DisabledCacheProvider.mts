@@ -1,5 +1,5 @@
-import { CacheProviderInterface } from '../CacheProviderInterface.mjs';
-import { JSONValue, JSONObject } from '@devbro/neko-helper';
+import type { JSONObject, JSONValue } from '@devbro/neko-helper';
+import type { CacheProviderInterface } from '../CacheProviderInterface.mjs';
 
 /**
  * A cache provider that disables caching entirely.
@@ -27,20 +27,20 @@ export class DisabledCacheProvider implements CacheProviderInterface {
    * @param value - The value to cache
    * @param ttl - Time to live in seconds
    */
-  async put(key: string, value: JSONValue | JSONObject, ttl?: number): Promise<void> {}
+  async put(_key: string, _value: JSONValue | JSONObject, _ttl?: number): Promise<void> {}
 
   /**
    * Does nothing (no caching).
    * @param key - The cache key to delete
    */
-  async delete(key: string): Promise<void> {}
+  async delete(_key: string): Promise<void> {}
 
   /**
    * Always returns false (no caching).
    * @param key - The cache key to check
    * @returns Always false
    */
-  async has(key: string): Promise<boolean> {
+  async has(_key: string): Promise<boolean> {
     return false;
   }
 

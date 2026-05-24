@@ -1,19 +1,19 @@
-import { describe, test, expect, afterAll } from 'vitest';
-import { PostgresqlConnection } from '../src/databases/postgresql/PostgresqlConnection.mjs';
+import { afterAll, describe, expect, test } from 'vitest';
 import {
-  Blueprint,
-  Connection,
+  type Blueprint,
+  type Connection,
   MysqlConnection,
   Schema,
   SchemaGrammar,
   SqliteConnection,
 } from '../src';
+import { PostgresqlConnection } from '../src/databases/postgresql/PostgresqlConnection.mjs';
 
 const randName = Math.random().toString(36).substring(7);
-let db_name = (process.env.DB_NAME || 'test_db') + `_${randName}`;
+const db_name = (process.env.DB_NAME || 'test_db') + `_${randName}`;
 
 function getDatabaseConnections(): [string, Connection][] {
-  let rc: [string, Connection][] = [];
+  const rc: [string, Connection][] = [];
 
   // postgresql
   const db_config = {
@@ -79,7 +79,7 @@ describe('long test', () => {
       first_name: 'test2',
     });
 
-    let a = await conn
+    const a = await conn
       .getQuery()
       .table('users')
       .insertGetId([
@@ -187,7 +187,7 @@ describe('long test', () => {
     expect(transactionRow).toBeUndefined();
 
     // depending on db, insertedId might be 6 or 7
-    let insertedId = await conn.getQuery().table('users').insertGetId({
+    const insertedId = await conn.getQuery().table('users').insertGetId({
       email: 'test6@gmail.com',
       first_name: 'test7_getId',
     });

@@ -1,4 +1,4 @@
-import { BaseModel, Attribute } from '../../src';
+import { Attribute, BaseModel } from '../../src';
 
 export class Job extends BaseModel {
   protected hasTimestamps: boolean = false;
