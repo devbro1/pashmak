@@ -58,12 +58,7 @@ describe('Batch Insert Support', () => {
     ]);
 
     expect(sql.sql).toBe('insert into users ( name , email ) values ( ? , ? ) , ( ? , ? )');
-    expect(sql.bindings).toStrictEqual([
-      'John',
-      'john@example.com',
-      'Jane',
-      'jane@example.com',
-    ]);
+    expect(sql.bindings).toStrictEqual(['John', 'john@example.com', 'Jane', 'jane@example.com']);
   });
 
   test('should compile single insert query (SQLite)', () => {
@@ -112,7 +107,9 @@ describe('Batch Insert Support', () => {
     const query = new Query(null, grammar);
     query.table('users');
 
-    expect(() => grammar.compileInsert(query, {})).toThrow('Cannot insert object with no properties');
+    expect(() => grammar.compileInsert(query, {})).toThrow(
+      'Cannot insert object with no properties'
+    );
   });
 
   test('should handle single-element array', () => {
@@ -160,12 +157,7 @@ describe('Batch Insert Support', () => {
     expect(sql.sql).toBe(
       'insert into users ( name , email ) values ( ? , ? ) , ( ? , ? ) RETURNING id'
     );
-    expect(sql.bindings).toStrictEqual([
-      'John',
-      'john@example.com',
-      'Jane',
-      'jane@example.com',
-    ]);
+    expect(sql.bindings).toStrictEqual(['John', 'john@example.com', 'Jane', 'jane@example.com']);
   });
 
   test('should compile insertGetId with array (SQLite)', () => {
@@ -180,11 +172,6 @@ describe('Batch Insert Support', () => {
     expect(sql.sql).toBe(
       'insert into users ( name , email ) values ( ? , ? ) , ( ? , ? ) RETURNING id'
     );
-    expect(sql.bindings).toStrictEqual([
-      'John',
-      'john@example.com',
-      'Jane',
-      'jane@example.com',
-    ]);
+    expect(sql.bindings).toStrictEqual(['John', 'john@example.com', 'Jane', 'jane@example.com']);
   });
 });

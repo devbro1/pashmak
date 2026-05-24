@@ -1,5 +1,5 @@
 import { FlexibleFactory } from '@devbro/neko-helper';
-import { QueueTransportInterface } from '.';
+import type { QueueTransportInterface } from '.';
 
 export class QueueTransportFactory {
   static instance: FlexibleFactory<QueueTransportInterface> =

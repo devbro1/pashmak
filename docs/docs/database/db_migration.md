@@ -135,6 +135,9 @@ await schema.createTable("products", (table) => {
   table.json("metadata"); // JSON
   table.jsonb("settings"); // JSONB (PostgreSQL)
 
+  // UUID
+  table.uuid("id"); // VARCHAR(36) on MySQL/SQLite, native uuid on PostgreSQL
+
   // Timestamps
   table.timestamps(); // created_at, updated_at
 
@@ -166,6 +169,75 @@ await schema.createTable("posts", (table) => {
   // Multiple modifiers
   table.string("email").length(200).unique().nullable(false);
 });
+```
+
+### UUID Columns
+
+Use `table.uuid()` to define a UUID column. The underlying SQL type is database-specific:
+
+| Database   | SQL type      |
+| ---------- | ------------- |
+| PostgreSQL | `uuid`        |
+| MySQL      | `CHAR(36)`    |
+| SQLite     | `VARCHAR(36)` |
+
+Each grammar provides helper methods to generate a database-appropriate default expression.
+
+#### UUID v4 (random)
+
+```typescript
+import { Schema } from "@devbro/neko-sql";
+
+// Get the grammar from your connection
+const grammar = connection.getSchemaGrammar();
+
+await schema.createTable("users", (table) => {
+  table.uuid("id").default(grammar.getDefaultUuid());
+  table.primary(["id"]);
+});
+```
+
+The generated default expression per database:
+
+- **PostgreSQL** — `gen_random_uuid()` _(built-in, no extension required)_
+- **MySQL** — `UUID()`
+- **SQLite** — pure SQL expression using `randomblob()` following RFC 4122 v4
+
+#### UUID v7 (time-ordered)
+
+UUID v7 embeds a millisecond-precision Unix timestamp in the most-significant bits, making UUIDs monotonically increasing and index-friendly.
+
+```typescript
+await schema.createTable("events", (table) => {
+  table.uuid("id").default(grammar.getDefaultUuidV7());
+  table.primary(["id"]);
+});
+```
+
+The generated default expression per database:
+
+- **PostgreSQL** — `uuid_generate_v7()` _(requires the [`pg_uuidv7`](https://github.com/fboulnois/pg_uuidv7) extension — see below)_
+- **MySQL** — `LOWER(CONCAT(...))` expression using `UNIX_TIMESTAMP(NOW(3))` for millisecond precision
+- **SQLite** — pure SQL expression using `unixepoch('subsec')` _(requires SQLite ≥ 3.38, released 2022-02-22)_
+
+##### PostgreSQL: enabling the pg_uuidv7 extension
+
+The `pg_uuidv7` extension must be enabled in each database before UUID v7 defaults will work. Add a migration that runs before any table using `getDefaultUuidV7()`:
+
+```typescript
+export class EnablePgUuidV7 extends Migration {
+  async up(schema: Schema): Promise<void> {
+    await schema
+      .getConnection()
+      .statement("CREATE EXTENSION IF NOT EXISTS pg_uuidv7");
+  }
+
+  async down(schema: Schema): Promise<void> {
+    await schema
+      .getConnection()
+      .statement("DROP EXTENSION IF EXISTS pg_uuidv7");
+  }
+}
 ```
 
 ### Primary Keys

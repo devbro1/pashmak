@@ -1,11 +1,17 @@
-import { CompiledRoute } from './CompiledRoute.mjs';
-import { BaseController } from './Controller.mjs';
-import { MiddlewareFactory } from './MiddlewareFactory.mjs';
-import { Route } from './Route.mjs';
-import { HandlerType, HttpMethod, MiddlewareProvider, RouteCheck } from './types.mjs';
-import { Request, Response } from './types.mjs';
 import path from 'path';
 import urlJoin from 'url-join';
+import { CompiledRoute } from './CompiledRoute.mjs';
+import type { BaseController } from './Controller.mjs';
+import { MiddlewareFactory } from './MiddlewareFactory.mjs';
+import { Route } from './Route.mjs';
+import type {
+  HandlerType,
+  HttpMethod,
+  MiddlewareProvider,
+  Request,
+  Response,
+  RouteCheck,
+} from './types.mjs';
 
 export class Router {
   private middlewares: MiddlewareProvider[] = [];
@@ -36,7 +42,7 @@ export class Router {
       const urlPath = path.join(basePath, route.path);
       this.addRoute(route.methods, urlPath, async (req: Request, res: Response) => {
         const controllerInstance = controller.getInstance();
-        // @ts-ignore
+        // @ts-expect-error
         return await controllerInstance[route.handler]();
       }).addMiddleware([...controller.baseMiddlewares, ...route.middlewares]);
     }
@@ -44,7 +50,7 @@ export class Router {
 
   addRouter(path: string, router: Router) {
     for (const route of router.routes) {
-      let path2 = urlJoin('/', path, route.path);
+      const path2 = urlJoin('/', path, route.path);
       this.addRoute(route.methods, path2, route.handler)
         .addMiddleware(router.getMiddlewares())
         .addMiddleware(route.getMiddlewares())

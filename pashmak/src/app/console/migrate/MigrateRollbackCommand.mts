@@ -1,11 +1,11 @@
-import { cli, db as database, logger } from "../../../facades.mjs";
-import { Command, Option } from "clipanion";
-import { context_provider } from "@devbro/neko-context";
-import path from "path";
-import fs from "fs/promises";
 import { config } from "@devbro/neko-config";
-import { Migration } from "@devbro/neko-sql";
+import { context_provider } from "@devbro/neko-context";
+import type { Migration } from "@devbro/neko-sql";
+import { Command, Option } from "clipanion";
+import fs from "fs/promises";
+import path from "path";
 import * as t from "typanion";
+import { cli, db as database, logger } from "../../../facades.mjs";
 
 export class MigrateRollbackCommand extends Command {
   static paths = [[`migrate`, "rollback"]];

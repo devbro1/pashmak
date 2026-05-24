@@ -1,4 +1,4 @@
-import { parse, format } from 'date-fns';
+import { format, parse } from 'date-fns';
 
 export function mutateDbDate(value: string): Date {
   return parse(value, 'yyyy-MM-dd HH:mm:ss.SSS', new Date());
@@ -8,6 +8,8 @@ export function castDbDate(value: Date): string {
   return format(value, 'yyyy-MM-dd HH:mm:ss.SSS');
 }
 
+export const uuidV4Default = () => crypto.randomUUID();
+
 type AttributeOptions = {
   primaryKey?: boolean;
   incrementingPrimaryKey?: boolean;
@@ -15,12 +17,12 @@ type AttributeOptions = {
   mutator?: Function;
   setter?: Function;
   getter?: Function;
-  default?: any;
+  default?: any | (() => any);
   guarded?: boolean;
 };
 
 export function Attribute(options: AttributeOptions = {}) {
-  return function (target: any, propertyKey: string) {
+  return (target: any, propertyKey: string) => {
     if (options.primaryKey === true) {
       target._primary_keys = [...(target._primary_keys || []), propertyKey];
       target._incrementing_primary_keys =

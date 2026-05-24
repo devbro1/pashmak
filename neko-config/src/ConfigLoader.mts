@@ -1,8 +1,8 @@
+import { Arr } from '@devbro/neko-helper';
 import * as fs from 'fs';
+import * as yaml from 'js-yaml';
 import * as path from 'path';
 import { pathToFileURL } from 'url';
-import * as yaml from 'js-yaml';
-import { Arr } from '@devbro/neko-helper';
 
 /**
  * Configuration options for the ConfigLoader.
@@ -55,7 +55,7 @@ export class ConfigLoader {
    * @returns The loaded and merged configuration object
    */
   async load(): Promise<Record<string, any>> {
-    let rc: Record<string, any> | undefined = undefined;
+    let rc: Record<string, any> | undefined;
 
     // Try to load files with each allowed extension
     for (const ext of this.allowed_extensions) {
@@ -138,7 +138,7 @@ export class ConfigLoader {
     let envConfig = module[envKey] || {};
 
     // resolve any promises in defaultConfig and envConfig
-    let resolver = async (value: any) => {
+    const resolver = async (value: any) => {
       if (value instanceof Promise) {
         return await value;
       }

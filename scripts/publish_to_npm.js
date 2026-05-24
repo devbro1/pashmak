@@ -18,7 +18,7 @@ for (const wc of wcs) {
 
   console.warn(wc, remote_version);
 
-  let local_version = workspaces[wc].packageJson.version;
+  const local_version = workspaces[wc].packageJson.version;
 
   if (remote_version === local_version) {
     console.log(

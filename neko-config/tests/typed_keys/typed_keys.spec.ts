@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, test } from 'vitest';
 import { Config } from '@/index.ts';
 
 // Augment the ConfigKeys interface with typed keys for testing

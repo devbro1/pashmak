@@ -1,4 +1,4 @@
-import { QueueTransportInterface } from '../Interfaces.mjs';
+import type { QueueTransportInterface } from '../Interfaces.mjs';
 
 export class AsyncTransport implements QueueTransportInterface {
   // in-memory async transport implementation

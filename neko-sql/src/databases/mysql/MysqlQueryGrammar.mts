@@ -1,6 +1,6 @@
-import { Query } from '../../Query.mjs';
+import type { Query } from '../../Query.mjs';
 import { QueryGrammar } from '../../QueryGrammar.mjs';
-import { CompiledSql } from '../../types.mjs';
+import type { CompiledSql } from '../../types.mjs';
 
 export class MysqlQueryGrammar extends QueryGrammar {
   compileInsertGetId(
@@ -12,7 +12,7 @@ export class MysqlQueryGrammar extends QueryGrammar {
   }
 
   postProcessGetInsertId(result: any) {
-    let rc = [];
+    const rc = [];
     for (let i = 0; i < result.affectedRows; i++) {
       rc.push({ id: result.insertId + i });
     }

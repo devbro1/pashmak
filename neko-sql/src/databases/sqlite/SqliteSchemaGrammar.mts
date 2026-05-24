@@ -1,57 +1,79 @@
-import { Column } from '../../Blueprint.mjs';
+import type { Column } from '../../Blueprint.mjs';
+import { Expression } from '../../Expression.mjs';
 import { SchemaGrammar } from '../../SchemaGrammar.mjs';
 
 export class SqliteSchemaGrammar extends SchemaGrammar {
+  compileColumn(column: Column): string {
+    const rc = [`${column.columnName}`];
 
-    compileColumn(column: Column): string {
-        const rc = [`${column.columnName}`];
-    
-        if (column.properties.type === 'string') {
-          rc.push('varchar(' + column.properties.length + ')');
-        } else if (column.properties.type === 'char') {
-          rc.push('char');
-        } else if (column.properties.type === 'boolean') {
-          rc.push('boolean');
-        } else if (column.properties.type === 'integer') {
-          rc.push('integer');
-        } else if (column.properties.type === 'text') {
-          rc.push('text');
-        } else if (column.properties.type === 'timestamp') {
-          rc.push('timestamp');
-        } else if (column.properties.type === 'timestampz') {
-          rc.push('timestamp with time zone');
-        } else if (column.properties.type === 'serial') {
-          rc.push('INTEGER');
-        } else if (column.properties.type === 'float') {
-          rc.push('float');
-        } else if (column.properties.type === 'double') {
-          rc.push('double precision');
-        } else if (column.properties.type === 'date') {
-          rc.push('date');
-        } else if (column.properties.type === 'json') {
-          rc.push('json');
-        } else if (column.properties.type === 'jsonb') {
-          rc.push('jsonb');
-        } else if (column.properties.type === 'raw') {
-          return column.columnName;
-        } else {
-          throw new Error('Unknown column type: ' + column.properties.type);
-        }
+    if (column.properties.type === 'string') {
+      rc.push('varchar(' + column.properties.length + ')');
+    } else if (column.properties.type === 'char') {
+      rc.push('char');
+    } else if (column.properties.type === 'boolean') {
+      rc.push('boolean');
+    } else if (column.properties.type === 'integer') {
+      rc.push('integer');
+    } else if (column.properties.type === 'text') {
+      rc.push('text');
+    } else if (column.properties.type === 'timestamp') {
+      rc.push('timestamp');
+    } else if (column.properties.type === 'timestampz') {
+      rc.push('timestamp with time zone');
+    } else if (column.properties.type === 'serial') {
+      rc.push('INTEGER');
+    } else if (column.properties.type === 'float') {
+      rc.push('float');
+    } else if (column.properties.type === 'double') {
+      rc.push('double precision');
+    } else if (column.properties.type === 'date') {
+      rc.push('date');
+    } else if (column.properties.type === 'json') {
+      rc.push('json');
+    } else if (column.properties.type === 'jsonb') {
+      rc.push('jsonb');
+    } else if (column.properties.type === 'uuid') {
+      rc.push('varchar(36)');
+    } else if (column.properties.type === 'raw') {
+      return column.columnName;
+    } else {
+      throw new Error('Unknown column type: ' + column.properties.type);
+    }
 
-        if (column.properties.nullable) {
-          rc.push('null');
-        } else {
-          rc.push('not null');
-        }
-    
-        if (column.properties.unique) {
-          rc.push('unique');
-        }
-    
-        if (column.properties.default !== null) {
-          rc.push('default ' + this.escape(column.properties.default));
-        }
-    
-        return rc.join(' ');
-      }
+    if (column.properties.nullable) {
+      rc.push('null');
+    } else {
+      rc.push('not null');
+    }
+
+    if (column.properties.unique) {
+      rc.push('unique');
+    }
+
+    if (column.properties.default !== null) {
+      rc.push('default ' + this.escape(column.properties.default));
+    }
+
+    return rc.join(' ');
+  }
+
+  getDefaultUuid(): Expression {
+    return new Expression(
+      "lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-' || '4' || substr(lower(hex(randomblob(2))),2) || '-' || substr('89ab',abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))),2) || '-' || lower(hex(randomblob(6)))"
+    );
+  }
+
+  getDefaultUuidV7(): Expression {
+    // UUID v7: 48-bit ms timestamp | 0111 (ver) | 12-bit random | 10 (var) | 62-bit random
+    // Uses unixepoch('subsec') (SQLite ≥3.38) for millisecond-precision Unix timestamp.
+    return new Expression(
+      'lower(' +
+        "printf('%08x', (cast(unixepoch('subsec') * 1000 as integer) >> 16) & 0xffffffff) || '-' || " +
+        "printf('%04x', cast(unixepoch('subsec') * 1000 as integer) & 0xffff) || '-' || " +
+        "'7' || substr(hex(randomblob(2)), 2) || '-' || " +
+        "substr('89ab', abs(random()) % 4 + 1, 1) || substr(hex(randomblob(2)), 2) || '-' || " +
+        'hex(randomblob(6))' +
+        ')'
+    );
+  }
 }

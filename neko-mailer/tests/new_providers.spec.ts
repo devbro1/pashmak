@@ -1,10 +1,10 @@
 import { describe, expect, test } from "vitest";
 import {
-  SendGridProvider,
+  MailchimpProvider,
   MailgunProvider,
   PostmarkProvider,
   ProtonMailProvider,
-  MailchimpProvider,
+  SendGridProvider,
 } from "@/index";
 
 describe("new provider tests", () => {

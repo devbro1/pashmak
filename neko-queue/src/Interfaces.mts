@@ -1,7 +1,7 @@
 export interface QueueMessageInterface {
   getMessage(): Promise<string>;
   setMessage(value: string): Promise<void>;
-  validateMessage(): Promise<Boolean>;
+  validateMessage(): Promise<boolean>;
   processMessage(): Promise<void>;
 }
 

@@ -42,31 +42,31 @@ describe('scheduler testing', () => {
 
     scheduler.findSchedule('test2')?.trigger();
 
-    // @ts-ignore
+    // @ts-expect-error
     expect(scheduler.findSchedule('test2')?.cronJob).toBeUndefined;
     scheduler.findSchedule('test2')?.start();
-    // @ts-ignore
+    // @ts-expect-error
     expect(scheduler.findSchedule('test2')?.cronJob).toBeDefined();
 
     scheduler.findSchedule('test2')?.start();
-    // @ts-ignore
+    // @ts-expect-error
     expect(scheduler.findSchedule('test2')?.cronJob).toBeDefined();
 
     scheduler.findSchedule('test2')?.stop();
-    // @ts-ignore
+    // @ts-expect-error
     expect(scheduler.findSchedule('test2')?.cronJob).toBeUndefined;
 
     scheduler.start();
 
     for (const schedule of scheduler.getSchedules()) {
-      // @ts-ignore
+      // @ts-expect-error
       expect(schedule.cronJob).toBeDefined();
     }
 
     scheduler.stop();
 
     for (const schedule of scheduler.getSchedules()) {
-      // @ts-ignore
+      // @ts-expect-error
       expect(schedule.cronJob).toBeUndefined();
     }
 

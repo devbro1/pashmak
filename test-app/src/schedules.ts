@@ -1,7 +1,5 @@
-import { scheduler } from "@devbro/pashmak/facades";
 import { context_provider } from "@devbro/pashmak/context";
-import { db } from "@devbro/pashmak/facades";
-import { logger } from "@devbro/pashmak/facades";
+import { logger, scheduler } from "@devbro/pashmak/facades";
 
 scheduler().setContextWrapper(
   (fn: () => Promise<void>): (() => Promise<void>) => {

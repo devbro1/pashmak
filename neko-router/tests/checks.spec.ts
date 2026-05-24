@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { Router } from '../src';
-import { Request, Response } from '../src/types.mjs';
+import type { Request, Response } from '../src/types.mjs';
 
 describe('addCheck tests', () => {
   test('route-level check: selects route based on accept-version header', async () => {
@@ -18,13 +18,21 @@ describe('addCheck tests', () => {
       })
       .addCheck((req) => req.headers?.['accept-version'] === '2');
 
-    const reqV1 = { url: '/api/users', method: 'GET', headers: { 'accept-version': '1' } } as Request;
+    const reqV1 = {
+      url: '/api/users',
+      method: 'GET',
+      headers: { 'accept-version': '1' },
+    } as Request;
     const resV1 = {} as Response;
     const compiledV1 = router.getCompiledRoute(reqV1, resV1);
     expect(compiledV1).toBeDefined();
     await expect(compiledV1!.route.handler(reqV1, resV1)).resolves.toBe('v1 users');
 
-    const reqV2 = { url: '/api/users', method: 'GET', headers: { 'accept-version': '2' } } as Request;
+    const reqV2 = {
+      url: '/api/users',
+      method: 'GET',
+      headers: { 'accept-version': '2' },
+    } as Request;
     const resV2 = {} as Response;
     const compiledV2 = router.getCompiledRoute(reqV2, resV2);
     expect(compiledV2).toBeDefined();
@@ -60,16 +68,28 @@ describe('addCheck tests', () => {
     });
 
     // v1 requests should work
-    const reqV1 = { url: '/api/v1/users', method: 'GET', headers: { 'accept-version': '1' } } as Request;
+    const reqV1 = {
+      url: '/api/v1/users',
+      method: 'GET',
+      headers: { 'accept-version': '1' },
+    } as Request;
     const compiledV1 = router.getCompiledRoute(reqV1, {} as Response);
     expect(compiledV1).toBeDefined();
 
     // v2 requests should be blocked (router-level check fails)
-    const reqV2 = { url: '/api/v1/users', method: 'GET', headers: { 'accept-version': '2' } } as Request;
+    const reqV2 = {
+      url: '/api/v1/users',
+      method: 'GET',
+      headers: { 'accept-version': '2' },
+    } as Request;
     const compiledV2 = router.getCompiledRoute(reqV2, {} as Response);
     expect(compiledV2).toBeUndefined();
 
-    const reqV2Orders = { url: '/api/v1/orders', method: 'GET', headers: { 'accept-version': '2' } } as Request;
+    const reqV2Orders = {
+      url: '/api/v1/orders',
+      method: 'GET',
+      headers: { 'accept-version': '2' },
+    } as Request;
     const compiledV2Orders = router.getCompiledRoute(reqV2Orders, {} as Response);
     expect(compiledV2Orders).toBeUndefined();
   });
@@ -102,7 +122,11 @@ describe('addCheck tests', () => {
     expect(compiledUsersNoVersion).toBeUndefined();
 
     // Sub-router route with correct header should work
-    const reqV2Users = { url: '/api/users', method: 'GET', headers: { 'accept-version': '2' } } as Request;
+    const reqV2Users = {
+      url: '/api/users',
+      method: 'GET',
+      headers: { 'accept-version': '2' },
+    } as Request;
     const compiledUsersV2 = parentRouter.getCompiledRoute(reqV2Users, {} as Response);
     expect(compiledUsersV2).toBeDefined();
   });

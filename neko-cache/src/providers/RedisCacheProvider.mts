@@ -1,6 +1,6 @@
+import type { JSONObject, JSONValue } from '@devbro/neko-helper';
 import type * as RedisModule from 'redis';
-import { CacheProviderInterface } from '../CacheProviderInterface.mjs';
-import { JSONValue, JSONObject } from '@devbro/neko-helper';
+import type { CacheProviderInterface } from '../CacheProviderInterface.mjs';
 import { loadPackage } from '../helper.mjs';
 
 export type RedisCacheProviderConfig = RedisModule.RedisClientOptions;
@@ -50,7 +50,7 @@ export class RedisCacheProvider implements CacheProviderInterface {
    */
   async get(key: string): Promise<JSONValue | JSONObject | undefined> {
     await this.ensureConnection();
-    let rc = this.client.get(key);
+    const rc = this.client.get(key);
     return rc.then((value) => {
       if (value === null || value === undefined) {
         return undefined;

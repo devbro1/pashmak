@@ -1,14 +1,14 @@
-import { connection_events, Connection as ConnectionAbs } from '../../Connection.mjs';
-import type { Client, PoolClient, PoolConfig } from 'pg';
-import type pg from 'pg';
-import { CompiledSql } from '../../types.mjs';
-import { Query } from '../../Query.mjs';
-import { PostgresqlQueryGrammar } from './PostgresqlQueryGrammar.mjs';
-import { Schema } from '../../Schema.mjs';
-import { PostgresqlSchemaGrammar } from './PostgresqlSchemaGrammar.mjs';
-import type pg_cursor from 'pg-cursor';
 import { EventManager } from '@devbro/neko-helper';
+import type pg from 'pg';
+import type { Client, PoolClient, PoolConfig } from 'pg';
+import type pg_cursor from 'pg-cursor';
+import { Connection as ConnectionAbs, type connection_events } from '../../Connection.mjs';
 import { loadPackage } from '../../helper.mjs';
+import { Query } from '../../Query.mjs';
+import { Schema } from '../../Schema.mjs';
+import type { CompiledSql } from '../../types.mjs';
+import { PostgresqlQueryGrammar } from './PostgresqlQueryGrammar.mjs';
+import { PostgresqlSchemaGrammar } from './PostgresqlSchemaGrammar.mjs';
 
 export type PostgresqlConfig = PoolConfig;
 

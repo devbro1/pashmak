@@ -1,4 +1,4 @@
-import { ControllerDecoratorOptions, HttpMethod, MiddlewareProvider } from './types.mjs';
+import type { ControllerDecoratorOptions, HttpMethod, MiddlewareProvider } from './types.mjs';
 
 export class BaseController {
   declare static routes: {
@@ -11,12 +11,12 @@ export class BaseController {
   static baseMiddlewares: MiddlewareProvider[];
 
   static getInstance() {
-    return new this();
+    return new BaseController();
   }
 }
 
 export function Controller(path: string, options: ControllerDecoratorOptions = {}): ClassDecorator {
-  return function (target: any) {
+  return (target: any) => {
     (target as any).routes = (target as any).routes || [];
     (target as any).basePath = path;
     (target as any).baseMiddlewares = options.middlewares || [];
@@ -28,7 +28,7 @@ function createHttpDecorator(data: {
   path: string;
   middlewares: MiddlewareProvider[];
 }): MethodDecorator {
-  return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+  return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
     const ctor = target.constructor;
     if (!ctor.routes) ctor.routes = [];
     ctor.routes.push({
@@ -49,7 +49,7 @@ function createHttpDecorator(data: {
       );
       for (const paramKey of paramCustomKeys) {
         const paramIndex = parseInt((paramKey as string).split(':')[1]);
-        let method = Reflect.get(target.constructor, paramKey.toString());
+        const method = Reflect.get(target.constructor, paramKey.toString());
         if (typeof paramIndex === 'number' && typeof method === 'function') {
           args[paramIndex] = await method();
         }

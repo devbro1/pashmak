@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, test } from 'vitest';
 import { Config } from '@/index.ts';
 
 describe('Config class tests', () => {
@@ -332,14 +332,14 @@ describe('Config class tests', () => {
     });
 
     test('functional values', () => {
-      let c = new Config();
+      const c = new Config();
       c.load({
-        'v1' : () => 100,
-        'v2': 200
+        v1: () => 100,
+        v2: 200,
       });
 
       expect(c.get('v2')).toBe(200);
       expect(c.get('v1')).toBe(100);
-    })
+    });
   });
 });

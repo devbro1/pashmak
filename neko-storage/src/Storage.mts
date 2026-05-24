@@ -1,7 +1,7 @@
-import { ReadStream } from 'fs';
-import { Stream } from 'stream';
-import { Metadata } from './types.mjs';
-import { StorageProviderInterface } from './StorageProviderInterface.mjs';
+import type { ReadStream } from 'fs';
+import type { Stream } from 'stream';
+import type { StorageProviderInterface } from './StorageProviderInterface.mjs';
+import type { Metadata } from './types.mjs';
 
 export class Storage {
   constructor(protected provider: StorageProviderInterface) {}

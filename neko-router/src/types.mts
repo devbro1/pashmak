@@ -1,5 +1,5 @@
-import { IncomingMessage, ServerResponse } from 'http';
-import { Middleware } from './Middleware.mjs';
+import type { IncomingMessage, ServerResponse } from 'http';
+import type { Middleware } from './Middleware.mjs';
 
 export type Request = IncomingMessage & {
   params: any;

@@ -1,5 +1,5 @@
 import { FlexibleFactory } from '@devbro/neko-helper';
-import { StorageProviderInterface } from './StorageProviderInterface.mjs';
+import type { StorageProviderInterface } from './StorageProviderInterface.mjs';
 
 export class StorageProviderFactory {
   static instance: FlexibleFactory<StorageProviderInterface> =

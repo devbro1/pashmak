@@ -5,12 +5,13 @@ how this command should work:
 <command> merge-files # file lists/details are in config
 <command> # will show help
 */
-import { cli, router } from "../../../facades.mjs";
-import { Command, Option } from "clipanion";
-import path from "path";
-import * as fs from "fs/promises";
-import { config } from "../../../config.mjs";
+
 import { Arr } from "@devbro/neko-helper";
+import { Command, Option } from "clipanion";
+import * as fs from "fs/promises";
+import path from "path";
+import { config } from "../../../config.mjs";
+import { cli, router } from "../../../facades.mjs";
 
 export class GenerateApiDocsCommand extends Command {
   static paths = [[`generate`, `apidocs`]];
@@ -148,7 +149,7 @@ api_docs: {
 
   private async executeMergeFiles() {
     this.context.stdout.write(`Merging OpenAPI files...\n`);
-    let configPath = this.config || "api_docs";
+    const configPath = this.config || "api_docs";
 
     const files_to_merge: string[] = config.get(`${configPath}.merge_files`);
     let final_api_docs = {};
@@ -181,7 +182,7 @@ api_docs: {
   private extractParameters(routePath: string): any[] {
     const paramRegex = /:([a-zA-Z0-9_]+)/g;
     const parameters: any[] = [];
-    let match;
+    let match: any;
 
     while ((match = paramRegex.exec(routePath)) !== null) {
       parameters.push({

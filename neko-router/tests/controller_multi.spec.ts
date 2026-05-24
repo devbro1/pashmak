@@ -1,7 +1,14 @@
 import { describe, expect, test } from 'vitest';
-import { Middleware, Router } from '../src';
-import { Request, Response } from '../src/types.mjs';
-import { BaseController, Get, Post, Controller, createParamDecorator } from '../src';
+import {
+  BaseController,
+  Controller,
+  createParamDecorator,
+  Get,
+  Middleware,
+  Post,
+  Router,
+} from '../src';
+import type { Request, Response } from '../src/types.mjs';
 
 function ValidatedRequestBody(): ParameterDecorator {
   return createParamDecorator(async () => {
@@ -89,7 +96,7 @@ describe('multiple Controller Class', () => {
     );
 
     req = { url: '/api/v1/provinces/capital2', method: 'GET' } as Request;
-    let resolved2 = router.resolve(req);
+    const resolved2 = router.resolve(req);
     expect(resolved2).toBeUndefined();
   });
 

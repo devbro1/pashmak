@@ -1,11 +1,11 @@
-import { Command, Option } from "clipanion";
+import { input, Separator, select } from "@inquirer/prompts";
 import { Case } from "change-case-all";
-import path from "path";
-import * as fs from "fs/promises";
-import { fileURLToPath } from "url";
-import handlebars from "handlebars";
 import { execSync } from "child_process";
-import { select, Separator, input } from "@inquirer/prompts";
+import { Command, Option } from "clipanion";
+import * as fs from "fs/promises";
+import handlebars from "handlebars";
+import path from "path";
+import { fileURLToPath } from "url";
 
 export class CreateProjectCommand extends Command {
   static paths = [[`create`, `project`]];
@@ -189,7 +189,7 @@ export class CreateProjectCommand extends Command {
 
     // add commands to package.json based on the selected executor
     const packageJsonPath = path.join(this.projectPath, `package.json`);
-    let packageJson = JSON.parse(await fs.readFile(packageJsonPath, `utf-8`));
+    const packageJson = JSON.parse(await fs.readFile(packageJsonPath, `utf-8`));
     packageJson.type = "module";
     packageJson.scripts = packageJson.scripts || {};
     packageJson.scripts.prepare = "husky init";
@@ -242,7 +242,7 @@ export class CreateProjectCommand extends Command {
 
     // add linter configuration to package.json based on the selected linter
     const packageJsonPath = path.join(this.projectPath, `package.json`);
-    let packageJson = JSON.parse(await fs.readFile(packageJsonPath, `utf-8`));
+    const packageJson = JSON.parse(await fs.readFile(packageJsonPath, `utf-8`));
     if (this.linter === "biome") {
       packageJson.scripts.lint = "biome check . --ext .ts,.tsx";
       packageJson.scripts.format = "biome format . --ext .ts,.tsx --write";
@@ -575,7 +575,7 @@ export class CreateProjectCommand extends Command {
 
     //modify package.json with foldername
     const packageJsonPath = path.join(this.projectPath, "package.json");
-    let packageJson = JSON.parse(await fs.readFile(packageJsonPath, `utf-8`));
+    const packageJson = JSON.parse(await fs.readFile(packageJsonPath, `utf-8`));
     packageJson.name = Case.snake(path.basename(this.projectPath));
 
     await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));

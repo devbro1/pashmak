@@ -1,10 +1,10 @@
 import type * as GCPStorageModule from '@google-cloud/storage';
-import { Metadata, GCPStorageProviderConfig } from '../types.mjs';
-import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
-import { ReadStream } from 'fs';
-import Stream from 'stream';
+import type { ReadStream } from 'fs';
 import * as mime from 'mime-types';
+import Stream from 'stream';
 import { loadPackage } from '../helper.mjs';
+import type { StorageProviderInterface } from '../StorageProviderInterface.mjs';
+import type { GCPStorageProviderConfig, Metadata } from '../types.mjs';
 
 export class GCPStorageProvider implements StorageProviderInterface {
   private storage!: GCPStorageModule.Storage;

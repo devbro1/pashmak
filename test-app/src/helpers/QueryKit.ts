@@ -1,7 +1,7 @@
+import { cacheQuery } from "@devbro/pashmak/cache";
 import { logger } from "@devbro/pashmak/facades";
 import { JSONValue, Num } from "@devbro/pashmak/helper";
-import { Query } from "@devbro/pashmak/sql";
-import { cacheQuery } from "@devbro/pashmak/cache";
+import type { Query } from "@devbro/pashmak/sql";
 
 type orderByDirection = "asc" | "desc";
 export class QueryKit {
@@ -95,7 +95,7 @@ export class QueryKit {
       }
     }
 
-    let total_rows = await this.query.count();
+    const total_rows = await this.query.count();
 
     // apply sorting
     let sort_key = this.parameters.sort || this.defaultSortKey;
@@ -146,7 +146,7 @@ export class QueryKit {
 
 interface QueryFilter {
   getKey(): string;
-  apply(query: Query, key: String, value: any): undefined;
+  apply(query: Query, key: string, value: any): undefined;
 }
 
 interface CustomSort {

@@ -1,5 +1,5 @@
-import { Query } from '@devbro/neko-sql';
-import { BaseModel } from '../baseModel.mjs';
+import type { Query } from '@devbro/neko-sql';
+import type { BaseModel } from '../baseModel.mjs';
 
 export type assocationOptions = {
   sync: boolean; // if true, will save the target model right away

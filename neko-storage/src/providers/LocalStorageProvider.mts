@@ -1,10 +1,10 @@
-import Stream from 'stream';
+import { createReadStream, createWriteStream, type ReadStream } from 'fs';
 import * as fs from 'fs/promises';
-import { createWriteStream, createReadStream, ReadStream } from 'fs';
-import * as path from 'path';
 import * as mime from 'mime-types';
-import { Metadata, LocalStorageProviderConfig } from '../types.mjs';
-import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
+import * as path from 'path';
+import Stream from 'stream';
+import type { StorageProviderInterface } from '../StorageProviderInterface.mjs';
+import type { LocalStorageProviderConfig, Metadata } from '../types.mjs';
 
 export class LocalStorageProvider implements StorageProviderInterface {
   constructor(private config: LocalStorageProviderConfig) {

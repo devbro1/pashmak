@@ -1,6 +1,4 @@
-import { Blueprint } from "@devbro/pashmak/sql";
-import { Migration } from "@devbro/pashmak/sql";
-import { Schema } from "@devbro/pashmak/sql";
+import { Blueprint, Migration, type Schema } from "@devbro/pashmak/sql";
 
 export default class CreateAnimals extends Migration {
   async up(schema: Schema) {

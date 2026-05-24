@@ -1,10 +1,11 @@
-import { describe, expect, test, beforeAll, afterAll } from 'vitest';
+import { execSync } from 'child_process';
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import type { Connection } from '../src/Connection.mjs';
+import { PostgresqlConnection } from '../src/databases/postgresql/PostgresqlConnection.mjs';
+import { PostgresqlQueryGrammar } from '../src/databases/postgresql/PostgresqlQueryGrammar.mjs';
 import { Query } from '../src/Query.mjs';
 import { QueryGrammar } from '../src/QueryGrammar.mjs';
-import { PostgresqlConnection } from '../src/databases/postgresql/PostgresqlConnection.mjs';
-import { Connection } from '../src/Connection.mjs';
-import { execSync } from 'child_process';
-import { PostgresqlQueryGrammar } from '../src/databases/postgresql/PostgresqlQueryGrammar.mjs';
+
 describe('raw queries', () => {
   let conn1: Connection | null;
   let conn2: Connection | null;

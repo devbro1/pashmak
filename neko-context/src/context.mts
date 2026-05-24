@@ -57,7 +57,7 @@ export class ContextProvider {
 
   async run(callback: () => Promise<void>) {
     let cfunc = callback;
-    if (typeof this.preloader == 'function') {
+    if (typeof this.preloader === 'function') {
       cfunc = async () => {
         await this.preloader(callback);
       };
@@ -95,9 +95,7 @@ export function ctx() {
   return context_provider.getStore();
 }
 
-ctx.isActive = function (): boolean {
-  return context_provider.isActive();
-};
+ctx.isActive = (): boolean => context_provider.isActive();
 
 /**
  * returns storage of current execution context, unlike ctx() will return undefined instead of throwing an error

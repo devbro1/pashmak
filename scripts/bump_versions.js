@@ -10,20 +10,20 @@ const wcs = orderedWorkspaces.filter(
   (wc) => workspaces[wc].packageJson?.tags?.needsCompile,
 );
 
-let changedFiles = execSync("git diff --name-only master", {
+const changedFiles = execSync("git diff --name-only master", {
   cwd: workspacePath,
   // stdio: 'inherit',
 });
 
-let changed_files = changedFiles
+const changed_files = changedFiles
   .toString()
   .split("\n")
   .map((f) => f.trim())
   .filter((f) => f.length > 0);
 
-let wc_locations = Object.entries(workspaces).map(([, wc]) => wc.location);
+const wc_locations = Object.entries(workspaces).map(([, wc]) => wc.location);
 
-let to_bump = new Set();
+const to_bump = new Set();
 for (const loc of wc_locations) {
   if (changed_files.some((f) => f.startsWith(loc))) {
     to_bump.add(loc);
@@ -32,7 +32,7 @@ for (const loc of wc_locations) {
 
 // check if ${loc}/package.json has a line version already bumped
 for (const loc of to_bump) {
-  let pchanges = execSync(
+  const pchanges = execSync(
     `git diff HEAD ${loc}/package.json; git diff master ${loc}/package.json`,
     {
       cwd: workspacePath,
@@ -51,14 +51,14 @@ for (const loc of to_bump) {
 }
 
 for (const loc of to_bump) {
-  let packageJson = JSON.parse(
+  const packageJson = JSON.parse(
     fs.readFileSync(path.join(loc, "package.json"), "utf-8"),
   );
-  let versionParts = packageJson.version
+  const versionParts = packageJson.version
     .split(".")
     .map((num) => parseInt(num, 10));
   versionParts[2] += 1; // Increment patch version
-  let newVersion = versionParts.join(".");
+  const newVersion = versionParts.join(".");
   packageJson.version = newVersion;
   fs.writeFileSync(
     path.join(loc, "package.json"),

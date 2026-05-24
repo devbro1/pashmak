@@ -1,7 +1,7 @@
-import { describe, expect, test, beforeEach, vi, afterEach } from 'vitest';
-import { AwsSqsTransport } from '../../src/transports/AwsSqsTransport.mjs';
 import { SQSClient } from '@aws-sdk/client-sqs';
 import { sleep } from '@devbro/neko-helper';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { AwsSqsTransport } from '../../src/transports/AwsSqsTransport.mjs';
 
 // Mock SQS Client
 vi.mock('@aws-sdk/client-sqs', () => {

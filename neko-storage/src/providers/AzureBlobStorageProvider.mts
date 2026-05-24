@@ -1,10 +1,10 @@
 import type * as AzureStorageBlob from '@azure/storage-blob';
-import { Metadata, AzureBlobStorageProviderConfig } from '../types.mjs';
-import { StorageProviderInterface } from '../StorageProviderInterface.mjs';
-import { ReadStream } from 'fs';
-import Stream, { Readable } from 'stream';
+import type { ReadStream } from 'fs';
 import * as mime from 'mime-types';
+import Stream, { type Readable } from 'stream';
 import { loadPackage } from '../helper.mjs';
+import type { StorageProviderInterface } from '../StorageProviderInterface.mjs';
+import type { AzureBlobStorageProviderConfig, Metadata } from '../types.mjs';
 
 export class AzureBlobStorageProvider implements StorageProviderInterface {
   private blobServiceClient!: AzureStorageBlob.BlobServiceClient;

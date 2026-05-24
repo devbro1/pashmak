@@ -1,9 +1,9 @@
-import { describe, expect, test, beforeEach, afterEach } from "vitest";
-import { GenerateApiDocsCommand } from "../src/app/console/generate/GenerateApiDocsCommand.mjs";
-import { router } from "../src/facades.mjs";
+import { Cli } from "clipanion";
 import * as fs from "fs/promises";
 import path from "path";
-import { Cli } from "clipanion";
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { GenerateApiDocsCommand } from "../src/app/console/generate/GenerateApiDocsCommand.mjs";
+import { router } from "../src/facades.mjs";
 
 describe("GenerateApiDocsCommand", () => {
   const testPublicDir = "/tmp/test-public";

@@ -1,6 +1,6 @@
-import { JSONValue } from '@devbro/neko-helper';
-import { CacheProviderInterface } from './CacheProviderInterface.mjs';
+import type { JSONValue } from '@devbro/neko-helper';
 import { createHash } from 'crypto';
+import type { CacheProviderInterface } from './CacheProviderInterface.mjs';
 
 /**
  * Options for cache operations.

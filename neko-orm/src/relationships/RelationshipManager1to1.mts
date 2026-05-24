@@ -1,7 +1,7 @@
-import { Query } from '@devbro/neko-sql';
-import { BaseModel } from '../baseModel.mjs';
-import { assocationOptions, RelationFactoryOptionsType } from './types.mjs';
+import type { Query } from '@devbro/neko-sql';
+import type { BaseModel } from '../baseModel.mjs';
 import { RelationshipManager } from './RelationshipManager.mjs';
+import type { assocationOptions, RelationFactoryOptionsType } from './types.mjs';
 
 export class RelationshipManager1to1<
   Source extends BaseModel,
@@ -12,10 +12,10 @@ export class RelationshipManager1to1<
   }
 
   async get(): Promise<Target | undefined> {
-    let q = await this.getQuery();
-    let rows = await q.get();
+    const q = await this.getQuery();
+    const rows = await q.get();
 
-    if (rows.length == 0) {
+    if (rows.length === 0) {
       return undefined;
     }
 
@@ -23,7 +23,7 @@ export class RelationshipManager1to1<
   }
 
   async associate(obj: Target, options: assocationOptions = { sync: true }) {
-    let updates: Record<string, any> = {};
+    const updates: Record<string, any> = {};
     Object.entries(this.target_keys).forEach(([local_key, target_key]) => {
       updates[target_key] = this.sourceObject[local_key];
     });
@@ -36,7 +36,7 @@ export class RelationshipManager1to1<
   }
 
   async dissociate(obj: Target, options: assocationOptions = { sync: true }) {
-    let updates: Record<string, any> = {};
+    const updates: Record<string, any> = {};
     Object.entries(this.target_keys).forEach(([local_key, target_key]) => {
       updates[target_key] = undefined;
     });
@@ -46,7 +46,7 @@ export class RelationshipManager1to1<
   }
 
   async getBaseQuery(): Promise<Query> {
-    let q: Query = await this.targetModel.getQuery();
+    const q: Query = await this.targetModel.getQuery();
     Object.entries(this.target_keys).map(([local_key, target_key]) => {
       q.whereOp(target_key, '=', this.sourceObject[local_key]);
     });

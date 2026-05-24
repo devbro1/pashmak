@@ -1,6 +1,6 @@
 import { ctx } from "@devbro/pashmak/context";
-import { Request, Response } from "@devbro/pashmak/router";
 import { logger } from "@devbro/pashmak/facades";
+import type { Request, Response } from "@devbro/pashmak/router";
 
 export async function loggerMiddleware(
   req: Request,
