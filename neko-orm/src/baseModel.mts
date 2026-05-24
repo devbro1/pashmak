@@ -220,6 +220,7 @@ export class BaseModel {
         this[k] = await this._mutators[k](this[k]);
       }
     }
+    this._dirties.clear();
   }
 
   /**
@@ -556,5 +557,16 @@ export class BaseModel {
       return this._dirties.has(attribute);
     }
     return this._dirties.size > 0;
+  }
+
+  /**
+   * Checks if the model or specific attribute(s) have NOT been modified since the last save/create/reload.
+   *
+   * @param attribute - Optional. A single attribute name, an array of attribute names, or undefined to check all attributes
+   * @returns True if the specified attribute(s) have NOT been modified, false otherwise.
+   *          When called without parameters, returns true if no attribute has been modified.
+   */
+  isClean(attribute: string | string[] | undefined = undefined): boolean {
+    return !this.isDirty(attribute);
   }
 }

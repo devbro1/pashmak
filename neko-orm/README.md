@@ -992,6 +992,8 @@ For comprehensive documentation and guides, visit:
 - `delete()` - Delete model
 - `refresh()` - Reload from database
 - `toJSON()` - Convert to JSON object
+- `isDirty(attribute?)` - Check if model or specific attribute(s) have been modified
+- `isClean(attribute?)` - Check if model or specific attribute(s) have NOT been modified
 
 ### `@Attribute()` Decorator
 
