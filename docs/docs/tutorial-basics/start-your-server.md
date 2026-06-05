@@ -33,7 +33,9 @@ To start the HTTP server, scheduler, and queues all together:
 
 `pdev start` accepts flags to start indivitual services:
 
-- `--all`: Start all services (default)
+- `--all`: Start all services
 - `--http`: Start only the HTTP server
-- `--scheduler`: Start only the scheduler
-- `--queues`: Start only the queues
+- `--scheduler` / `--all-crons`: Start all scheduler jobs
+- `--cron <name>`: Start selected cron jobs (supports wildcards)
+- `--all-queues`: Start all queue listeners
+- `--queue <name>`: Start selected queue listeners (supports wildcards, use `connection:queue` for non-default connections)
