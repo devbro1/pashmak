@@ -1,0 +1,155 @@
+name: Security audit
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  dependency-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24.x"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Cache node_modules
+        uses: actions/cache@v5
+        with:
+          path: |
+            **/node_modules
+          key: node_modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run yarn audit
+        run: yarn audit --level low --json > audit-report.jsonl || true
+
+      - name: Build audit report
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+
+          const lines = fs
+            .readFileSync('audit-report.jsonl', 'utf8')
+            .split('\n')
+            .filter(Boolean);
+
+          let summary = null;
+          for (const line of lines) {
+            try {
+              const entry = JSON.parse(line);
+              if (entry.type === 'auditSummary') {
+                summary = entry.data;
+              }
+            } catch {
+              // ignore malformed lines
+            }
+          }
+
+          const vulnerabilities = summary?.vulnerabilities ?? {
+            info: 0,
+            low: 0,
+            moderate: 0,
+            high: 0,
+            critical: 0,
+          };
+
+          const high = Number(vulnerabilities.high ?? 0);
+          const critical = Number(vulnerabilities.critical ?? 0);
+          const shouldFail = high + critical > 0;
+
+          const markdown = [
+            '## Dependency Security Audit',
+            '',
+            '| Severity | Count |',
+            '| --- | ---: |',
+            `| Critical | ${critical} |`,
+            `| High | ${high} |`,
+            `| Moderate | ${Number(vulnerabilities.moderate ?? 0)} |`,
+            `| Low | ${Number(vulnerabilities.low ?? 0)} |`,
+            `| Info | ${Number(vulnerabilities.info ?? 0)} |`,
+            '',
+            shouldFail
+              ? '❌ High or critical vulnerabilities were found. The workflow will fail.'
+              : '✅ No high or critical vulnerabilities were found.',
+          ].join('\n');
+
+          fs.writeFileSync('audit-summary.json', JSON.stringify({ high, critical, shouldFail }, null, 2));
+          fs.writeFileSync('audit-report.md', `${markdown}\n`);
+          NODE
+
+      - name: Post audit summary
+        run: cat audit-report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload audit artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit-report
+          path: |
+            audit-report.jsonl
+            audit-summary.json
+            audit-report.md
+
+      - name: Comment audit report on PR
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('audit-report.md', 'utf8');
+            const marker = '<!-- security-audit-report -->';
+            const commentBody = `${marker}\n${body}`;
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+
+            const existing = comments.find(
+              (comment) => comment.user.type === 'Bot' && comment.body?.includes(marker),
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body: commentBody,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body: commentBody,
+              });
+            }
+
+      - name: Fail on high/critical vulnerabilities
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const result = JSON.parse(fs.readFileSync('audit-summary.json', 'utf8'));
+          if (result.shouldFail) {
+            console.error(`Found ${result.high} high and ${result.critical} critical vulnerabilities.`);
+            process.exit(1);
+          }
+          console.log('No high/critical vulnerabilities detected.');
+          NODE
