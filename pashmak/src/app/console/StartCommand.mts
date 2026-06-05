@@ -3,6 +3,19 @@ import { PostgresqlConnection } from '@devbro/neko-sql';
 import { Command, Option } from 'clipanion';
 import { cli, httpServer, logger, queue, scheduler } from '../../facades.mjs';
 
+type QueueTransportWithMaps = {
+  listeners?: Map<string, unknown>;
+  channels?: Map<string, unknown>;
+};
+
+type QueueConnectionWithTransport = {
+  transport?: QueueTransportWithMaps;
+};
+
+type SchedulerWithErrorHandler = ReturnType<typeof scheduler> & {
+  errorHandler?: (err: unknown, job: unknown) => void;
+};
+
 export class StartCommand extends Command {
   scheduler = Option.Boolean(`--scheduler`, false);
   http = Option.Boolean(`--http`, false);
@@ -24,8 +37,8 @@ export class StartCommand extends Command {
   }
 
   private getQueueListenerMap(queueConnection: ReturnType<typeof queue>): Map<string, unknown> | null {
-    const transport = (queueConnection as any).transport;
-    if (!transport || typeof transport !== 'object') {
+    const transport = (queueConnection as QueueConnectionWithTransport).transport;
+    if (!transport) {
       return null;
     }
 
@@ -77,7 +90,7 @@ export class StartCommand extends Command {
 
     if (this.crons?.length) {
       const scheduleManager = scheduler();
-      const errorHandler = (scheduleManager as any).errorHandler;
+      const errorHandler = (scheduleManager as SchedulerWithErrorHandler).errorHandler;
       const schedules = scheduleManager.getSchedules();
 
       for (const schedule of schedules) {

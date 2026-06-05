@@ -115,4 +115,51 @@ describe('StartCommand', () => {
     expect(cleanup.start).not.toHaveBeenCalled();
     expect(mocks.schedulerStart).not.toHaveBeenCalled();
   });
+
+  test('does not start queues when selectors are malformed or unmatched', async () => {
+    mocks.configValues.queues = { default: {}, secondary: {} };
+    mocks.queueConnections.default = {
+      transport: {
+        listeners: new Map([
+          ['email.welcome', vi.fn()],
+          ['invoice_paid', vi.fn()],
+        ]),
+      },
+      start: vi.fn(),
+    };
+    mocks.queueConnections.secondary = {
+      transport: {
+        listeners: new Map([['reports_daily', vi.fn()]]),
+      },
+      start: vi.fn(),
+    };
+
+    await runCommand(['start', '--queue', ':broken', '--queue', 'secondary:missing*']);
+
+    expect(mocks.queueConnections.default.start).not.toHaveBeenCalled();
+    expect(mocks.queueConnections.secondary.start).not.toHaveBeenCalled();
+    expect(Array.from(mocks.queueConnections.default.transport.listeners.keys())).toEqual([
+      'email.welcome',
+      'invoice_paid',
+    ]);
+  });
+
+  test('skips unnamed schedules when filtering with --cron', async () => {
+    const named = {
+      getName: () => 'daily-report',
+      setErrorHandler: vi.fn(),
+      start: vi.fn(),
+    };
+    const unnamed = {
+      getName: () => '',
+      setErrorHandler: vi.fn(),
+      start: vi.fn(),
+    };
+    mocks.schedules = [named, unnamed];
+
+    await runCommand(['start', '--cron', 'daily-*']);
+
+    expect(named.start).toHaveBeenCalledTimes(1);
+    expect(unnamed.start).not.toHaveBeenCalled();
+  });
 });
