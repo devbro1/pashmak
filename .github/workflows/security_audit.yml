@@ -33,61 +33,63 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: Run yarn audit
-        run: yarn audit --level low --json > audit-report.jsonl || true
+        run: |
+          yarn audit --level low --json > audit-report.jsonl || true
+          cat audit-report.jsonl | jq
 
       - name: Build audit report
-        run: |
-          node <<'NODE'
-          const fs = require('fs');
-
-          const lines = fs
-            .readFileSync('audit-report.jsonl', 'utf8')
-            .split('\n')
-            .filter(Boolean);
-
-          let summary = null;
-          for (const line of lines) {
-            try {
-              const entry = JSON.parse(line);
-              if (entry.type === 'auditSummary') {
-                summary = entry.data;
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+  
+            const lines = fs
+              .readFileSync('audit-report.jsonl', 'utf8')
+              .split('\n')
+              .filter(Boolean);
+  
+            let summary = null;
+            for (const line of lines) {
+              try {
+                const entry = JSON.parse(line);
+                if (entry.type === 'auditSummary') {
+                  summary = entry.data;
+                }
+              } catch {
+                // ignore malformed lines
               }
-            } catch {
-              // ignore malformed lines
             }
-          }
-
-          const vulnerabilities = summary?.vulnerabilities ?? {
-            info: 0,
-            low: 0,
-            moderate: 0,
-            high: 0,
-            critical: 0,
-          };
-
-          const high = Number(vulnerabilities.high ?? 0);
-          const critical = Number(vulnerabilities.critical ?? 0);
-          const shouldFail = high + critical > 0;
-
-          const markdown = [
-            '## Dependency Security Audit',
-            '',
-            '| Severity | Count |',
-            '| --- | ---: |',
-            `| Critical | ${critical} |`,
-            `| High | ${high} |`,
-            `| Moderate | ${Number(vulnerabilities.moderate ?? 0)} |`,
-            `| Low | ${Number(vulnerabilities.low ?? 0)} |`,
-            `| Info | ${Number(vulnerabilities.info ?? 0)} |`,
-            '',
-            shouldFail
-              ? '❌ High or critical vulnerabilities were found. The workflow will fail.'
-              : '✅ No high or critical vulnerabilities were found.',
-          ].join('\n');
-
-          fs.writeFileSync('audit-summary.json', JSON.stringify({ high, critical, shouldFail }, null, 2));
-          fs.writeFileSync('audit-report.md', `${markdown}\n`);
-          NODE
+  
+            const vulnerabilities = summary?.vulnerabilities ?? {
+              info: 0,
+              low: 0,
+              moderate: 0,
+              high: 0,
+              critical: 0,
+            };
+  
+            const high = Number(vulnerabilities.high ?? 0);
+            const critical = Number(vulnerabilities.critical ?? 0);
+            const shouldFail = high + critical > 0;
+  
+            const markdown = [
+              '## Dependency Security Audit',
+              '',
+              '| Severity | Count |',
+              '| --- | ---: |',
+              `| Critical | ${critical} |`,
+              `| High | ${high} |`,
+              `| Moderate | ${Number(vulnerabilities.moderate ?? 0)} |`,
+              `| Low | ${Number(vulnerabilities.low ?? 0)} |`,
+              `| Info | ${Number(vulnerabilities.info ?? 0)} |`,
+              '',
+              shouldFail
+                ? '❌ High or critical vulnerabilities were found. The workflow will fail.'
+                : '✅ No high or critical vulnerabilities were found.',
+            ].join('\n');
+  
+            fs.writeFileSync('audit-summary.json', JSON.stringify({ high, critical, shouldFail }, null, 2));
+            fs.writeFileSync('audit-report.md', `${markdown}\n`);
 
       - name: Post audit summary
         run: cat audit-report.md >> "$GITHUB_STEP_SUMMARY"
@@ -104,7 +106,7 @@ jobs:
       - name: Comment audit report on PR
         if: github.event_name == 'pull_request'
         continue-on-error: true
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
