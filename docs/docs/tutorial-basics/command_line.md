@@ -23,9 +23,11 @@ At least one option must be provided. If none are given, the CLI will print a us
 | Option        | Description                                      |
 | ------------- | ------------------------------------------------ |
 | `--http`      | Start the HTTP server                            |
-| `--scheduler` | Start the cron/task scheduler                    |
-| `--cron`      | Alias for `--scheduler`                          |
-| `--queue`     | Start all configured queue workers               |
+| `--scheduler` | Start all cron/task schedules                    |
+| `--all-crons` | Start all cron/task schedules                    |
+| `--cron`      | Start only matching cron names (supports `*`/`?`) |
+| `--all-queues`| Start all configured queue workers               |
+| `--queue`     | Start only matching queue listeners (supports `*`/`?`) |
 | `--all`       | Start all services (HTTP, scheduler, and queues) |
 
 ### Examples
@@ -35,7 +37,13 @@ At least one option must be provided. If none are given, the CLI will print a us
 pashmak start --http
 
 # Start the HTTP server and queue workers
-pashmak start --http --queue
+pashmak start --http --all-queues
+
+# Start only selected queues
+pashmak start --queue email_* --queue secondary:reports_*
+
+# Start only selected crons
+pashmak start --cron daily-* --cron hourly-sync
 
 # Start everything
 pashmak start --all
