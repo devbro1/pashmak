@@ -33,6 +33,7 @@ export class BaseModel {
   declare _dirties: Set<string>;
 
   constructor(initialData: any = {}) {
+    console.log('asd', this);
     this.tableName = pluralize(snakeCase(this.constructor.name));
 
     this._attributes = this._attributes || {};
@@ -67,7 +68,7 @@ export class BaseModel {
    * @returns The name of the model class
    */
   static getClassName() {
-    return BaseModel.name;
+    return this.name;
   }
 
   /**
@@ -241,7 +242,7 @@ export class BaseModel {
     id: number | string,
     options = { withGlobalScopes: true }
   ): Promise<InstanceType<T> | undefined> {
-    return BaseModel.findByPrimaryKey<T>({ id }, options);
+    return this.findByPrimaryKey<T>({ id }, options);
   }
 
   /**
@@ -265,8 +266,8 @@ export class BaseModel {
     conditions: object,
     options = { withGlobalScopes: true }
   ): Promise<T | undefined> {
-    const self = new BaseModel();
-    const q: Query = await (self.constructor as typeof BaseModel).getQuery(options);
+    const self = new this();
+    const q: Query = await this.getQuery(options);
 
     for (const [key, value] of Object.entries(conditions)) {
       q.whereOp(key, '=', value);
@@ -304,7 +305,7 @@ export class BaseModel {
     id: number | string,
     options = { withGlobalScopes: true }
   ): Promise<InstanceType<T>> {
-    const rc = await BaseModel.find<T>(id, options);
+    const rc = await this.find<T>(id, options);
     if (!rc) {
       throw new Error('Not found');
     }
@@ -334,8 +335,8 @@ export class BaseModel {
     keys: Record<string, Parameter>,
     options = { withGlobalScopes: true }
   ): Promise<any> {
-    const self = new BaseModel();
-    const q: Query = await (self.constructor as typeof BaseModel).getQuery(options);
+    const self = new this();
+    const q: Query = await this.getQuery(options);
 
     q.select([...self._primary_keys, ...self._fillable]);
     for (const key of self._primary_keys) {
@@ -369,7 +370,7 @@ export class BaseModel {
    * User.setConnection(() => getReadReplicaConnection());
    */
   public static setConnection(conn: Connection | (() => Connection)) {
-    BaseModel.connection = conn;
+    this.connection = conn;
   }
 
   /**
@@ -383,12 +384,12 @@ export class BaseModel {
    * await connection.raw('SELECT 1');
    */
   public static getConnection(): Connection {
-    if (typeof BaseModel.connection === 'undefined') {
+    if (typeof this.connection === 'undefined') {
       throw new Error('Connection is not defined');
-    } else if (typeof BaseModel.connection === 'function') {
-      return BaseModel.connection();
+    } else if (typeof this.connection === 'function') {
+      return this.connection();
     }
-    return BaseModel.connection;
+    return this.connection;
   }
 
   /**
@@ -429,12 +430,12 @@ export class BaseModel {
   ): ReturnType<typeof this.prototype.getLocalScopesQuery> {
     const opts = { ...options, withGlobalScopes: true };
     let QueryClass = Query;
-    if (typeof BaseModel.getLocalScopesQuery === 'function') {
-      QueryClass = BaseModel.getLocalScopesQuery();
+    if (typeof this.getLocalScopesQuery === 'function') {
+      QueryClass = this.getLocalScopesQuery();
     }
-    const conn = BaseModel.getConnection();
+    const conn = this.getConnection();
     let rc = new QueryClass(conn, conn.getQueryGrammar());
-    const self = new BaseModel();
+    const self = new this();
 
     rc.table(self.tableName);
 
@@ -513,7 +514,7 @@ export class BaseModel {
     initialData: any = {},
     exists: boolean = false
   ): T {
-    const rc = new BaseModel(initialData);
+    const rc = new this(initialData);
     rc._exists = exists;
     return rc as T;
   }
@@ -532,7 +533,7 @@ export class BaseModel {
    * console.log(user.id); // Auto-generated ID
    */
   public static async create<T extends BaseModel>(initialData: any = {}): Promise<T> {
-    const rc = new BaseModel(initialData);
+    const rc = new this(initialData);
     await rc.save();
     return rc as T;
   }

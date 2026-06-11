@@ -42,6 +42,7 @@ export class Router {
       const urlPath = path.join(basePath, route.path);
       this.addRoute(route.methods, urlPath, async (req: Request, res: Response) => {
         const controllerInstance = controller.getInstance();
+        console.log('asd', controllerInstance);
         // @ts-expect-error
         return await controllerInstance[route.handler]();
       }).addMiddleware([...controller.baseMiddlewares, ...route.middlewares]);
