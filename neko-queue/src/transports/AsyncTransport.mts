@@ -51,7 +51,7 @@ export class AsyncTransport implements QueueTransportInterface {
     return Promise.resolve();
   }
 
-  startListening(): Promise<void> {
+  startListening(channelList: string[] = []): Promise<void> {
     if (!this.running) {
       this.running = true;
       // start processing any queued messages

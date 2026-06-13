@@ -38,7 +38,7 @@ export class MemoryTransport implements QueueTransportInterface {
     this.channels.set(channel, callback);
   }
 
-  async startListening(): Promise<void> {
+  async startListening(channelList: string[] = []): Promise<void> {
     this.repeater.start();
   }
 
