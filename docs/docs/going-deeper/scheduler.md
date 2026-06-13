@@ -68,9 +68,14 @@ import { scheduler } from "@devbro/pashmak/facades";
 // Start all scheduled tasks
 scheduler().start();
 
+// Start only specific named jobs
+scheduler().start(["session_cleanup", "daily_digest"]);
+
 // Stop all scheduled tasks
 scheduler().stop();
 ```
+
+`start()` accepts an optional `jobNames` array. When provided, only jobs whose name matches an entry in the array are started. Jobs without a name set via `.setName()` are never started when a filter is used. Passing an empty array (or omitting the argument) starts all registered jobs.
 
 ### getSchedules()
 
@@ -192,12 +197,18 @@ scheduler().setErrorHandler(async (error, scheduleName) => {
 
 ## Running the Scheduler
 
-by default, the scheduler is start when the http server using `--all` flag.
+The scheduler starts automatically when using the `--all` flag, or can be started explicitly:
 
 ```bash
+# Start all services including the scheduler
 npm run pdev start --all
-# or
+
+# Start only the scheduler (--cron is an alias for --scheduler)
 yarn pdev start --scheduler
-# or
-pnpm pdev start --cron # alternative name for --scheduler
+pnpm pdev start --cron
+
+# Start only specific named cron jobs
+pnpm pdev start --cron --cron-names session_cleanup --cron-names daily_digest
 ```
+
+See [Start Your Server](../tutorial-basics/start-your-server.md) for more details on the `--cron-names` filter.
