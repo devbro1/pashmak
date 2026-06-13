@@ -276,9 +276,11 @@ export class CustomTransport implements QueueTransportInterface {
   }
 
   /**
-   * Start listening for messages on all registered channels
+   * Start listening for messages on all registered channels.
+   * If channelList is non-empty, only channels included in the list are started.
+   * An empty array means "start all registered channels".
    */
-  async startListening(): Promise<void> {
+  async startListening(channelList: string[] = []): Promise<void> {
     // Your implementation
   }
 
@@ -339,9 +341,11 @@ export class CustomTransport implements QueueTransportInterface {
   }
 
   /**
-   * Start listening for messages on all registered channels
+   * Start listening for messages on all registered channels.
+   * If channelList is non-empty, only channels included in the list are started.
+   * An empty array means "start all registered channels".
    */
-  async startListening(): Promise<void> {
+  async startListening(channelList: string[] = []): Promise<void> {
     // Your implementation
   }
 
