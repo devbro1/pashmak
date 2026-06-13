@@ -241,7 +241,7 @@ export class BaseModel {
     id: number | string,
     options = { withGlobalScopes: true }
   ): Promise<InstanceType<T> | undefined> {
-    return BaseModel.findByPrimaryKey<T>({ id }, options);
+    return this.findByPrimaryKey<T>({ id }, options);
   }
 
   /**
@@ -304,7 +304,7 @@ export class BaseModel {
     id: number | string,
     options = { withGlobalScopes: true }
   ): Promise<InstanceType<T>> {
-    const rc = await BaseModel.find<T>(id, options);
+    const rc = await this.find<T>(id, options);
     if (!rc) {
       throw new Error('Not found');
     }
@@ -403,7 +403,6 @@ export class BaseModel {
    * await query.where('status', 'active').get();
    */
   public getQuery(): ReturnType<typeof BaseModel.getQuery> {
-    console.log('getQuery called on instance of', this.getClassName());
     return (this.constructor as typeof BaseModel).getQuery();
   }
 
@@ -430,13 +429,12 @@ export class BaseModel {
   ): ReturnType<typeof this.prototype.getLocalScopesQuery> {
     const opts = { ...options, withGlobalScopes: true };
     let QueryClass = Query;
-    if (typeof BaseModel.getLocalScopesQuery === 'function') {
-      QueryClass = BaseModel.getLocalScopesQuery();
+    if (typeof this.getLocalScopesQuery === 'function') {
+      QueryClass = this.getLocalScopesQuery();
     }
-    const conn = BaseModel.getConnection();
+    const conn = this.getConnection();
     let rc = new QueryClass(conn, conn.getQueryGrammar());
     const self = new this();
-    console.log('self', self);
 
     rc.table(self.tableName);
 
