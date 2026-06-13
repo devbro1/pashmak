@@ -371,7 +371,7 @@ export class RedisTransport implements QueueTransportInterface {
    * Starts listening for messages on all registered channels.
    * Initiates polling and pub/sub for each registered listener.
    */
-  async startListening(): Promise<void> {
+  async startListening(channelList: string[] = []): Promise<void> {
     if (this.listening) {
       return;
     }
@@ -382,9 +382,9 @@ export class RedisTransport implements QueueTransportInterface {
 
     // Start processing for all registered listeners
     await Promise.all(
-      Array.from(this.listeners.entries()).map(([channel, listener]) =>
-        this.startChannelProcessing(channel, listener)
-      )
+      Array.from(this.listeners.entries())
+        .filter(([channel]) => channelList.length === 0 || channelList.includes(channel))
+        .map(([channel, listener]) => this.startChannelProcessing(channel, listener))
     );
   }
 
