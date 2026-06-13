@@ -8,6 +8,9 @@ export class StartCommand extends Command {
   cron = Option.Boolean(`--cron`, false);
   http = Option.Boolean(`--http`, false);
   queue = Option.Boolean(`--queue`, false);
+  queue_channels = Option.Array(`--queue-channels`, [], {
+    description: "start only specific queues",
+  });
   all = Option.Boolean("--all", false);
   static paths = [[`start`]];
 
@@ -34,8 +37,31 @@ export class StartCommand extends Command {
 
     if (this.queue || this.all) {
       const config_queues = config.get("queues");
-      for (const [name, conf] of Object.entries(config_queues)) {
-        queue(name).start();
+      // if this.queue_channels is not empty, filter config_queues to only include those channels
+      // this.queue_channels can have 3 types of entries:
+      // 1. queue_name:* - start all channels of the given queue
+      // 2. queue_name:channel_name - start only the given channel of the given queue
+      // 3. channel_name - start said channel in default queue, so read it as default:channel_name
+      let filtered_queues: Record<string, Set<string>> = {};
+      if (this.queue_channels.length > 0) {
+        for (const channel of this.queue_channels) {
+          const [queue_name, channel_name] = channel.includes(":")
+            ? channel.split(":")
+            : ["default", channel];
+          if (!config_queues[queue_name]) {
+            logger().warn(`Queue not found in configuration`, { queue_name });
+            continue;
+          }
+          if (!filtered_queues[queue_name]) {
+            filtered_queues[queue_name] = new Set();
+          }
+          filtered_queues[queue_name].add(channel_name);
+        }
+      } else {
+        filtered_queues = config_queues;
+      }
+      for (const [name, channels] of Object.entries(filtered_queues)) {
+        queue(name).start(Array.from(channels));
       }
     }
 
