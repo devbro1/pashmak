@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-orm",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "description": "Straightforward TypeScript ORM for developers who believe database access should be simple and delightful",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
