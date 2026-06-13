@@ -33,7 +33,7 @@ export class BaseModel {
   declare _dirties: Set<string>;
 
   constructor(initialData: any = {}) {
-    this.tableName = pluralize(snakeCase(this.constructor.name));
+    this.tableName = pluralize(snakeCase(this.getClassName()));
 
     this._attributes = this._attributes || {};
     this._fillable = this._fillable || [];
@@ -67,7 +67,7 @@ export class BaseModel {
    * @returns The name of the model class
    */
   static getClassName() {
-    return BaseModel.name;
+    return this.name;
   }
 
   /**
@@ -265,7 +265,7 @@ export class BaseModel {
     conditions: object,
     options = { withGlobalScopes: true }
   ): Promise<T | undefined> {
-    const self = new BaseModel();
+    const self = new this();
     const q: Query = await (self.constructor as typeof BaseModel).getQuery(options);
 
     for (const [key, value] of Object.entries(conditions)) {
@@ -334,7 +334,7 @@ export class BaseModel {
     keys: Record<string, Parameter>,
     options = { withGlobalScopes: true }
   ): Promise<any> {
-    const self = new BaseModel();
+    const self = new this();
     const q: Query = await (self.constructor as typeof BaseModel).getQuery(options);
 
     q.select([...self._primary_keys, ...self._fillable]);
@@ -403,6 +403,7 @@ export class BaseModel {
    * await query.where('status', 'active').get();
    */
   public getQuery(): ReturnType<typeof BaseModel.getQuery> {
+    console.log('getQuery called on instance of', this.getClassName());
     return (this.constructor as typeof BaseModel).getQuery();
   }
 
@@ -434,7 +435,8 @@ export class BaseModel {
     }
     const conn = BaseModel.getConnection();
     let rc = new QueryClass(conn, conn.getQueryGrammar());
-    const self = new BaseModel();
+    const self = new this();
+    console.log('self', self);
 
     rc.table(self.tableName);
 
@@ -513,7 +515,7 @@ export class BaseModel {
     initialData: any = {},
     exists: boolean = false
   ): T {
-    const rc = new BaseModel(initialData);
+    const rc = new this(initialData);
     rc._exists = exists;
     return rc as T;
   }
@@ -532,7 +534,7 @@ export class BaseModel {
    * console.log(user.id); // Auto-generated ID
    */
   public static async create<T extends BaseModel>(initialData: any = {}): Promise<T> {
-    const rc = new BaseModel(initialData);
+    const rc = new this(initialData);
     await rc.save();
     return rc as T;
   }
