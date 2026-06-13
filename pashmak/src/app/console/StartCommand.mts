@@ -5,6 +5,9 @@ import { cli, httpServer, logger, queue, scheduler } from "../../facades.mjs";
 
 export class StartCommand extends Command {
   scheduler = Option.Boolean(`--scheduler`, false);
+  cron_names = Option.Array(`--cron-names`, [], {
+    description: "start only specific cron jobs",
+  });
   cron = Option.Boolean(`--cron`, false);
   http = Option.Boolean(`--http`, false);
   queue = Option.Boolean(`--queue`, false);
@@ -32,7 +35,7 @@ export class StartCommand extends Command {
 
     if (this.scheduler || this.cron || this.all) {
       logger().info(`starting scheduler\n`);
-      scheduler().start();
+      scheduler().start(this.cron_names);
     }
 
     if (this.queue || this.all) {
