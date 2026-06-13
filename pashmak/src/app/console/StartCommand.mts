@@ -58,7 +58,9 @@ export class StartCommand extends Command {
           if (!filtered_queues[queue_name]) {
             filtered_queues[queue_name] = new Set();
           }
-          filtered_queues[queue_name].add(channel_name);
+          if (channel_name !== "*") {
+            filtered_queues[queue_name].add(channel_name);
+          }
         }
       } else {
         filtered_queues = config_queues;
