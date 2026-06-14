@@ -106,12 +106,14 @@ export class Scheduler {
     this.errorHandler = func;
   }
 
-  start() {
+  start(jobNames: string[] = []): void {
     for (const job of this.jobs) {
       if (this.errorHandler !== undefined) {
         job.setErrorHandler(this.errorHandler);
       }
-      job.start();
+      if (jobNames.length === 0 || jobNames.includes(job.getName())) {
+        job.start();
+      }
     }
   }
 
