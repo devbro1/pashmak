@@ -51,8 +51,8 @@ export class QueueConnection<
     throw new Error('Invalid message processor provided for listener');
   }
 
-  async start(): Promise<void> {
-    return await this.transport.startListening();
+  async start(channelList: string[] = []): Promise<void> {
+    return await this.transport.startListening(channelList);
   }
 
   async stop(): Promise<void> {

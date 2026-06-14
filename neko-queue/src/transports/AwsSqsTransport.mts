@@ -179,17 +179,19 @@ export class AwsSqsTransport implements QueueTransportInterface {
    * Starts listening for messages on all registered channels.
    * Initiates long-polling loops for each registered listener.
    */
-  async startListening(): Promise<void> {
+  async startListening(channelList: string[] = []): Promise<void> {
     if (this.listening) {
       return;
     }
     this.listening = true;
 
     await Promise.all(
-      Array.from(this.listeners.entries()).map(async ([channel, listener]) => {
-        listener.queueUrl = listener.queueUrl ?? (await this.ensureQueueUrl(channel));
-        this.startPolling(channel, listener);
-      })
+      Array.from(this.listeners.entries())
+        .filter(([channel]) => channelList.length === 0 || channelList.includes(channel))
+        .map(async ([channel, listener]) => {
+          listener.queueUrl = listener.queueUrl ?? (await this.ensureQueueUrl(channel));
+          this.startPolling(channel, listener);
+        })
     );
   }
 

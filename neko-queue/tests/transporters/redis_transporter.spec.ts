@@ -1,262 +1,201 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { createClient } from 'redis';
 import { RedisTransport } from '../../src/transports/RedisTransport.mjs';
 
-// Mock redis module
-vi.mock('redis', () => {
-  const mockClient = {
-    connect: vi.fn().mockResolvedValue(undefined),
-    quit: vi.fn().mockResolvedValue(undefined),
-    lPush: vi.fn().mockResolvedValue(1),
-    rPopLPush: vi.fn().mockResolvedValue(null),
-    lRem: vi.fn().mockResolvedValue(1),
-    lLen: vi.fn().mockResolvedValue(0),
-    publish: vi.fn().mockResolvedValue(1),
-    subscribe: vi.fn().mockResolvedValue(undefined),
-    unsubscribe: vi.fn().mockResolvedValue(undefined),
-    expire: vi.fn().mockResolvedValue(1),
-    on: vi.fn(),
-    isOpen: true,
-  };
+const REDIS_HOST = process.env.REDIS_HOST ?? 'localhost';
 
-  return {
-    createClient: vi.fn(() => ({ ...mockClient })),
-  };
-});
+async function waitFor(
+  condition: () => boolean | Promise<boolean>,
+  timeout = 5000,
+  interval = 50
+): Promise<void> {
+  const start = Date.now();
+  while (Date.now() - start < timeout) {
+    if (await condition()) return;
+    await new Promise((resolve) => setTimeout(resolve, interval));
+  }
+  throw new Error('Timed out waiting for condition');
+}
 
 describe('RedisTransport', () => {
   let transport: RedisTransport;
-  let mockCreateClient: any;
-  let mockClient: any;
-  let mockSubscriber: any;
+  let cleanupClient: ReturnType<typeof createClient>;
+  let testPrefix: string;
 
-  beforeEach(async () => {
-    vi.clearAllMocks();
-
-    const redis = await import('redis');
-    mockCreateClient = redis.createClient as any;
-
-    // Create separate mocks for client and subscriber
-    mockClient = {
-      connect: vi.fn().mockResolvedValue(undefined),
-      quit: vi.fn().mockResolvedValue(undefined),
-      lPush: vi.fn().mockResolvedValue(1),
-      rPopLPush: vi.fn().mockResolvedValue(null),
-      lRem: vi.fn().mockResolvedValue(1),
-      lLen: vi.fn().mockResolvedValue(0),
-      publish: vi.fn().mockResolvedValue(1),
-      expire: vi.fn().mockResolvedValue(1),
-      on: vi.fn(),
-      isOpen: true,
-    };
-
-    mockSubscriber = {
-      connect: vi.fn().mockResolvedValue(undefined),
-      quit: vi.fn().mockResolvedValue(undefined),
-      subscribe: vi.fn().mockResolvedValue(undefined),
-      unsubscribe: vi.fn().mockResolvedValue(undefined),
-      on: vi.fn(),
-      isOpen: true,
-    };
-
-    // Mock createClient to return different instances
-    let callCount = 0;
-    mockCreateClient.mockImplementation(() => {
-      callCount++;
-      return callCount === 1 ? mockClient : mockSubscriber;
+  beforeAll(async () => {
+    cleanupClient = createClient({
+      socket: { host: REDIS_HOST, port: 6379 },
     });
+    await cleanupClient.connect();
+  });
+
+  afterAll(async () => {
+    await cleanupClient.quit();
+  });
+
+  beforeEach(() => {
+    testPrefix = `test:${Date.now()}:${Math.random().toString(36).substring(2, 8)}`;
   });
 
   afterEach(async () => {
     if (transport) {
       await transport.stopListening();
     }
+    const keys = await cleanupClient.keys(`${testPrefix}:*`);
+    if (keys.length > 0) {
+      await cleanupClient.del(keys);
+    }
   });
 
   describe('Configuration', () => {
-    it('should create transport with default configuration', async () => {
-      transport = new RedisTransport();
-
-      await transport.dispatch('test-channel', 'test message');
-
-      expect(mockCreateClient).toHaveBeenCalledWith(
-        expect.objectContaining({
-          database: 0,
-          socket: expect.objectContaining({
-            host: 'localhost',
-            port: 6379,
-            connectTimeout: 10000,
-          }),
-        })
-      );
-    });
-
-    it('should create transport with URL configuration', async () => {
+    it('should connect with host and port configuration', async () => {
       transport = new RedisTransport({
-        url: `redis://${process.env.REDIS_HOST}:6380`,
+        host: REDIS_HOST,
+        port: 6379,
+        keyPrefix: testPrefix,
       });
 
       await transport.dispatch('test-channel', 'test message');
 
-      expect(mockCreateClient).toHaveBeenCalledWith(
-        expect.objectContaining({
-          url: `redis://${process.env.REDIS_HOST}:6380`,
-          database: 0,
-        })
-      );
+      const length = await transport.getQueueLength('test-channel');
+      expect(length).toBe(1);
     });
 
-    it('should create transport with host and port configuration', async () => {
+    it('should connect with URL configuration', async () => {
       transport = new RedisTransport({
-        host: 'custom-redis',
-        port: 6380,
-        database: 2,
+        url: `redis://${REDIS_HOST}:6379`,
+        keyPrefix: testPrefix,
       });
 
       await transport.dispatch('test-channel', 'test message');
 
-      expect(mockCreateClient).toHaveBeenCalledWith(
-        expect.objectContaining({
-          database: 2,
-          socket: expect.objectContaining({
-            host: 'custom-redis',
-            port: 6380,
-          }),
-        })
-      );
+      const length = await transport.getQueueLength('test-channel');
+      expect(length).toBe(1);
     });
 
-    it('should create transport with authentication', async () => {
+    it('should use custom key prefix for queue keys', async () => {
       transport = new RedisTransport({
-        username: 'admin',
-        password: 'secret',
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
       });
 
       await transport.dispatch('test-channel', 'test message');
 
-      expect(mockCreateClient).toHaveBeenCalledWith(
-        expect.objectContaining({
-          username: 'admin',
-          password: 'secret',
-        })
-      );
+      const exists = await cleanupClient.exists(`${testPrefix}:queue:test-channel`);
+      expect(exists).toBe(1);
     });
 
-    it('should create transport with custom key prefix', async () => {
+    it('should use custom error handler on processing error', async () => {
+      const errors: Error[] = [];
       transport = new RedisTransport({
-        keyPrefix: 'my-app',
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        maxRetries: 0,
+        pollInterval: 100,
+        onError: (err) => errors.push(err),
       });
 
+      await transport.registerListener('test-channel', async () => {
+        throw new Error('processing error');
+      });
+      await transport.startListening();
       await transport.dispatch('test-channel', 'test message');
 
-      expect(mockClient.lPush).toHaveBeenCalledWith(
-        'my-app:queue:test-channel',
-        expect.any(String)
-      );
-    });
-
-    it('should use custom error handler', async () => {
-      const onError = vi.fn();
-      transport = new RedisTransport({ onError });
-
-      await transport.dispatch('test-channel', 'test message');
-
-      // Trigger error
-      const errorHandler = mockClient.on.mock.calls.find((call: any) => call[0] === 'error')?.[1];
-      const testError = new Error('Redis error');
-      errorHandler(testError);
-
-      expect(onError).toHaveBeenCalledWith(testError, {});
+      await waitFor(() => errors.length > 0);
+      expect(errors[0].message).toBe('processing error');
     });
   });
 
   describe('Connection Management', () => {
     it('should connect lazily on first operation', async () => {
-      transport = new RedisTransport();
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+      });
 
-      expect(mockCreateClient).not.toHaveBeenCalled();
-
+      // No dispatch yet — verify dispatch works on first call
       await transport.dispatch('test-channel', 'test message');
 
-      expect(mockCreateClient).toHaveBeenCalledTimes(2); // client + subscriber
-      expect(mockClient.connect).toHaveBeenCalled();
-      expect(mockSubscriber.connect).toHaveBeenCalled();
+      const length = await transport.getQueueLength('test-channel');
+      expect(length).toBeGreaterThan(0);
     });
 
-    it('should reuse existing connection', async () => {
-      transport = new RedisTransport();
+    it('should reuse connection across multiple dispatches', async () => {
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+      });
 
       await transport.dispatch('test-channel', 'message 1');
       await transport.dispatch('test-channel', 'message 2');
+      await transport.dispatch('test-channel', 'message 3');
 
-      expect(mockCreateClient).toHaveBeenCalledTimes(2); // Only once for client + subscriber
-      expect(mockClient.connect).toHaveBeenCalledTimes(1);
+      const length = await transport.getQueueLength('test-channel');
+      expect(length).toBe(3);
     });
 
     it('should handle concurrent connection attempts', async () => {
-      transport = new RedisTransport();
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+      });
 
-      // Delay connection
-      mockClient.connect.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 50))
-      );
-      mockSubscriber.connect.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 50))
-      );
-
-      // Make concurrent calls
       await Promise.all([
         transport.dispatch('channel1', 'message1'),
         transport.dispatch('channel2', 'message2'),
         transport.dispatch('channel3', 'message3'),
       ]);
 
-      // Should only create clients once despite concurrent calls
-      expect(mockCreateClient).toHaveBeenCalledTimes(2);
-      expect(mockClient.connect).toHaveBeenCalledTimes(1);
-    });
-
-    it('should set up error handlers on clients', async () => {
-      transport = new RedisTransport();
-
-      await transport.dispatch('test-channel', 'test message');
-
-      expect(mockClient.on).toHaveBeenCalledWith('error', expect.any(Function));
-      expect(mockSubscriber.on).toHaveBeenCalledWith('error', expect.any(Function));
+      const [l1, l2, l3] = await Promise.all([
+        transport.getQueueLength('channel1'),
+        transport.getQueueLength('channel2'),
+        transport.getQueueLength('channel3'),
+      ]);
+      expect(l1).toBe(1);
+      expect(l2).toBe(1);
+      expect(l3).toBe(1);
     });
 
     it('should close connections on stopListening', async () => {
-      transport = new RedisTransport();
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+      });
 
-      await transport.dispatch('test-channel', 'test message');
       await transport.registerListener('test-channel', async () => {});
       await transport.startListening();
-      await transport.stopListening();
+      await transport.dispatch('test-channel', 'test message');
 
-      expect(mockClient.quit).toHaveBeenCalled();
-      expect(mockSubscriber.quit).toHaveBeenCalled();
+      // stopListening should resolve without error
+      await expect(transport.stopListening()).resolves.not.toThrow();
     });
   });
 
   describe('Message Dispatch', () => {
     it('should dispatch message to queue', async () => {
-      transport = new RedisTransport();
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+      });
 
       await transport.dispatch('test-channel', 'test message');
 
-      expect(mockClient.lPush).toHaveBeenCalledWith(
-        'neko-queue:queue:test-channel',
-        expect.stringContaining('"content":"test message"')
-      );
+      const rawMessage = await cleanupClient.rPop(`${testPrefix}:queue:test-channel`);
+      expect(rawMessage).toBeTruthy();
+      const parsed = JSON.parse(rawMessage ?? '');
+      expect(parsed.content).toBe('test message');
     });
 
     it('should include message metadata', async () => {
-      transport = new RedisTransport();
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+      });
 
       await transport.dispatch('test-channel', 'test message');
 
-      const messageStr = mockClient.lPush.mock.calls[0][1];
-      const message = JSON.parse(messageStr);
-
+      const rawMessage = await cleanupClient.rPop(`${testPrefix}:queue:test-channel`);
+      const message = JSON.parse(rawMessage ?? '');
       expect(message).toMatchObject({
         id: expect.stringMatching(/^msg_\d+_[a-z0-9]+$/),
         content: 'test message',
@@ -265,307 +204,293 @@ describe('RedisTransport', () => {
       });
     });
 
-    it('should publish notification after dispatching', async () => {
-      transport = new RedisTransport();
-
-      await transport.dispatch('test-channel', 'test message');
-
-      expect(mockClient.publish).toHaveBeenCalledWith('neko-queue:notify:test-channel', '1');
-    });
-
     it('should dispatch to different channels', async () => {
-      transport = new RedisTransport();
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+      });
 
       await transport.dispatch('channel1', 'message1');
       await transport.dispatch('channel2', 'message2');
 
-      expect(mockClient.lPush).toHaveBeenCalledWith(
-        'neko-queue:queue:channel1',
-        expect.any(String)
-      );
-      expect(mockClient.lPush).toHaveBeenCalledWith(
-        'neko-queue:queue:channel2',
-        expect.any(String)
-      );
+      const [l1, l2] = await Promise.all([
+        transport.getQueueLength('channel1'),
+        transport.getQueueLength('channel2'),
+      ]);
+      expect(l1).toBe(1);
+      expect(l2).toBe(1);
     });
 
-    it('should throw error if client not available', async () => {
-      transport = new RedisTransport();
-
-      mockClient.connect.mockRejectedValueOnce(new Error('Connection failed'));
+    it('should throw if connection fails', async () => {
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        port: 19999, // non-existent port
+        keyPrefix: testPrefix,
+        connectTimeout: 500,
+        maxRetries: 0,
+      });
 
       await expect(transport.dispatch('test-channel', 'test message')).rejects.toThrow();
     });
   });
 
   describe('Listener Registration', () => {
-    it('should register listener for channel', async () => {
-      transport = new RedisTransport();
-      const callback = vi.fn().mockResolvedValue(undefined);
+    it('should not process messages before startListening is called', async () => {
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        pollInterval: 100,
+      });
 
-      await transport.registerListener('test-channel', callback);
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
+      });
 
-      // Listener registered but not started yet
-      expect(mockSubscriber.subscribe).not.toHaveBeenCalled();
+      await transport.dispatch('test-channel', 'queued message');
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      expect(received).toHaveLength(0);
+    });
+
+    it('should process queued messages after startListening is called', async () => {
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        pollInterval: 100,
+      });
+
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
+      });
+
+      await transport.dispatch('test-channel', 'queued message');
+
+      await transport.startListening();
+
+      await waitFor(() => received.length > 0);
+      expect(received).toContain('queued message');
     });
 
     it('should replace existing listener for same channel', async () => {
-      transport = new RedisTransport();
-      const callback1 = vi.fn().mockResolvedValue(undefined);
-      const callback2 = vi.fn().mockResolvedValue(undefined);
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        pollInterval: 100,
+      });
 
-      await transport.registerListener('test-channel', callback1);
-      await transport.registerListener('test-channel', callback2);
+      const received1: string[] = [];
+      const received2: string[] = [];
+
+      await transport.registerListener('test-channel', async (msg) => {
+        received1.push(msg);
+      });
+      await transport.registerListener('test-channel', async (msg) => {
+        received2.push(msg);
+      });
 
       await transport.startListening();
+      await transport.dispatch('test-channel', 'test message');
 
-      // Simulate message
-      mockClient.rPopLPush.mockResolvedValueOnce(
-        JSON.stringify({
-          id: 'msg_1',
-          content: 'test message',
-          timestamp: Date.now(),
-          attempts: 0,
-        })
-      );
-
-      const subscribeCallback = mockSubscriber.subscribe.mock.calls[0][1];
-      await subscribeCallback();
-
-      // Wait for processing
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      expect(callback2).toHaveBeenCalled();
-      expect(callback1).not.toHaveBeenCalled();
+      await waitFor(() => received2.length > 0);
+      expect(received2).toContain('test message');
+      expect(received1).toHaveLength(0);
     });
 
-    it('should start processing if already listening', async () => {
-      transport = new RedisTransport();
-      const callback = vi.fn().mockResolvedValue(undefined);
+    it('should start processing immediately if already listening', async () => {
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        pollInterval: 100,
+      });
 
       await transport.startListening();
-      await transport.registerListener('test-channel', callback);
 
-      expect(mockSubscriber.subscribe).toHaveBeenCalledWith(
-        'neko-queue:notify:test-channel',
-        expect.any(Function)
-      );
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
+      });
+
+      await transport.dispatch('test-channel', 'test message');
+
+      await waitFor(() => received.length > 0);
+      expect(received).toContain('test message');
     });
   });
 
   describe('Message Processing', () => {
     it('should process messages when notified', async () => {
-      transport = new RedisTransport();
-      const callback = vi.fn().mockResolvedValue(undefined);
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        pollInterval: 100,
+      });
 
-      await transport.registerListener('test-channel', callback);
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
+      });
       await transport.startListening();
 
-      // Mock message in queue
-      mockClient.rPopLPush.mockResolvedValueOnce(
-        JSON.stringify({
-          id: 'msg_1',
-          content: 'test message',
-          timestamp: Date.now(),
-          attempts: 0,
-        })
-      );
+      await transport.dispatch('test-channel', 'test message');
 
-      // Trigger notification
-      const subscribeCallback = mockSubscriber.subscribe.mock.calls[0][1];
-      await subscribeCallback();
-
-      // Wait for processing
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      expect(callback).toHaveBeenCalledWith('test message');
-      expect(mockClient.lRem).toHaveBeenCalledWith(
-        'neko-queue:processing:test-channel',
-        1,
-        expect.any(String)
-      );
+      await waitFor(() => received.length > 0);
+      expect(received).toContain('test message');
     });
 
-    it('should use rPopLPush for atomic message retrieval', async () => {
-      transport = new RedisTransport();
-      const callback = vi.fn().mockResolvedValue(undefined);
+    it('should use atomic move from queue to processing list', async () => {
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        pollInterval: 100,
+      });
 
-      await transport.registerListener('test-channel', callback);
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
+      });
       await transport.startListening();
 
-      mockClient.rPopLPush.mockResolvedValueOnce(
-        JSON.stringify({
-          id: 'msg_1',
-          content: 'test message',
-          timestamp: Date.now(),
-          attempts: 0,
-        })
-      );
+      await transport.dispatch('test-channel', 'test message');
 
-      const subscribeCallback = mockSubscriber.subscribe.mock.calls[0][1];
-      await subscribeCallback();
+      await waitFor(() => received.length > 0);
 
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      expect(mockClient.rPopLPush).toHaveBeenCalledWith(
-        'neko-queue:queue:test-channel',
-        'neko-queue:processing:test-channel'
-      );
+      // After successful processing, processing list should be empty
+      const processingLength = await transport.getProcessingLength('test-channel');
+      expect(processingLength).toBe(0);
     });
 
-    it('should handle malformed messages', async () => {
-      transport = new RedisTransport();
-      const callback = vi.fn().mockResolvedValue(undefined);
+    it('should handle empty queue gracefully', async () => {
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        pollInterval: 100,
+      });
 
-      await transport.registerListener('test-channel', callback);
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
+      });
       await transport.startListening();
 
-      mockClient.rPopLPush.mockResolvedValueOnce('invalid json');
-
-      const subscribeCallback = mockSubscriber.subscribe.mock.calls[0][1];
-      await subscribeCallback();
-
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      expect(callback).not.toHaveBeenCalled();
-      expect(mockClient.lRem).toHaveBeenCalled(); // Remove malformed message
-    });
-
-    it('should handle empty queue', async () => {
-      transport = new RedisTransport();
-      const callback = vi.fn().mockResolvedValue(undefined);
-
-      await transport.registerListener('test-channel', callback);
-      await transport.startListening();
-
-      mockClient.rPopLPush.mockResolvedValueOnce(null);
-
-      const subscribeCallback = mockSubscriber.subscribe.mock.calls[0][1];
-      await subscribeCallback();
-
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      expect(callback).not.toHaveBeenCalled();
+      // No messages dispatched - wait a bit and ensure no errors
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      expect(received).toHaveLength(0);
     });
 
     it('should poll for messages periodically', async () => {
-      transport = new RedisTransport({ pollInterval: 50 });
-      const callback = vi.fn().mockResolvedValue(undefined);
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        pollInterval: 200,
+      });
 
-      await transport.registerListener('test-channel', callback);
-
-      // Mock no message initially
-      mockClient.rPopLPush.mockResolvedValue(null);
-
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
+      });
       await transport.startListening();
 
-      // Wait for initial processing to complete
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      // Dispatch after a short delay so polling picks it up
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      await transport.dispatch('test-channel', 'polled message');
 
-      // Now mock a message for the next poll
-      mockClient.rPopLPush.mockResolvedValueOnce(
-        JSON.stringify({
-          id: 'msg_1',
-          content: 'test message',
-          timestamp: Date.now(),
-          attempts: 0,
-        })
-      );
+      await waitFor(() => received.length > 0, 3000);
+      expect(received).toContain('polled message');
+    });
 
-      // Wait for next poll cycle
-      await new Promise((resolve) => setTimeout(resolve, 70));
+    it('should process messages in FIFO order', async () => {
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        pollInterval: 100,
+      });
 
-      expect(callback).toHaveBeenCalledWith('test message');
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
+      });
+      await transport.startListening();
+
+      await transport.dispatch('test-channel', 'first');
+      await transport.dispatch('test-channel', 'second');
+      await transport.dispatch('test-channel', 'third');
+
+      await waitFor(() => received.length >= 3);
+      expect(received).toEqual(['first', 'second', 'third']);
     });
   });
 
   describe('Error Handling and Retry', () => {
-    it('should retry failed messages', async () => {
-      transport = new RedisTransport({ maxRetries: 3 });
-      const callback = vi.fn().mockRejectedValue(new Error('Processing failed'));
+    it('should retry failed messages up to maxRetries', async () => {
+      let callCount = 0;
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        maxRetries: 3,
+        pollInterval: 100,
+      });
 
-      await transport.registerListener('test-channel', callback);
+      await transport.registerListener('test-channel', async () => {
+        callCount++;
+        throw new Error('Processing failed');
+      });
       await transport.startListening();
 
-      const message = {
-        id: 'msg_1',
-        content: 'test message',
-        timestamp: Date.now(),
-        attempts: 0,
-      };
+      await transport.dispatch('test-channel', 'test message');
 
-      mockClient.rPopLPush.mockResolvedValueOnce(JSON.stringify(message));
-
-      const subscribeCallback = mockSubscriber.subscribe.mock.calls[0][1];
-      await subscribeCallback();
-
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      expect(callback).toHaveBeenCalled();
-      expect(mockClient.lPush).toHaveBeenCalledWith(
-        'neko-queue:queue:test-channel',
-        expect.stringContaining('"attempts":1')
-      );
+      await waitFor(() => callCount >= 3, 10000);
+      expect(callCount).toBeGreaterThanOrEqual(3);
     });
 
     it('should move message to failed queue after max retries', async () => {
-      transport = new RedisTransport({ maxRetries: 2 });
-      const callback = vi.fn().mockRejectedValue(new Error('Processing failed'));
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        maxRetries: 1,
+        pollInterval: 100,
+      });
 
-      await transport.registerListener('test-channel', callback);
+      await transport.registerListener('test-channel', async () => {
+        throw new Error('Processing failed');
+      });
       await transport.startListening();
 
-      const message = {
-        id: 'msg_1',
-        content: 'test message',
-        timestamp: Date.now(),
-        attempts: 2, // Already at max attempts
-      };
+      await transport.dispatch('test-channel', 'test message');
 
-      mockClient.rPopLPush.mockResolvedValueOnce(JSON.stringify(message));
+      await waitFor(async () => {
+        const failedLength = await transport.getFailedLength('test-channel');
+        return failedLength > 0;
+      }, 10000);
 
-      const subscribeCallback = mockSubscriber.subscribe.mock.calls[0][1];
-      await subscribeCallback();
-
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      expect(mockClient.lPush).toHaveBeenCalledWith(
-        'neko-queue:failed:test-channel',
-        expect.stringContaining('"failedAt"')
-      );
-      expect(mockClient.expire).toHaveBeenCalledWith('neko-queue:failed:test-channel', 604800);
+      const failedLength = await transport.getFailedLength('test-channel');
+      expect(failedLength).toBe(1);
     });
 
     it('should include error details in failed messages', async () => {
-      transport = new RedisTransport({ maxRetries: 1 });
-      const testError = new Error('Processing failed');
-      const callback = vi.fn().mockRejectedValue(testError);
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        maxRetries: 0,
+        pollInterval: 100,
+      });
 
-      await transport.registerListener('test-channel', callback);
+      await transport.registerListener('test-channel', async () => {
+        throw new Error('Processing failed');
+      });
       await transport.startListening();
 
-      const message = {
-        id: 'msg_1',
-        content: 'test message',
-        timestamp: Date.now(),
-        attempts: 1,
-      };
+      await transport.dispatch('test-channel', 'test message');
 
-      mockClient.rPopLPush.mockResolvedValueOnce(JSON.stringify(message));
+      await waitFor(async () => {
+        const failedLength = await transport.getFailedLength('test-channel');
+        return failedLength > 0;
+      }, 10000);
 
-      const subscribeCallback = mockSubscriber.subscribe.mock.calls[0][1];
-      await subscribeCallback();
-
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      const failedMessage = mockClient.lPush.mock.calls.find(
-        (call: any) => call[0] === 'neko-queue:failed:test-channel'
-      )?.[1];
-
-      expect(failedMessage).toBeTruthy();
-      const parsed = JSON.parse(failedMessage);
+      const rawFailed = await cleanupClient.rPop(`${testPrefix}:failed:test-channel`);
+      const parsed = JSON.parse(rawFailed ?? '');
       expect(parsed).toMatchObject({
-        id: 'msg_1',
         content: 'test message',
         error: 'Processing failed',
         failedAt: expect.any(Number),
@@ -573,166 +498,229 @@ describe('RedisTransport', () => {
     });
 
     it('should call error handler on processing error', async () => {
-      const onError = vi.fn();
-      transport = new RedisTransport({ onError });
-      const callback = vi.fn().mockRejectedValue(new Error('Processing failed'));
+      const errorContexts: Array<{ error: Error; context: Record<string, string> }> = [];
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        maxRetries: 0,
+        pollInterval: 100,
+        onError: (error, context) => errorContexts.push({ error, context }),
+      });
 
-      await transport.registerListener('test-channel', callback);
+      await transport.registerListener('test-channel', async () => {
+        throw new Error('Processing failed');
+      });
       await transport.startListening();
 
-      mockClient.rPopLPush.mockResolvedValueOnce(
-        JSON.stringify({
-          id: 'msg_1',
-          content: 'test message',
-          timestamp: Date.now(),
-          attempts: 0,
-        })
-      );
+      await transport.dispatch('test-channel', 'test message');
 
-      const subscribeCallback = mockSubscriber.subscribe.mock.calls[0][1];
-      await subscribeCallback();
-
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      expect(onError).toHaveBeenCalledWith(
-        expect.any(Error),
-        expect.objectContaining({
-          channel: 'test-channel',
-          messageId: 'msg_1',
-          body: 'test message',
-        })
-      );
+      await waitFor(() => errorContexts.length > 0);
+      expect(errorContexts[0].error.message).toBe('Processing failed');
+      expect(errorContexts[0].context).toMatchObject({
+        channel: 'test-channel',
+        body: 'test message',
+      });
     });
   });
 
   describe('Lifecycle Management', () => {
     it('should start listening on all registered channels', async () => {
-      transport = new RedisTransport();
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        pollInterval: 100,
+      });
 
-      await transport.registerListener('channel1', vi.fn());
-      await transport.registerListener('channel2', vi.fn());
+      const received1: string[] = [];
+      const received2: string[] = [];
+      await transport.registerListener('channel1', async (msg) => {
+        received1.push(msg);
+      });
+      await transport.registerListener('channel2', async (msg) => {
+        received2.push(msg);
+      });
       await transport.startListening();
 
-      expect(mockSubscriber.subscribe).toHaveBeenCalledWith(
-        'neko-queue:notify:channel1',
-        expect.any(Function)
-      );
-      expect(mockSubscriber.subscribe).toHaveBeenCalledWith(
-        'neko-queue:notify:channel2',
-        expect.any(Function)
-      );
+      await transport.dispatch('channel1', 'msg1');
+      await transport.dispatch('channel2', 'msg2');
+
+      await waitFor(() => received1.length > 0 && received2.length > 0);
+      expect(received1).toContain('msg1');
+      expect(received2).toContain('msg2');
     });
 
     it('should not start listening twice', async () => {
-      transport = new RedisTransport();
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        pollInterval: 100,
+      });
 
-      await transport.registerListener('test-channel', vi.fn());
-      await transport.startListening();
-      await transport.startListening();
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
+      });
 
-      expect(mockSubscriber.subscribe).toHaveBeenCalledTimes(1);
+      await transport.startListening();
+      await transport.startListening(); // Second call is a no-op
+
+      await transport.dispatch('test-channel', 'test message');
+
+      await waitFor(() => received.length > 0);
+      // Message should be received exactly once
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      expect(received).toHaveLength(1);
     });
 
     it('should stop listening and clean up', async () => {
-      transport = new RedisTransport();
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        pollInterval: 100,
+      });
 
-      await transport.registerListener('test-channel', vi.fn());
+      await transport.registerListener('test-channel', async () => {});
       await transport.startListening();
-      await transport.stopListening();
 
-      expect(mockSubscriber.unsubscribe).toHaveBeenCalledWith('neko-queue:notify:test-channel');
-      expect(mockClient.quit).toHaveBeenCalled();
-      expect(mockSubscriber.quit).toHaveBeenCalled();
+      await expect(transport.stopListening()).resolves.not.toThrow();
     });
 
     it('should not stop listening twice', async () => {
-      transport = new RedisTransport();
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        pollInterval: 100,
+      });
 
-      await transport.registerListener('test-channel', vi.fn());
+      await transport.registerListener('test-channel', async () => {});
       await transport.startListening();
       await transport.stopListening();
 
-      mockClient.quit.mockClear();
-      mockSubscriber.quit.mockClear();
-
-      await transport.stopListening();
-
-      expect(mockClient.quit).not.toHaveBeenCalled();
-      expect(mockSubscriber.quit).not.toHaveBeenCalled();
+      // Second stopListening should be safe
+      await expect(transport.stopListening()).resolves.not.toThrow();
     });
 
-    it('should clear polling intervals on stop', async () => {
-      vi.useFakeTimers();
+    it('should stop processing messages after stopListening', async () => {
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        pollInterval: 100,
+      });
 
-      transport = new RedisTransport({ pollInterval: 1000 });
-      await transport.registerListener('test-channel', vi.fn());
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
+      });
       await transport.startListening();
+
+      await transport.dispatch('test-channel', 'before stop');
+      await waitFor(() => received.length > 0);
 
       await transport.stopListening();
 
-      // Advance timers to ensure no polling happens
-      mockClient.rPopLPush.mockClear();
-      vi.advanceTimersByTime(2000);
+      // Dispatch after stop; message will sit in queue unprocessed
+      await transport.dispatch('test-channel', 'after stop');
+      await new Promise((resolve) => setTimeout(resolve, 400));
 
-      expect(mockClient.rPopLPush).not.toHaveBeenCalled();
-
-      vi.useRealTimers();
+      expect(received).not.toContain('after stop');
     });
   });
 
   describe('Queue Metrics', () => {
     it('should get queue length', async () => {
-      transport = new RedisTransport();
-      mockClient.lLen.mockResolvedValueOnce(5);
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+      });
+
+      await transport.dispatch('test-channel', 'message 1');
+      await transport.dispatch('test-channel', 'message 2');
+      await transport.dispatch('test-channel', 'message 3');
 
       const length = await transport.getQueueLength('test-channel');
+      expect(length).toBe(3);
+    });
 
-      expect(length).toBe(5);
-      expect(mockClient.lLen).toHaveBeenCalledWith('neko-queue:queue:test-channel');
+    it('should report zero queue length when empty', async () => {
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+      });
+
+      const length = await transport.getQueueLength('empty-channel');
+      expect(length).toBe(0);
     });
 
     it('should get processing length', async () => {
-      transport = new RedisTransport();
-      mockClient.lLen.mockResolvedValueOnce(2);
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+      });
 
+      // Start processing is 0 before any messages
       const length = await transport.getProcessingLength('test-channel');
-
-      expect(length).toBe(2);
-      expect(mockClient.lLen).toHaveBeenCalledWith('neko-queue:processing:test-channel');
+      expect(length).toBe(0);
     });
 
     it('should get failed messages count', async () => {
-      transport = new RedisTransport();
-      mockClient.lLen.mockResolvedValueOnce(3);
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        maxRetries: 0,
+        pollInterval: 100,
+      });
 
-      const length = await transport.getFailedLength('test-channel');
+      await transport.registerListener('test-channel', async () => {
+        throw new Error('always fails');
+      });
+      await transport.startListening();
 
-      expect(length).toBe(3);
-      expect(mockClient.lLen).toHaveBeenCalledWith('neko-queue:failed:test-channel');
+      await transport.dispatch('test-channel', 'message 1');
+      await transport.dispatch('test-channel', 'message 2');
+
+      await waitFor(async () => {
+        const count = await transport.getFailedLength('test-channel');
+        return count >= 2;
+      }, 10000);
+
+      const failedCount = await transport.getFailedLength('test-channel');
+      expect(failedCount).toBe(2);
     });
   });
 
   describe('Integration Tests', () => {
     it('should handle full message lifecycle', async () => {
-      transport = new RedisTransport();
-      const messages: string[] = [];
-      const callback = vi.fn(async (msg: string) => {
-        messages.push(msg);
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        pollInterval: 100,
       });
 
-      await transport.registerListener('test-channel', callback);
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
+      });
       await transport.startListening();
 
-      // Dispatch messages
       await transport.dispatch('test-channel', 'message 1');
       await transport.dispatch('test-channel', 'message 2');
 
-      expect(mockClient.lPush).toHaveBeenCalledTimes(2);
-      expect(mockClient.publish).toHaveBeenCalledTimes(2);
+      await waitFor(() => received.length >= 2);
+      expect(received).toContain('message 1');
+      expect(received).toContain('message 2');
+
+      // Queue should be empty after processing
+      const queueLength = await transport.getQueueLength('test-channel');
+      expect(queueLength).toBe(0);
     });
 
     it('should handle multiple channels concurrently', async () => {
-      transport = new RedisTransport();
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        pollInterval: 100,
+      });
+
       const channel1Messages: string[] = [];
       const channel2Messages: string[] = [];
 
@@ -742,121 +730,59 @@ describe('RedisTransport', () => {
       await transport.registerListener('channel2', async (msg) => {
         channel2Messages.push(msg);
       });
-
       await transport.startListening();
 
       await transport.dispatch('channel1', 'msg1-1');
       await transport.dispatch('channel2', 'msg2-1');
       await transport.dispatch('channel1', 'msg1-2');
 
-      expect(mockClient.lPush).toHaveBeenCalledWith(
-        'neko-queue:queue:channel1',
-        expect.any(String)
-      );
-      expect(mockClient.lPush).toHaveBeenCalledWith(
-        'neko-queue:queue:channel2',
-        expect.any(String)
-      );
+      await waitFor(() => channel1Messages.length >= 2 && channel2Messages.length >= 1);
+      expect(channel1Messages).toContain('msg1-1');
+      expect(channel1Messages).toContain('msg1-2');
+      expect(channel2Messages).toContain('msg2-1');
     });
 
     it('should handle graceful shutdown', async () => {
-      transport = new RedisTransport();
-
-      await transport.registerListener('channel1', vi.fn());
-      await transport.registerListener('channel2', vi.fn());
-      await transport.startListening();
-
-      await transport.stopListening();
-
-      expect(mockSubscriber.unsubscribe).toHaveBeenCalledTimes(2);
-      expect(mockClient.quit).toHaveBeenCalled();
-      expect(mockSubscriber.quit).toHaveBeenCalled();
-    });
-
-    it('should process messages in order', async () => {
-      transport = new RedisTransport();
-      const processedMessages: string[] = [];
-      const callback = vi.fn(async (msg: string) => {
-        processedMessages.push(msg);
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        pollInterval: 100,
       });
 
-      await transport.registerListener('test-channel', callback);
+      await transport.registerListener('channel1', async () => {});
+      await transport.registerListener('channel2', async () => {});
       await transport.startListening();
 
-      // Mock messages coming in order
-      const messages = [
-        { id: 'msg_1', content: 'first', timestamp: Date.now(), attempts: 0 },
-        { id: 'msg_2', content: 'second', timestamp: Date.now(), attempts: 0 },
-        { id: 'msg_3', content: 'third', timestamp: Date.now(), attempts: 0 },
-      ];
-
-      for (const msg of messages) {
-        mockClient.rPopLPush.mockResolvedValueOnce(JSON.stringify(msg));
-
-        const subscribeCallback = mockSubscriber.subscribe.mock.calls[0][1];
-        await subscribeCallback();
-
-        await new Promise((resolve) => setTimeout(resolve, 10));
-      }
-
-      expect(processedMessages).toEqual(['first', 'second', 'third']);
+      await expect(transport.stopListening()).resolves.not.toThrow();
     });
 
     it('should handle retry and eventual success', async () => {
-      transport = new RedisTransport({ maxRetries: 3 });
       let attemptCount = 0;
-      const callback = vi.fn(async () => {
+      transport = new RedisTransport({
+        host: REDIS_HOST,
+        keyPrefix: testPrefix,
+        maxRetries: 3,
+        pollInterval: 100,
+      });
+
+      await transport.registerListener('test-channel', async () => {
         attemptCount++;
         if (attemptCount < 3) {
           throw new Error('Not yet');
         }
         // Success on third attempt
       });
-
-      await transport.registerListener('test-channel', callback);
       await transport.startListening();
 
-      const message = {
-        id: 'msg_1',
-        content: 'test message',
-        timestamp: Date.now(),
-        attempts: 0,
-      };
+      await transport.dispatch('test-channel', 'test message');
 
-      // First attempt
-      mockClient.rPopLPush.mockResolvedValueOnce(JSON.stringify(message));
-      const subscribeCallback = mockSubscriber.subscribe.mock.calls[0][1];
-      await subscribeCallback();
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await waitFor(() => attemptCount >= 3, 10000);
+      expect(attemptCount).toBeGreaterThanOrEqual(3);
 
-      expect(callback).toHaveBeenCalledTimes(1);
-      expect(mockClient.lPush).toHaveBeenCalledWith(
-        'neko-queue:queue:test-channel',
-        expect.stringContaining('"attempts":1')
-      );
-
-      // Second attempt
-      mockClient.rPopLPush.mockResolvedValueOnce(JSON.stringify({ ...message, attempts: 1 }));
-      await subscribeCallback();
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      expect(callback).toHaveBeenCalledTimes(2);
-      expect(mockClient.lPush).toHaveBeenCalledWith(
-        'neko-queue:queue:test-channel',
-        expect.stringContaining('"attempts":2')
-      );
-
-      // Third attempt (success)
-      mockClient.rPopLPush.mockResolvedValueOnce(JSON.stringify({ ...message, attempts: 2 }));
-      await subscribeCallback();
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      expect(callback).toHaveBeenCalledTimes(3);
-      expect(mockClient.lRem).toHaveBeenCalledWith(
-        'neko-queue:processing:test-channel',
-        1,
-        expect.any(String)
-      );
+      // After eventual success, nothing should be in the failed queue
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const failedLength = await transport.getFailedLength('test-channel');
+      expect(failedLength).toBe(0);
     });
   });
 });

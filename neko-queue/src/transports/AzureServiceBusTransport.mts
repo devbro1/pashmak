@@ -254,7 +254,7 @@ export class AzureServiceBusTransport implements QueueTransportInterface {
    * Starts listening for messages on all registered channels.
    * Initiates receivers for each registered listener.
    */
-  async startListening(): Promise<void> {
+  async startListening(channelList: string[] = []): Promise<void> {
     if (this.listening) {
       return;
     }
@@ -262,9 +262,9 @@ export class AzureServiceBusTransport implements QueueTransportInterface {
     this.listening = true;
 
     await Promise.all(
-      Array.from(this.listeners.entries()).map(([channel, listener]) =>
-        this.startReceiver(channel, listener)
-      )
+      Array.from(this.listeners.entries())
+        .filter(([channel]) => channelList.length === 0 || channelList.includes(channel))
+        .map(([channel, listener]) => this.startReceiver(channel, listener))
     );
   }
 

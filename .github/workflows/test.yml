@@ -13,8 +13,11 @@ jobs:
         image: redis:8.2.1
         ports:
           - 6379:6379
+        env:
+          REDIS_PASSWORD: redispassword
+
         options: >-
-          --health-cmd="redis-cli ping || exit 1"
+          --health-cmd="redis-cli -a $REDIS_PASSWORD ping || exit 1"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
@@ -40,6 +43,18 @@ jobs:
         image: memcached:latest
         ports:
           - 11211:11211
+      localstack:
+        image: localstack/localstack:latest
+        ports:
+          - 4566:4566
+        env:
+          SERVICES: sqs
+          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
+        options: >-
+          --health-cmd="curl -s http://localhost:4566/_localstack/health | grep -q '\"sqs\": \"running\"'"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
     env:
       DATABASE_URL: postgres://testuser:testpassword@localhost:5432/testdb
       DB_HOST: localhost
@@ -49,12 +64,17 @@ jobs:
       DB_NAME: testdb
       NODE_ENV: test
       REDIS_HOST: localhost
+      REDIS_PASSWORD: redispassword
       MEMCACHE_HOST: localhost
       MYSQL_HOST: localhost
       MYSQL_PORT: 3306
       MYSQL_USER: dbadmin
       MYSQL_PASSWORD: dbpassword
       MYSQL_DATABASE: practice_db_1
+      AWS_SQS_ENDPOINT: http://localhost:4566
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
     steps:
       - uses: actions/checkout@v6
       # Setup .npmrc file to publish to npm
