@@ -14,7 +14,7 @@ describe('query related tests', () => {
       declare age: number;
 
       static override getQuery(): Query & { active: (active: boolean) => Query } {
-        const rc = BaseModel.getQuery();
+        const rc = super.getQuery();
         rc.active = function (active: boolean) {
           return this.whereOp('is_active', '=', active);
         };
