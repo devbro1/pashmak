@@ -10,8 +10,12 @@ export class BaseController {
   static basePath: string = '';
   static baseMiddlewares: MiddlewareProvider[];
 
+  constructor() {
+    // base constructor logic if needed
+  }
+
   static getInstance() {
-    return new BaseController();
+    return new this();
   }
 }
 

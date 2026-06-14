@@ -33,7 +33,7 @@ export class BaseModel {
   declare _dirties: Set<string>;
 
   constructor(initialData: any = {}) {
-    this.tableName = pluralize(snakeCase(this.constructor.name));
+    this.tableName = pluralize(snakeCase(this.getClassName()));
 
     this._attributes = this._attributes || {};
     this._fillable = this._fillable || [];
@@ -67,7 +67,7 @@ export class BaseModel {
    * @returns The name of the model class
    */
   static getClassName() {
-    return BaseModel.name;
+    return this.name;
   }
 
   /**
@@ -241,7 +241,7 @@ export class BaseModel {
     id: number | string,
     options = { withGlobalScopes: true }
   ): Promise<InstanceType<T> | undefined> {
-    return BaseModel.findByPrimaryKey<T>({ id }, options);
+    return this.findByPrimaryKey<T>({ id }, options);
   }
 
   /**
@@ -265,7 +265,7 @@ export class BaseModel {
     conditions: object,
     options = { withGlobalScopes: true }
   ): Promise<T | undefined> {
-    const self = new BaseModel();
+    const self = new this();
     const q: Query = await (self.constructor as typeof BaseModel).getQuery(options);
 
     for (const [key, value] of Object.entries(conditions)) {
@@ -304,7 +304,7 @@ export class BaseModel {
     id: number | string,
     options = { withGlobalScopes: true }
   ): Promise<InstanceType<T>> {
-    const rc = await BaseModel.find<T>(id, options);
+    const rc = await this.find<T>(id, options);
     if (!rc) {
       throw new Error('Not found');
     }
@@ -334,7 +334,7 @@ export class BaseModel {
     keys: Record<string, Parameter>,
     options = { withGlobalScopes: true }
   ): Promise<any> {
-    const self = new BaseModel();
+    const self = new this();
     const q: Query = await (self.constructor as typeof BaseModel).getQuery(options);
 
     q.select([...self._primary_keys, ...self._fillable]);
@@ -429,12 +429,12 @@ export class BaseModel {
   ): ReturnType<typeof this.prototype.getLocalScopesQuery> {
     const opts = { ...options, withGlobalScopes: true };
     let QueryClass = Query;
-    if (typeof BaseModel.getLocalScopesQuery === 'function') {
-      QueryClass = BaseModel.getLocalScopesQuery();
+    if (typeof this.getLocalScopesQuery === 'function') {
+      QueryClass = this.getLocalScopesQuery();
     }
-    const conn = BaseModel.getConnection();
+    const conn = this.getConnection();
     let rc = new QueryClass(conn, conn.getQueryGrammar());
-    const self = new BaseModel();
+    const self = new this();
 
     rc.table(self.tableName);
 
@@ -513,7 +513,7 @@ export class BaseModel {
     initialData: any = {},
     exists: boolean = false
   ): T {
-    const rc = new BaseModel(initialData);
+    const rc = new this(initialData);
     rc._exists = exists;
     return rc as T;
   }
@@ -532,7 +532,7 @@ export class BaseModel {
    * console.log(user.id); // Auto-generated ID
    */
   public static async create<T extends BaseModel>(initialData: any = {}): Promise<T> {
-    const rc = new BaseModel(initialData);
+    const rc = new this(initialData);
     await rc.save();
     return rc as T;
   }
