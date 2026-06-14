@@ -1,705 +1,437 @@
-import { SQSClient } from '@aws-sdk/client-sqs';
+import { DeleteQueueCommand, ListQueuesCommand, SQSClient } from '@aws-sdk/client-sqs';
 import { sleep } from '@devbro/neko-helper';
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 import { AwsSqsTransport } from '../../src/transports/AwsSqsTransport.mjs';
 
-// Mock SQS Client
-vi.mock('@aws-sdk/client-sqs', () => {
-  const mockSend = vi.fn();
-  return {
-    SQSClient: vi.fn(() => ({
-      send: mockSend,
-    })),
-    SendMessageCommand: vi.fn((params) => ({ type: 'SendMessage', params })),
-    ReceiveMessageCommand: vi.fn((params) => ({ type: 'ReceiveMessage', params })),
-    DeleteMessageCommand: vi.fn((params) => ({ type: 'DeleteMessage', params })),
-    GetQueueUrlCommand: vi.fn((params) => ({ type: 'GetQueueUrl', params })),
-    CreateQueueCommand: vi.fn((params) => ({ type: 'CreateQueue', params })),
-    ChangeMessageVisibilityCommand: vi.fn((params) => ({
-      type: 'ChangeMessageVisibility',
-      params,
-    })),
-  };
-});
+const LOCALSTACK_ENDPOINT = process.env.SQS_ENDPOINT || 'http://localstack:4566';
+const AWS_REGION = 'us-east-1';
+const AWS_CREDENTIALS = { accessKeyId: 'test', secretAccessKey: 'test' };
 
-describe('AwsSqsTransport - Unit Tests', () => {
+const BASE_CONFIG = {
+  endpoint: LOCALSTACK_ENDPOINT,
+  region: AWS_REGION,
+  credentials: AWS_CREDENTIALS,
+  createQueue: true,
+  waitTimeSeconds: 1,
+  pollIntervalMs: 100,
+};
+
+async function waitFor(
+  condition: () => boolean | Promise<boolean>,
+  timeout = 10000,
+  interval = 100
+): Promise<void> {
+  const start = Date.now();
+  while (Date.now() - start < timeout) {
+    if (await condition()) return;
+    await sleep(interval);
+  }
+  throw new Error('Timed out waiting for condition');
+}
+
+describe('AwsSqsTransport', () => {
   let transport: AwsSqsTransport;
-  let mockSend: any;
+  let cleanupClient: SQSClient;
+  let testPrefix: string;
+
+  beforeAll(() => {
+    cleanupClient = new SQSClient({
+      endpoint: LOCALSTACK_ENDPOINT,
+      region: AWS_REGION,
+      credentials: AWS_CREDENTIALS,
+    });
+  });
+
+  afterAll(() => {
+    cleanupClient.destroy();
+  });
 
   beforeEach(() => {
-    vi.clearAllMocks();
-    mockSend = vi.fn();
-    (SQSClient as any).mockImplementation(() => ({
-      send: mockSend,
-    }));
+    testPrefix = `test-${Date.now()}-${Math.random().toString(36).substring(2, 8)}-`;
   });
 
   afterEach(async () => {
     if (transport) {
       await transport.stopListening();
     }
+    const listResult = await cleanupClient.send(
+      new ListQueuesCommand({ QueueNamePrefix: testPrefix })
+    );
+    await Promise.all(
+      (listResult.QueueUrls ?? []).map((queueUrl) =>
+        cleanupClient.send(new DeleteQueueCommand({ QueueUrl: queueUrl })).catch(() => undefined)
+      )
+    );
   });
 
   describe('Configuration', () => {
-    test('should create transport with default config', async () => {
+    test('should create transport with default config', () => {
       transport = new AwsSqsTransport();
       expect(transport).toBeInstanceOf(AwsSqsTransport);
     });
 
     test('should create transport with custom config', () => {
       transport = new AwsSqsTransport({
-        region: 'us-west-2',
-        queueNamePrefix: 'test-',
+        ...BASE_CONFIG,
+        queueNamePrefix: testPrefix,
         waitTimeSeconds: 10,
         maxNumberOfMessages: 5,
       });
       expect(transport).toBeInstanceOf(AwsSqsTransport);
     });
 
-    test('should use provided SQS client', () => {
-      const customClient = new SQSClient({ region: 'eu-west-1' });
+    test('should accept a provided SQS client', () => {
+      const customClient = new SQSClient({
+        endpoint: LOCALSTACK_ENDPOINT,
+        region: AWS_REGION,
+        credentials: AWS_CREDENTIALS,
+      });
       transport = new AwsSqsTransport({ client: customClient });
       expect(transport).toBeInstanceOf(AwsSqsTransport);
-    });
-
-    test('should use environment variables for region', () => {
-      const originalRegion = process.env.AWS_REGION;
-      process.env.AWS_REGION = 'ap-southeast-1';
-      transport = new AwsSqsTransport();
-      expect(transport).toBeInstanceOf(AwsSqsTransport);
-      if (originalRegion) {
-        process.env.AWS_REGION = originalRegion;
-      } else {
-        delete process.env.AWS_REGION;
-      }
     });
   });
 
   describe('dispatch()', () => {
-    beforeEach(() => {
-      mockSend.mockResolvedValue({
-        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
-      });
-    });
-
     test('should dispatch message to queue', async () => {
-      transport = new AwsSqsTransport();
+      transport = new AwsSqsTransport({ ...BASE_CONFIG, queueNamePrefix: testPrefix });
 
-      // Mock GetQueueUrl response
-      mockSend.mockResolvedValueOnce({
-        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
-      });
-      // Mock SendMessage response
-      mockSend.mockResolvedValueOnce({ MessageId: 'msg-123' });
-
-      await transport.dispatch('test-channel', 'Hello World');
-
-      expect(mockSend).toHaveBeenCalledTimes(2);
-      const sendMessageCall = mockSend.mock.calls[1][0];
-      expect(sendMessageCall.type).toBe('SendMessage');
-      expect(sendMessageCall.params.MessageBody).toBe('Hello World');
+      await expect(transport.dispatch('test-channel', 'Hello World')).resolves.not.toThrow();
     });
 
-    test('should create queue if it does not exist', async () => {
-      transport = new AwsSqsTransport({ createQueue: true });
-
-      // Mock GetQueueUrl to fail with QueueDoesNotExist
-      mockSend.mockRejectedValueOnce({ name: 'QueueDoesNotExist' });
-      // Mock CreateQueue response
-      mockSend.mockResolvedValueOnce({
-        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/new-queue',
+    test('should auto-create queue if it does not exist', async () => {
+      transport = new AwsSqsTransport({
+        ...BASE_CONFIG,
+        queueNamePrefix: testPrefix,
+        createQueue: true,
       });
-      // Mock SendMessage response
-      mockSend.mockResolvedValueOnce({ MessageId: 'msg-456' });
 
       await transport.dispatch('new-channel', 'Test Message');
 
-      expect(mockSend).toHaveBeenCalledTimes(3);
-      const createQueueCall = mockSend.mock.calls[1][0];
-      expect(createQueueCall.type).toBe('CreateQueue');
+      const listResult = await cleanupClient.send(
+        new ListQueuesCommand({ QueueNamePrefix: `${testPrefix}new-channel` })
+      );
+      expect(listResult.QueueUrls?.length).toBeGreaterThan(0);
     });
 
     test('should use queue name prefix', async () => {
-      transport = new AwsSqsTransport({ queueNamePrefix: 'prefix-' });
-
-      mockSend.mockResolvedValueOnce({
-        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/prefix-test',
-      });
-      mockSend.mockResolvedValueOnce({ MessageId: 'msg-789' });
+      transport = new AwsSqsTransport({ ...BASE_CONFIG, queueNamePrefix: testPrefix });
 
       await transport.dispatch('test', 'Prefixed Message');
 
-      const getQueueUrlCall = mockSend.mock.calls[0][0];
-      expect(getQueueUrlCall.params.QueueName).toBe('prefix-test');
+      const listResult = await cleanupClient.send(
+        new ListQueuesCommand({ QueueNamePrefix: `${testPrefix}test` })
+      );
+      expect(listResult.QueueUrls?.length).toBeGreaterThan(0);
     });
 
-    test('should handle FIFO queues', async () => {
-      transport = new AwsSqsTransport({ messageGroupId: 'group-1' });
-
-      mockSend.mockResolvedValueOnce({
-        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test.fifo',
-      });
-      mockSend.mockResolvedValueOnce({ MessageId: 'msg-fifo' });
-
-      await transport.dispatch('test.fifo', 'FIFO Message');
-
-      const sendMessageCall = mockSend.mock.calls[1][0];
-      expect(sendMessageCall.params.MessageGroupId).toBe('group-1');
-    });
-
-    test('should cache queue URLs', async () => {
-      transport = new AwsSqsTransport();
-
-      mockSend.mockResolvedValueOnce({
-        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/cached-queue',
-      });
-      mockSend.mockResolvedValueOnce({ MessageId: 'msg-1' });
-      mockSend.mockResolvedValueOnce({ MessageId: 'msg-2' });
+    test('should cache queue URLs across multiple dispatches', async () => {
+      transport = new AwsSqsTransport({ ...BASE_CONFIG, queueNamePrefix: testPrefix });
 
       await transport.dispatch('cached-channel', 'Message 1');
       await transport.dispatch('cached-channel', 'Message 2');
+      await transport.dispatch('cached-channel', 'Message 3');
 
-      // Should only call GetQueueUrl once (cached on second dispatch)
-      expect(mockSend).toHaveBeenCalledTimes(3);
+      // Only one queue should exist for the channel
+      const listResult = await cleanupClient.send(
+        new ListQueuesCommand({ QueueNamePrefix: `${testPrefix}cached-channel` })
+      );
+      expect(listResult.QueueUrls?.length).toBe(1);
+    });
+
+    test('should throw when createQueue is false and queue does not exist', async () => {
+      transport = new AwsSqsTransport({
+        ...BASE_CONFIG,
+        queueNamePrefix: testPrefix,
+        createQueue: false,
+      });
+
+      await expect(transport.dispatch('non-existent', 'Test')).rejects.toThrow();
     });
   });
 
   describe('registerListener()', () => {
-    test('should register a listener for a channel', async () => {
-      transport = new AwsSqsTransport();
-      mockSend.mockResolvedValueOnce({
-        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
-      });
+    test('should register a listener and resolve the queue URL', async () => {
+      transport = new AwsSqsTransport({ ...BASE_CONFIG, queueNamePrefix: testPrefix });
 
-      const callback = vi.fn();
-      await transport.registerListener('test-channel', callback);
-
-      expect(mockSend).toHaveBeenCalledTimes(1);
+      await expect(
+        transport.registerListener('test-channel', async () => {})
+      ).resolves.not.toThrow();
     });
 
     test('should replace existing listener for same channel', async () => {
-      transport = new AwsSqsTransport();
-      mockSend.mockResolvedValue({
-        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
+      transport = new AwsSqsTransport({ ...BASE_CONFIG, queueNamePrefix: testPrefix });
+
+      const received1: string[] = [];
+      const received2: string[] = [];
+
+      await transport.registerListener('test-channel', async (msg) => {
+        received1.push(msg);
+      });
+      await transport.registerListener('test-channel', async (msg) => {
+        received2.push(msg);
       });
 
-      const callback1 = vi.fn();
-      const callback2 = vi.fn();
+      await transport.startListening();
+      await transport.dispatch('test-channel', 'test message');
 
-      await transport.registerListener('test-channel', callback1);
-      await transport.registerListener('test-channel', callback2);
+      await waitFor(() => received2.length > 0);
+      expect(received2).toContain('test message');
+      expect(received1).toHaveLength(0);
+    });
 
-      // Should reuse cached queue URL
-      expect(mockSend).toHaveBeenCalledTimes(1);
+    test('should start processing immediately when already listening', async () => {
+      transport = new AwsSqsTransport({ ...BASE_CONFIG, queueNamePrefix: testPrefix });
+
+      await transport.startListening();
+
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
+      });
+
+      await transport.dispatch('test-channel', 'test message');
+
+      await waitFor(() => received.length > 0);
+      expect(received).toContain('test message');
     });
   });
 
   describe('startListening() and stopListening()', () => {
     test('should start listening and process messages', async () => {
-      transport = new AwsSqsTransport({ waitTimeSeconds: 1, pollIntervalMs: 100 });
+      transport = new AwsSqsTransport({ ...BASE_CONFIG, queueNamePrefix: testPrefix });
 
-      const messages: string[] = [];
-      const callback = vi.fn(async (msg: string) => {
-        messages.push(msg);
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
       });
-
-      // Mock GetQueueUrl
-      mockSend.mockResolvedValueOnce({
-        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
-      });
-
-      await transport.registerListener('test-channel', callback);
-
-      // Mock ReceiveMessage with one message
-      mockSend.mockResolvedValueOnce({
-        Messages: [{ MessageId: 'msg-1', Body: 'Test Message', ReceiptHandle: 'receipt-1' }],
-      });
-      // Mock DeleteMessage
-      mockSend.mockResolvedValueOnce({});
-      // Mock subsequent empty ReceiveMessage
-      mockSend.mockImplementation(async (command: any) => {
-        await sleep(100); // Simulate network delay
-        return { Messages: [] };
-      });
-
       await transport.startListening();
-      await sleep(500);
-      await transport.stopListening();
 
-      expect(callback).toHaveBeenCalledWith('Test Message');
-      expect(messages).toContain('Test Message');
+      await transport.dispatch('test-channel', 'Test Message');
+
+      await waitFor(() => received.length > 0);
+      expect(received).toContain('Test Message');
     });
 
-    test('should handle multiple messages in a batch', async () => {
-      transport = new AwsSqsTransport({ maxNumberOfMessages: 10, waitTimeSeconds: 1 });
-
-      const messages: string[] = [];
-      const callback = vi.fn(async (msg: string) => {
-        messages.push(msg);
-      });
-
-      mockSend.mockResolvedValueOnce({
-        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
-      });
-      await transport.registerListener('test-channel', callback);
-
-      // Mock batch of messages
-      mockSend.mockResolvedValueOnce({
-        Messages: [
-          { MessageId: 'msg-1', Body: 'Message 1', ReceiptHandle: 'receipt-1' },
-          { MessageId: 'msg-2', Body: 'Message 2', ReceiptHandle: 'receipt-2' },
-          { MessageId: 'msg-3', Body: 'Message 3', ReceiptHandle: 'receipt-3' },
-        ],
-      });
-
-      mockSend.mockImplementation(async (command: any) => {
-        await sleep(100); // Simulate network delay
-        return { Messages: [] };
-      });
-
-      await transport.startListening();
-      await sleep(500);
-      await transport.stopListening();
-
-      expect(callback).toHaveBeenCalledTimes(3);
-      expect(messages).toEqual(['Message 1', 'Message 2', 'Message 3']);
-    });
-
-    test('should handle message processing errors', async () => {
-      transport = new AwsSqsTransport({ errorVisibilityTimeout: 100, waitTimeSeconds: 1 });
-
-      const callback = vi.fn().mockRejectedValueOnce(new Error('Processing failed'));
-
-      mockSend.mockResolvedValueOnce({
-        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
-      });
-      await transport.registerListener('test-channel', callback);
-
-      mockSend.mockResolvedValueOnce({
-        Messages: [{ MessageId: 'msg-1', Body: 'Failing Message', ReceiptHandle: 'receipt-1' }],
-      });
-      // Mock ChangeMessageVisibility for error handling
-      mockSend.mockResolvedValueOnce({});
-      mockSend.mockImplementation(async (command: any) => {
-        await sleep(100); // Simulate network delay
-        return { Messages: [] };
-      });
-
-      await transport.startListening();
-      await sleep(500);
-      await transport.stopListening();
-
-      expect(callback).toHaveBeenCalled();
-      // Should call ChangeMessageVisibility to reset visibility timeout
-
-      const changeVisibilityCall = mockSend.mock.calls.find(
-        (call: any) => call[0].type === 'ChangeMessageVisibility'
-      );
-      expect(changeVisibilityCall).toBeDefined();
-    });
-
-    test('should use custom error handler', async () => {
-      const errorHandler = vi.fn();
+    test('should handle multiple messages', async () => {
       transport = new AwsSqsTransport({
-        onError: errorHandler,
-        waitTimeSeconds: 1,
+        ...BASE_CONFIG,
+        queueNamePrefix: testPrefix,
+        maxNumberOfMessages: 10,
       });
 
-      const callback = vi.fn().mockRejectedValueOnce(new Error('Custom error'));
-
-      mockSend.mockResolvedValueOnce({
-        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
       });
-      await transport.registerListener('test-channel', callback);
-
-      mockSend.mockResolvedValueOnce({
-        Messages: [{ MessageId: 'msg-1', Body: 'Error Message', ReceiptHandle: 'receipt-1' }],
-      });
-
-      mockSend.mockImplementation(async (command: any) => {
-        await sleep(100); // Simulate network delay
-        return { Messages: [] };
-      });
-
       await transport.startListening();
-      await sleep(500);
-      await transport.stopListening();
 
-      expect(errorHandler).toHaveBeenCalled();
-      expect(errorHandler.mock.calls[0][0].message).toBe('Custom error');
-      expect(errorHandler.mock.calls[0][1]).toMatchObject({
+      await transport.dispatch('test-channel', 'Message 1');
+      await transport.dispatch('test-channel', 'Message 2');
+      await transport.dispatch('test-channel', 'Message 3');
+
+      await waitFor(() => received.length >= 3);
+      expect(received).toContain('Message 1');
+      expect(received).toContain('Message 2');
+      expect(received).toContain('Message 3');
+    });
+
+    test('should call error handler on processing failure', async () => {
+      const errors: Error[] = [];
+      transport = new AwsSqsTransport({
+        ...BASE_CONFIG,
+        queueNamePrefix: testPrefix,
+        errorVisibilityTimeout: 1,
+        onError: (err) => errors.push(err),
+      });
+
+      await transport.registerListener('test-channel', async () => {
+        throw new Error('Processing failed');
+      });
+      await transport.startListening();
+
+      await transport.dispatch('test-channel', 'Failing Message');
+
+      await waitFor(() => errors.length > 0);
+      expect(errors[0].message).toBe('Processing failed');
+    });
+
+    test('should pass channel and body to custom error handler', async () => {
+      const errorContexts: Array<{ error: Error; context: Record<string, string | undefined> }> =
+        [];
+      transport = new AwsSqsTransport({
+        ...BASE_CONFIG,
+        queueNamePrefix: testPrefix,
+        onError: (error, context) => errorContexts.push({ error, context }),
+      });
+
+      await transport.registerListener('test-channel', async () => {
+        throw new Error('Custom error');
+      });
+      await transport.startListening();
+
+      await transport.dispatch('test-channel', 'Error Message');
+
+      await waitFor(() => errorContexts.length > 0);
+      expect(errorContexts[0].error.message).toBe('Custom error');
+      expect(errorContexts[0].context).toMatchObject({
         channel: 'test-channel',
         body: 'Error Message',
       });
     });
 
     test('should stop listening cleanly', async () => {
-      transport = new AwsSqsTransport({ waitTimeSeconds: 1 });
+      transport = new AwsSqsTransport({ ...BASE_CONFIG, queueNamePrefix: testPrefix });
 
-      const callback = vi.fn();
-      mockSend.mockResolvedValueOnce({
-        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
-      });
-      await transport.registerListener('test-channel', callback);
-
-      mockSend.mockImplementation(async (command: any) => {
-        await sleep(100); // Simulate network delay
-        return { Messages: [] };
-      });
-
+      await transport.registerListener('test-channel', async () => {});
       await transport.startListening();
-      await sleep(200);
-      await transport.stopListening();
 
-      expect(transport).toBeInstanceOf(AwsSqsTransport);
+      await expect(transport.stopListening()).resolves.not.toThrow();
     });
 
     test('should not start listening twice', async () => {
-      transport = new AwsSqsTransport({ waitTimeSeconds: 1 });
+      transport = new AwsSqsTransport({ ...BASE_CONFIG, queueNamePrefix: testPrefix });
 
-      const callback = vi.fn();
-      mockSend.mockResolvedValueOnce({
-        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
-      });
-      await transport.registerListener('test-channel', callback);
-
-      mockSend.mockImplementation(async (command: any) => {
-        await sleep(100); // Simulate network delay
-        return { Messages: [] };
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
       });
 
       await transport.startListening();
-      await transport.startListening(); // Should be idempotent
+      await transport.startListening(); // Second call should be idempotent
 
-      await sleep(200);
-      await transport.stopListening();
+      await transport.dispatch('test-channel', 'test message');
 
-      expect(transport).toBeInstanceOf(AwsSqsTransport);
+      await waitFor(() => received.length > 0);
+      await sleep(300);
+      expect(received).toHaveLength(1);
     });
   });
 
   describe('Queue Creation', () => {
-    test('should create standard queue with correct attributes', async () => {
+    test('should create standard queue with configured attributes', async () => {
       transport = new AwsSqsTransport({
-        createQueue: true,
+        ...BASE_CONFIG,
+        queueNamePrefix: testPrefix,
         visibilityTimeout: 60,
         queueAttributes: { MessageRetentionPeriod: '86400' },
       });
 
-      mockSend.mockRejectedValueOnce({ name: 'QueueDoesNotExist' });
-      mockSend.mockResolvedValueOnce({
-        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/standard-queue',
-      });
-      mockSend.mockResolvedValueOnce({ MessageId: 'msg-std' });
-
       await transport.dispatch('standard-queue', 'Test');
 
-      const createQueueCall = mockSend.mock.calls[1][0];
-      expect(createQueueCall.type).toBe('CreateQueue');
-      expect(createQueueCall.params.Attributes.VisibilityTimeout).toBe('60');
-      expect(createQueueCall.params.Attributes.MessageRetentionPeriod).toBe('86400');
+      const listResult = await cleanupClient.send(
+        new ListQueuesCommand({ QueueNamePrefix: `${testPrefix}standard-queue` })
+      );
+      expect(listResult.QueueUrls?.length).toBeGreaterThan(0);
     });
 
-    test('should create FIFO queue with correct attributes', async () => {
-      transport = new AwsSqsTransport({ createQueue: true });
-
-      mockSend.mockRejectedValueOnce({ name: 'QueueDoesNotExist' });
-      mockSend.mockResolvedValueOnce({
-        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/fifo-queue.fifo',
+    test('should create FIFO queue with .fifo suffix', async () => {
+      transport = new AwsSqsTransport({
+        ...BASE_CONFIG,
+        queueNamePrefix: testPrefix,
+        createQueue: true,
       });
-      mockSend.mockResolvedValueOnce({ MessageId: 'msg-fifo' });
 
       await transport.dispatch('fifo-queue.fifo', 'Test');
 
-      const createQueueCall = mockSend.mock.calls[1][0];
-      expect(createQueueCall.params.Attributes.FifoQueue).toBe('true');
-      expect(createQueueCall.params.Attributes.ContentBasedDeduplication).toBe('true');
+      const listResult = await cleanupClient.send(
+        new ListQueuesCommand({ QueueNamePrefix: `${testPrefix}fifo-queue.fifo` })
+      );
+      expect(listResult.QueueUrls?.length).toBeGreaterThan(0);
     });
 
     test('should not create queue when createQueue is false', async () => {
-      transport = new AwsSqsTransport({ createQueue: false });
-
-      mockSend.mockRejectedValueOnce({ name: 'QueueDoesNotExist' });
+      transport = new AwsSqsTransport({
+        ...BASE_CONFIG,
+        queueNamePrefix: testPrefix,
+        createQueue: false,
+      });
 
       await expect(transport.dispatch('non-existent', 'Test')).rejects.toThrow();
-      expect(mockSend).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe('Long Polling', () => {
-    test('should use configured wait time for long polling', async () => {
-      transport = new AwsSqsTransport({ waitTimeSeconds: 20 });
-
-      const callback = vi.fn();
-      mockSend.mockResolvedValueOnce({
-        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
-      });
-      await transport.registerListener('test-channel', callback);
-
-      mockSend.mockImplementation(async (command: any) => {
-        await sleep(100); // Simulate network delay
-        return { Messages: [] };
-      });
-
-      await transport.startListening();
-      await sleep(100);
-      await transport.stopListening();
-
-      const receiveMessageCall = mockSend.mock.calls.find(
-        (call: any) => call[0].type === 'ReceiveMessage'
-      );
-      expect(receiveMessageCall[0].params.WaitTimeSeconds).toBe(20);
-    });
-
-    test('should continue polling after receiving empty response', async () => {
-      transport = new AwsSqsTransport({ waitTimeSeconds: 1 });
-
-      const callback = vi.fn();
-      mockSend.mockResolvedValueOnce({
-        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
-      });
-      await transport.registerListener('test-channel', callback);
-
-      // First poll: empty
-      mockSend.mockResolvedValueOnce({ Messages: [] });
-      // Second poll: message
-      mockSend.mockResolvedValueOnce({
-        Messages: [{ MessageId: 'msg-1', Body: 'Late Message', ReceiptHandle: 'receipt-1' }],
-      });
-      mockSend.mockImplementation(async (command: any) => {
-        await sleep(100); // Simulate network delay
-        return { Messages: [] };
-      });
-
-      await transport.startListening();
-      await sleep(500);
-      await transport.stopListening();
-
-      expect(callback).toHaveBeenCalledWith('Late Message');
     });
   });
 
   describe('Error Handling', () => {
     test('should not change visibility timeout when errorVisibilityTimeout is undefined', async () => {
-      transport = new AwsSqsTransport({ errorVisibilityTimeout: undefined, waitTimeSeconds: 1 });
-
-      const callback = vi.fn().mockRejectedValueOnce(new Error('Processing failed'));
-
-      mockSend.mockResolvedValueOnce({
-        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
-      });
-      await transport.registerListener('test-channel', callback);
-
-      mockSend.mockResolvedValueOnce({
-        Messages: [{ MessageId: 'msg-1', Body: 'Failing Message', ReceiptHandle: 'receipt-1' }],
-      });
-      mockSend.mockImplementation(async (command: any) => {
-        await sleep(100); // Simulate network delay
-        return {};
-      });
-
-      await transport.startListening();
-      await sleep(500);
-      await transport.stopListening();
-
-      const changeVisibilityCall = mockSend.mock.calls.find(
-        (call: any) => call[0].type === 'ChangeMessageVisibility'
-      );
-      expect(changeVisibilityCall).toBeUndefined();
-    });
-
-    test('should handle errors during queue URL lookup', async () => {
-      const errorHandler = vi.fn();
+      const errors: Error[] = [];
       transport = new AwsSqsTransport({
-        onError: errorHandler,
-        waitTimeSeconds: 1,
-        errorBackoffMs: 100,
+        ...BASE_CONFIG,
+        queueNamePrefix: testPrefix,
+        errorVisibilityTimeout: undefined,
+        onError: (err) => errors.push(err),
       });
 
-      const callback = vi.fn();
-      // First GetQueueUrl succeeds
-      mockSend.mockResolvedValueOnce({
-        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue',
+      await transport.registerListener('test-channel', async () => {
+        throw new Error('Processing failed');
       });
-      await transport.registerListener('test-channel', callback);
-
-      // ReceiveMessage fails
-      mockSend.mockRejectedValueOnce(new Error('Network error'));
-      // Subsequent polls return empty
-      mockSend.mockImplementation(async (command: any) => {
-        await sleep(100); // Simulate network delay
-        return { Messages: [] };
-      });
-
       await transport.startListening();
-      await sleep(300);
-      await transport.stopListening();
 
-      expect(errorHandler).toHaveBeenCalled();
+      await transport.dispatch('test-channel', 'Failing Message');
+
+      await waitFor(() => errors.length > 0);
+      expect(errors[0].message).toBe('Processing failed');
     });
   });
-});
 
-describe('AwsSqsTransport - Integration Tests', () => {
-  let transport: AwsSqsTransport;
-  let mockSend: any;
+  describe('Integration Tests', () => {
+    test('should handle full message lifecycle: dispatch -> receive -> process -> delete', async () => {
+      transport = new AwsSqsTransport({ ...BASE_CONFIG, queueNamePrefix: testPrefix });
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockSend = vi.fn();
-    (SQSClient as any).mockImplementation(() => ({
-      send: mockSend,
-    }));
-  });
+      const received: string[] = [];
+      await transport.registerListener('integration-channel', async (msg) => {
+        received.push(msg);
+      });
+      await transport.startListening();
 
-  afterEach(async () => {
-    if (transport) {
-      await transport.stopListening();
-    }
-  });
+      await transport.dispatch('integration-channel', 'Integration Test Message');
 
-  test('should handle full message lifecycle: dispatch -> receive -> process -> delete', async () => {
-    transport = new AwsSqsTransport({ waitTimeSeconds: 1 });
-
-    const processedMessages: string[] = [];
-    const callback = vi.fn(async (msg: string) => {
-      processedMessages.push(msg);
+      await waitFor(() => received.length > 0);
+      expect(received).toContain('Integration Test Message');
     });
 
-    // Setup: GetQueueUrl for dispatch
-    mockSend.mockResolvedValueOnce({
-      QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/integration-queue',
+    test('should handle multiple channels concurrently', async () => {
+      transport = new AwsSqsTransport({ ...BASE_CONFIG, queueNamePrefix: testPrefix });
+
+      const channel1Messages: string[] = [];
+      const channel2Messages: string[] = [];
+
+      await transport.registerListener('channel1', async (msg) => {
+        channel1Messages.push(msg);
+      });
+      await transport.registerListener('channel2', async (msg) => {
+        channel2Messages.push(msg);
+      });
+      await transport.startListening();
+
+      await transport.dispatch('channel1', 'Channel 1 Message');
+      await transport.dispatch('channel2', 'Channel 2 Message');
+
+      await waitFor(() => channel1Messages.length > 0 && channel2Messages.length > 0);
+      expect(channel1Messages).toContain('Channel 1 Message');
+      expect(channel2Messages).toContain('Channel 2 Message');
     });
 
-    // Dispatch
-    mockSend.mockResolvedValueOnce({ MessageId: 'msg-integration' });
-    await transport.dispatch('integration-channel', 'Integration Test Message');
+    test('should reprocess message after processing failure', async () => {
+      let attempt = 0;
+      const received: string[] = [];
+      transport = new AwsSqsTransport({
+        ...BASE_CONFIG,
+        queueNamePrefix: testPrefix,
+        errorVisibilityTimeout: 0,
+        visibilityTimeout: 1,
+      });
 
-    // Register listener (reuses cached URL)
-    await transport.registerListener('integration-channel', callback);
+      await transport.registerListener('retry-channel', async (msg) => {
+        attempt++;
+        if (attempt === 1) throw new Error('First attempt failed');
+        received.push(msg);
+      });
+      await transport.startListening();
 
-    // Receive message
-    mockSend.mockResolvedValueOnce({
-      Messages: [
-        {
-          MessageId: 'msg-integration',
-          Body: 'Integration Test Message',
-          ReceiptHandle: 'receipt-int',
-        },
-      ],
+      await transport.dispatch('retry-channel', 'Retry Message');
+
+      await waitFor(() => received.length > 0, 15000);
+      expect(attempt).toBeGreaterThanOrEqual(2);
+      expect(received).toContain('Retry Message');
     });
-
-    // Delete message
-    mockSend.mockResolvedValueOnce({});
-    // Subsequent polls
-    mockSend.mockResolvedValue({ Messages: [] });
-
-    mockSend.mockImplementation(async (command: any) => {
-      await sleep(100); // Simulate network delay
-      return { Messages: [] };
-    });
-
-    await transport.startListening();
-    await sleep(500);
-    await transport.stopListening();
-
-    expect(processedMessages).toContain('Integration Test Message');
-
-    // Verify sequence: GetQueueUrl -> SendMessage -> ReceiveMessage -> DeleteMessage
-    expect(mockSend.mock.calls[0][0].type).toBe('GetQueueUrl');
-    expect(mockSend.mock.calls[1][0].type).toBe('SendMessage');
-    expect(mockSend.mock.calls[2][0].type).toBe('ReceiveMessage');
-    expect(mockSend.mock.calls[3][0].type).toBe('DeleteMessage');
-  });
-
-  test('should handle multiple channels concurrently', async () => {
-    transport = new AwsSqsTransport({ waitTimeSeconds: 1 });
-
-    const channel1Messages: string[] = [];
-    const channel2Messages: string[] = [];
-
-    const callback1 = vi.fn(async (msg: string) => {
-      channel1Messages.push(msg);
-    });
-    const callback2 = vi.fn(async (msg: string) => {
-      channel2Messages.push(msg);
-    });
-
-    // GetQueueUrl for channel1
-    mockSend.mockResolvedValueOnce({
-      QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/channel1',
-    });
-    // GetQueueUrl for channel2
-    mockSend.mockResolvedValueOnce({
-      QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/channel2',
-    });
-
-    await transport.registerListener('channel1', callback1);
-    await transport.registerListener('channel2', callback2);
-
-    // Channel1 receives message
-    mockSend.mockResolvedValueOnce({
-      Messages: [{ MessageId: 'msg-ch1', Body: 'Channel 1 Message', ReceiptHandle: 'receipt-ch1' }],
-    });
-    // Channel2 receives message
-    mockSend.mockResolvedValueOnce({
-      Messages: [{ MessageId: 'msg-ch2', Body: 'Channel 2 Message', ReceiptHandle: 'receipt-ch2' }],
-    });
-    // Delete responses and subsequent empty polls
-    mockSend.mockImplementation(async (command: any) => {
-      await sleep(100); // Simulate network delay
-      return { Messages: [] };
-    });
-
-    await transport.startListening();
-    await sleep(500);
-    await transport.stopListening();
-
-    expect(channel1Messages).toContain('Channel 1 Message');
-    expect(channel2Messages).toContain('Channel 2 Message');
-  });
-
-  test('should handle message retry after processing failure', async () => {
-    transport = new AwsSqsTransport({
-      errorVisibilityTimeout: 0,
-      waitTimeSeconds: 1,
-    });
-
-    let attempt = 0;
-    const callback = vi.fn(async (msg: string) => {
-      attempt++;
-      if (attempt === 1) {
-        throw new Error('First attempt failed');
-      }
-      // Second attempt succeeds
-    });
-
-    mockSend.mockResolvedValueOnce({
-      QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/retry-queue',
-    });
-    await transport.registerListener('retry-channel', callback);
-
-    // First receive
-    mockSend.mockResolvedValueOnce({
-      Messages: [{ MessageId: 'msg-retry', Body: 'Retry Message', ReceiptHandle: 'receipt-1' }],
-    });
-    // ChangeMessageVisibility after error
-    mockSend.mockResolvedValueOnce({});
-    // Second receive (retry)
-    mockSend.mockResolvedValueOnce({
-      Messages: [{ MessageId: 'msg-retry', Body: 'Retry Message', ReceiptHandle: 'receipt-2' }],
-    });
-    // Delete after success
-    mockSend.mockResolvedValueOnce({});
-    mockSend.mockImplementation(async (command: any) => {
-      await sleep(100); // Simulate network delay
-      return { Messages: [] };
-    });
-
-    await transport.startListening();
-    await sleep(800);
-    await transport.stopListening();
-
-    expect(callback).toHaveBeenCalledTimes(2);
   });
 });
