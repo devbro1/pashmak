@@ -3,7 +3,7 @@ import { sleep } from '@devbro/neko-helper';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 import { AwsSqsTransport } from '../../src/transports/AwsSqsTransport.mjs';
 
-const LOCALSTACK_ENDPOINT = process.env.SQS_ENDPOINT || 'http://localstack:4566';
+const LOCALSTACK_ENDPOINT = process.env.AWS_SQS_ENDPOINT || 'http://localstack:4566';
 const AWS_REGION = 'us-east-1';
 const AWS_CREDENTIALS = { accessKeyId: 'test', secretAccessKey: 'test' };
 
