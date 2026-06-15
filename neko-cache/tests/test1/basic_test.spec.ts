@@ -16,7 +16,7 @@ describe.each(PROVIDERS)('cache provider %s', (provider_name) => {
   test('general happy path', async () => {
     let provider: CacheProviderInterface | undefined;
     if (provider_name === 'redis') {
-      provider = new RedisCacheProvider({ url: `redis://:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:6379` });
+      provider = new RedisCacheProvider({ url: `redis://${process.env.REDIS_HOST}:6379` });
     } else if (provider_name === 'memory') {
       provider = new MemoryCacheProvider();
     } else if (provider_name === 'file') {
