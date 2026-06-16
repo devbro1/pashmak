@@ -9,7 +9,7 @@ jobs:
   test-repo:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      workspaces: ${{ steps.set-matrix.outputs.workspaces }}
     steps:
       - uses: actions/checkout@v6
       # Setup .npmrc file to publish to npm
@@ -22,28 +22,27 @@ jobs:
         with:
           path: |
             **/node_modules
+            !**/node_modules/@devbro
           key: node_modules-${{ hashFiles('**/yarn.lock') }}
+      - name: Cache @devbro packages
+        uses: actions/cache@v5
+        with:
+          path: |
+            **/node_modules/@devbro
+          key: devbro-packages-${{ github.sha }}
       - run: yarn
       - run: yarn build:all
       - name: Generate workspace matrix
         id: set-matrix
         run: |
-          WORKSPACES=$(yarn workspaces list --json 2>/dev/null | \
-            grep -v '"location":"."' | \
-            while IFS= read -r line; do
-              name=$(echo "$line" | jq -r '.name')
-              location=$(echo "$line" | jq -r '.location')
-              if [ -f "$location/package.json" ] && cat "$location/package.json" | jq -e '.scripts.test' > /dev/null 2>&1; then
-                echo "$name"
-              fi
-            done | jq -R . | jq -s .)
-          echo "matrix={\"workspace\":$WORKSPACES}" >> $GITHUB_OUTPUT
+          WORKSPACES=$(yarn --silent workspaces info | jq -c 'keys') 
+          echo "workspaces=$WORKSPACES" >> $GITHUB_OUTPUT
 
   run-tests:
     needs: test-repo
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{ fromJson(needs.test-repo.outputs.matrix) }}
+      matrix: ${{ fromJson(needs.test-repo.outputs.workspaces) }}
       fail-fast: false
     services:
       redis:
@@ -140,6 +139,13 @@ jobs:
         with:
           path: |
             **/node_modules
+            !**/node_modules/@devbro
           key: node_modules-${{ hashFiles('**/yarn.lock') }}
+      - name: Cache @devbro packages
+        uses: actions/cache@v5
+        with:
+          path: |
+            **/node_modules/@devbro
+          key: devbro-packages-${{ github.sha }}
       - name: run tests
         run: yarn workspace ${{ matrix.workspace }} test
