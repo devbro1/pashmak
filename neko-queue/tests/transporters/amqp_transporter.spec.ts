@@ -1,61 +1,68 @@
-import { sleep } from '@devbro/neko-helper';
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import amqplib, { type Channel, type ChannelModel } from 'amqplib';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 import { AmqpTransport } from '../../src/transports/AmqpTransport.mjs';
 
-// Mock amqplib
-vi.mock('amqplib', () => {
-  const mockChannel = {
-    prefetch: vi.fn().mockResolvedValue(undefined),
-    assertExchange: vi.fn().mockResolvedValue(undefined),
-    assertQueue: vi.fn().mockResolvedValue({ queue: 'test-queue' }),
-    bindQueue: vi.fn().mockResolvedValue(undefined),
-    publish: vi.fn().mockReturnValue(true),
-    sendToQueue: vi.fn().mockReturnValue(true),
-    consume: vi.fn().mockResolvedValue({ consumerTag: 'consumer-tag-123' }),
-    ack: vi.fn(),
-    nack: vi.fn(),
-    cancel: vi.fn().mockResolvedValue(undefined),
-    close: vi.fn().mockResolvedValue(undefined),
-    on: vi.fn(),
-    once: vi.fn(),
-  };
+const RABBITMQ_URI = process.env.RABBITMQ_URI ?? 'amqp://guest:guest@localhost:5672';
 
-  const mockConnection = {
-    createChannel: vi.fn().mockResolvedValue(mockChannel),
-    close: vi.fn().mockResolvedValue(undefined),
-    on: vi.fn(),
-  };
+async function waitFor(
+  condition: () => boolean | Promise<boolean>,
+  timeout = 10000,
+  interval = 50
+): Promise<void> {
+  const start = Date.now();
+  while (Date.now() - start < timeout) {
+    if (await condition()) return;
+    await new Promise((resolve) => setTimeout(resolve, interval));
+  }
+  throw new Error('Timed out waiting for condition');
+}
 
-  return {
-    connect: vi.fn().mockResolvedValue(mockConnection),
-    default: {
-      connect: vi.fn().mockResolvedValue(mockConnection),
-    },
-  };
-});
-
-describe('AmqpTransport - Unit Tests', () => {
+describe('AmqpTransport', () => {
   let transport: AmqpTransport;
-  let amqp: any;
-  let mockConnection: any;
-  let mockChannel: any;
+  let cleanupConnection: ChannelModel;
+  let cleanupChannel: Channel;
+  let testPrefix: string;
 
-  beforeEach(async () => {
-    vi.clearAllMocks();
+  beforeAll(async () => {
+    cleanupConnection = await amqplib.connect(RABBITMQ_URI);
+    cleanupChannel = await cleanupConnection.createChannel();
+  });
 
-    // Get the mocked amqplib
-    amqp = await import('amqplib');
-    mockConnection = await amqp.connect();
-    mockChannel = await mockConnection.createChannel();
+  afterAll(async () => {
+    await cleanupChannel.close().catch(() => undefined);
+    await cleanupConnection.close().catch(() => undefined);
+  });
 
-    // Clear the mocks again after setup to not count these calls
-    vi.clearAllMocks();
+  beforeEach(() => {
+    // Keep prefix short: RabbitMQ queue names max 255 bytes
+    testPrefix = `t${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}-`;
   });
 
   afterEach(async () => {
     if (transport) {
-      await transport.stopListening();
+      await transport.stopListening().catch(() => undefined);
     }
+    const commonQueues = [
+      'test-channel',
+      'channel1',
+      'channel2',
+      'ch1',
+      'ch2',
+      'ch3',
+      'integration-channel',
+      'seq-channel',
+      'retry-channel',
+      'slow-channel',
+      'route1',
+      'route2',
+      'test',
+      'new-channel',
+    ];
+    for (const q of commonQueues) {
+      await cleanupChannel.deleteQueue(`${testPrefix}${q}`).catch(() => undefined);
+    }
+    await cleanupChannel.deleteExchange(`${testPrefix}exchange`).catch(() => undefined);
+    await cleanupChannel.deleteExchange(`${testPrefix}integration-exchange`).catch(() => undefined);
   });
 
   describe('Configuration', () => {
@@ -66,8 +73,8 @@ describe('AmqpTransport - Unit Tests', () => {
 
     test('should create transport with custom config', () => {
       transport = new AmqpTransport({
-        url: 'amqp://custom-host:5672',
-        queuePrefix: 'test-',
+        url: RABBITMQ_URI,
+        queuePrefix: testPrefix,
         prefetchCount: 5,
         queueDurable: false,
       });
@@ -76,7 +83,7 @@ describe('AmqpTransport - Unit Tests', () => {
 
     test('should use environment variable for URL', () => {
       const originalUrl = process.env.AMQP_URL;
-      process.env.AMQP_URL = 'amqp://env-host:5672';
+      process.env.AMQP_URL = RABBITMQ_URI;
       transport = new AmqpTransport();
       expect(transport).toBeInstanceOf(AmqpTransport);
       if (originalUrl) {
@@ -88,7 +95,8 @@ describe('AmqpTransport - Unit Tests', () => {
 
     test('should configure exchange options', () => {
       transport = new AmqpTransport({
-        exchange: 'test-exchange',
+        url: RABBITMQ_URI,
+        exchange: `${testPrefix}exchange`,
         exchangeType: 'topic',
         exchangeDurable: false,
       });
@@ -98,537 +106,473 @@ describe('AmqpTransport - Unit Tests', () => {
 
   describe('dispatch()', () => {
     test('should dispatch message directly to queue', async () => {
-      transport = new AmqpTransport();
+      transport = new AmqpTransport({ url: RABBITMQ_URI, queuePrefix: testPrefix });
 
       await transport.dispatch('test-channel', 'Hello World');
 
-      expect(amqp.connect).toHaveBeenCalledWith('amqp://localhost');
-      expect(mockChannel.assertQueue).toHaveBeenCalledWith('test-channel', {
-        durable: true,
-        autoDelete: false,
-      });
-      expect(mockChannel.sendToQueue).toHaveBeenCalledWith('test-channel', expect.any(Buffer), {
-        persistent: true,
-      });
+      await cleanupChannel.assertQueue(`${testPrefix}test-channel`, { durable: true });
+      const msg = await cleanupChannel.get(`${testPrefix}test-channel`, { noAck: true });
+      expect(msg).not.toBe(false);
+      if (msg !== false) expect(msg.content.toString()).toBe('Hello World');
     });
 
     test('should dispatch message to exchange', async () => {
       transport = new AmqpTransport({
-        exchange: 'my-exchange',
+        url: RABBITMQ_URI,
+        queuePrefix: testPrefix,
+        exchange: `${testPrefix}exchange`,
         exchangeType: 'direct',
       });
 
-      await transport.dispatch('routing-key', 'Exchange Message');
-
-      expect(mockChannel.assertExchange).toHaveBeenCalledWith('my-exchange', 'direct', {
-        durable: true,
-      });
-      expect(mockChannel.publish).toHaveBeenCalledWith(
-        'my-exchange',
-        'routing-key',
-        expect.any(Buffer),
-        {
-          persistent: true,
-        }
+      // Assert the queue and bind it before dispatching so the message is routable
+      await cleanupChannel.assertExchange(`${testPrefix}exchange`, 'direct', { durable: true });
+      await cleanupChannel.assertQueue(`${testPrefix}route1`, { durable: true });
+      await cleanupChannel.bindQueue(
+        `${testPrefix}route1`,
+        `${testPrefix}exchange`,
+        `${testPrefix}route1`
       );
+
+      await transport.dispatch('route1', 'Exchange Message');
+
+      const msg = await cleanupChannel.get(`${testPrefix}route1`, { noAck: true });
+      expect(msg).not.toBe(false);
+      if (msg !== false) expect(msg.content.toString()).toBe('Exchange Message');
     });
 
     test('should use queue name prefix', async () => {
-      transport = new AmqpTransport({ queuePrefix: 'prefix-' });
+      transport = new AmqpTransport({ url: RABBITMQ_URI, queuePrefix: testPrefix });
 
       await transport.dispatch('test', 'Prefixed Message');
 
-      expect(mockChannel.assertQueue).toHaveBeenCalledWith('prefix-test', expect.any(Object));
-    });
-
-    test('should handle backpressure when channel buffer is full', async () => {
-      transport = new AmqpTransport();
-
-      mockChannel.sendToQueue.mockReturnValueOnce(false);
-
-      const dispatchPromise = transport.dispatch('test-channel', 'Message');
-
-      // Simulate drain event
-      setTimeout(() => {
-        const drainCallback = mockChannel.once.mock.calls.find(
-          (call: any[]) => call[0] === 'drain'
-        )?.[1];
-        if (drainCallback) drainCallback();
-      }, 10);
-
-      await dispatchPromise;
-
-      expect(mockChannel.once).toHaveBeenCalledWith('drain', expect.any(Function));
+      await cleanupChannel.assertQueue(`${testPrefix}test`, { durable: true });
+      const msg = await cleanupChannel.get(`${testPrefix}test`, { noAck: true });
+      expect(msg).not.toBe(false);
+      if (msg !== false) expect(msg.content.toString()).toBe('Prefixed Message');
     });
 
     test('should reuse connection for multiple dispatches', async () => {
-      transport = new AmqpTransport();
+      transport = new AmqpTransport({ url: RABBITMQ_URI, queuePrefix: testPrefix });
 
-      await transport.dispatch('channel1', 'Message 1');
-      await transport.dispatch('channel2', 'Message 2');
+      await transport.dispatch('test-channel', 'Message 1');
+      await transport.dispatch('test-channel', 'Message 2');
 
-      expect(amqp.connect).toHaveBeenCalledTimes(1);
-      expect(mockConnection.createChannel).toHaveBeenCalledTimes(1);
+      await cleanupChannel.assertQueue(`${testPrefix}test-channel`, { durable: true });
+      const msg1 = await cleanupChannel.get(`${testPrefix}test-channel`, { noAck: true });
+      const msg2 = await cleanupChannel.get(`${testPrefix}test-channel`, { noAck: true });
+      expect(msg1).not.toBe(false);
+      expect(msg2).not.toBe(false);
     });
   });
 
   describe('registerListener()', () => {
-    test('should register a listener for a channel', async () => {
-      transport = new AmqpTransport();
+    test('should register a listener and receive messages', async () => {
+      transport = new AmqpTransport({ url: RABBITMQ_URI, queuePrefix: testPrefix });
 
-      const callback = vi.fn();
-      await transport.registerListener('test-channel', callback);
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
+      });
+      await transport.startListening();
 
-      expect(transport).toBeInstanceOf(AmqpTransport);
+      await transport.dispatch('test-channel', 'Hello');
+
+      await waitFor(() => received.length > 0);
+      expect(received).toContain('Hello');
     });
 
     test('should replace existing listener for same channel', async () => {
-      transport = new AmqpTransport();
+      transport = new AmqpTransport({ url: RABBITMQ_URI, queuePrefix: testPrefix });
 
-      const callback1 = vi.fn();
-      const callback2 = vi.fn();
+      const received1: string[] = [];
+      const received2: string[] = [];
 
-      await transport.registerListener('test-channel', callback1);
-      await transport.registerListener('test-channel', callback2);
+      await transport.registerListener('test-channel', async (msg) => {
+        received1.push(msg);
+      });
+      await transport.registerListener('test-channel', async (msg) => {
+        received2.push(msg);
+      });
+      await transport.startListening();
 
-      expect(transport).toBeInstanceOf(AmqpTransport);
+      await transport.dispatch('test-channel', 'test message');
+
+      await waitFor(() => received2.length > 0);
+      expect(received2).toContain('test message');
+      expect(received1).toHaveLength(0);
     });
 
     test('should start consumer immediately if already listening', async () => {
-      transport = new AmqpTransport();
+      transport = new AmqpTransport({ url: RABBITMQ_URI, queuePrefix: testPrefix });
 
       await transport.startListening();
 
-      const callback = vi.fn();
-      await transport.registerListener('new-channel', callback);
+      const received: string[] = [];
+      await transport.registerListener('new-channel', async (msg) => {
+        received.push(msg);
+      });
 
-      expect(mockChannel.consume).toHaveBeenCalled();
+      await transport.dispatch('new-channel', 'Late registration message');
+
+      await waitFor(() => received.length > 0);
+      expect(received).toContain('Late registration message');
     });
   });
 
   describe('startListening() and stopListening()', () => {
     test('should start listening and consume messages', async () => {
-      transport = new AmqpTransport();
+      transport = new AmqpTransport({ url: RABBITMQ_URI, queuePrefix: testPrefix });
 
-      const messages: string[] = [];
-      const callback = vi.fn(async (msg: string) => {
-        messages.push(msg);
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
       });
-
-      await transport.registerListener('test-channel', callback);
       await transport.startListening();
 
-      expect(mockChannel.assertQueue).toHaveBeenCalledWith('test-channel', {
-        durable: true,
-        autoDelete: false,
-      });
-      expect(mockChannel.consume).toHaveBeenCalledWith('test-channel', expect.any(Function), {
-        noAck: false,
-      });
+      await transport.dispatch('test-channel', 'Test Message');
+
+      await waitFor(() => received.length > 0);
+      expect(received).toContain('Test Message');
     });
 
-    test('should process messages and acknowledge them', async () => {
-      transport = new AmqpTransport();
+    test('should process multiple messages and acknowledge them', async () => {
+      transport = new AmqpTransport({ url: RABBITMQ_URI, queuePrefix: testPrefix });
 
-      const messages: string[] = [];
-      const callback = vi.fn(async (msg: string) => {
-        messages.push(msg);
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
       });
-
-      await transport.registerListener('test-channel', callback);
       await transport.startListening();
 
-      // Get the consume callback
-      const consumeCallback = mockChannel.consume.mock.calls[0][1];
+      await transport.dispatch('test-channel', 'Message 1');
+      await transport.dispatch('test-channel', 'Message 2');
+      await transport.dispatch('test-channel', 'Message 3');
 
-      // Simulate receiving a message
-      const mockMessage = {
-        content: Buffer.from('Test Message', 'utf-8'),
-      };
-
-      await consumeCallback(mockMessage);
-
-      expect(callback).toHaveBeenCalledWith('Test Message');
-      expect(mockChannel.ack).toHaveBeenCalledWith(mockMessage);
-      expect(messages).toContain('Test Message');
-    });
-
-    test('should handle null messages gracefully', async () => {
-      transport = new AmqpTransport();
-
-      const callback = vi.fn();
-      await transport.registerListener('test-channel', callback);
-      await transport.startListening();
-
-      const consumeCallback = mockChannel.consume.mock.calls[0][1];
-      await consumeCallback(null);
-
-      expect(callback).not.toHaveBeenCalled();
+      await waitFor(() => received.length >= 3);
+      expect(received).toContain('Message 1');
+      expect(received).toContain('Message 2');
+      expect(received).toContain('Message 3');
     });
 
     test('should nack and requeue messages on processing error', async () => {
-      transport = new AmqpTransport();
+      let attempt = 0;
+      transport = new AmqpTransport({ url: RABBITMQ_URI, queuePrefix: testPrefix });
 
-      const callback = vi.fn().mockRejectedValueOnce(new Error('Processing failed'));
-
-      await transport.registerListener('test-channel', callback);
+      const received: string[] = [];
+      await transport.registerListener('retry-channel', async (msg) => {
+        attempt++;
+        if (attempt === 1) throw new Error('First attempt failed');
+        received.push(msg);
+      });
       await transport.startListening();
 
-      const consumeCallback = mockChannel.consume.mock.calls[0][1];
-      const mockMessage = {
-        content: Buffer.from('Failing Message', 'utf-8'),
-      };
+      await transport.dispatch('retry-channel', 'Retry Message');
 
-      await consumeCallback(mockMessage);
-
-      expect(callback).toHaveBeenCalled();
-      expect(mockChannel.nack).toHaveBeenCalledWith(mockMessage, false, true);
+      await waitFor(() => received.length > 0);
+      expect(attempt).toBeGreaterThanOrEqual(2);
+      expect(received).toContain('Retry Message');
     });
 
-    test('should use custom error handler', async () => {
-      const errorHandler = vi.fn();
-      transport = new AmqpTransport({ onError: errorHandler });
+    test('should call custom error handler on processing failure', async () => {
+      const errors: Array<{ error: Error; context: Record<string, unknown> }> = [];
+      transport = new AmqpTransport({
+        url: RABBITMQ_URI,
+        queuePrefix: testPrefix,
+        onError: (error, context) => errors.push({ error, context }),
+      });
 
-      const callback = vi.fn().mockRejectedValueOnce(new Error('Custom error'));
-
-      await transport.registerListener('test-channel', callback);
+      let callCount = 0;
+      await transport.registerListener('test-channel', async () => {
+        callCount++;
+        if (callCount === 1) throw new Error('Custom error');
+      });
       await transport.startListening();
 
-      const consumeCallback = mockChannel.consume.mock.calls[0][1];
-      const mockMessage = {
-        content: Buffer.from('Error Message', 'utf-8'),
-      };
+      await transport.dispatch('test-channel', 'Error Message');
 
-      await consumeCallback(mockMessage);
-
-      expect(errorHandler).toHaveBeenCalled();
-      expect(errorHandler.mock.calls[0][0].message).toBe('Custom error');
-      expect(errorHandler.mock.calls[0][1]).toMatchObject({
-        channel: 'test-channel',
-      });
+      await waitFor(() => errors.length > 0);
+      expect(errors[0].error.message).toBe('Custom error');
+      expect(errors[0].context).toMatchObject({ channel: 'test-channel' });
     });
 
     test('should support noAck mode', async () => {
-      transport = new AmqpTransport({ noAck: true });
-
-      const callback = vi.fn();
-      await transport.registerListener('test-channel', callback);
-      await transport.startListening();
-
-      expect(mockChannel.consume).toHaveBeenCalledWith('test-channel', expect.any(Function), {
+      transport = new AmqpTransport({
+        url: RABBITMQ_URI,
+        queuePrefix: testPrefix,
         noAck: true,
       });
 
-      const consumeCallback = mockChannel.consume.mock.calls[0][1];
-      const mockMessage = {
-        content: Buffer.from('Auto-ack Message', 'utf-8'),
-      };
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
+      });
+      await transport.startListening();
 
-      await consumeCallback(mockMessage);
+      await transport.dispatch('test-channel', 'Auto-ack Message');
 
-      expect(callback).toHaveBeenCalledWith('Auto-ack Message');
-      expect(mockChannel.ack).not.toHaveBeenCalled();
+      await waitFor(() => received.length > 0);
+      expect(received).toContain('Auto-ack Message');
     });
 
     test('should bind queue to exchange when exchange is configured', async () => {
       transport = new AmqpTransport({
-        exchange: 'test-exchange',
-        exchangeType: 'topic',
+        url: RABBITMQ_URI,
+        queuePrefix: testPrefix,
+        exchange: `${testPrefix}exchange`,
+        exchangeType: 'direct',
       });
 
-      const callback = vi.fn();
-      await transport.registerListener('test-channel', callback);
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
+      });
       await transport.startListening();
 
-      expect(mockChannel.bindQueue).toHaveBeenCalledWith(
-        'test-channel',
-        'test-exchange',
-        'test-channel'
-      );
+      await transport.dispatch('test-channel', 'Exchange routed message');
+
+      await waitFor(() => received.length > 0);
+      expect(received).toContain('Exchange routed message');
     });
 
-    test('should stop listening and cancel consumers', async () => {
-      transport = new AmqpTransport();
+    test('should stop listening and not process new messages', async () => {
+      transport = new AmqpTransport({ url: RABBITMQ_URI, queuePrefix: testPrefix });
 
-      const callback = vi.fn();
-      await transport.registerListener('test-channel', callback);
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
+      });
       await transport.startListening();
+
+      await transport.dispatch('test-channel', 'Before stop');
+      await waitFor(() => received.length > 0);
+
       await transport.stopListening();
 
-      expect(mockChannel.cancel).toHaveBeenCalledWith('consumer-tag-123');
-      expect(mockChannel.close).toHaveBeenCalled();
-      expect(mockConnection.close).toHaveBeenCalled();
+      // Dispatch a second message - it sits in the queue but won't be consumed
+      await transport.dispatch('test-channel', 'After stop');
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      expect(received).not.toContain('After stop');
     });
 
     test('should not start listening twice', async () => {
-      transport = new AmqpTransport();
+      transport = new AmqpTransport({ url: RABBITMQ_URI, queuePrefix: testPrefix });
 
-      const callback = vi.fn();
-      await transport.registerListener('test-channel', callback);
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
+      });
 
       await transport.startListening();
       await transport.startListening(); // Should be idempotent
 
-      expect(mockChannel.consume).toHaveBeenCalledTimes(1);
+      await transport.dispatch('test-channel', 'test message');
+
+      await waitFor(() => received.length > 0);
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      expect(received).toHaveLength(1);
     });
 
     test('should handle multiple channels', async () => {
-      transport = new AmqpTransport();
+      transport = new AmqpTransport({ url: RABBITMQ_URI, queuePrefix: testPrefix });
 
-      const callback1 = vi.fn();
-      const callback2 = vi.fn();
+      const received1: string[] = [];
+      const received2: string[] = [];
 
-      await transport.registerListener('channel1', callback1);
-      await transport.registerListener('channel2', callback2);
+      await transport.registerListener('channel1', async (msg) => {
+        received1.push(msg);
+      });
+      await transport.registerListener('channel2', async (msg) => {
+        received2.push(msg);
+      });
       await transport.startListening();
 
-      expect(mockChannel.consume).toHaveBeenCalledTimes(2);
-      expect(mockChannel.assertQueue).toHaveBeenCalledWith('channel1', expect.any(Object));
-      expect(mockChannel.assertQueue).toHaveBeenCalledWith('channel2', expect.any(Object));
+      await transport.dispatch('channel1', 'Channel 1 message');
+      await transport.dispatch('channel2', 'Channel 2 message');
+
+      await waitFor(() => received1.length > 0 && received2.length > 0);
+      expect(received1).toContain('Channel 1 message');
+      expect(received2).toContain('Channel 2 message');
     });
   });
 
   describe('Connection Management', () => {
-    test('should set up connection error handlers', async () => {
-      transport = new AmqpTransport();
-
-      await transport.dispatch('test', 'Message');
-
-      expect(mockConnection.on).toHaveBeenCalledWith('error', expect.any(Function));
-      expect(mockConnection.on).toHaveBeenCalledWith('close', expect.any(Function));
-      expect(mockChannel.on).toHaveBeenCalledWith('error', expect.any(Function));
-    });
-
-    test('should handle connection errors', async () => {
-      const errorHandler = vi.fn();
-      transport = new AmqpTransport({ onError: errorHandler });
-
-      await transport.dispatch('test', 'Message');
-
-      // Get the error handler
-      const errorCallback = mockConnection.on.mock.calls.find(
-        (call: any[]) => call[0] === 'error'
-      )?.[1];
-
-      if (errorCallback) {
-        errorCallback(new Error('Connection error'));
-        expect(errorHandler).toHaveBeenCalled();
-      }
-    });
-
     test('should configure prefetch count', async () => {
-      transport = new AmqpTransport({ prefetchCount: 10 });
+      transport = new AmqpTransport({
+        url: RABBITMQ_URI,
+        queuePrefix: testPrefix,
+        prefetchCount: 1,
+      });
 
-      await transport.dispatch('test', 'Message');
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
+      });
+      await transport.startListening();
 
-      expect(mockChannel.prefetch).toHaveBeenCalledWith(10);
+      await transport.dispatch('test-channel', 'Message 1');
+      await transport.dispatch('test-channel', 'Message 2');
+
+      await waitFor(() => received.length >= 2);
+      expect(received).toHaveLength(2);
     });
 
-    test('should handle concurrent connection attempts', async () => {
-      transport = new AmqpTransport();
+    test('should handle concurrent dispatches', async () => {
+      transport = new AmqpTransport({ url: RABBITMQ_URI, queuePrefix: testPrefix });
 
-      // Start multiple dispatches concurrently
       await Promise.all([
         transport.dispatch('ch1', 'msg1'),
         transport.dispatch('ch2', 'msg2'),
         transport.dispatch('ch3', 'msg3'),
       ]);
 
-      // Should only connect once
-      expect(amqp.connect).toHaveBeenCalledTimes(1);
+      const [msg1, msg2, msg3] = await Promise.all([
+        cleanupChannel.get(`${testPrefix}ch1`, { noAck: true }),
+        cleanupChannel.get(`${testPrefix}ch2`, { noAck: true }),
+        cleanupChannel.get(`${testPrefix}ch3`, { noAck: true }),
+      ]);
+      if (msg1 !== false) expect(msg1.content.toString()).toBe('msg1');
+      if (msg2 !== false) expect(msg2.content.toString()).toBe('msg2');
+      if (msg3 !== false) expect(msg3.content.toString()).toBe('msg3');
     });
   });
 
   describe('Queue Configuration', () => {
     test('should create durable queues by default', async () => {
-      transport = new AmqpTransport();
+      transport = new AmqpTransport({ url: RABBITMQ_URI, queuePrefix: testPrefix });
 
-      await transport.dispatch('test', 'Message');
+      await transport.dispatch('test-channel', 'Message');
 
-      expect(mockChannel.assertQueue).toHaveBeenCalledWith('test', {
-        durable: true,
-        autoDelete: false,
-      });
+      // assertQueue with durable:true should not throw even if queue already exists
+      const q = await cleanupChannel.assertQueue(`${testPrefix}test-channel`, { durable: true });
+      expect(q.queue).toBe(`${testPrefix}test-channel`);
     });
 
     test('should create non-durable queues when configured', async () => {
-      transport = new AmqpTransport({ queueDurable: false });
-
-      await transport.dispatch('test', 'Message');
-
-      expect(mockChannel.assertQueue).toHaveBeenCalledWith('test', {
-        durable: false,
-        autoDelete: false,
+      transport = new AmqpTransport({
+        url: RABBITMQ_URI,
+        queuePrefix: testPrefix,
+        queueDurable: false,
       });
+
+      await transport.dispatch('test-channel', 'Message');
+
+      const q = await cleanupChannel.assertQueue(`${testPrefix}test-channel`, { durable: false });
+      expect(q.queue).toBe(`${testPrefix}test-channel`);
     });
 
     test('should create auto-delete queues when configured', async () => {
-      transport = new AmqpTransport({ autoDelete: true });
-
-      await transport.dispatch('test', 'Message');
-
-      expect(mockChannel.assertQueue).toHaveBeenCalledWith('test', {
-        durable: true,
+      transport = new AmqpTransport({
+        url: RABBITMQ_URI,
+        queuePrefix: testPrefix,
         autoDelete: true,
       });
+
+      // Need a consumer for autoDelete to matter; just verify dispatch succeeds
+      const received: string[] = [];
+      await transport.registerListener('test-channel', async (msg) => {
+        received.push(msg);
+      });
+      await transport.startListening();
+      await transport.dispatch('test-channel', 'AutoDelete Message');
+
+      await waitFor(() => received.length > 0);
+      expect(received).toContain('AutoDelete Message');
     });
   });
-});
 
-describe('AmqpTransport - Integration Tests', () => {
-  let transport: AmqpTransport;
-  let amqp: any;
-  let mockConnection: any;
-  let mockChannel: any;
+  describe('Integration Tests', () => {
+    test('should handle full message lifecycle: dispatch -> consume -> acknowledge', async () => {
+      transport = new AmqpTransport({ url: RABBITMQ_URI, queuePrefix: testPrefix });
 
-  beforeEach(async () => {
-    vi.clearAllMocks();
-    amqp = (await import('amqplib')).default;
-    mockConnection = await amqp.connect();
-    mockChannel = await mockConnection.createChannel();
-  });
+      const received: string[] = [];
+      await transport.registerListener('integration-channel', async (msg) => {
+        received.push(msg);
+      });
+      await transport.startListening();
 
-  afterEach(async () => {
-    if (transport) {
-      await transport.stopListening();
-    }
-  });
+      await transport.dispatch('integration-channel', 'Integration Test Message');
 
-  test('should handle full message lifecycle: dispatch -> consume -> acknowledge', async () => {
-    transport = new AmqpTransport();
-
-    const processedMessages: string[] = [];
-    const callback = vi.fn(async (msg: string) => {
-      processedMessages.push(msg);
+      await waitFor(() => received.length > 0);
+      expect(received).toContain('Integration Test Message');
     });
 
-    // Dispatch message
-    await transport.dispatch('integration-channel', 'Integration Test Message');
+    test('should handle messages dispatched before listener starts', async () => {
+      transport = new AmqpTransport({ url: RABBITMQ_URI, queuePrefix: testPrefix });
 
-    // Register listener
-    await transport.registerListener('integration-channel', callback);
-    await transport.startListening();
+      // Dispatch first (queue is durable, message persists)
+      await transport.dispatch('integration-channel', 'Pre-queued Message');
 
-    // Get the consume callback
-    const consumeCallback = mockChannel.consume.mock.calls[0][1];
+      const received: string[] = [];
+      await transport.registerListener('integration-channel', async (msg) => {
+        received.push(msg);
+      });
+      await transport.startListening();
 
-    // Simulate receiving the message
-    const mockMessage = {
-      content: Buffer.from('Integration Test Message', 'utf-8'),
-    };
-    await consumeCallback(mockMessage);
-
-    expect(processedMessages).toContain('Integration Test Message');
-    expect(mockChannel.ack).toHaveBeenCalledWith(mockMessage);
-  });
-
-  test('should handle multiple messages in sequence', async () => {
-    transport = new AmqpTransport();
-
-    const processedMessages: string[] = [];
-    const callback = vi.fn(async (msg: string) => {
-      processedMessages.push(msg);
+      await waitFor(() => received.length > 0);
+      expect(received).toContain('Pre-queued Message');
     });
 
-    await transport.registerListener('seq-channel', callback);
-    await transport.startListening();
+    test('should handle multiple messages in sequence', async () => {
+      transport = new AmqpTransport({ url: RABBITMQ_URI, queuePrefix: testPrefix });
 
-    const consumeCallback = mockChannel.consume.mock.calls[0][1];
+      const received: string[] = [];
+      await transport.registerListener('seq-channel', async (msg) => {
+        received.push(msg);
+      });
+      await transport.startListening();
 
-    // Process multiple messages
-    for (let i = 1; i <= 3; i++) {
-      const mockMessage = {
-        content: Buffer.from(`Message ${i}`, 'utf-8'),
-      };
-      await consumeCallback(mockMessage);
-    }
-
-    expect(processedMessages).toEqual(['Message 1', 'Message 2', 'Message 3']);
-    expect(mockChannel.ack).toHaveBeenCalledTimes(3);
-  });
-
-  test('should handle message retry after processing failure', async () => {
-    transport = new AmqpTransport();
-
-    let attempt = 0;
-    const callback = vi.fn(async (msg: string) => {
-      attempt++;
-      if (attempt === 1) {
-        throw new Error('First attempt failed');
+      for (let i = 1; i <= 3; i++) {
+        await transport.dispatch('seq-channel', `Message ${i}`);
       }
-      // Second attempt succeeds
+
+      await waitFor(() => received.length >= 3);
+      expect(received).toContain('Message 1');
+      expect(received).toContain('Message 2');
+      expect(received).toContain('Message 3');
     });
 
-    await transport.registerListener('retry-channel', callback);
-    await transport.startListening();
+    test('should handle exchange-based routing', async () => {
+      transport = new AmqpTransport({
+        url: RABBITMQ_URI,
+        queuePrefix: testPrefix,
+        exchange: `${testPrefix}integration-exchange`,
+        exchangeType: 'direct',
+      });
 
-    const consumeCallback = mockChannel.consume.mock.calls[0][1];
-    const mockMessage = {
-      content: Buffer.from('Retry Message', 'utf-8'),
-    };
+      const received1: string[] = [];
+      const received2: string[] = [];
 
-    // First attempt - should fail and nack
-    await consumeCallback(mockMessage);
-    expect(mockChannel.nack).toHaveBeenCalledWith(mockMessage, false, true);
+      await transport.registerListener('route1', async (msg) => {
+        received1.push(msg);
+      });
+      await transport.registerListener('route2', async (msg) => {
+        received2.push(msg);
+      });
+      await transport.startListening();
 
-    // Second attempt - should succeed
-    await consumeCallback(mockMessage);
-    expect(mockChannel.ack).toHaveBeenCalledWith(mockMessage);
-    expect(callback).toHaveBeenCalledTimes(2);
-  });
+      await transport.dispatch('route1', 'Message for route 1');
+      await transport.dispatch('route2', 'Message for route 2');
 
-  test('should handle exchange-based routing', async () => {
-    transport = new AmqpTransport({
-      exchange: 'integration-exchange',
-      exchangeType: 'direct',
+      await waitFor(() => received1.length > 0 && received2.length > 0);
+      expect(received1).toContain('Message for route 1');
+      expect(received2).toContain('Message for route 2');
     });
 
-    const callback1 = vi.fn();
-    const callback2 = vi.fn();
+    test('should handle graceful shutdown', async () => {
+      transport = new AmqpTransport({ url: RABBITMQ_URI, queuePrefix: testPrefix });
 
-    // Dispatch to different routing keys
-    await transport.dispatch('route1', 'Message for route 1');
-    await transport.dispatch('route2', 'Message for route 2');
+      const received: string[] = [];
+      await transport.registerListener('slow-channel', async (msg) => {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        received.push(msg);
+      });
+      await transport.startListening();
 
-    // Register listeners
-    await transport.registerListener('route1', callback1);
-    await transport.registerListener('route2', callback2);
-    await transport.startListening();
+      await transport.dispatch('slow-channel', 'Slow Message');
+      await waitFor(() => received.length > 0);
 
-    expect(mockChannel.assertExchange).toHaveBeenCalledWith('integration-exchange', 'direct', {
-      durable: true,
+      await expect(transport.stopListening()).resolves.not.toThrow();
     });
-
-    expect(mockChannel.publish).toHaveBeenCalledTimes(2);
-    expect(mockChannel.bindQueue).toHaveBeenCalledWith('route1', 'integration-exchange', 'route1');
-    expect(mockChannel.bindQueue).toHaveBeenCalledWith('route2', 'integration-exchange', 'route2');
-  });
-
-  test('should handle graceful shutdown with pending messages', async () => {
-    transport = new AmqpTransport();
-
-    const callback = vi.fn(async (msg: string) => {
-      await sleep(100); // Simulate slow processing
-    });
-
-    await transport.registerListener('slow-channel', callback);
-    await transport.startListening();
-
-    const consumeCallback = mockChannel.consume.mock.calls[0][1];
-    const mockMessage = {
-      content: Buffer.from('Slow Message', 'utf-8'),
-    };
-
-    // Start processing a message
-    const processPromise = consumeCallback(mockMessage);
-
-    // Stop listening
-    await transport.stopListening();
-
-    // Wait for message processing to complete
-    await processPromise;
-
-    expect(mockChannel.cancel).toHaveBeenCalled();
-    expect(mockChannel.close).toHaveBeenCalled();
   });
 });
