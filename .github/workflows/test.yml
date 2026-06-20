@@ -36,13 +36,15 @@ jobs:
         id: set-matrix
         run: |
           WORKSPACES=$(yarn --silent workspaces info | jq -c 'keys') 
+          echo $WORKSPACES
           echo "workspaces=$WORKSPACES" >> $GITHUB_OUTPUT
 
   run-tests:
     needs: test-repo
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{ fromJson(needs.test-repo.outputs.workspaces) }}
+      matrix:
+        workspace: ${{ fromJson(needs.test-repo.outputs.workspaces) }}
       fail-fast: false
     services:
       redis:
