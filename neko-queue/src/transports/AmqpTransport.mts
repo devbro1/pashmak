@@ -96,7 +96,7 @@ export class AmqpTransport implements QueueTransportInterface {
 
     try {
       this.connection = await AmqpTransport.amqpModule.connect(this.config.url!);
-      this.channel = await this.connection.createChannel();
+      this.channel = await this.connection.createConfirmChannel();
 
       await this.channel!.prefetch(this.config.prefetchCount);
 
@@ -152,34 +152,31 @@ export class AmqpTransport implements QueueTransportInterface {
     const buffer = Buffer.from(message, 'utf-8');
 
     if (this.config.exchange) {
-      // Publish to exchange with routing key
-      const published = this.channel.publish(this.config.exchange, queueName, buffer, {
-        persistent: this.config.queueDurable,
+      // Publish to exchange with routing key, awaiting broker confirm
+      await new Promise<void>((resolve, reject) => {
+        this.channel!.publish(
+          this.config.exchange!,
+          queueName,
+          buffer,
+          { persistent: this.config.queueDurable },
+          (err: Error | null) => (err ? reject(err) : resolve())
+        );
       });
-
-      if (!published) {
-        // Channel buffer is full, wait for drain
-        await new Promise<void>((resolve) => {
-          this.channel!.once('drain', resolve);
-        });
-      }
     } else {
-      // Send directly to queue
+      // Send directly to queue, awaiting broker confirm
       await this.channel.assertQueue(queueName, {
         durable: this.config.queueDurable,
         autoDelete: this.config.autoDelete,
       });
 
-      const sent = this.channel.sendToQueue(queueName, buffer, {
-        persistent: this.config.queueDurable,
+      await new Promise<void>((resolve, reject) => {
+        this.channel!.sendToQueue(
+          queueName,
+          buffer,
+          { persistent: this.config.queueDurable },
+          (err: Error | null) => (err ? reject(err) : resolve())
+        );
       });
-
-      if (!sent) {
-        // Channel buffer is full, wait for drain
-        await new Promise<void>((resolve) => {
-          this.channel!.once('drain', resolve);
-        });
-      }
     }
   }
 
