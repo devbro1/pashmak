@@ -146,7 +146,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: |
-            **/node_modules/@devbro
+            **/dist
           key: devbro-packages-${{ github.sha }}
       - name: run tests
         run: yarn workspace ${{ matrix.workspace }} test
