@@ -22,7 +22,6 @@ jobs:
         with:
           path: |
             **/node_modules
-            !**/node_modules/@devbro
           key: node_modules-${{ hashFiles('**/yarn.lock') }}
       - name: Cache @devbro packages
         uses: actions/cache@v5
