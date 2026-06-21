@@ -503,7 +503,9 @@ jobs:
             **/dist
           key: devbro-packages-${{ github.sha }}
       - name: run tests
-        run: yarn workspace @devbro/neko-sql test
+        run: |
+          env
+          yarn workspace @devbro/neko-sql test
 
   test-test-app:
     needs: test-repo
