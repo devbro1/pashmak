@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AzureServiceBusTransport } from '../../src/transports/AzureServiceBusTransport.mjs';
 
 // Mock @azure/service-bus
@@ -22,7 +22,9 @@ vi.mock('@azure/service-bus', () => {
   };
 
   return {
-    ServiceBusClient: vi.fn(() => mockClient),
+    ServiceBusClient: vi.fn(function () {
+      return mockClient;
+    }),
   };
 });
 
@@ -35,12 +37,25 @@ describe('AzureServiceBusTransport', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    const module = await import('@azure/service-bus');
-    ServiceBusClient = module.ServiceBusClient;
+    const azureModule = await import('@azure/service-bus');
+    ServiceBusClient = azureModule.ServiceBusClient;
     mockClient = new ServiceBusClient();
     mockSender = mockClient.createSender();
     mockReceiver = mockClient.createReceiver();
+
+    // Inject the mocked module into the transport's static cache so that
+    // loadPackage (which uses CJS require) is bypassed.
+    (AzureServiceBusTransport as any).azureModule = azureModule;
+
     vi.clearAllMocks();
+  });
+
+  afterEach(async () => {
+    // Reset the static module cache so each test gets a fresh injection
+    (AzureServiceBusTransport as any).azureModule = undefined;
+    if (transport) {
+      await transport.stopListening();
+    }
   });
 
   describe('Configuration and Initialization', () => {

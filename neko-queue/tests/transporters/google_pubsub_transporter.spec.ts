@@ -31,7 +31,9 @@ vi.mock('@google-cloud/pubsub', () => {
   };
 
   return {
-    PubSub: vi.fn(() => mockPubSub),
+    PubSub: vi.fn(function () {
+      return mockPubSub;
+    }),
   };
 });
 
@@ -44,16 +46,22 @@ describe('GooglePubSubTransport', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
 
-    const { PubSub } = await import('@google-cloud/pubsub');
-    mockPubSub = new (PubSub as any)();
+    const pubsubModule = await import('@google-cloud/pubsub');
+    mockPubSub = new (pubsubModule.PubSub as any)();
     mockTopic = mockPubSub.topic();
     mockSubscription = mockPubSub.subscription();
+
+    // Inject the mocked module into the transport's static cache so that
+    // loadPackage (which uses CJS require) is bypassed.
+    (GooglePubSubTransport as any).pubsubModule = pubsubModule;
 
     // Clear the mock calls that happened during setup
     vi.clearAllMocks();
   });
 
   afterEach(async () => {
+    // Reset the static module cache so each test gets a fresh injection
+    (GooglePubSubTransport as any).pubsubModule = undefined;
     if (transport) {
       await transport.stopListening();
     }

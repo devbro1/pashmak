@@ -323,7 +323,7 @@ export class GooglePubSubTransport implements QueueTransportInterface {
 
   /**
    * Handles errors that occur during message processing or connection management.
-   * Uses custom error handler if configured, otherwise logs to console.
+   * Uses custom error handler if configured.
    * @param error - The error that occurred
    * @param context - Context information about where the error occurred
    */
@@ -337,12 +337,5 @@ export class GooglePubSubTransport implements QueueTransportInterface {
       this.config.onError(err, context);
       return;
     }
-
-    // eslint-disable-next-line no-console
-    console.error('[GooglePubSubTransport] Error', {
-      channel: context.channel,
-      messageId: context.messageId,
-      message: err.message,
-    });
   }
 }

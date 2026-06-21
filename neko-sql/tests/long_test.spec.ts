@@ -38,7 +38,7 @@ function getDatabaseConnections(): [string, Connection][] {
   const db_config_mysql = {
     host: process.env.MYSQL_HOST,
     database: db_name,
-    user: process.env.MYSQL_USERNAME,
+    user: process.env.MYSQL_USER,
     password: process.env.MYSQL_PASSWORD,
   };
   rc.push(['Mysql', new MysqlConnection(db_config_mysql)]);

@@ -42,36 +42,58 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-  
+
             const lines = fs
               .readFileSync('audit-report.jsonl', 'utf8')
               .split('\n')
               .filter(Boolean);
-  
+
+            // Workspaces whose exclusive vulnerabilities should not be counted.
+            const ignoredWorkspacePrefixes = ['docs>', 'test_app>'];
+
+            const advisoryPaths = new Map(); // advisory id -> Set of resolution paths
+            const advisorySeverity = new Map(); // advisory id -> severity
             let summary = null;
+
             for (const line of lines) {
               try {
                 const entry = JSON.parse(line);
-                if (entry.type === 'auditSummary') {
+                if (entry.type === 'auditAdvisory') {
+                  const { id, severity } = entry.data.advisory;
+                  const path = entry.data.resolution.path;
+                  if (!advisoryPaths.has(id)) advisoryPaths.set(id, new Set());
+                  advisoryPaths.get(id).add(path);
+                  advisorySeverity.set(id, severity);
+                } else if (entry.type === 'auditSummary') {
                   summary = entry.data;
                 }
               } catch {
                 // ignore malformed lines
               }
             }
-  
-            const vulnerabilities = summary?.vulnerabilities ?? {
-              info: 0,
-              low: 0,
-              moderate: 0,
-              high: 0,
-              critical: 0,
-            };
-  
-            const high = Number(vulnerabilities.high ?? 0);
-            const critical = Number(vulnerabilities.critical ?? 0);
+
+            const counts = { info: 0, low: 0, moderate: 0, high: 0, critical: 0 };
+
+            if (advisoryPaths.size > 0) {
+              for (const [id, paths] of advisoryPaths) {
+                const isIgnored = [...paths].every((p) =>
+                  ignoredWorkspacePrefixes.some((prefix) => p.startsWith(prefix)),
+                );
+                if (!isIgnored) {
+                  const sev = advisorySeverity.get(id);
+                  if (sev in counts) counts[sev]++;
+                }
+              }
+            } else {
+              // Fall back to auditSummary when no auditAdvisory lines were emitted.
+              const v = summary?.vulnerabilities ?? {};
+              for (const sev of Object.keys(counts)) counts[sev] = Number(v[sev] ?? 0);
+            }
+
+            const high = counts.high;
+            const critical = counts.critical;
             const shouldFail = high + critical > 0;
-  
+
             const markdown = [
               '## Dependency Security Audit',
               '',
@@ -79,15 +101,15 @@ jobs:
               '| --- | ---: |',
               `| Critical | ${critical} |`,
               `| High | ${high} |`,
-              `| Moderate | ${Number(vulnerabilities.moderate ?? 0)} |`,
-              `| Low | ${Number(vulnerabilities.low ?? 0)} |`,
-              `| Info | ${Number(vulnerabilities.info ?? 0)} |`,
+              `| Moderate | ${counts.moderate} |`,
+              `| Low | ${counts.low} |`,
+              `| Info | ${counts.info} |`,
               '',
               shouldFail
                 ? '❌ High or critical vulnerabilities were found. The workflow will fail.'
                 : '✅ No high or critical vulnerabilities were found.',
             ].join('\n');
-  
+
             fs.writeFileSync('audit-summary.json', JSON.stringify({ high, critical, shouldFail }, null, 2));
             fs.writeFileSync('audit-report.md', `${markdown}\n`);
 

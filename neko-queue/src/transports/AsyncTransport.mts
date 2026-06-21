@@ -17,14 +17,7 @@ export class AsyncTransport implements QueueTransportInterface {
         if (!set || set.size === 0) continue;
         // run all listeners for this message and wait for them to complete,
         // but don't let one rejection stop others
-        await Promise.all(
-          Array.from(set).map((cb) =>
-            cb(message).catch((err) => {
-              // keep transport robust; surface error to console for debugging
-              console.error('AsyncTransport listener error:', err);
-            })
-          )
-        );
+        await Promise.all(Array.from(set).map((cb) => cb(message).catch(() => {})));
       }
     } finally {
       this.processing = false;
