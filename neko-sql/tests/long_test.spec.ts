@@ -14,6 +14,7 @@ const db_name = (process.env.DB_NAME || 'test_db') + `_${randName}`;
 
 function getDatabaseConnections(): [string, Connection][] {
   const rc: [string, Connection][] = [];
+  console.log('process.env', process.env);
 
   // postgresql
   const db_config = {

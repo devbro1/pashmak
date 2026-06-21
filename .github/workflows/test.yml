@@ -460,24 +460,24 @@ jobs:
           - 5432:5432
         env:
           POSTGRES_DB: testdb
-          POSTGRES_USER: testuser
-          POSTGRES_PASSWORD: testpassword
+          POSTGRES_USER: dbadmin
+          POSTGRES_PASSWORD: dbpassword
       mysql:
         image: mysql:8.0
         ports:
           - 3306:3306
         env:
           MYSQL_ROOT_PASSWORD: dbpassword
-          MYSQL_DATABASE: practice_db_1
+          MYSQL_DATABASE: testdb
           MYSQL_USER: dbadmin
           MYSQL_PASSWORD: dbpassword
     env:
       NODE_ENV: test
-      DATABASE_URL: postgres://testuser:testpassword@localhost:5432/testdb
+      DATABASE_URL: postgres://dbadmin:dbpassword@localhost:5432/testdb
       DB_HOST: localhost
       DB_PORT: 5432
-      DB_USER: testuser
-      DB_PASSWORD: testpassword
+      DB_USER: dbadmin
+      DB_PASSWORD: dbpassword
       DB_NAME: testdb
       MYSQL_HOST: localhost
       MYSQL_PORT: 3306
