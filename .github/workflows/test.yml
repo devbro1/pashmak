@@ -504,7 +504,7 @@ jobs:
           key: devbro-packages-${{ github.sha }}
       - name: Ensure database grants
         run: |
-          mysql -h $MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD <<'SQL'
+          mysql --protocol=TCP -h $MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD <<'SQL'
           GRANT ALL PRIVILEGES ON `%`.* TO 'dbadmin'@'%';
           FLUSH PRIVILEGES;
           SQL
