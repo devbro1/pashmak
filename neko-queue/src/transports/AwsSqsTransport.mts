@@ -435,7 +435,7 @@ export class AwsSqsTransport implements QueueTransportInterface {
 
   /**
    * Handles errors that occur during message processing or polling.
-   * Uses custom error handler if configured, otherwise logs to console.
+   * Uses custom error handler if configured.
    * @param error - The error that occurred
    * @param channel - The channel where the error occurred
    * @param body - Optional message body that caused the error
@@ -448,8 +448,5 @@ export class AwsSqsTransport implements QueueTransportInterface {
       this.config.onError(err, { channel, body, messageId });
       return;
     }
-
-    // eslint-disable-next-line no-console
-    // console.error('[SqsTransport] Error', { channel, messageId, message: err.message });
   }
 }

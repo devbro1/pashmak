@@ -31,6 +31,7 @@ export class PostgresqlConnection extends ConnectionAbs {
   static pg_cursor: typeof pg_cursor;
   connection: PoolClient | undefined;
   static pool: pg.Pool;
+  private config: PostgresqlConfig;
 
   static defaults: PostgresqlConfig = {
     port: 5432,
@@ -47,11 +48,10 @@ export class PostgresqlConnection extends ConnectionAbs {
       PostgresqlConnection.pg = loadPackage('pg');
       PostgresqlConnection.pg_cursor = loadPackage('pg-cursor');
     }
+    this.config = { ...PostgresqlConnection.defaults, ...params };
     if (!PostgresqlConnection.pool) {
-      PostgresqlConnection.pool = new PostgresqlConnection.pg.Pool({
-        ...PostgresqlConnection.defaults,
-        ...params,
-      });
+      console.log('Creating new PostgreSQL connection pool with config:', this.config);
+      PostgresqlConnection.pool = new PostgresqlConnection.pg.Pool(this.config);
     }
   }
   async connect(): Promise<boolean> {
@@ -173,7 +173,7 @@ export class PostgresqlConnection extends ConnectionAbs {
     }
 
     const conn = new PostgresqlConnection.pg.Client({
-      ...PostgresqlConnection.pool.options,
+      ...this.config,
       database: 'postgres',
     });
     await conn.connect();
@@ -190,7 +190,7 @@ export class PostgresqlConnection extends ConnectionAbs {
     }
 
     const conn = new PostgresqlConnection.pg.Client({
-      ...PostgresqlConnection.pool.options,
+      ...this.config,
       database: 'postgres', // connect to default 'postgres' database to drop others
     });
     await conn.connect();
@@ -212,7 +212,7 @@ export class PostgresqlConnection extends ConnectionAbs {
   async existsDatabase(name: string): Promise<boolean> {
     if (!this.isConnected()) {
       const conn = new PostgresqlConnection.pg.Client({
-        ...PostgresqlConnection.pool.options,
+        ...this.config,
         database: 'postgres',
       });
       await conn.connect();
