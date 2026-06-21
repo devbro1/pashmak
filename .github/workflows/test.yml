@@ -483,7 +483,7 @@ jobs:
       MYSQL_PORT: 3306
       MYSQL_USER: dbadmin
       MYSQL_PASSWORD: dbpassword
-      MYSQL_DATABASE: practice_db_1
+      MYSQL_DATABASE: testdb
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -502,6 +502,12 @@ jobs:
           path: |
             **/dist
           key: devbro-packages-${{ github.sha }}
+      - name: Ensure database grants
+        run: |
+          mysql -h $MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD <<'SQL'
+          GRANT ALL PRIVILEGES ON `%`.* TO 'dbadmin'@'%';
+          FLUSH PRIVILEGES;
+          SQL
       - name: run tests
         run: |
           env
