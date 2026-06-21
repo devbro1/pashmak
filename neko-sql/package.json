@@ -1,6 +1,6 @@
 {
   "name": "@devbro/neko-sql",
-  "version": "0.1.43",
+  "version": "0.1.44",
   "description": "Composable SQL query builder for TypeScript - write queries like a poet, execute them like a pro",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
