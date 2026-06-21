@@ -1,6 +1,6 @@
 # pashmak
 
-[![Dependency Audit](https://github.com/devbro1/pashmak/actions/workflows/security_audit.yml/badge.svg?branch=master)](https://github.com/devbro1/pashmak/actions/workflows/security_audit.yml)
+[![Security Audit](https://github.com/devbro1/pashmak/actions/workflows/security_audit.yml/badge.svg?branch=master)](https://github.com/devbro1/pashmak/actions/workflows/security_audit.yml)
 
 > [!CAUTION]
 > Still in Beta. Stable to use but not fully battle tested. I expect a few more things to change. For the most part only new stuff will be added so backward compatibility is mostly guaranteed.
