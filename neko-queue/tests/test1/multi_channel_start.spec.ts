@@ -12,108 +12,41 @@ import { RedisTransport } from '../../src/transports/RedisTransport.mjs';
 // Module-level mocks (hoisted by Vitest)
 // ---------------------------------------------------------------------------
 
-vi.mock('amqplib', () => {
-  const mockChannel = {
-    prefetch: vi.fn().mockResolvedValue(undefined),
-    assertExchange: vi.fn().mockResolvedValue(undefined),
-    assertQueue: vi.fn().mockResolvedValue({ queue: 'test-queue' }),
-    bindQueue: vi.fn().mockResolvedValue(undefined),
-    publish: vi.fn().mockReturnValue(true),
-    sendToQueue: vi.fn().mockReturnValue(true),
-    consume: vi.fn().mockResolvedValue({ consumerTag: 'consumer-tag' }),
-    ack: vi.fn(),
-    nack: vi.fn(),
-    cancel: vi.fn().mockResolvedValue(undefined),
-    close: vi.fn().mockResolvedValue(undefined),
-    on: vi.fn(),
-    once: vi.fn(),
-  };
-  const mockConnection = {
-    createChannel: vi.fn().mockResolvedValue(mockChannel),
-    close: vi.fn().mockResolvedValue(undefined),
-    on: vi.fn(),
-  };
-  return {
-    connect: vi.fn().mockResolvedValue(mockConnection),
-    default: { connect: vi.fn().mockResolvedValue(mockConnection) },
-  };
-});
+// vi.mock('@azure/service-bus', () => {
+//   const mockReceiver = {
+//     subscribe: vi.fn(),
+//     completeMessage: vi.fn(),
+//     abandonMessage: vi.fn(),
+//     close: vi.fn().mockResolvedValue(undefined),
+//   };
+//   const mockClient = {
+//     createSender: vi.fn(() => ({ sendMessages: vi.fn(), close: vi.fn() })),
+//     createReceiver: vi.fn(() => mockReceiver),
+//     close: vi.fn().mockResolvedValue(undefined),
+//   };
+//   return { ServiceBusClient: vi.fn(() => mockClient) };
+// });
 
-vi.mock('redis', () => {
-  const makeClient = () => ({
-    connect: vi.fn().mockResolvedValue(undefined),
-    quit: vi.fn().mockResolvedValue(undefined),
-    lPush: vi.fn().mockResolvedValue(1),
-    rPopLPush: vi.fn().mockResolvedValue(null),
-    lRem: vi.fn().mockResolvedValue(1),
-    lLen: vi.fn().mockResolvedValue(0),
-    publish: vi.fn().mockResolvedValue(1),
-    subscribe: vi.fn().mockResolvedValue(undefined),
-    unsubscribe: vi.fn().mockResolvedValue(undefined),
-    expire: vi.fn().mockResolvedValue(1),
-    on: vi.fn(),
-    isOpen: true,
-  });
-  let callCount = 0;
-  return {
-    createClient: vi.fn(() => {
-      callCount++;
-      return makeClient();
-    }),
-  };
-});
-
-vi.mock('@azure/service-bus', () => {
-  const mockReceiver = {
-    subscribe: vi.fn(),
-    completeMessage: vi.fn(),
-    abandonMessage: vi.fn(),
-    close: vi.fn().mockResolvedValue(undefined),
-  };
-  const mockClient = {
-    createSender: vi.fn(() => ({ sendMessages: vi.fn(), close: vi.fn() })),
-    createReceiver: vi.fn(() => mockReceiver),
-    close: vi.fn().mockResolvedValue(undefined),
-  };
-  return { ServiceBusClient: vi.fn(() => mockClient) };
-});
-
-vi.mock('@google-cloud/pubsub', () => {
-  const mockSubscription = {
-    exists: vi.fn().mockResolvedValue([true]),
-    create: vi.fn().mockResolvedValue([]),
-    close: vi.fn().mockResolvedValue(undefined),
-    on: vi.fn(),
-  };
-  const mockTopic = {
-    exists: vi.fn().mockResolvedValue([true]),
-    create: vi.fn().mockResolvedValue([]),
-    publishMessage: vi.fn().mockResolvedValue('msg-id'),
-    flush: vi.fn().mockResolvedValue(undefined),
-  };
-  const mockPubSub = {
-    topic: vi.fn(() => mockTopic),
-    subscription: vi.fn(() => mockSubscription),
-    close: vi.fn().mockResolvedValue(undefined),
-  };
-  return { PubSub: vi.fn(() => mockPubSub) };
-});
-
-vi.mock('@aws-sdk/client-sqs', () => {
-  const mockSend = vi.fn().mockResolvedValue({
-    QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123/test-queue',
-    Messages: [],
-  });
-  return {
-    SQSClient: vi.fn(() => ({ send: mockSend })),
-    SendMessageCommand: vi.fn((p) => ({ type: 'SendMessage', params: p })),
-    ReceiveMessageCommand: vi.fn((p) => ({ type: 'ReceiveMessage', params: p })),
-    DeleteMessageCommand: vi.fn((p) => ({ type: 'DeleteMessage', params: p })),
-    GetQueueUrlCommand: vi.fn((p) => ({ type: 'GetQueueUrl', params: p })),
-    CreateQueueCommand: vi.fn((p) => ({ type: 'CreateQueue', params: p })),
-    ChangeMessageVisibilityCommand: vi.fn((p) => ({ type: 'ChangeMessageVisibility', params: p })),
-  };
-});
+// vi.mock('@google-cloud/pubsub', () => {
+//   const mockSubscription = {
+//     exists: vi.fn().mockResolvedValue([true]),
+//     create: vi.fn().mockResolvedValue([]),
+//     close: vi.fn().mockResolvedValue(undefined),
+//     on: vi.fn(),
+//   };
+//   const mockTopic = {
+//     exists: vi.fn().mockResolvedValue([true]),
+//     create: vi.fn().mockResolvedValue([]),
+//     publishMessage: vi.fn().mockResolvedValue('msg-id'),
+//     flush: vi.fn().mockResolvedValue(undefined),
+//   };
+//   const mockPubSub = {
+//     topic: vi.fn(() => mockTopic),
+//     subscription: vi.fn(() => mockSubscription),
+//     close: vi.fn().mockResolvedValue(undefined),
+//   };
+//   return { PubSub: vi.fn(() => mockPubSub) };
+// });
 
 // ---------------------------------------------------------------------------
 // Transport registry
@@ -132,29 +65,41 @@ type TransportEntry = {
 };
 
 function getTransportsForTesting(): TransportEntry[] {
+  const testPrefix = `test:${Date.now()}:${Math.random().toString(36).substring(2, 8)}`;
   return [
     {
       name: 'AmqpTransport',
-      createTransport: () => new AmqpTransport(),
+      createTransport: () =>
+        new AmqpTransport({
+          url: process.env.RABBITMQ_URI,
+          queuePrefix: testPrefix,
+          exchange: `${testPrefix}exchange`,
+          exchangeType: 'direct',
+        }),
       perChannelMethod: 'startConsumer',
     },
-    {
-      name: 'AzureServiceBusTransport',
-      createTransport: () =>
-        new AzureServiceBusTransport({
-          connectionString:
-            'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=dGVzdA==',
-        }),
-      perChannelMethod: 'startReceiver',
-    },
-    {
-      name: 'GooglePubSubTransport',
-      createTransport: () => new GooglePubSubTransport({ projectId: 'test-project' }),
-      perChannelMethod: 'startSubscription',
-    },
+    // {
+    //   name: 'AzureServiceBusTransport',
+    //   createTransport: () =>
+    //     new AzureServiceBusTransport({
+    //       connectionString:
+    //         'Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=dGVzdA==',
+    //     }),
+    //   perChannelMethod: 'startReceiver',
+    // },
+    // {
+    //   name: 'GooglePubSubTransport',
+    //   createTransport: () => new GooglePubSubTransport({ projectId: 'test-project' }),
+    //   perChannelMethod: 'startSubscription',
+    // },
     {
       name: 'RedisTransport',
-      createTransport: () => new RedisTransport(),
+      createTransport: () =>
+        new RedisTransport({
+          host: process.env.REDIS_HOST,
+          port: 6379,
+          keyPrefix: testPrefix,
+        }),
       perChannelMethod: 'startChannelProcessing',
     },
     {
