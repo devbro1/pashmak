@@ -21,9 +21,11 @@ function getDatabaseConnections(): [string, Connection][] {
     host: process.env.DB_HOST,
     database: db_name,
     user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
+    password: String(process.env.DB_PASSWORD),
     port: parseInt(process.env.DB_PORT || '5432'),
   };
+
+  console.log('db_config', db_config);
 
   rc.push(['Postgreql', new PostgresqlConnection(db_config)]);
 
