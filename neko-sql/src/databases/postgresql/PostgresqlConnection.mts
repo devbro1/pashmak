@@ -48,6 +48,10 @@ export class PostgresqlConnection extends ConnectionAbs {
       PostgresqlConnection.pg_cursor = loadPackage('pg-cursor');
     }
     if (!PostgresqlConnection.pool) {
+      console.log('Creating new PostgreSQL connection pool with config:', {
+        ...PostgresqlConnection.defaults,
+        ...params,
+      });
       PostgresqlConnection.pool = new PostgresqlConnection.pg.Pool({
         ...PostgresqlConnection.defaults,
         ...params,
