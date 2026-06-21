@@ -1,16 +1,9 @@
-import { afterAll, describe, expect, test } from 'vitest';
-import {
-  type Blueprint,
-  type Connection,
-  MysqlConnection,
-  Schema,
-  SchemaGrammar,
-  SqliteConnection,
-} from '../src';
+import { describe, expect, test } from 'vitest';
+import { type Blueprint, type Connection, MysqlConnection, Schema, SqliteConnection } from '../src';
 import { PostgresqlConnection } from '../src/databases/postgresql/PostgresqlConnection.mjs';
 
 const randName = Math.random().toString(36).substring(7);
-const db_name = (process.env.DB_NAME || 'test_db') + `_${randName}`;
+const db_name = `${process.env.DB_NAME || 'test_db'}_${randName}`;
 
 function getDatabaseConnections(): [string, Connection][] {
   const rc: [string, Connection][] = [];
@@ -22,7 +15,7 @@ function getDatabaseConnections(): [string, Connection][] {
     database: db_name,
     user: process.env.DB_USER,
     password: String(process.env.DB_PASSWORD),
-    port: parseInt(process.env.DB_PORT || '5432'),
+    port: parseInt(process.env.DB_PORT || '5432', 10),
   };
 
   console.log('db_config', db_config);
@@ -43,6 +36,7 @@ function getDatabaseConnections(): [string, Connection][] {
     database: db_name,
     user: process.env.MYSQL_USER,
     password: process.env.MYSQL_PASSWORD,
+    port: parseInt(process.env.MYSQL_PORT || '3306', 10),
   };
   rc.push(['Mysql', new MysqlConnection(db_config_mysql)]);
 
