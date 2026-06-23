@@ -158,14 +158,32 @@ export const $test = {
 // NODE_ENV = 'prod'
 export const $prod = {
   provider: "stripe",
-  apiKey: getEnv('STRIPE_API_KEY'),
-  webhookSecret: getEnv('STRIPE_WEBHOOK_SECRET'),
+  apiKey: getEnv("STRIPE_API_KEY"),
+  webhookSecret: getEnv("STRIPE_WEBHOOK_SECRET"),
 };
 ```
 
 ## .env AKA dotenv
 
 There is also .env support in case you want to load some configs that way. please note, you will still need to add the specific configs you want to default.ts to be able to access the values.
+
+## Lock configuration after bootstrap
+
+If you want to prevent accidental config reloads after startup, lock config after initialization:
+
+```ts
+import { config } from "@devbro/pashmak/config";
+
+await config.load(projectConfigs);
+config.lock();
+```
+
+When config is locked:
+
+- `config.load(...)` throws an error.
+- Existing loaded config is frozen to prevent mutation through references.
+
+You can inspect and control lock state when needed (for example in tests):
 
 ## Enforce values for config to exists
 
@@ -180,4 +198,3 @@ export default {
   ssh_port: getEnv("SSH_PORT", undefined), // will return undefined if not defined
 };
 ```
-

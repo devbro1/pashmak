@@ -241,6 +241,57 @@ describe('Config class tests', () => {
     });
   });
 
+  describe('lock feature', () => {
+    test('should report lock state correctly', () => {
+      const c = new Config();
+      expect(c.isLocked()).toBe(false);
+      c.lock();
+      expect(c.isLocked()).toBe(true);
+      c.unlock();
+      expect(c.isLocked()).toBe(false);
+    });
+
+    test('should block load while locked', async () => {
+      const c = new Config();
+      await c.load({ version: 1 });
+      c.lock();
+
+      await expect(c.load({ version: 2 })).rejects.toThrow(
+        'Config is locked and cannot be modified.'
+      );
+      expect(c.get('version')).toBe(1);
+    });
+
+    test('should allow load after unlock', async () => {
+      const c = new Config();
+      await c.load({ value: 'before-lock' });
+      c.lock();
+
+      await expect(c.load({ value: 'blocked' })).rejects.toThrow(
+        'Config is locked and cannot be modified.'
+      );
+
+      c.unlock();
+      await c.load({ value: 'after-unlock' });
+      expect(c.get('value')).toBe('after-unlock');
+    });
+
+    test('should freeze current config while locked', async () => {
+      const c = new Config();
+      await c.load({ nested: { value: 'stable' } });
+      c.lock();
+
+      const all = c.all();
+      expect(Object.isFrozen(all)).toBe(true);
+      expect(Object.isFrozen(all.nested)).toBe(true);
+
+      expect(() => {
+        all.nested.value = 'changed';
+      }).toThrow(TypeError);
+      expect(c.get('nested.value')).toBe('stable');
+    });
+  });
+
   describe('Complex scenarios', () => {
     test('should handle deeply nested structures', () => {
       config.load({

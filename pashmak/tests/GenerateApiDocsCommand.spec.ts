@@ -1,12 +1,32 @@
 import { Cli } from "clipanion";
 import * as fs from "fs/promises";
 import path from "path";
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+} from "vitest";
 import { GenerateApiDocsCommand } from "../src/app/console/generate/GenerateApiDocsCommand.mjs";
 import { router } from "../src/facades.mjs";
+import { config } from "../src/config.mjs";
 
 describe("GenerateApiDocsCommand", () => {
   const testPublicDir = "/tmp/test-public";
+
+  beforeAll(async () => {
+    // set config value
+    const outputPath = path.join("/tmp", "public", "openapi.json");
+    config.load({
+      private_path: "/tmp",
+      api_docs: {
+        merge_files: ["openapi_from_routes.json", "openapi_base.json"],
+        output: outputPath,
+      },
+    });
+  });
 
   beforeEach(async () => {
     // Clean up before each test
@@ -19,6 +39,9 @@ describe("GenerateApiDocsCommand", () => {
   });
 
   test("should generate openapi.json file", async () => {
+    const outputPath = path.join("/tmp", "public", "openapi.json");
+    await fs.unlink(outputPath).catch(() => {});
+
     // Add some test routes
     router().addRoute(["GET"], "/test-route", async () => {
       return { test: true };
@@ -38,10 +61,9 @@ describe("GenerateApiDocsCommand", () => {
 
     try {
       // Run the command
-      await cli.run(["generate", "apidocs"]);
+      await cli.run(["generate", "apidocs", "from-all"]);
 
       // Check if file was created
-      const outputPath = path.join("/tmp", "public", "openapi.json");
       const fileExists = await fs
         .access(outputPath)
         .then(() => true)
@@ -77,7 +99,7 @@ describe("GenerateApiDocsCommand", () => {
     process.chdir("/tmp");
 
     try {
-      await cli.run(["generate", "apidocs"]);
+      await cli.run(["generate", "apidocs", "from-all"]);
 
       const content = await fs.readFile(
         path.join("/tmp", "public", "openapi.json"),
@@ -111,7 +133,7 @@ describe("GenerateApiDocsCommand", () => {
     process.chdir("/tmp");
 
     try {
-      await cli.run(["make", "apidocs"]);
+      await cli.run(["generate", "apidocs", "from-all"]);
 
       const content = await fs.readFile(
         path.join("/tmp", "public", "openapi.json"),

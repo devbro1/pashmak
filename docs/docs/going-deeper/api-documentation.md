@@ -16,6 +16,7 @@ export default {
     url: getEnv('API_DOC_URL', 'http://localhost:' + getEnv('PORT', '3000') + '/openapi.json'),
     merge_files: [
       path.join(__dirname, '../..', 'private', 'openapi_base.json'),
+      path.join(__dirname, '../..', 'private', 'openapi_from_routes.json'),
       path.join(__dirname, '../..', 'private', 'openapi_examples.json'),
       path.join(__dirname, '../..', 'private', 'openapi_user_changes.json'),
     ],
@@ -29,15 +30,27 @@ export default {
 the main assistance comes from command line:
 
 ```bash
-# to generate a basic json file for openapi 3.0 docs
-npm run generate apidocs --generate-base --output path/to/output.json
+# generate a base OpenAPI file
+npm run generate apidocs generate-base --output path/to/openapi_base.json
 
-# to generate list of routes for all registered routes
-npm run generate apidocs --generate-from-routes --output path/to/output.json
+# generate paths from all currently registered routes
+npm run generate apidocs generate-from-routes --output path/to/openapi_from_routes.json
 
-# merge all files defined in config apidocs.merge_files into one file into apidocs.output
-npm run generate apidocs --merge-files
+# merge files from config (default config path: api_docs)
+npm run generate apidocs merge-files
+
+# run full flow: generate-base + generate-from-routes + merge-files
+npm run generate apidocs from-all
+
+# run full flow with alternate config path
+npm run generate apidocs from-all --config pen_testers.api_docs
 ```
+
+Notes:
+
+- `generate-from-routes` converts route params from `:id` format to OpenAPI `{id}` format automatically.
+- `merge-files` and `from-all` can use `--config` to target a different config path (for example `api_docs_internal`).
+- `--output` overrides output path for the selected subcommand.
 
 ## Registering Actual OpenApi Route
 
@@ -83,7 +96,7 @@ await saveForApiDoc(updateResponse, {
 The code for this method is part of your project so you can make adjustments as needed. Here are some details to have in mind:
 
 - You can pass name of example and tags to help organize your examples.
-- routePath is optional but strongly recommended to be passed. Currently the method cannot determine which part is url parameter so this is needd to determine which route the example should be added for.
+- routePath is optional but recommended so examples are attached to the intended endpoint.
 - If `Authorization` header exists, it will automatically mark the endpoint as authentication required.
 - It can be beneficial to have tests with apidocs tagged to improve performance of document generation
 
@@ -107,13 +120,16 @@ once you have different configs, you can run different merge commands:
 
 ```bash
 # use api_docs as default
-npm run generate apidocs --merge-files
+npm run generate apidocs merge-files
 
 # use api_docs_internal for merge process
-npm run generate apidocs --merge-files --config api_docs_internal
+npm run generate apidocs merge-files --config api_docs_internal
 
 # use { pen_testers: { api_docs: ??? } } for merge process
-npm run generate apidocs --merge-files --config pen_testers.api_docs
+npm run generate apidocs merge-files --config pen_testers.api_docs
+
+# or generate everything and merge in one run
+npm run generate apidocs from-all --config pen_testers.api_docs
 ```
 
 ## Best practices
@@ -125,4 +141,4 @@ have each portion of the doc created separately.
 - Keep different portions of api docs based on how they need to be generated. Examples can be generated independently so have those parts in different parts.
 - Opt for statically created api-docs. This way you can control what your end users see and not disclose endpoints that are not meant for external users.
 - Use tests to create your examples. This is beneficials to save time in managing api-docs and give actual examples that work!
-- Add CI pipelines to autogenerate and commit your new api docs.
+- Add CI pipelines to run `generate apidocs from-all` and commit updated api docs.

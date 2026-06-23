@@ -15,6 +15,7 @@ npm install @devbro/neko-config
 - 🌲 **Nested Access** - Access deeply nested values using dot notation
 - 🔄 **Multiple Instances** - Support for multiple configuration instances
 - 📦 **Singleton Pattern** - Default singleton instance for convenience
+- 🔐 **Config Locking** - Lock config after bootstrap to prevent accidental reloads
 - 🎨 **Flexible** - Works with any JSON-like configuration structure
 
 ## Quick Start
@@ -48,7 +49,9 @@ const configData = {
       { uri: 'redis://localhost:6379/2' },
     ],
   },
-  service_is_active: () => { return true; },
+  service_is_active: () => {
+    return true;
+  },
 };
 
 config.load(configData);
@@ -107,9 +110,9 @@ declare module '@devbro/neko-config' {
 }
 
 //infer type from existing json object
-import { DotPathRecord } from "@devbro/pashmak/config";
+import { DotPathRecord } from '@devbro/pashmak/config';
 
-declare module "@devbro/neko-config" {
+declare module '@devbro/neko-config' {
   interface ConfigKeys extends DotPathRecord<typeof project_configs> {}
 }
 ```
@@ -147,7 +150,8 @@ const dynamicKey = config.get('some.dynamic.path' as any);
 > **Note**: If you don't augment the `ConfigKeys` interface, the library accepts any string key (default behavior), providing maximum flexibility.
 
 ### Functional Configs
-There may be situations that config values needs to be calculated using a function. For example, you are loading values from Launch Darkly or values are reloaded periodically from Secret Manager. In these cases you can use a function that is 
+
+There may be situations that config values needs to be calculated using a function. For example, you are loading values from Launch Darkly or values are reloaded periodically from Secret Manager. In these cases you can use a function that is
 evaluated at `get()` .
 
 ```ts
@@ -160,6 +164,7 @@ console.log(config.get('f1'));
 ```
 
 There are a few details and limitations that need to be kept in mind:
+
 - functional configs cannot be async, if your config is returning a promise, then you need to `await config.get('f1');`
 - functional configs cannot recieve arguments.
 - functional configs are called on each `get()`
@@ -194,7 +199,9 @@ console.log(testConfig.get('environment')); // 'test'
 ```
 
 ### NODE_ENV and environment specific configs
+
 We can use `loadConfig` to load files that contain environment specific configs:
+
 ```ts
 //logger.ts
 import { ctxSafe } from "@devbro/pashmak/context";
@@ -262,6 +269,33 @@ Get the entire configuration object.
 
 ```ts
 const allConfig = config.all();
+```
+
+##### `lock(): void`
+
+Lock configuration so future `load()` calls are rejected.
+
+```ts
+config.load({ app: { name: 'MyApp' } });
+config.lock();
+```
+
+##### `unlock(): void`
+
+Unlock configuration and allow `load()` again.
+
+```ts
+config.unlock();
+```
+
+##### `isLocked(): boolean`
+
+Check whether configuration is currently locked.
+
+```ts
+if (config.isLocked()) {
+  console.log('Config is locked');
+}
 ```
 
 ### Dot Notation

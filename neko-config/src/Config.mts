@@ -34,6 +34,22 @@ export class Config {
   private static instance: Config;
   private configs: Record<string, any>;
   private options: { env: string };
+  private locked: boolean = false;
+
+  private deepFreeze<T>(value: T): T {
+    if (value === null || typeof value !== 'object') {
+      return value;
+    }
+
+    const target = value as Record<string, any>;
+    const keys = Object.getOwnPropertyNames(target);
+
+    for (const key of keys) {
+      this.deepFreeze(target[key]);
+    }
+
+    return Object.freeze(value);
+  }
 
   /**
    * Creates a new Config instance (private constructor for singleton pattern).
@@ -61,6 +77,10 @@ export class Config {
    * @param new_config_data - The configuration data to load
    */
   public async load(new_config_data: Record<string, any>): Promise<void> {
+    if (this.locked) {
+      throw new Error('Config is locked and cannot be modified.');
+    }
+
     this.configs = Arr.deepClone(new_config_data);
 
     // this.configs may contain $env references that need to be resolved
@@ -92,6 +112,29 @@ export class Config {
       }
       return value;
     });
+  }
+
+  /**
+   * Locks configuration updates.
+   * Once locked, calling load() throws an error.
+   */
+  public lock(): void {
+    this.locked = true;
+    this.deepFreeze(this.configs);
+  }
+
+  /**
+   * Unlocks configuration updates.
+   */
+  public unlock(): void {
+    this.locked = false;
+  }
+
+  /**
+   * Returns whether configuration is currently locked.
+   */
+  public isLocked(): boolean {
+    return this.locked;
   }
 
   /**

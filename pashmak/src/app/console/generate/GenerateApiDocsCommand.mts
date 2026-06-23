@@ -92,6 +92,10 @@ api_docs: {
         return await this.executeGenerateBase();
       case "merge-files":
         return await this.executeMergeFiles();
+      case "from-all":
+        await this.executeGenerateBase();
+        await this.executeGenerateFromRoutes();
+        return await this.executeMergeFiles();
       default:
         this.context.stderr.write(`Unknown subcommand: ${this.subcommand}\n`);
         this.context.stdout.write(
@@ -209,7 +213,9 @@ api_docs: {
     for (const route of routes) {
       const routePath = route.path;
       // Convert route path to OpenAPI format (e.g., /api/:id -> /api/{id})
-      const openApiPath = routePath.replace(/\/$/g, ""); //.replace(/:([a-zA-Z0-9_]+)/g, "{$1}");
+      const openApiPath = routePath
+        .replace(/\/$/g, "")
+        .replace(/:([a-zA-Z0-9_]+)/g, "{$1}");
 
       if (!openApiSpec.paths[openApiPath]) {
         openApiSpec.paths[openApiPath] = {};
