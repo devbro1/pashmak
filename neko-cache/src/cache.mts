@@ -1,4 +1,4 @@
-import type { JSONValue } from '@devbro/neko-helper';
+import type { JSONValue, LockHandle } from '@devbro/neko-helper';
 import { createHash } from 'crypto';
 import type { CacheProviderInterface } from './CacheProviderInterface.mjs';
 import { L } from 'vitest/dist/chunks/environment.d.cL3nLXbE.js';
@@ -109,7 +109,7 @@ export class Cache {
     return createHash('md5').update(JSON.stringify(key)).digest('hex');
   }
 
-  getLock(key: string, ttl: number): Promise<LockHandle> {
+  getLock(key: string, ttl: number): Promise<LockHandle|undefined> {
     return this.provider.getLock(key, ttl);
   }
 }

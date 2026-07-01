@@ -1,4 +1,5 @@
 import type { JSONObject, JSONValue } from '@devbro/neko-helper';
+import type { LockHandle } from '@devbro/neko-helper';
 import type Memcached from 'memcached';
 import type { CacheProviderInterface } from '@/CacheProviderInterface.mjs';
 import { loadPackage } from '../helper.mjs';
