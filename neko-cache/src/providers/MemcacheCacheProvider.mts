@@ -152,4 +152,30 @@ export class MemcacheCacheProvider implements CacheProviderInterface {
       });
     });
   }
+
+  async getLock(key: string, ttl: number): Promise<LockHandle|undefined> {
+    // Memcached does not support locks natively, so we can implement a simple lock mechanism using a special key
+    const lockKey = `lock_${key}`;
+    const lockValue = 'locked';
+
+    const acquired = await this.get(lockKey);
+    if (acquired) {
+      // Lock is already acquired
+      return undefined;
+    }
+
+    // Try to acquire the lock
+    await this.put(lockKey, lockValue, ttl);
+
+    return {
+      isExpired: async () => {
+        const current = await this.get(lockKey);
+        return current !== lockValue;
+      },
+      release: async () => {
+        await this.delete(lockKey);
+      },
+    };
+  }
 }
+
