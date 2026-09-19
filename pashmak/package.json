@@ -1,12 +1,12 @@
 {
   "name": "@devbro/pashmak",
-  "version": "0.1.64",
+  "version": "0.1.65",
   "description": "A pragmatic, batteries-included framework that gets out of your way and lets you ship - because building apps should be fun again",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
   "types": "./dist/cjs/index.d.ts",
   "bin": {
-    "pashmak": "./dist/bin/pashmak_cli.cjs"
+    "pashmak": "./dist/cjs/bin/pashmak_cli.cjs"
   },
   "files": [
     "dist"
