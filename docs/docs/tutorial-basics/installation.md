@@ -27,16 +27,25 @@ First, install the Pashmak CLI globally:
     pnpm add -g @devbro/pashmak
     ```
   </TabItem>
+  <TabItem value="bun" label="Bun">
+    ```bash
+    bun add -g @devbro/pashmak
+    ```
+  </TabItem>
 </Tabs>
+
+The CLI runs on Node.js by default. To run it on Bun instead, add `--bun`, e.g. `bun --bun pashmak create project`, or without installing: `bunx --bun @devbro/pashmak create project`.
 
 ## Create a New Project
 
 Use the Pashmak CLI to create a new project:
 
 ```bash
-pashmak create project --path /path/to/project
+pashmak create project
 cd /path/to/project
 ```
+
+The command prompts for the project path, executor, package manager and libraries. Run `pashmak --help` to list available commands.
 
 ## Install Dependencies and setup
 

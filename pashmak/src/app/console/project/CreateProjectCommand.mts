@@ -1,11 +1,11 @@
+import { execSync } from "node:child_process";
+import * as fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { input, Separator, select } from "@inquirer/prompts";
 import { Case } from "change-case-all";
-import { execSync } from "child_process";
 import { Command, Option } from "clipanion";
-import * as fs from "fs/promises";
 import handlebars from "handlebars";
-import path from "path";
-import { fileURLToPath } from "url";
 
 export class CreateProjectCommand extends Command {
   static paths = [[`create`, `project`]];
@@ -94,9 +94,7 @@ export class CreateProjectCommand extends Command {
       } else if (file.name.endsWith(".tpl")) {
         await this.processTplFile(srcPath, destPath, data);
       } else {
-        throw new Error(
-          "unexpected non tpl file: " + srcPath + " " + file.name,
-        );
+        throw new Error(`unexpected non tpl file: ${srcPath} ${file.name}`);
       }
     }
   }
@@ -192,12 +190,18 @@ export class CreateProjectCommand extends Command {
     const packageJson = JSON.parse(await fs.readFile(packageJsonPath, `utf-8`));
     packageJson.type = "module";
     packageJson.scripts = packageJson.scripts || {};
-    packageJson.scripts.prepare = "husky init";
+    // NOTE: the husky "prepare" script is added in setupBaseProject(), after
+    // husky has been added as a dependency. Adding it here breaks `bun add`,
+    // which runs the project's prepare script before husky is installed.
     packageJson.scripts.clean = "rm -rf dist";
     if (this.executor === "bun") {
-      packageJson.scripts.dev = "bun run dev";
-      packageJson.scripts.start = "bun run pdev";
-      packageJson.scripts.build = "bun run build";
+      // bun runs TypeScript and resolves tsconfig "paths" natively
+      packageJson.scripts.dev =
+        "bun --watch src/index.ts start --all | bunx pino-pretty";
+      packageJson.scripts.cli = "bun src/index.ts";
+      packageJson.scripts.start = "bun dist/index.js";
+      packageJson.scripts.build =
+        "bun build src/index.ts --outdir dist --target bun --packages external";
       packageJson.scripts.test = "vitest";
       packageJson.scripts["test:watch"] = "vitest --watch";
       packageJson.scripts["test:coverage"] = "vitest run --coverage";
@@ -577,6 +581,8 @@ export class CreateProjectCommand extends Command {
     const packageJsonPath = path.join(this.projectPath, "package.json");
     const packageJson = JSON.parse(await fs.readFile(packageJsonPath, `utf-8`));
     packageJson.name = Case.snake(path.basename(this.projectPath));
+    packageJson.scripts = packageJson.scripts || {};
+    packageJson.scripts.prepare = "husky";
 
     await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
     console.log(`Updated package.json with project name: ${packageJson.name}`);
@@ -637,17 +643,16 @@ export class CreateProjectCommand extends Command {
       }));
 
     if (this.initGit) {
-      const gitignoreContent =
-        [
-          "node_modules/",
-          "dist/",
-          ".env",
-          ".env.*",
-          "!.env.example",
-          "*.log",
-          "coverage/",
-          ".DS_Store",
-        ].join("\n") + "\n";
+      const gitignoreContent = `${[
+        "node_modules/",
+        "dist/",
+        ".env",
+        ".env.*",
+        "!.env.example",
+        "*.log",
+        "coverage/",
+        ".DS_Store",
+      ].join("\n")}\n`;
 
       await fs.writeFile(
         path.join(this.projectPath, ".gitignore"),

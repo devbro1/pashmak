@@ -6,7 +6,7 @@ on:
       - master
 jobs:
   # run-tests:
-  #   uses: ./.github/workflows/test-node.yml
+  #   uses: ./.github/workflows/run-all-tests.yml
 
   build:
     # needs: [run-tests]

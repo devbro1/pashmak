@@ -33,5 +33,9 @@ Pashmak framework is built from several independent packages that you can use fr
 
 ```bash
 npm install -g @devbro/pashmak
-pashmak create project --path . --git
+pashmak create project --git
 ```
+
+The command prompts for the project path and other options. Run `pashmak --help` to list available commands.
+
+The CLI runs on Node.js by default. To run it on Bun, use `bunx --bun @devbro/pashmak create project` (or `bun --bun pashmak ...` after `bun add -g @devbro/pashmak`).

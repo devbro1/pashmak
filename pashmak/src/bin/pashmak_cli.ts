@@ -1,16 +1,18 @@
 #!/usr/bin/env node
 
-import { Cli } from "clipanion";
+import { Builtins, Cli } from "clipanion";
 
-const [node, app, ...args] = process.argv;
+const args = process.argv.slice(2);
 const cli = new Cli({
   binaryLabel: `Pashmak CLI`,
-  binaryName: `${node} ${app}`,
+  binaryName: `pashmak`,
   binaryVersion: `1.0.0`,
 });
 
 import { CreateProjectCommand } from "../app/console/project/CreateProjectCommand.mjs";
 
+cli.register(Builtins.HelpCommand);
+cli.register(Builtins.VersionCommand);
 cli.register(CreateProjectCommand);
 
 cli

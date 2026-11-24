@@ -3,22 +3,47 @@ import { type Request, type Response, Router } from '@devbro/neko-router';
 import { describe, expect, test } from 'vitest';
 import { BunConfigurationError, BunNotAvailableError, HttpServer } from '../../src';
 
+const isBun = typeof (globalThis as Record<string, unknown>).Bun !== 'undefined';
+
+/**
+ * Runs `fn` with a mocked `Bun.serve`. On Node a fake `Bun` global is installed;
+ * on the real Bun runtime `globalThis.Bun` is read-only, so only `serve` is swapped.
+ */
+async function withMockBunServe(serve: (...args: any[]) => unknown, fn: () => Promise<void>) {
+  const g = globalThis as Record<string, any>;
+  if (isBun) {
+    const originalServe = g.Bun.serve;
+    g.Bun.serve = serve;
+    try {
+      await fn();
+    } finally {
+      g.Bun.serve = originalServe;
+    }
+  } else {
+    g.Bun = { serve };
+    try {
+      await fn();
+    } finally {
+      delete g.Bun;
+    }
+  }
+}
+
 describe('HTTP/2 and Bun.serve support', () => {
-  test('throws BunNotAvailableError when preferBun is true on Node.js', async () => {
+  test.skipIf(isBun)('throws BunNotAvailableError when preferBun is true on Node.js', async () => {
     const server = new HttpServer({ preferBun: true });
     await expect(server.listen(0, () => {})).rejects.toThrow(BunNotAvailableError);
   });
 
   test('throws BunConfigurationError when preferBun and useHttp2 are both true on Bun', async () => {
     // Simulate Bun runtime
-    const originalBun = (globalThis as Record<string, unknown>).Bun;
-    (globalThis as Record<string, unknown>).Bun = { serve: () => {} };
-    try {
-      const server = new HttpServer({ preferBun: true, useHttp2: true });
-      await expect(server.listen(0, () => {})).rejects.toThrow(BunConfigurationError);
-    } finally {
-      (globalThis as Record<string, unknown>).Bun = originalBun;
-    }
+    await withMockBunServe(
+      () => {},
+      async () => {
+        const server = new HttpServer({ preferBun: true, useHttp2: true });
+        await expect(server.listen(0, () => {})).rejects.toThrow(BunConfigurationError);
+      }
+    );
   });
 
   test('BunNotAvailableError has correct message and name', () => {
@@ -84,15 +109,11 @@ describe('HTTP/2 and Bun.serve support', () => {
       },
     };
 
-    const originalBun = (globalThis as Record<string, unknown>).Bun;
-    (globalThis as Record<string, unknown>).Bun = mockBun;
-    try {
+    await withMockBunServe(mockBun.serve, async () => {
       const server = new HttpServer({ preferBun: true });
       const result = await server.listen(3000, () => {});
       expect(result).toBe(mockServeResult);
-    } finally {
-      (globalThis as Record<string, unknown>).Bun = originalBun;
-    }
+    });
   });
 
   test('Bun.serve fetch handler returns correct response', async () => {
@@ -112,9 +133,7 @@ describe('HTTP/2 and Bun.serve support', () => {
       res.end();
     });
 
-    const originalBun = (globalThis as Record<string, unknown>).Bun;
-    (globalThis as Record<string, unknown>).Bun = mockBun;
-    try {
+    await withMockBunServe(mockBun.serve, async () => {
       const server = new HttpServer({ preferBun: true });
       server.setRouter(router);
       await server.listen(3000, () => {});
@@ -133,9 +152,7 @@ describe('HTTP/2 and Bun.serve support', () => {
       expect(response.status).toBe(200);
       const body = await response.text();
       expect(body).toBe('Bun response');
-    } finally {
-      (globalThis as Record<string, unknown>).Bun = originalBun;
-    }
+    });
   });
 
   test('Bun.serve includes TLS config when HTTPS certs are set', async () => {
@@ -148,16 +165,12 @@ describe('HTTP/2 and Bun.serve support', () => {
       },
     };
 
-    const originalBun = (globalThis as Record<string, unknown>).Bun;
-    (globalThis as Record<string, unknown>).Bun = mockBun;
-    try {
+    await withMockBunServe(mockBun.serve, async () => {
       const server = new HttpServer({ preferBun: true });
       server.enableHttps({ key: 'fake-key', cert: 'fake-cert' });
       await server.listen(3000, () => {});
 
       expect(capturedOptions?.tls).toEqual({ key: 'fake-key', cert: 'fake-cert' });
-    } finally {
-      (globalThis as Record<string, unknown>).Bun = originalBun;
-    }
+    });
   });
 });
